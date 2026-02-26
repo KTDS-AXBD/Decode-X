@@ -62,12 +62,13 @@
 - **svc-security (SVC-07)**: ✅ 전체 구현 (RBAC, audit log)
 - **svc-ingestion (SVC-01)**: ✅ 전체 구현 (upload → R2 + D1 + Queue)
 - **Skeleton Services**: ✅ SVC-02~05, 08~10 (svc-policy는 HitlSession DO stub 포함)
-- **app-web**: ✅ React + Vite SPA scaffold, 13 페이지 stub
-- **D1 Migrations**: ✅ 10개 DB 초기 SQL 작성 완료
+- **app-web**: ✅ React + Vite SPA scaffold, 13 페이지 stub, React Router warnings 수정
+- **D1 Migrations**: ✅ 10개 DB 스키마 작성 + remote 적용 완료 (2026-02-26)
+- **Cloudflare 인프라**: ✅ D1(×10) / R2(×2) / Queue(×2) / KV(×2) 프로비저닝 완료, wrangler.toml ID 반영
 - **CI/CD Workflows**: ✅ GitHub Actions (CI + 4개 deploy workflow)
 - **typecheck**: ✅ 13개 패키지 전체 통과
-- **Cloudflare 인프라 프로비저닝**: ❌ 미완료 (D1/R2/Queue/KV ID 미설정)
-- **Wrangler Secrets**: ❌ 미설정 (INTERNAL_API_SECRET 등)
+- **Wrangler Secrets**: ❌ 미설정 — 첫 배포 후 터미널에서 설정 필요 (아래 참조)
+- **서비스 배포**: ❌ 미배포 (wrangler deploy 미실행)
 - **Test Coverage**: 0%
 
 ---
@@ -81,15 +82,36 @@
 - [x] GitHub Actions CI/CD
 - [x] D1 마이그레이션 스키마 10개
 
-### 🔜 Phase B — Infra Provisioning (다음 우선순위)
-> `infra/scripts/` 스크립트를 실행하고 wrangler.toml에 ID를 기입하는 작업
+### ✅ Phase B — Infra Provisioning (완료)
 
-- [ ] `create-d1-dbs.sh` 실행 → 각 wrangler.toml의 `database_id` 업데이트
-- [ ] `create-r2-buckets.sh` 실행
-- [ ] `create-queues.sh` 실행
-- [ ] `create-kv-namespaces.sh` 실행
-- [ ] D1 마이그레이션 적용 (`wrangler d1 execute` × 10)
-- [ ] Wrangler secrets 설정 (서비스별 `INTERNAL_API_SECRET`, `ANTHROPIC_API_KEY`, etc.)
+- [x] D1 × 10 생성 + wrangler.toml `database_id` 반영
+- [x] R2 × 2 (ai-foundry-documents, ai-foundry-skill-packages) 확인
+- [x] Queue × 2 (ai-foundry-pipeline, ai-foundry-pipeline-dlq) 확인
+- [x] KV × 2 (AI_FOUNDRY_PROMPTS, AI_FOUNDRY_CACHE) ID 반영
+- [x] D1 마이그레이션 remote 적용 완료 (10개 DB × `0001_init.sql`)
+- [ ] **Wrangler Secrets 설정** — 첫 배포 후 터미널에서 실행:
+  ```bash
+  # 각 서비스 디렉토리에서 실행
+  echo "VALUE" | wrangler secret put INTERNAL_API_SECRET
+  # svc-llm-router 추가:
+  echo "VALUE" | wrangler secret put ANTHROPIC_API_KEY
+  echo "VALUE" | wrangler secret put CLOUDFLARE_AI_GATEWAY_URL
+  # svc-security 추가:
+  echo "VALUE" | wrangler secret put JWT_SECRET
+  # svc-ontology 추가:
+  echo "VALUE" | wrangler secret put NEO4J_URI
+  echo "VALUE" | wrangler secret put NEO4J_PASSWORD
+  ```
+
+### 🔜 Phase C — 첫 배포 + Pipeline Stage 1 Full Impl
+> 우선순위: svc-llm-router → svc-security → svc-ingestion 순서로 배포
+
+- [ ] `wrangler deploy` (svc-llm-router, svc-security, svc-ingestion)
+- [ ] Wrangler secrets 설정 (배포 후)
+- [ ] `GET /health` 엔드포인트 smoke test
+- [ ] **E-01** — 마스킹 미들웨어: PII 토크나이징 → svc-security 연동
+- [ ] **E-02** — Stage 1 완성: Unstructured.io 연동, 파일 분류 로직
+- [ ] **E-03** — Stage 2 완성: svc-extraction — Claude Sonnet/Haiku로 구조 추출
 
 ### 🔜 Phase C — Pipeline Stage 1 Full Impl (E-01~E-03)
 > svc-ingestion 고도화: 실제 파싱 파이프라인 연결
@@ -130,3 +152,5 @@
 - 2026-02-26: 공유 패키지 exports를 `./src/index.ts` (raw TS)로 설정 — Wrangler esbuild가 빌드 처리
 - 2026-02-26: `packages/utils`에 `@cloudflare/workers-types` 추가 — Response/console 타입 해결
 - 2026-02-26: typecheck 13/13 통과 확인
+- 2026-02-26: Cloudflare 인프라 프로비저닝 완료 — D1/R2/Queue/KV ID wrangler.toml 반영
+- 2026-02-26: D1 마이그레이션 remote 적용 완료 (Cloudflare REST API 직접 사용)

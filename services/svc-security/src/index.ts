@@ -3,6 +3,7 @@ import type { Env } from "./env.js";
 import { handleHealth } from "./routes/health.js";
 import { handleCheckPermission, handleGetRolePermissions } from "./routes/rbac.js";
 import { handleWriteAudit, handleQueryAudit } from "./routes/audit.js";
+import { handleMask } from "./routes/mask.js";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -38,6 +39,11 @@ export default {
       }
       if (method === "GET" && path === "/audit") {
         return await handleQueryAudit(request, env);
+      }
+
+      // Masking route
+      if (method === "POST" && path === "/mask") {
+        return await handleMask(request, env);
       }
 
       return new Response("Not Found", { status: 404 });

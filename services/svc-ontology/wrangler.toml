@@ -6,7 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB_ONTOLOGY"
 database_name = "db-ontology"
-database_id = "PLACEHOLDER"
+database_id = "88cda338-c89e-4b4e-843a-7489d9b268ee"
 
 # Service binding to svc-security for audit logging
 [[services]]

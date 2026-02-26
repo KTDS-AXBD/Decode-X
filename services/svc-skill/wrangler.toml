@@ -6,7 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB_SKILL"
 database_name = "db-skill"
-database_id = "PLACEHOLDER"
+database_id = "a3f582ba-21b6-4008-9c41-deed94f9d237"
 
 [[r2_buckets]]
 binding = "R2_SKILL_PACKAGES"

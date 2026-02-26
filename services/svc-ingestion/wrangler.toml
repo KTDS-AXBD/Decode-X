@@ -6,7 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB_INGESTION"
 database_name = "db-ingestion"
-database_id = "PLACEHOLDER"
+database_id = "5a17041a-21ee-4aa9-a633-dd2379f8985d"
 
 [[r2_buckets]]
 binding = "R2_DOCUMENTS"

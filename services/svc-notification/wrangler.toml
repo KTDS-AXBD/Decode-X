@@ -6,7 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB_NOTIFICATION"
 database_name = "db-notification"
-database_id = "PLACEHOLDER"
+database_id = "1a6ef6a4-6087-4637-b4d8-4abc7ab2e1bf"
 
 # Queue consumer — listens for pipeline events requiring notification dispatch
 [[queues.consumers]]

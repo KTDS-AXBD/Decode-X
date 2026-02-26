@@ -6,7 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB_EXTRACTION"
 database_name = "db-extraction"
-database_id = "PLACEHOLDER"
+database_id = "1f45eb0b-61ad-43b8-b898-0629a7e1a047"
 
 # Service binding to svc-security for audit logging
 [[services]]

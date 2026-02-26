@@ -6,11 +6,11 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB_GOVERNANCE"
 database_name = "db-governance"
-database_id = "PLACEHOLDER"
+database_id = "6b2a5531-e78a-4d6b-9ca5-1ee284e47160"
 
 [[kv_namespaces]]
 binding = "KV_PROMPTS"
-id = "PLACEHOLDER"
+id = "98ef788593e44f638a94cc7838f9a310"
 
 # Service binding to svc-security for audit logging
 [[services]]

@@ -6,7 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB_POLICY"
 database_name = "db-policy"
-database_id = "PLACEHOLDER"
+database_id = "e27a4335-7212-4859-8f7e-55cf8d464c8e"
 
 # Service binding to svc-security for audit logging
 [[services]]

@@ -6,7 +6,7 @@ compatibility_flags = ["nodejs_compat"]
 [[d1_databases]]
 binding = "DB_SECURITY"
 database_name = "db-security"
-database_id = "PLACEHOLDER"
+database_id = "474a33f4-2a01-4a1d-8121-1e5ebd1123ca"
 
 [vars]
 ENVIRONMENT = "development"

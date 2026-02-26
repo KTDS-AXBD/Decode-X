@@ -52,10 +52,11 @@ export async function handleUpload(
     return badRequest("Failed to parse multipart form data");
   }
 
-  const file = formData.get("file");
-  if (!(file instanceof File)) {
+  const fileEntry = formData.get("file");
+  if (!fileEntry || typeof fileEntry === "string") {
     return badRequest("'file' field is required and must be a file");
   }
+  const file = fileEntry as File;
 
   const maxBytes = parseInt(env.MAX_FILE_SIZE_MB, 10) * 1024 * 1024;
   if (file.size > maxBytes) {

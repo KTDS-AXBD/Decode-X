@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { RoleSchema, ResourceSchema, ActionSchema, hasPermission } from "@ai-foundry/types";
+import { RoleSchema, ResourceSchema, ActionSchema, hasPermission, PERMISSIONS } from "@ai-foundry/types";
 import { ok, badRequest } from "@ai-foundry/utils";
 
 const CheckPermissionSchema = z.object({
@@ -45,7 +45,6 @@ export async function handleGetRolePermissions(request: Request): Promise<Respon
   }
 
   const { role } = parsed.data;
-  const { PERMISSIONS } = await import("@ai-foundry/types");
   const permissions = PERMISSIONS[role] ?? {};
 
   return ok({ role, permissions });

@@ -25,5 +25,12 @@ service = "svc-security"
 ENVIRONMENT = "development"
 SERVICE_NAME = "svc-ingestion"
 MAX_FILE_SIZE_MB = "50"
+UNSTRUCTURED_API_URL = "https://api.unstructuredapp.io"
 # Secrets (set via `wrangler secret put`):
 # INTERNAL_API_SECRET
+# UNSTRUCTURED_API_KEY
+
+[[queues.consumers]]
+queue = "ai-foundry-pipeline"
+max_batch_size = 10
+max_batch_timeout = 30

@@ -9,17 +9,13 @@
  * Results are written to DB_EXTRACTION and forwarded to svc-policy via the pipeline queue.
  */
 
-import { createLogger, unauthorized } from "@ai-foundry/utils";
-import type { ExportedHandler } from "@cloudflare/workers-types";
+import { createLogger, unauthorized, notFound, ok } from "@ai-foundry/utils";
 import type { Env } from "./env.js";
-
-const NOT_IMPLEMENTED = JSON.stringify({
-  success: false,
-  error: { code: "NOT_IMPLEMENTED", message: "Not implemented" },
-});
+import { handleExtract } from "./routes/extract.js";
+import { handleQueueBatch } from "./queue/handler.js";
 
 export default {
-  async fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const logger = createLogger("svc-extraction");
     const url = new URL(request.url);
     const method = request.method;
@@ -42,14 +38,57 @@ export default {
 
     try {
       // POST /extract — trigger structure extraction for a document
-      // GET  /extractions/:id — retrieve extraction result
-      return new Response(NOT_IMPLEMENTED, {
-        status: 501,
-        headers: { "Content-Type": "application/json" },
-      });
+      if (method === "POST" && path === "/extract") {
+        return await handleExtract(request, env, ctx);
+      }
+
+      // GET /extractions/:id — retrieve extraction result
+      const extractionMatch = path.match(/^\/extractions\/([^/]+)$/);
+      if (method === "GET" && extractionMatch) {
+        const extractionId = extractionMatch[1];
+        if (!extractionId) {
+          return notFound("extraction");
+        }
+
+        const row = await env.DB_EXTRACTION.prepare(
+          `SELECT id, document_id, status, process_node_count, entity_count,
+                  result_json, created_at, updated_at
+           FROM extractions WHERE id = ?`,
+        )
+          .bind(extractionId)
+          .first<{
+            id: string;
+            document_id: string;
+            status: string;
+            process_node_count: number | null;
+            entity_count: number | null;
+            result_json: string | null;
+            created_at: string;
+            updated_at: string;
+          }>();
+
+        if (!row) {
+          return notFound("extraction", extractionId);
+        }
+
+        return ok({
+          extractionId: row.id,
+          documentId: row.document_id,
+          status: row.status,
+          processNodeCount: row.process_node_count ?? 0,
+          entityCount: row.entity_count ?? 0,
+          result: row.result_json ? JSON.parse(row.result_json) : null,
+          createdAt: row.created_at,
+          updatedAt: row.updated_at,
+        });
+      }
+
+      return notFound("route");
     } catch (e) {
       logger.error("Unhandled error", { error: String(e), path, method });
       return new Response("Internal Server Error", { status: 500 });
     }
   },
+
+  queue: handleQueueBatch,
 } satisfies ExportedHandler<Env>;

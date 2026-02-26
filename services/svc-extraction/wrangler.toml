@@ -5,7 +5,7 @@ compatibility_flags = ["nodejs_compat"]
 
 [[d1_databases]]
 binding = "DB_EXTRACTION"
-database_name = "db-extraction"
+database_name = "db-structure"
 database_id = "1f45eb0b-61ad-43b8-b898-0629a7e1a047"
 
 # Service binding to svc-security for audit logging
@@ -17,6 +17,11 @@ service = "svc-security"
 [[services]]
 binding = "LLM_ROUTER"
 service = "svc-llm-router"
+
+[[queues.consumers]]
+queue = "ai-foundry-pipeline"
+max_batch_size = 5
+max_batch_timeout = 60
 
 [vars]
 ENVIRONMENT = "development"

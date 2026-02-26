@@ -2,6 +2,7 @@ import { createLogger, unauthorized } from "@ai-foundry/utils";
 import type { Env } from "./env.js";
 import { handleHealth } from "./routes/health.js";
 import { handleUpload, handleGetDocument } from "./routes/upload.js";
+import { handleQueue } from "./queue.js";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -43,5 +44,9 @@ export default {
       logger.error("Unhandled error", { error: String(e), path, method });
       return new Response("Internal Server Error", { status: 500 });
     }
+  },
+
+  async queue(batch: MessageBatch<unknown>, env: Env, ctx: ExecutionContext): Promise<void> {
+    await handleQueue(batch, env, ctx);
   },
 } satisfies ExportedHandler<Env>;

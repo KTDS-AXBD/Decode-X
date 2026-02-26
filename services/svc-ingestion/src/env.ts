@@ -7,4 +7,6 @@ export interface Env {
   SERVICE_NAME: string;
   MAX_FILE_SIZE_MB: string;
   INTERNAL_API_SECRET: string;
+  UNSTRUCTURED_API_URL: string;
+  UNSTRUCTURED_API_KEY: string;
 }

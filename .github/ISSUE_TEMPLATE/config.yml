@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: "Project Spec"
+    url: "https://github.com/AX-BD-Team/res-ai-foundry/blob/main/SPEC.md"
+    about: "작업 전 SPEC.md를 먼저 확인하세요."

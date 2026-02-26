@@ -71,15 +71,27 @@ user-invocable: true
 ### 실행 가이드
 
 ```bash
-# 예시: 신규 작업 이슈 생성
+# 1) Phase 이슈 생성 (템플릿 사용)
 gh issue create \
   --repo AX-BD-Team/res-ai-foundry \
-  --title "[Phase A] monorepo 디렉토리 구조 확정" \
-  --body "SPEC.md §6 기반 작업"
+  --template phase.md \
+  --title "[Phase A] monorepo 디렉토리 구조 확정"
 
-# 예시: 완료 이슈 종료
+# 2) Task 이슈 생성 (템플릿 사용)
+gh issue create \
+  --repo AX-BD-Team/res-ai-foundry \
+  --template task.md \
+  --title "[Task] SVC-01 ingestion skeleton 생성"
+
+# 3) 완료 이슈 종료
 gh issue close <number> --repo AX-BD-Team/res-ai-foundry
 ```
+
+### /sync push 체크리스트 (Issue 템플릿 기반)
+- [ ] SPEC §6의 신규 항목을 Phase/Task 이슈로 생성
+- [ ] Task 이슈를 상위 Phase 이슈에 링크
+- [ ] 완료된 Task/Phase는 close 처리
+- [ ] 이슈 상태와 SPEC 체크박스 불일치 없는지 확인
 
 ### 출력
 - 생성/수정/종료된 이슈 목록

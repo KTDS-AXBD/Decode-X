@@ -52,7 +52,7 @@
 
 ## 5) Current Status
 
-- **Last Updated**: 2026-02-28 (세션 010)
+- **Last Updated**: 2026-02-28 (세션 011)
 - **Repo Bootstrap**: ✅
 - **PRD Seed Document**: ✅ (`docs/AI_Foundry_PRD_TDS_v0.6.docx`)
 - **.claude Skills/Agents Migration**: ✅
@@ -155,8 +155,25 @@
   - BUG-3 fix: DB 스키마 `extraction_id → id` 마이그레이션 + `organization_id` NOT NULL 대응
   - Queue Router 라우팅: `ingestion.completed → SVC_EXTRACTION` 추가
   - `scripts/test-e2e-pipeline.sh`: 8단계 하이브리드 E2E 테스트 (자동 큐 + 수동 API)
-  - E2E 결과: Stage 1-3 PASS (upload→queue→extraction), Stage 4 FAIL (svc-policy LLM 프롬프트 이슈 — 잔여)
   - INTERNAL_API_SECRET 변경: `e2e-test-secret-2026` (bash `!` 확장 이슈 해결)
+- **G-02b LLM 프롬프트 수정**: ✅ svc-policy JSON-only prompt + extractJsonArray 로버스트 파싱 (2026-02-28)
+  - Opus가 prose/markdown 대신 순수 JSON 배열만 반환하도록 시스템 프롬프트 CRITICAL RULES 추가
+  - extractJsonArray(): markdown fence 제거 + `[...]` 스팬 추출 헬퍼
+- **G-02c E2E 8/8 PASS**: ✅ HITL auto-assign + sync D1 writes + UNIQUE 제약 제거 (2026-02-28)
+  - handleApprovePolicy: DO session `open` → 자동 assign → action 순으로 streamlined
+  - policy/session D1 INSERT를 ctx.waitUntil → await 동기화 (race condition 해결)
+  - db-policy migration 0002: policy_code UNIQUE 제약 제거 (다중 실행 충돌 방지)
+  - E2E script: CreateSkillRequestSchema에 맞는 payload로 수정 (PolicySchema, OntologyRef, Provenance)
+  - E2E 결과: **8/8 PASS** (upload → extraction → policy → approve → ontology → skill → download)
+- **G-03 MCP 어댑터**: ✅ GET /skills/:id/mcp — .skill.json → MCP Server tool definitions 변환 (2026-02-28)
+  - `services/svc-skill/src/routes/mcp.ts`: on-the-fly 변환 (저장하지 않음)
+  - 다운로드 로그 기록 (adapter_type: 'mcp')
+- **G-04 Persona 화면**: ✅ app-web 9개 페이지 구현 (2026-02-28)
+  - Persona A (Analyst): upload.tsx, pipeline.tsx, comparison.tsx
+  - Persona C (Developer): skill-catalog.tsx, skill-detail.tsx
+  - Persona D (Client): results.tsx, audit.tsx
+  - Persona E (Executive): dashboard.tsx, cost.tsx
+  - API 클라이언트 5개: ingestion, extraction, skill, security, governance
 - **Test Coverage**: 0% (unit test 미작성, E2E 스크립트만 존재)
 
 ---
@@ -211,13 +228,23 @@
 ### ✅ Phase F — Ontology + Skill Packaging (Phase 3) (완료)
 - [x] Stage 4: svc-ontology — Neo4j Aura + SKOS/JSON-LD
 - [x] Stage 5: svc-skill — Skill Spec 완성, R2 패키징
-- [ ] MCP 어댑터 생성 (Phase 4 범위)
+- [x] MCP 어댑터 생성
 
-### 🔄 Phase G — Integration + Deployment (Phase 4)
+### ✅ Phase G — Integration + Deployment (Phase 4) (완료)
 - [x] **G-01** — svc-queue-router 신규 + 전 서비스 배포 (Queue Router 패턴)
-- [x] **G-02** — E2E 파이프라인 통합 테스트 (이벤트 체인 3건 수정 + 스크립트)
-- [ ] MCP 어댑터 생성
-- [ ] app-web 나머지 Persona 화면 (A, C, D, E)
+- [x] **G-02** — E2E 파이프라인 통합 테스트 (이벤트 체인 수정 + 스크립트)
+- [x] **G-02b** — svc-policy LLM 프롬프트 수정 (JSON-only + extractJsonArray)
+- [x] **G-02c** — E2E 8/8 PASS (HITL auto-assign + sync D1 + UNIQUE 제거)
+- [x] **G-03** — MCP 어댑터 생성 (GET /skills/:id/mcp)
+- [x] **G-04** — app-web 나머지 Persona 화면 (A, C, D, E — 9페이지)
+
+### 🔜 Phase H — Hardening + Production Readiness
+- [ ] Unit test 작성 (target: 60%+ coverage)
+- [ ] app-web Cloudflare Pages 배포
+- [ ] Neo4j Aura 연결 (svc-ontology NEO4J_URI/PASSWORD)
+- [ ] svc-notification 알림 로직 구현
+- [ ] svc-analytics KPI 집계 구현
+- [ ] 프로덕션 환경 분리 (staging/prod)
 
 ---
 
@@ -251,3 +278,8 @@
 - 2026-02-28: G-01 전 서비스 배포 완료 — 11개 Workers (10 SVC + queue-router) 전체 배포, /health HTTP 200 확인, INTERNAL_API_SECRET 설정
 - 2026-02-28: G-02 E2E 이벤트 체인 수정 — ingestion.completed 발행(BUG-1) + extraction 실제 청크 조회+이벤트 발행(BUG-2) + DB 스키마 수정(BUG-3). 3개 서비스 재배포
 - 2026-02-28: INTERNAL_API_SECRET 전 서비스 변경 (demian00! → e2e-test-secret-2026) — bash history expansion 이슈 해결
+- 2026-02-28: G-02b svc-policy LLM 프롬프트 수정 — Opus JSON-only 출력 강제 + extractJsonArray 로버스트 파싱. E2E Stage 4 통과
+- 2026-02-28: G-02c E2E 8/8 PASS — HITL auto-assign 패턴 도입 (open → assign → action을 approve 핸들러에서 자동 수행), policy/session D1 INSERT를 동기화 (ctx.waitUntil → await), db-policy policy_code UNIQUE 제약 제거 (다중 실행 지원)
+- 2026-02-28: G-03 MCP 어댑터 — .skill.json → MCP Server tool definitions 온-더-플라이 변환. 저장하지 않고 요청 시 계산 (projection 패턴)
+- 2026-02-28: G-04 app-web Persona 화면 — 9개 페이지 구현 (upload, pipeline, comparison, skill-catalog, skill-detail, results, audit, dashboard, cost). API 클라이언트 5개 추가
+- 2026-02-28: Phase G 완료 → Phase H (Hardening) 진입 결정. 잔여: unit test, Pages 배포, Neo4j 연결, notification/analytics 구현

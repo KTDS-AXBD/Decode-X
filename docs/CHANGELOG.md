@@ -2,6 +2,36 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 011 — 2026-02-28
+
+- ✅ **G-02b: svc-policy LLM 프롬프트 수정** — JSON-only 출력 강제 + extractJsonArray 로버스트 파싱
+  - system prompt에 CRITICAL RULES 추가 (순수 JSON 배열만 반환)
+  - `extractJsonArray()` 헬퍼: markdown fence 제거 + `[...]` 스팬 추출
+  - E2E Stage 4 통과 (7 policy candidates 생성)
+- ✅ **G-02c: E2E 8/8 PASS** — HITL + D1 race condition + UNIQUE 제약 해결
+  - `handleApprovePolicy`: DO session `open` 시 자동 assign 후 action (auto-assign 패턴)
+  - policy/session D1 INSERT: `ctx.waitUntil()` → `await` 동기화 (race condition 해소)
+  - `db-policy/0002_drop_unique_policy_code.sql`: policy_code UNIQUE 제약 제거
+  - E2E script: CreateSkillRequestSchema 정합 (PolicySchema, OntologyRef, Provenance)
+- ✅ **G-03: MCP 어댑터** — `GET /skills/:id/mcp` 엔드포인트
+  - `services/svc-skill/src/routes/mcp.ts`: .skill.json → MCP tool definitions on-the-fly 변환
+  - 다운로드 로그 기록 (adapter_type: 'mcp')
+- ✅ **G-04: app-web Persona 화면** — 9개 페이지 + API 클라이언트 5개
+  - Persona A: upload.tsx, pipeline.tsx, comparison.tsx
+  - Persona C: skill-catalog.tsx, skill-detail.tsx
+  - Persona D: results.tsx, audit.tsx
+  - Persona E: dashboard.tsx, cost.tsx
+  - API clients: ingestion, extraction, skill, security, governance
+- ✅ svc-policy + svc-skill 재배포 (3회)
+- ✅ db-policy migration 0002 remote 적용
+- ✅ **Phase G 완료** → Phase H (Hardening) 진입
+
+**검증**
+- typecheck: 16/16 pass
+- E2E: **8/8 PASS** (upload → extraction → policy → approve → ontology → skill → download)
+
+---
+
 ## 세션 010 — 2026-02-28
 
 - ✅ **G-02 E2E 파이프라인 통합 테스트** — 이벤트 체인 3건 버그 수정 + E2E 스크립트

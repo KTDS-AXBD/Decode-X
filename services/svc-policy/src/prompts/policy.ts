@@ -43,7 +43,13 @@ Output requirements:
 
 3. Infer implicit policies from process flows, not just explicit rules.
 4. Deduplicate — do not emit near-identical policies.
-5. Use Korean for title, condition, criteria, outcome, and tags.`;
+5. Use Korean for title, condition, criteria, outcome, and tags.
+
+CRITICAL RULES:
+- Your response must be ONLY a JSON array. No explanations, no markdown, no code fences.
+- Start your response with [ and end with ].
+- Do NOT wrap the JSON in \`\`\`json\`\`\` blocks.
+- If you cannot infer any policies, return an empty array: []`;
 
 export function buildPolicyInferencePrompt(chunks: string[]): {
   system: string;
@@ -57,7 +63,9 @@ export function buildPolicyInferencePrompt(chunks: string[]): {
 
 ${joined}
 
-위 데이터에서 추론 가능한 모든 비즈니스 정책을 JSON 배열로 출력해 주세요.`;
+위 데이터에서 추론 가능한 모든 비즈니스 정책을 JSON 배열로 출력해 주세요.
+
+IMPORTANT: 반드시 JSON 배열만 출력하세요. 설명이나 마크다운 없이 [ 로 시작하고 ] 로 끝나야 합니다.`;
 
   return { system: SYSTEM_PROMPT, userContent };
 }

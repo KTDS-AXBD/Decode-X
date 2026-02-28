@@ -48,9 +48,10 @@ export async function handleInferPolicies(
   }
 
   // 3. Parse JSON response into PolicyCandidate[]
+  const cleaned = extractJsonArray(rawContent);
   let candidates: PolicyCandidate[];
   try {
-    const jsonParsed: unknown = JSON.parse(rawContent);
+    const jsonParsed: unknown = JSON.parse(cleaned);
     if (!Array.isArray(jsonParsed)) {
       return badRequest("LLM returned non-array JSON");
     }
@@ -247,6 +248,29 @@ export async function handleGetPolicy(
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────
+
+/**
+ * Extract a JSON array from LLM output that may contain markdown fences or
+ * surrounding prose. Returns the cleaned string for JSON.parse().
+ */
+function extractJsonArray(raw: string): string {
+  let text = raw.trim();
+
+  // Strip markdown code fences: ```json ... ``` or ``` ... ```
+  const fenceMatch = /^```(?:json)?\s*\n?([\s\S]*?)\n?\s*```$/m.exec(text);
+  if (fenceMatch?.[1] != null) {
+    text = fenceMatch[1].trim();
+  }
+
+  // Extract first [ ... last ] span
+  const start = text.indexOf("[");
+  const end = text.lastIndexOf("]");
+  if (start !== -1 && end !== -1 && end > start) {
+    return text.slice(start, end + 1);
+  }
+
+  return text;
+}
 
 function formatPolicyRow(row: PolicyRow) {
   let tags: string[] = [];

@@ -22,3 +22,41 @@ ENVIRONMENT = "development"
 SERVICE_NAME = "svc-governance"
 # Secrets (set via `wrangler secret put`):
 # INTERNAL_API_SECRET
+
+# ---------------------------------------------------------------------------
+# Staging environment
+# ---------------------------------------------------------------------------
+[env.staging]
+vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-governance" }
+
+[[env.staging.d1_databases]]
+binding = "DB_GOVERNANCE"
+database_name = "db-governance-staging"
+database_id = "placeholder-staging-id"
+
+[[env.staging.kv_namespaces]]
+binding = "KV_PROMPTS"
+id = "placeholder-staging-kv-id"
+
+[[env.staging.services]]
+binding = "SECURITY"
+service = "svc-security"
+
+# ---------------------------------------------------------------------------
+# Production environment
+# ---------------------------------------------------------------------------
+[env.production]
+vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-governance" }
+
+[[env.production.d1_databases]]
+binding = "DB_GOVERNANCE"
+database_name = "db-governance"
+database_id = "6b2a5531-e78a-4d6b-9ca5-1ee284e47160"
+
+[[env.production.kv_namespaces]]
+binding = "KV_PROMPTS"
+id = "98ef788593e44f638a94cc7838f9a310"
+
+[[env.production.services]]
+binding = "SECURITY"
+service = "svc-security"

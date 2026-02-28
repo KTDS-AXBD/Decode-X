@@ -18,3 +18,33 @@ ENVIRONMENT = "development"
 SERVICE_NAME = "svc-analytics"
 # Secrets (set via `wrangler secret put`):
 # INTERNAL_API_SECRET
+
+# ---------------------------------------------------------------------------
+# Staging environment
+# ---------------------------------------------------------------------------
+[env.staging]
+vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-analytics" }
+
+[[env.staging.d1_databases]]
+binding = "DB_ANALYTICS"
+database_name = "db-analytics-staging"
+database_id = "placeholder-staging-id"
+
+[[env.staging.services]]
+binding = "SECURITY"
+service = "svc-security"
+
+# ---------------------------------------------------------------------------
+# Production environment
+# ---------------------------------------------------------------------------
+[env.production]
+vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-analytics" }
+
+[[env.production.d1_databases]]
+binding = "DB_ANALYTICS"
+database_name = "db-analytics"
+database_id = "fe12a186-99bd-418e-9b79-5cfafc8c24c1"
+
+[[env.production.services]]
+binding = "SECURITY"
+service = "svc-security"

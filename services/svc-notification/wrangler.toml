@@ -21,3 +21,33 @@ SERVICE_NAME = "svc-notification"
 # Secrets (set via `wrangler secret put`):
 # INTERNAL_API_SECRET
 # SLACK_WEBHOOK_URL (optional)
+
+# ---------------------------------------------------------------------------
+# Staging environment
+# ---------------------------------------------------------------------------
+[env.staging]
+vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-notification" }
+
+[[env.staging.d1_databases]]
+binding = "DB_NOTIFICATION"
+database_name = "db-notification-staging"
+database_id = "placeholder-staging-id"
+
+[[env.staging.queues.producers]]
+binding = "QUEUE_PIPELINE"
+queue = "ai-foundry-pipeline-staging"
+
+# ---------------------------------------------------------------------------
+# Production environment
+# ---------------------------------------------------------------------------
+[env.production]
+vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-notification" }
+
+[[env.production.d1_databases]]
+binding = "DB_NOTIFICATION"
+database_name = "db-notification"
+database_id = "1a6ef6a4-6087-4637-b4d8-4abc7ab2e1bf"
+
+[[env.production.queues.producers]]
+binding = "QUEUE_PIPELINE"
+queue = "ai-foundry-pipeline"

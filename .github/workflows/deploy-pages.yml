@@ -1,6 +1,7 @@
 name: Deploy app-web (Cloudflare Pages)
 
 on:
+  # Staging: auto-deploy on push to main
   push:
     branches: [main]
     paths:
@@ -8,14 +9,65 @@ on:
       - "packages/types/**"
       - ".github/workflows/deploy-pages.yml"
 
+  # Production: manual trigger or release
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+        default: staging
+
+  release:
+    types: [published]
+
+concurrency:
+  group: deploy-pages
+  cancel-in-progress: false
+
 jobs:
-  deploy:
-    name: Build & Deploy to Cloudflare Pages
+  prepare:
+    name: Prepare
     runs-on: ubuntu-latest
-    environment: production
+    outputs:
+      environment: ${{ steps.env.outputs.environment }}
+      pages_branch: ${{ steps.env.outputs.pages_branch }}
+    steps:
+      - name: Determine environment
+        id: env
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_ENV: ${{ github.event.inputs.environment }}
+        run: |
+          if [[ "$EVENT_NAME" == "release" ]]; then
+            echo "environment=production" >> "$GITHUB_OUTPUT"
+            echo "pages_branch=main" >> "$GITHUB_OUTPUT"
+          elif [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            echo "environment=${INPUT_ENV}" >> "$GITHUB_OUTPUT"
+            if [[ "$INPUT_ENV" == "production" ]]; then
+              echo "pages_branch=main" >> "$GITHUB_OUTPUT"
+            else
+              echo "pages_branch=staging" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "environment=staging" >> "$GITHUB_OUTPUT"
+            echo "pages_branch=staging" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy:
+    name: "Build & Deploy (${{ needs.prepare.outputs.environment }})"
+    runs-on: ubuntu-latest
+    needs: prepare
+    environment: ${{ needs.prepare.outputs.environment }}
     permissions:
       contents: read
       deployments: write
+    env:
+      DEPLOY_ENV: ${{ needs.prepare.outputs.environment }}
+      PAGES_BRANCH: ${{ needs.prepare.outputs.pages_branch }}
     steps:
       - uses: actions/checkout@v4
 
@@ -32,11 +84,23 @@ jobs:
       - name: Build app-web
         run: bun run build --filter=@ai-foundry/app-web
         working-directory: apps/app-web
+        env:
+          VITE_ENVIRONMENT: ${{ needs.prepare.outputs.environment }}
 
-      - name: Deploy to Cloudflare Pages
+      - name: Deploy to Cloudflare Pages (staging)
+        if: needs.prepare.outputs.environment == 'staging'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=ai-foundry-app-web
+          command: "pages deploy dist --project-name=ai-foundry-app-web --branch=staging"
+          workingDirectory: apps/app-web
+
+      - name: Deploy to Cloudflare Pages (production)
+        if: needs.prepare.outputs.environment == 'production'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: "pages deploy dist --project-name=ai-foundry-app-web --branch=main"
           workingDirectory: apps/app-web

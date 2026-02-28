@@ -33,3 +33,57 @@ ENVIRONMENT = "development"
 SERVICE_NAME = "svc-extraction"
 # Secrets (set via `wrangler secret put`):
 # INTERNAL_API_SECRET
+
+# ---------------------------------------------------------------------------
+# Staging environment
+# ---------------------------------------------------------------------------
+[env.staging]
+vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-extraction" }
+
+[[env.staging.d1_databases]]
+binding = "DB_EXTRACTION"
+database_name = "db-structure-staging"
+database_id = "placeholder-staging-id"
+
+[[env.staging.services]]
+binding = "SECURITY"
+service = "svc-security"
+
+[[env.staging.services]]
+binding = "LLM_ROUTER"
+service = "svc-llm-router"
+
+[[env.staging.queues.producers]]
+binding = "QUEUE_PIPELINE"
+queue = "ai-foundry-pipeline-staging"
+
+[[env.staging.services]]
+binding = "SVC_INGESTION"
+service = "svc-ingestion"
+
+# ---------------------------------------------------------------------------
+# Production environment
+# ---------------------------------------------------------------------------
+[env.production]
+vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-extraction" }
+
+[[env.production.d1_databases]]
+binding = "DB_EXTRACTION"
+database_name = "db-structure"
+database_id = "1f45eb0b-61ad-43b8-b898-0629a7e1a047"
+
+[[env.production.services]]
+binding = "SECURITY"
+service = "svc-security"
+
+[[env.production.services]]
+binding = "LLM_ROUTER"
+service = "svc-llm-router"
+
+[[env.production.queues.producers]]
+binding = "QUEUE_PIPELINE"
+queue = "ai-foundry-pipeline"
+
+[[env.production.services]]
+binding = "SVC_INGESTION"
+service = "svc-ingestion"

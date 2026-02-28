@@ -24,3 +24,33 @@ SERVICE_NAME = "svc-llm-router"
 # INTERNAL_API_SECRET — shared HMAC secret for inter-service auth
 # ANTHROPIC_API_KEY — Anthropic API key
 # CLOUDFLARE_AI_GATEWAY_URL — AI Gateway base URL
+
+# ---------------------------------------------------------------------------
+# Staging environment
+# ---------------------------------------------------------------------------
+[env.staging]
+vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-llm-router" }
+
+[[env.staging.d1_databases]]
+binding = "DB_LLM"
+database_name = "db-llm-staging"
+database_id = "placeholder-staging-id"
+
+[[env.staging.kv_namespaces]]
+binding = "KV_PROMPTS"
+id = "placeholder-staging-kv-id"
+
+# ---------------------------------------------------------------------------
+# Production environment
+# ---------------------------------------------------------------------------
+[env.production]
+vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-llm-router" }
+
+[[env.production.d1_databases]]
+binding = "DB_LLM"
+database_name = "db-llm"
+database_id = "d50fc742-ace7-4875-a1c6-948aa3e5eb42"
+
+[[env.production.kv_namespaces]]
+binding = "KV_PROMPTS"
+id = "98ef788593e44f638a94cc7838f9a310"

@@ -29,5 +29,53 @@ ENVIRONMENT = "development"
 SERVICE_NAME = "svc-ontology"
 # Secrets (set via `wrangler secret put`):
 # INTERNAL_API_SECRET
-# NEO4J_URI
-# NEO4J_PASSWORD
+# NEO4J_URI        — HTTPS endpoint (e.g. https://xxx.databases.neo4j.io:7474)
+# NEO4J_USERNAME   — Aura instance username
+# NEO4J_PASSWORD   — Aura instance password
+# NEO4J_DATABASE   — Aura database name
+
+# ---------------------------------------------------------------------------
+# Staging environment
+# ---------------------------------------------------------------------------
+[env.staging]
+vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-ontology" }
+
+[[env.staging.d1_databases]]
+binding = "DB_ONTOLOGY"
+database_name = "db-ontology-staging"
+database_id = "placeholder-staging-id"
+
+[[env.staging.services]]
+binding = "SECURITY"
+service = "svc-security"
+
+[[env.staging.services]]
+binding = "LLM_ROUTER"
+service = "svc-llm-router"
+
+[[env.staging.queues.producers]]
+binding = "QUEUE_PIPELINE"
+queue = "ai-foundry-pipeline-staging"
+
+# ---------------------------------------------------------------------------
+# Production environment
+# ---------------------------------------------------------------------------
+[env.production]
+vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-ontology" }
+
+[[env.production.d1_databases]]
+binding = "DB_ONTOLOGY"
+database_name = "db-ontology"
+database_id = "88cda338-c89e-4b4e-843a-7489d9b268ee"
+
+[[env.production.services]]
+binding = "SECURITY"
+service = "svc-security"
+
+[[env.production.services]]
+binding = "LLM_ROUTER"
+service = "svc-llm-router"
+
+[[env.production.queues.producers]]
+binding = "QUEUE_PIPELINE"
+queue = "ai-foundry-pipeline"

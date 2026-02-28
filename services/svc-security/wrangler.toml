@@ -14,3 +14,25 @@ SERVICE_NAME = "svc-security"
 # Secrets (set via `wrangler secret put`):
 # INTERNAL_API_SECRET
 # JWT_SECRET
+
+# ---------------------------------------------------------------------------
+# Staging environment
+# ---------------------------------------------------------------------------
+[env.staging]
+vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-security" }
+
+[[env.staging.d1_databases]]
+binding = "DB_SECURITY"
+database_name = "db-security-staging"
+database_id = "placeholder-staging-id"
+
+# ---------------------------------------------------------------------------
+# Production environment
+# ---------------------------------------------------------------------------
+[env.production]
+vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-security" }
+
+[[env.production.d1_databases]]
+binding = "DB_SECURITY"
+database_name = "db-security"
+database_id = "474a33f4-2a01-4a1d-8121-1e5ebd1123ca"

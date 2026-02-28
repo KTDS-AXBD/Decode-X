@@ -33,3 +33,57 @@ ENVIRONMENT = "development"
 SERVICE_NAME = "svc-skill"
 # Secrets (set via `wrangler secret put`):
 # INTERNAL_API_SECRET
+
+# ---------------------------------------------------------------------------
+# Staging environment
+# ---------------------------------------------------------------------------
+[env.staging]
+vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-skill" }
+
+[[env.staging.d1_databases]]
+binding = "DB_SKILL"
+database_name = "db-skill-staging"
+database_id = "placeholder-staging-id"
+
+[[env.staging.r2_buckets]]
+binding = "R2_SKILL_PACKAGES"
+bucket_name = "ai-foundry-skill-packages-staging"
+
+[[env.staging.services]]
+binding = "SECURITY"
+service = "svc-security"
+
+[[env.staging.services]]
+binding = "LLM_ROUTER"
+service = "svc-llm-router"
+
+[[env.staging.queues.producers]]
+binding = "QUEUE_PIPELINE"
+queue = "ai-foundry-pipeline-staging"
+
+# ---------------------------------------------------------------------------
+# Production environment
+# ---------------------------------------------------------------------------
+[env.production]
+vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-skill" }
+
+[[env.production.d1_databases]]
+binding = "DB_SKILL"
+database_name = "db-skill"
+database_id = "a3f582ba-21b6-4008-9c41-deed94f9d237"
+
+[[env.production.r2_buckets]]
+binding = "R2_SKILL_PACKAGES"
+bucket_name = "ai-foundry-skill-packages"
+
+[[env.production.services]]
+binding = "SECURITY"
+service = "svc-security"
+
+[[env.production.services]]
+binding = "LLM_ROUTER"
+service = "svc-llm-router"
+
+[[env.production.queues.producers]]
+binding = "QUEUE_PIPELINE"
+queue = "ai-foundry-pipeline"

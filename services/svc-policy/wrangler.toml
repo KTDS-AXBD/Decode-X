@@ -45,3 +45,75 @@ ENVIRONMENT = "development"
 SERVICE_NAME = "svc-policy"
 # Secrets (set via `wrangler secret put`):
 # INTERNAL_API_SECRET
+
+# ---------------------------------------------------------------------------
+# Staging environment
+# ---------------------------------------------------------------------------
+[env.staging]
+vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-policy" }
+
+[[env.staging.d1_databases]]
+binding = "DB_POLICY"
+database_name = "db-policy-staging"
+database_id = "placeholder-staging-id"
+
+[[env.staging.services]]
+binding = "SECURITY"
+service = "svc-security"
+
+[[env.staging.services]]
+binding = "LLM_ROUTER"
+service = "svc-llm-router"
+
+[[env.staging.services]]
+binding = "NOTIFICATION"
+service = "svc-notification"
+
+[[env.staging.durable_objects.bindings]]
+name = "HITL_SESSION"
+class_name = "HitlSession"
+script_name = "svc-policy"
+
+[[env.staging.migrations]]
+tag = "v1"
+new_classes = ["HitlSession"]
+
+[[env.staging.queues.producers]]
+binding = "QUEUE_PIPELINE"
+queue = "ai-foundry-pipeline-staging"
+
+# ---------------------------------------------------------------------------
+# Production environment
+# ---------------------------------------------------------------------------
+[env.production]
+vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-policy" }
+
+[[env.production.d1_databases]]
+binding = "DB_POLICY"
+database_name = "db-policy"
+database_id = "e27a4335-7212-4859-8f7e-55cf8d464c8e"
+
+[[env.production.services]]
+binding = "SECURITY"
+service = "svc-security"
+
+[[env.production.services]]
+binding = "LLM_ROUTER"
+service = "svc-llm-router"
+
+[[env.production.services]]
+binding = "NOTIFICATION"
+service = "svc-notification"
+
+[[env.production.durable_objects.bindings]]
+name = "HITL_SESSION"
+class_name = "HitlSession"
+script_name = "svc-policy"
+
+[[env.production.migrations]]
+tag = "v1"
+new_classes = ["HitlSession"]
+
+[[env.production.queues.producers]]
+binding = "QUEUE_PIPELINE"
+queue = "ai-foundry-pipeline"

@@ -43,3 +43,81 @@ ENVIRONMENT = "development"
 SERVICE_NAME = "svc-queue-router"
 # Secrets (set via `wrangler secret put`):
 # INTERNAL_API_SECRET
+
+# ---------------------------------------------------------------------------
+# Staging environment
+# ---------------------------------------------------------------------------
+[env.staging]
+vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-queue-router" }
+
+[[env.staging.queues.consumers]]
+queue = "ai-foundry-pipeline-staging"
+max_batch_size = 10
+max_batch_timeout = 30
+
+[[env.staging.services]]
+binding = "SVC_INGESTION"
+service = "svc-ingestion"
+
+[[env.staging.services]]
+binding = "SVC_EXTRACTION"
+service = "svc-extraction"
+
+[[env.staging.services]]
+binding = "SVC_POLICY"
+service = "svc-policy"
+
+[[env.staging.services]]
+binding = "SVC_ONTOLOGY"
+service = "svc-ontology"
+
+[[env.staging.services]]
+binding = "SVC_SKILL"
+service = "svc-skill"
+
+[[env.staging.services]]
+binding = "SVC_NOTIFICATION"
+service = "svc-notification"
+
+[[env.staging.services]]
+binding = "SVC_ANALYTICS"
+service = "svc-analytics"
+
+# ---------------------------------------------------------------------------
+# Production environment
+# ---------------------------------------------------------------------------
+[env.production]
+vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-queue-router" }
+
+[[env.production.queues.consumers]]
+queue = "ai-foundry-pipeline"
+max_batch_size = 10
+max_batch_timeout = 30
+
+[[env.production.services]]
+binding = "SVC_INGESTION"
+service = "svc-ingestion"
+
+[[env.production.services]]
+binding = "SVC_EXTRACTION"
+service = "svc-extraction"
+
+[[env.production.services]]
+binding = "SVC_POLICY"
+service = "svc-policy"
+
+[[env.production.services]]
+binding = "SVC_ONTOLOGY"
+service = "svc-ontology"
+
+[[env.production.services]]
+binding = "SVC_SKILL"
+service = "svc-skill"
+
+[[env.production.services]]
+binding = "SVC_NOTIFICATION"
+service = "svc-notification"
+
+[[env.production.services]]
+binding = "SVC_ANALYTICS"
+service = "svc-analytics"

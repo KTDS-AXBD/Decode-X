@@ -6,6 +6,9 @@ export interface Env {
   SECURITY: Fetcher;
   LLM_ROUTER: Fetcher;
 
+  // Queue producer for pipeline events
+  QUEUE_PIPELINE: Queue;
+
   // Vars
   ENVIRONMENT: string;
   SERVICE_NAME: string;

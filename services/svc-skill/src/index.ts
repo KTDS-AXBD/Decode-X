@@ -11,17 +11,25 @@
  *   e.g. POL-PENSION-WD-HOUSING-001
  */
 
-import { createLogger, unauthorized } from "@ai-foundry/utils";
+import {
+  createLogger,
+  unauthorized,
+  extractRbacContext,
+  checkPermission,
+  logAudit,
+} from "@ai-foundry/utils";
 import type { ExportedHandler } from "@cloudflare/workers-types";
 import type { Env } from "./env.js";
-
-const NOT_IMPLEMENTED = JSON.stringify({
-  success: false,
-  error: { code: "NOT_IMPLEMENTED", message: "Not implemented" },
-});
+import {
+  handleCreateSkill,
+  handleListSkills,
+  handleGetSkill,
+  handleDownloadSkill,
+} from "./routes/skills.js";
+import { handleQueueBatch } from "./queue/handler.js";
 
 export default {
-  async fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const logger = createLogger("svc-skill");
     const url = new URL(request.url);
     const method = request.method;
@@ -43,17 +51,81 @@ export default {
     }
 
     try {
-      // POST /skills          — package a new Skill from confirmed policies
-      // GET  /skills          — list Skill packages in the catalog
-      // GET  /skills/:id      — retrieve Skill package metadata
-      // GET  /skills/:id/download — download the .skill.json from R2
-      return new Response(NOT_IMPLEMENTED, {
-        status: 501,
-        headers: { "Content-Type": "application/json" },
-      });
+      // POST /skills — package a new Skill from confirmed policies
+      if (method === "POST" && path === "/skills") {
+        const rbacCtx = extractRbacContext(request);
+        if (rbacCtx) {
+          const denied = await checkPermission(env, rbacCtx.role, "skill", "create");
+          if (denied) return denied;
+          ctx.waitUntil(
+            logAudit(env, {
+              userId: rbacCtx.userId,
+              organizationId: rbacCtx.organizationId,
+              action: "create",
+              resource: "skill",
+            }),
+          );
+        }
+        return await handleCreateSkill(request, env, ctx);
+      }
+
+      // GET /skills — list Skill packages in the catalog
+      if (method === "GET" && path === "/skills") {
+        const rbacCtx = extractRbacContext(request);
+        if (rbacCtx) {
+          const denied = await checkPermission(env, rbacCtx.role, "skill", "read");
+          if (denied) return denied;
+        }
+        return await handleListSkills(request, env);
+      }
+
+      // Match /skills/:id and /skills/:id/download
+      const skillMatch = path.match(/^\/skills\/([^/]+)(?:\/([^/]+))?$/);
+      if (skillMatch) {
+        const skillId = skillMatch[1];
+        if (!skillId) {
+          return new Response("Not Found", { status: 404 });
+        }
+        const subpath = skillMatch[2]; // "download" | undefined
+
+        // GET /skills/:id/download
+        if (method === "GET" && subpath === "download") {
+          const rbacCtx = extractRbacContext(request);
+          if (rbacCtx) {
+            const denied = await checkPermission(env, rbacCtx.role, "skill", "download");
+            if (denied) return denied;
+            ctx.waitUntil(
+              logAudit(env, {
+                userId: rbacCtx.userId,
+                organizationId: rbacCtx.organizationId,
+                action: "download",
+                resource: "skill",
+                resourceId: skillId,
+              }),
+            );
+          }
+          return await handleDownloadSkill(request, env, skillId, ctx);
+        }
+
+        // GET /skills/:id
+        if (method === "GET" && !subpath) {
+          const rbacCtx = extractRbacContext(request);
+          if (rbacCtx) {
+            const denied = await checkPermission(env, rbacCtx.role, "skill", "read");
+            if (denied) return denied;
+          }
+          return await handleGetSkill(request, env, skillId);
+        }
+      }
+
+      return new Response("Not Found", { status: 404 });
     } catch (e) {
       logger.error("Unhandled error", { error: String(e), path, method });
       return new Response("Internal Server Error", { status: 500 });
     }
+  },
+
+  async queue(batch: MessageBatch, env: Env, ctx: ExecutionContext): Promise<void> {
+    await handleQueueBatch(batch, env, ctx);
   },
 } satisfies ExportedHandler<Env>;

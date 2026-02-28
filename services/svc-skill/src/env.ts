@@ -5,6 +5,9 @@ export interface Env {
   // R2 bucket for .skill.json package storage
   R2_SKILL_PACKAGES: R2Bucket;
 
+  // Queue producer for pipeline events
+  QUEUE_PIPELINE: Queue;
+
   // Service bindings
   SECURITY: Fetcher;
   LLM_ROUTER: Fetcher;

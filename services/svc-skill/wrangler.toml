@@ -22,6 +22,15 @@ service = "svc-security"
 binding = "LLM_ROUTER"
 service = "svc-llm-router"
 
+[[queues.consumers]]
+queue = "ai-foundry-pipeline"
+max_batch_size = 5
+max_batch_timeout = 30
+
+[[queues.producers]]
+binding = "QUEUE_PIPELINE"
+queue = "ai-foundry-pipeline"
+
 [vars]
 ENVIRONMENT = "development"
 SERVICE_NAME = "svc-skill"

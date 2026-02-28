@@ -41,7 +41,7 @@ const CreateSkillRequestSchema = z.object({
 
 // ── D1 row type ───────────────────────────────────────────────────────
 
-interface SkillRow {
+export interface SkillRow {
   skill_id: string;
   ontology_id: string;
   domain: string;
@@ -282,7 +282,7 @@ export async function handleDownloadSkill(
 
 // ── Helpers ───────────────────────────────────────────────────────────
 
-function parseTags(raw: string): string[] {
+export function parseTags(raw: string): string[] {
   try {
     const parsed: unknown = JSON.parse(raw);
     if (Array.isArray(parsed)) {
@@ -294,7 +294,7 @@ function parseTags(raw: string): string[] {
   return [];
 }
 
-function rowToSummary(row: SkillRow): SkillSummary & { status: string } {
+export function rowToSummary(row: SkillRow): SkillSummary & { status: string } {
   return {
     skillId: row.skill_id,
     metadata: {
@@ -317,7 +317,7 @@ function rowToSummary(row: SkillRow): SkillSummary & { status: string } {
   };
 }
 
-function rowToDetail(row: SkillRow) {
+export function rowToDetail(row: SkillRow) {
   return {
     ...rowToSummary(row),
     ontologyId: row.ontology_id,

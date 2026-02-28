@@ -177,7 +177,7 @@ export async function handleInferPolicies(
 
 // ── GET /policies ───────────────────────────────────────────────────
 
-interface PolicyRow {
+export interface PolicyRow {
   policy_id: string;
   extraction_id: string;
   organization_id: string;
@@ -255,7 +255,7 @@ export async function handleGetPolicy(
  * Extract a JSON array from LLM output that may contain markdown fences or
  * surrounding prose. Returns the cleaned string for JSON.parse().
  */
-function extractJsonArray(raw: string): string {
+export function extractJsonArray(raw: string): string {
   let text = raw.trim();
 
   // Strip markdown code fences: ```json ... ``` or ``` ... ```
@@ -274,7 +274,7 @@ function extractJsonArray(raw: string): string {
   return text;
 }
 
-function formatPolicyRow(row: PolicyRow) {
+export function formatPolicyRow(row: PolicyRow) {
   let tags: string[] = [];
   try {
     const parsed: unknown = JSON.parse(row.tags);

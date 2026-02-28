@@ -29,7 +29,7 @@ export interface SkillBuildParams {
  * Uses the average of all policy scores.
  * Trust level is determined by the minimum trust level across all policies.
  */
-function aggregateTrust(policies: Policy[]): TrustScore {
+export function aggregateTrust(policies: Policy[]): TrustScore {
   if (policies.length === 0) {
     return { level: "unreviewed", score: 0 };
   }

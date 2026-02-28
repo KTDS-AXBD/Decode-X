@@ -103,7 +103,7 @@ export async function handleGetMcpAdapter(
 
 // ── Transformation ───────────────────────────────────────────────────
 
-function toMcpAdapter(pkg: SkillPackage): McpAdapter {
+export function toMcpAdapter(pkg: SkillPackage): McpAdapter {
   const { metadata } = pkg;
   const subdomain = metadata.subdomain;
   const nameSuffix = subdomain

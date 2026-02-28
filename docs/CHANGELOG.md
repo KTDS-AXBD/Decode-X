@@ -2,6 +2,31 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 010 — 2026-02-28
+
+- ✅ **G-02 E2E 파이프라인 통합 테스트** — 이벤트 체인 3건 버그 수정 + E2E 스크립트
+  - BUG-1: svc-ingestion `ingestion.completed` 이벤트 미발행 → ctx 추가 + QUEUE_PIPELINE.send()
+  - BUG-2: svc-extraction 실제 청크 미조회 + `extraction.completed` 미발행 → SVC_INGESTION 바인딩 + 이벤트 발행
+  - BUG-3: DB 스키마 `extraction_id → id` 불일치 + `organization_id` NOT NULL 대응
+  - `packages/types/src/events.ts`: IngestionCompletedEventSchema 추가
+  - `infra/migrations/db-structure/0002_fix_schema.sql`: 컬럼 rename + missing columns
+  - `services/svc-ingestion/src/queue.ts`: ctx 추가 + ingestion.completed 발행
+  - `services/svc-ingestion/src/index.ts`: GET /documents/:id/chunks 엔드포인트 추가
+  - `services/svc-extraction/wrangler.toml` + `env.ts`: QUEUE_PIPELINE + SVC_INGESTION 바인딩
+  - `services/svc-extraction/src/queue/handler.ts`: 전면 리팩토링 (fetchChunks + 이벤트 발행)
+  - `services/svc-extraction/src/routes/extract.ts`: extraction.completed 이벤트 발행 + organizationId
+  - `services/svc-queue-router/src/index.ts`: ingestion.completed → SVC_EXTRACTION 라우팅
+  - `scripts/test-e2e-pipeline.sh`: 8단계 하이브리드 E2E 테스트
+- ✅ 3개 서비스 재배포 (svc-queue-router, svc-ingestion, svc-extraction) + DB 마이그레이션 적용
+- ✅ INTERNAL_API_SECRET 전 서비스 변경 (`e2e-test-secret-2026`)
+- ⚠️ svc-policy LLM 프롬프트 이슈 잔여 (Opus가 non-JSON 반환 → E2E Stage 4 실패)
+
+**검증**
+- typecheck: 16/16 pass
+- E2E: Stage 1-3 PASS, Stage 4 FAIL (policy LLM prompt issue)
+
+---
+
 ## 세션 009 — 2026-02-28
 
 - ✅ **G-01 Queue Router + 전 서비스 배포**

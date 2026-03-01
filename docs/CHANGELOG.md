@@ -2,6 +2,15 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 024 — 2026-03-01
+
+**커스텀 도메인 설정 + 파이프라인 개선**:
+- ✅ Cloudflare Pages 커스텀 도메인 `ai-foundry.minu.best` 설정 (DNS CNAME + SSL 자동 발급)
+- ✅ `ExtractionCompletedEvent`에 `organizationId` 필드 추가 (이벤트 스키마 + 전 서비스 연동)
+- ✅ 파이프라인 제한값 증가: ingestion MAX_ELEMENTS 50→200, extraction MAX_CHUNKS 5→20, MAX_CHUNK_CHARS 3000→4000
+- ✅ svc-policy: `startingSeq` 도입으로 정책 코드 중복 방지
+- ✅ deploy-pages.yml: project-name `ai-foundry-app-web` → `ai-foundry-web` 수정
+
 ## 세션 023 — 2026-03-01
 
 **Frontend 전면 마이그레이션 — Tailwind CSS v4 + shadcn/ui 디자인 시스템**:

@@ -2,6 +2,22 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 023 — 2026-03-01
+
+**Frontend 전면 마이그레이션 — Tailwind CSS v4 + shadcn/ui 디자인 시스템**:
+- ✅ Phase 1: Tailwind CSS v4 + @tailwindcss/vite + CSS 변수 테마 시스템 + ThemeContext (다크모드)
+- ✅ Phase 2: shadcn/ui 프리미티브 21개 복사 + strict TS 수정
+- ✅ Phase 3: Sidebar + Layout 래퍼 + React Router 12개 라우트 (lazy loading)
+- ✅ Phase 4: API 연동 페이지 6개 (Dashboard, Upload, Analysis, HITL, Skills, Audit)
+- ✅ Phase 5: Mock 데이터 페이지 4개 (Ontology, API Console, Trust Dashboard, Settings)
+- ✅ Phase 6: 8개 레거시 페이지 삭제 + Login/404 리프레시 + strict TS 에러 10건 수정
+- ✅ 비즈니스 컴포넌트 11개 추가 (AuditLogTable, TrustGaugeCard, PolicyQualityChart 등)
+
+**검증**:
+- ✅ TypeScript typecheck PASS (0 errors)
+- ✅ Vite production build 성공 (2.7s, 10개 페이지 코드 스플릿)
+- ✅ 67 files changed, +6,199 / -4,514 lines
+
 ## 세션 022 — 2026-03-01
 
 **큐 핸들러 3개 구현 + 자동 파이프라인 검증**:

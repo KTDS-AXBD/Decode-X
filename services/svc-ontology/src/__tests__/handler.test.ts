@@ -2,7 +2,35 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { processQueueEvent } from "../queue/handler.js";
 import type { Env } from "../env.js";
 
+// ── Mock neo4j ──────────────────────────────────────────────────
+vi.mock("../neo4j/client.js", () => ({
+  neo4jQuery: vi.fn().mockResolvedValue({ results: [], errors: [] }),
+}));
+
 // ── Helpers ──────────────────────────────────────────────────────
+
+const MOCK_POLICY_RESPONSE = {
+  success: true,
+  data: {
+    policyId: "pol-123",
+    extractionId: "ext-1",
+    organizationId: "org-test",
+    policyCode: "POL-PENSION-WD-001",
+    title: "퇴직연금 중도인출 정책",
+    condition: "무주택 세대주이면서 퇴직연금 가입기간이 5년 이상인 근로자",
+    criteria: "주민등록등본으로 무주택 확인",
+    outcome: "적립금의 50% 범위 내에서 중도인출 허용",
+    sourceDocumentId: "doc-1",
+    sourcePageRef: null,
+    sourceExcerpt: null,
+    status: "approved",
+    trustLevel: "reviewed",
+    trustScore: 0.75,
+    tags: ["퇴직연금"],
+    createdAt: "2026-02-01T12:00:00Z",
+    updatedAt: "2026-02-01T12:00:00Z",
+  },
+};
 
 function mockDb(overrides?: {
   runError?: Error;
@@ -30,7 +58,11 @@ function mockEnv(dbOverrides?: Parameters<typeof mockDb>[0]): Env {
       ),
     } as unknown as Fetcher,
     LLM_ROUTER: { fetch: vi.fn() } as unknown as Fetcher,
-    SVC_POLICY: { fetch: vi.fn().mockResolvedValue(new Response("{}")) } as unknown as Fetcher,
+    SVC_POLICY: {
+      fetch: vi.fn().mockResolvedValue(
+        new Response(JSON.stringify(MOCK_POLICY_RESPONSE), { status: 200 }),
+      ),
+    } as unknown as Fetcher,
     QUEUE_PIPELINE: { send: vi.fn().mockResolvedValue(undefined) } as unknown as Queue,
     ENVIRONMENT: "development",
     SERVICE_NAME: "svc-ontology",
@@ -248,53 +280,49 @@ describe("processQueueEvent", () => {
       type: string;
       ontologyId: string;
       policyId: string;
+      termCount: number;
     };
     expect(body.status).toBe("processed");
     expect(body.eventId).toBe("550e8400-e29b-41d4-a716-446655440000");
     expect(body.type).toBe("policy.approved");
     expect(body.policyId).toBe("pol-123");
     expect(body.ontologyId).toBeDefined();
+    expect(body.termCount).toBeGreaterThan(0);
   });
 
-  it("inserts ontology record with pending status", async () => {
+  it("fetches policy from svc-policy via service binding", async () => {
     const event = makePolicyApprovedEvent({
       eventId: "550e8400-e29b-41d4-a716-446655440000",
     });
     await processQueueEvent(event, env, ctx);
 
-    expect(env.DB_ONTOLOGY.prepare).toHaveBeenCalledOnce();
-    const prepareMock = env.DB_ONTOLOGY.prepare as ReturnType<typeof vi.fn>;
-    const sql = prepareMock.mock.calls[0]?.[0] as string;
-    expect(sql).toContain("INSERT INTO ontologies");
-    expect(sql).toContain("pending");
+    const fetchMock = env.SVC_POLICY.fetch as ReturnType<typeof vi.fn>;
+    expect(fetchMock).toHaveBeenCalledOnce();
+    const [url, opts] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("http://internal/policies/pol-123");
+    expect((opts.headers as Record<string, string>)["X-Internal-Secret"]).toBe("test-secret");
   });
 
-  it("sets organization_id to 'system' for queue-originated events", async () => {
+  it("inserts ontology record with processing status", async () => {
     const event = makePolicyApprovedEvent({
       eventId: "550e8400-e29b-41d4-a716-446655440000",
     });
     await processQueueEvent(event, env, ctx);
 
     const prepareMock = env.DB_ONTOLOGY.prepare as ReturnType<typeof vi.fn>;
-    const bindMock = prepareMock.mock.results[0]?.value.bind as ReturnType<typeof vi.fn>;
-    const bindArgs = bindMock.mock.calls[0] as unknown[];
-    // bind args: ontologyId, policyId, "system", skosConceptScheme, now
-    expect(bindArgs[2]).toBe("system");
+    const firstSql = prepareMock.mock.calls[0]?.[0] as string;
+    expect(firstSql).toContain("INSERT INTO ontologies");
+    expect(firstSql).toContain("processing");
   });
 
-  it("generates SKOS concept scheme URI", async () => {
+  it("extracts terms from policy text", async () => {
     const event = makePolicyApprovedEvent({
       eventId: "550e8400-e29b-41d4-a716-446655440000",
     });
     const res = await processQueueEvent(event, env, ctx);
-    const body = await res.json() as { ontologyId: string };
-
-    const prepareMock = env.DB_ONTOLOGY.prepare as ReturnType<typeof vi.fn>;
-    const bindMock = prepareMock.mock.results[0]?.value.bind as ReturnType<typeof vi.fn>;
-    const bindArgs = bindMock.mock.calls[0] as unknown[];
-    // bind args: ontologyId, policyId, "system", skosConceptScheme, now
-    const skosScheme = bindArgs[3] as string;
-    expect(skosScheme).toBe(`urn:aif:scheme:${body.ontologyId}`);
+    const body = await res.json() as { termCount: number };
+    // The mock policy has Korean terms in condition/criteria/outcome
+    expect(body.termCount).toBeGreaterThan(0);
   });
 
   it("emits ontology.normalized event to queue", async () => {
@@ -303,8 +331,7 @@ describe("processQueueEvent", () => {
     });
     await processQueueEvent(event, env, ctx);
 
-    expect(ctx.waitUntil).toHaveBeenCalledOnce();
-    expect(env.QUEUE_PIPELINE.send).toHaveBeenCalledOnce();
+    expect(env.QUEUE_PIPELINE.send).toHaveBeenCalled();
 
     const sendMock = env.QUEUE_PIPELINE.send as ReturnType<typeof vi.fn>;
     const sentEvent = sendMock.mock.calls[0]?.[0] as {
@@ -315,36 +342,38 @@ describe("processQueueEvent", () => {
     };
     expect(sentEvent.type).toBe("ontology.normalized");
     expect(sentEvent.payload.policyId).toBe("pol-123");
-    expect(sentEvent.payload.termCount).toBe(0);
+    expect(sentEvent.payload.termCount).toBeGreaterThan(0);
     expect(sentEvent.eventId).toBeDefined();
     expect(sentEvent.occurredAt).toBeDefined();
   });
 
-  it("sets termCount to 0 in the emitted event (bootstrap only)", async () => {
+  // ── Error handling ────────────────────────────────────────────
+
+  it("returns error when policy fetch fails", async () => {
+    const failEnv = mockEnv();
+    (failEnv.SVC_POLICY.fetch as ReturnType<typeof vi.fn>).mockResolvedValue(
+      new Response("Not found", { status: 404 }),
+    );
     const event = makePolicyApprovedEvent({
       eventId: "550e8400-e29b-41d4-a716-446655440000",
     });
-    await processQueueEvent(event, env, ctx);
-
-    const sendMock = env.QUEUE_PIPELINE.send as ReturnType<typeof vi.fn>;
-    const sentEvent = sendMock.mock.calls[0]?.[0] as {
-      payload: { termCount: number };
-    };
-    expect(sentEvent.payload.termCount).toBe(0);
+    const res = await processQueueEvent(event, failEnv, ctx);
+    expect(res.status).toBe(200);
+    const body = await res.json() as { status: string; reason: string };
+    expect(body.status).toBe("error");
+    expect(body.reason).toContain("Policy fetch failed");
   });
 
-  // ── Error handling ────────────────────────────────────────────
-
-  it("returns 500 when D1 insert fails", async () => {
+  it("returns error when D1 ontology insert fails", async () => {
     const failEnv = mockEnv({ runError: new Error("D1 write failed") });
     const event = makePolicyApprovedEvent({
       eventId: "550e8400-e29b-41d4-a716-446655440000",
     });
     const res = await processQueueEvent(event, failEnv, ctx);
-    expect(res.status).toBe(500);
-    const body = await res.json() as { error: string; details: string };
-    expect(body.error).toBe("Processing failed");
-    expect(body.details).toContain("D1 write failed");
+    expect(res.status).toBe(200);
+    const body = await res.json() as { status: string; reason: string };
+    expect(body.status).toBe("error");
+    expect(body.reason).toContain("D1 insert failed");
   });
 
   it("does not emit queue event when D1 insert fails", async () => {

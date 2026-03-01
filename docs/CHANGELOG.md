@@ -2,6 +2,17 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 020 — 2026-03-01
+
+- ✅ **Plugin/프로젝트 스킬 정리** — session-toolkit 플러그인과 중복되는 5개 프로젝트 스킬 삭제 (s-start, s-end, lint, git-sync, team)
+  - Plugin 우선 원칙: 범용 기능은 plugin에 위임, 프로젝트 전용 로직만 유지
+  - 유지: deploy(Cloudflare 전용), sync(SPEC↔GitHub), db-migrate(D1)
+- ✅ **스킬 디렉토리 정리** — 잘못 배치된 figma-wireframe-full.png 삭제
+- ✅ **CLAUDE.md 갱신** — Skills & Agents 섹션을 Plugin/프로젝트 구분으로 재구성
+
+**검증**
+- 스킬 목록: Plugin 6개(session-toolkit) + 프로젝트 3개(deploy, sync, db-migrate) 정상 인식
+
 ## 세션 019 — 2026-03-01
 
 - ✅ **Staging Service Binding 수정** — 9개 wrangler.toml의 `[env.staging]` service binding에 `-staging` 접미사 추가 (19 binding + 1 DO script_name)

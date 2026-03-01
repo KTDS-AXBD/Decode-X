@@ -11,7 +11,7 @@
 - **Repo**: `AX-BD-Team/res-ai-foundry`
 - **Goal**: SI 산출물에서 암묵지를 추출해 재사용 가능한 Skill 자산으로 패키징
 - **Domain Pilot**: 퇴직연금
-- **Current Phase**: Pre-development (초기 스캐폴딩 완료)
+- **Current Phase**: Phase 1 완료 → Phase 2 준비
 
 ---
 

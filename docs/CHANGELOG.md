@@ -2,6 +2,20 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 021 — 2026-03-01
+
+**Claude Code 자동화 구축 + CLAUDE.md 갱신**:
+- ✅ `.mcp.json` 생성 — context7 MCP (라이브러리 실시간 문서 조회)
+- ✅ PreToolUse 훅 추가 — 시크릿 하드코딩 차단 (7개 시크릿명 패턴)
+- ✅ PostToolUse 훅 추가 — migration 파일 변경 시 알림
+- ✅ `/secrets-check` 스킬 — 환경별 wrangler secrets 상태 검증
+- ✅ `/e2e-pipeline` 스킬 — 5-Stage 파이프라인 E2E 테스트 실행
+- ✅ `wrangler-config-reviewer` 에이전트 — 11개 서비스 wrangler.toml 일관성 검증
+- ✅ CLAUDE.md 갱신 — Phase 1 완료 상태, svc-queue-router, 새 스킬/에이전트/훅/MCP 문서화
+
+**검증**
+- 전체 자동화: MCP 1개, 훅 2개, 스킬 2개, 에이전트 1개 추가
+
 ## 세션 020 — 2026-03-01
 
 - ✅ **Plugin/프로젝트 스킬 정리** — session-toolkit 플러그인과 중복되는 5개 프로젝트 스킬 삭제 (s-start, s-end, lint, git-sync, team)

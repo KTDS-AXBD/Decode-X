@@ -13,20 +13,53 @@
 #   - DB migrations applied (infra/migrations/db-structure/0002_fix_schema.sql)
 #
 # Usage (use single quotes if secret contains special chars):
-#   INTERNAL_API_SECRET='your-secret' ./scripts/test-e2e-pipeline.sh
+#   INTERNAL_API_SECRET='your-secret' ./scripts/test-e2e-pipeline.sh [OPTIONS]
+#
+# Options:
+#   --staging       Use staging environment URLs (svc-*-staging.*.workers.dev)
+#   --real-doc <path>  Upload a real document file instead of synthetic text
+#   --json          Output results as JSON report to stdout
+#   --wait-queue    Wait for queue-driven pipeline (longer polls, no manual calls)
 # =============================================================================
 
 set -uo pipefail
 
+# --- Parse CLI flags ---
+ENV_MODE="production"
+REAL_DOC_PATH=""
+JSON_OUTPUT=false
+WAIT_QUEUE=false
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --staging) ENV_MODE="staging"; shift ;;
+    --real-doc) REAL_DOC_PATH="$2"; shift 2 ;;
+    --json) JSON_OUTPUT=true; shift ;;
+    --wait-queue) WAIT_QUEUE=true; shift ;;
+    *) echo "Unknown option: $1"; exit 1 ;;
+  esac
+done
+
 # --- Config ---
-BASE="https://svc-ingestion.sinclair-account.workers.dev"
-EXTRACTION_BASE="https://svc-extraction.sinclair-account.workers.dev"
-POLICY_BASE="https://svc-policy.sinclair-account.workers.dev"
-ONTOLOGY_BASE="https://svc-ontology.sinclair-account.workers.dev"
-SKILL_BASE="https://svc-skill.sinclair-account.workers.dev"
+ACCOUNT_SUBDOMAIN="sinclair-account"
+if [ "$ENV_MODE" = "staging" ]; then
+  SUFFIX="-staging"
+else
+  SUFFIX=""
+fi
+
+BASE="https://svc-ingestion${SUFFIX}.${ACCOUNT_SUBDOMAIN}.workers.dev"
+EXTRACTION_BASE="https://svc-extraction${SUFFIX}.${ACCOUNT_SUBDOMAIN}.workers.dev"
+POLICY_BASE="https://svc-policy${SUFFIX}.${ACCOUNT_SUBDOMAIN}.workers.dev"
+ONTOLOGY_BASE="https://svc-ontology${SUFFIX}.${ACCOUNT_SUBDOMAIN}.workers.dev"
+SKILL_BASE="https://svc-skill${SUFFIX}.${ACCOUNT_SUBDOMAIN}.workers.dev"
 SECRET="${INTERNAL_API_SECRET:?Set INTERNAL_API_SECRET env var}"
 POLL_INTERVAL=2
 MAX_POLLS=15
+if [ "$WAIT_QUEUE" = true ]; then
+  MAX_POLLS=30
+  POLL_INTERVAL=5
+fi
 ORG_ID="org-e2e-test-$(date +%s)"
 
 pass=0
@@ -78,23 +111,44 @@ echo "============================================="
 echo " AI Foundry E2E Pipeline Test"
 echo " $(date -Iseconds)"
 echo "============================================="
-echo " Org: $ORG_ID"
+echo " Org:  $ORG_ID"
+echo " Env:  $ENV_MODE"
+echo " URLs: ${BASE}"
+if [ -n "$REAL_DOC_PATH" ]; then
+  echo " Doc:  $REAL_DOC_PATH (real document)"
+else
+  echo " Doc:  synthetic test data"
+fi
 
 # =============================================================================
 # STAGE 1: Document Upload
 # =============================================================================
 step 1 "POST /documents — upload test document"
 
-TEST_FILE=$(mktemp /tmp/e2e-test-XXXXXX.txt)
-echo "퇴직연금 중도인출 요건: 무주택 세대주, 가입기간 5년 이상, 인출한도 적립금의 50%" > "$TEST_FILE"
+if [ -n "$REAL_DOC_PATH" ]; then
+  if [ ! -f "$REAL_DOC_PATH" ]; then
+    err "File not found: $REAL_DOC_PATH"
+    exit 1
+  fi
+  UPLOAD_FILE="$REAL_DOC_PATH"
+  UPLOAD_FILENAME=$(basename "$REAL_DOC_PATH")
+  UPLOAD_MIME=$(file --brief --mime-type "$REAL_DOC_PATH" 2>/dev/null || echo "application/octet-stream")
+else
+  UPLOAD_FILE=$(mktemp /tmp/e2e-test-XXXXXX.txt)
+  echo "퇴직연금 중도인출 요건: 무주택 세대주, 가입기간 5년 이상, 인출한도 적립금의 50%" > "$UPLOAD_FILE"
+  UPLOAD_FILENAME="pension-withdrawal-rules.pdf"
+  UPLOAD_MIME="application/pdf"
+fi
 
 UPLOAD_RESP=$(api -X POST "$BASE/documents" \
   -H "X-Internal-Secret: $SECRET" \
   -H "X-Organization-Id: $ORG_ID" \
   -H "X-User-Id: e2e-test-user" \
-  -F "file=@${TEST_FILE};filename=pension-withdrawal-rules.pdf;type=application/pdf")
+  -F "file=@${UPLOAD_FILE};filename=${UPLOAD_FILENAME};type=${UPLOAD_MIME}")
 
-rm -f "$TEST_FILE"
+if [ -z "$REAL_DOC_PATH" ]; then
+  rm -f "$UPLOAD_FILE"
+fi
 
 DOC_ID=$(echo "$UPLOAD_RESP" | jqr '.data.documentId // .documentId')
 if [ -n "$DOC_ID" ] && [ "$DOC_ID" != "null" ]; then
@@ -130,23 +184,27 @@ fi
 # =============================================================================
 # STAGE 2: Extraction
 # =============================================================================
-step 3 "Structure extraction (manual POST /extract)"
+step 3 "Structure extraction"
 
-# With synthetic test data, auto-extraction via queue likely won't trigger
-# (ingestion fails before emitting ingestion.completed). Use manual extraction.
-warn "Using manual extraction (synthetic test data bypasses queue chain)"
-
-MANUAL_RESP=$(api -X POST "$EXTRACTION_BASE/extract" \
-  -H "X-Internal-Secret: $SECRET" \
-  -H "Content-Type: application/json" \
-  -d "{\"documentId\":\"$DOC_ID\",\"chunks\":[\"퇴직연금 중도인출 요건: 무주택 세대주 조건으로 가입기간 5년 이상이며 인출한도는 적립금의 50%이다. 주택구입, 전세자금, 6개월 이상 요양, 파산 또는 개인회생 사유에 해당해야 한다.\"],\"tier\":\"haiku\"}")
-
-EXTRACTION_ID=$(echo "$MANUAL_RESP" | jqr '.data.extractionId // .extractionId')
+if [ "$WAIT_QUEUE" = true ] && [ -n "$REAL_DOC_PATH" ]; then
+  echo "  Waiting for queue-driven extraction (real document mode)..."
+  EXT_LIST_RESP=$(poll_until "$EXTRACTION_BASE/extractions?documentId=$DOC_ID" \
+    '.data[0].extractionId // .extractions[0].extractionId' \
+    "queue-driven extraction") || true
+  EXTRACTION_ID=$(echo "$EXT_LIST_RESP" | jqr '.data[0].extractionId // .extractions[0].extractionId')
+else
+  warn "Using manual extraction (deterministic test mode)"
+  MANUAL_RESP=$(api -X POST "$EXTRACTION_BASE/extract" \
+    -H "X-Internal-Secret: $SECRET" \
+    -H "Content-Type: application/json" \
+    -d "{\"documentId\":\"$DOC_ID\",\"chunks\":[\"퇴직연금 중도인출 요건: 무주택 세대주 조건으로 가입기간 5년 이상이며 인출한도는 적립금의 50%이다. 주택구입, 전세자금, 6개월 이상 요양, 파산 또는 개인회생 사유에 해당해야 한다.\"],\"tier\":\"haiku\"}")
+  EXTRACTION_ID=$(echo "$MANUAL_RESP" | jqr '.data.extractionId // .extractionId')
+fi
 
 if [ -n "$EXTRACTION_ID" ] && [ "$EXTRACTION_ID" != "null" ]; then
   ok "Extraction completed: $EXTRACTION_ID"
 else
-  err "Extraction failed: $(echo "$MANUAL_RESP" | jqr '.')"
+  err "Extraction failed"
   EXTRACTION_ID=""
 fi
 
@@ -350,16 +408,41 @@ fi
 # =============================================================================
 # Summary
 # =============================================================================
-echo ""
-echo "============================================="
-echo " Results: $pass passed, $fail failed"
-echo "============================================="
-echo " documentId:   ${DOC_ID:-N/A}"
-echo " extractionId: ${EXTRACTION_ID:-N/A}"
-echo " policyId:     ${POLICY_ID:-N/A}"
-echo " ontologyId:   ${ONTOLOGY_ID:-N/A}"
-echo " skillId:      ${SKILL_ID:-N/A}"
-echo "============================================="
+
+if [ "$JSON_OUTPUT" = true ]; then
+  REPORT_FILE="/tmp/e2e-report-$(date +%s).json"
+  cat > "$REPORT_FILE" << JSONEOF
+{
+  "timestamp": "$(date -Iseconds)",
+  "environment": "$ENV_MODE",
+  "organizationId": "$ORG_ID",
+  "realDocument": $([ -n "$REAL_DOC_PATH" ] && echo "true" || echo "false"),
+  "results": { "passed": $pass, "failed": $fail, "total": $((pass + fail)) },
+  "ids": {
+    "documentId": "${DOC_ID:-null}",
+    "extractionId": "${EXTRACTION_ID:-null}",
+    "policyId": "${POLICY_ID:-null}",
+    "ontologyId": "${ONTOLOGY_ID:-null}",
+    "skillId": "${SKILL_ID:-null}"
+  }
+}
+JSONEOF
+  cat "$REPORT_FILE"
+  echo ""
+  echo "  -> Report saved to $REPORT_FILE" >&2
+else
+  echo ""
+  echo "============================================="
+  echo " Results: $pass passed, $fail failed"
+  echo "============================================="
+  echo " Env:           $ENV_MODE"
+  echo " documentId:    ${DOC_ID:-N/A}"
+  echo " extractionId:  ${EXTRACTION_ID:-N/A}"
+  echo " policyId:      ${POLICY_ID:-N/A}"
+  echo " ontologyId:    ${ONTOLOGY_ID:-N/A}"
+  echo " skillId:       ${SKILL_ID:-N/A}"
+  echo "============================================="
+fi
 
 if [ "$fail" -gt 0 ]; then
   exit 1

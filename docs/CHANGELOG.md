@@ -2,6 +2,21 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 017 — 2026-03-01
+
+- ✅ **I-03** `/team` 스킬 Interactive Mode 안정화
+  - Runner script에 `trap cleanup EXIT` 추가 — 어떤 종료 방식이든 `.done` 파일 생성 보장
+  - 모니터링에 3-tier fallback: `.done` 파일 → pane dead → process 상태 감지
+  - `CRITICAL — Interactive 모드 scope 관리` 섹션 신규 추가
+  - `--allowedTools`가 1차 scope 방어선임을 명시, 사용자 pane 승인 시 우회 가능 문서화
+- ✅ CLAUDE.md (organization) 기본 원칙 추가: 한국어 1순위, 영어 2순위
+
+**검증**
+- typecheck: 16/16 pass
+- tests: 13/13 task pass (SKILL.md 변경이므로 서비스 코드 무변경)
+
+---
+
 ## 세션 016 — 2026-03-01
 
 - ✅ **Gap Analysis** — 전체 프로젝트 설계-구현 갭 분석 (92% match rate)

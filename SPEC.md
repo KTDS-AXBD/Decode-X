@@ -52,7 +52,7 @@
 
 ## 5) Current Status
 
-- **Last Updated**: 2026-03-01 (세션 016)
+- **Last Updated**: 2026-03-01 (세션 017)
 - **Repo Bootstrap**: ✅
 - **PRD Seed Document**: ✅ (`docs/AI_Foundry_PRD_TDS_v0.6.docx`)
 - **.claude Skills/Agents Migration**: ✅
@@ -271,6 +271,7 @@
 ### 🔜 Phase I — Staging Provisioning + Polish
 - [x] **I-01** — svc-notification + svc-analytics RBAC 미들웨어 추가 (notification 리소스 타입 포함)
 - [x] **I-02** — 5개 서비스 unit test 추가 (440 tests, 97-100% coverage)
+- [x] **I-03** — `/team` 스킬 interactive mode 안정화 (trap EXIT, 3-tier 모니터링, scope 관리)
 - [ ] Staging 리소스 프로비저닝 (D1×10, R2×2, Queue×1, KV×2) → placeholder ID 교체
 - [ ] GitHub Environments 설정 (staging/production protection rules)
 - [ ] 프로덕션 모니터링/알림 설정

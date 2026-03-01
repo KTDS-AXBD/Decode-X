@@ -24,7 +24,7 @@ vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-security" }
 [[env.staging.d1_databases]]
 binding = "DB_SECURITY"
 database_name = "db-security-staging"
-database_id = "placeholder-staging-id"
+database_id = "60ff69a8-85b9-4311-990f-1e524b4c6b2d"
 
 # ---------------------------------------------------------------------------
 # Production environment

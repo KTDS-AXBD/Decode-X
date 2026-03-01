@@ -36,7 +36,7 @@ vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-notification" }
 [[env.staging.d1_databases]]
 binding = "DB_NOTIFICATION"
 database_name = "db-notification-staging"
-database_id = "placeholder-staging-id"
+database_id = "e8a57ad8-3f7d-4ad2-b9ac-dd26aba31db6"
 
 [[env.staging.services]]
 binding = "SECURITY"

@@ -34,11 +34,11 @@ vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-llm-router" }
 [[env.staging.d1_databases]]
 binding = "DB_LLM"
 database_name = "db-llm-staging"
-database_id = "placeholder-staging-id"
+database_id = "a0a12d5e-8b07-44c7-ba8f-33cf94ad19fb"
 
 [[env.staging.kv_namespaces]]
 binding = "KV_PROMPTS"
-id = "placeholder-staging-kv-id"
+id = "91c72003eef94f258ca05023033a35ce"
 
 # ---------------------------------------------------------------------------
 # Production environment

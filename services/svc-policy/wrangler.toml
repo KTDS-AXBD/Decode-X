@@ -55,7 +55,7 @@ vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-policy" }
 [[env.staging.d1_databases]]
 binding = "DB_POLICY"
 database_name = "db-policy-staging"
-database_id = "placeholder-staging-id"
+database_id = "63741d31-4234-4694-a9d2-7e383fdacdaf"
 
 [[env.staging.services]]
 binding = "SECURITY"

@@ -32,11 +32,11 @@ vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-governance" }
 [[env.staging.d1_databases]]
 binding = "DB_GOVERNANCE"
 database_name = "db-governance-staging"
-database_id = "placeholder-staging-id"
+database_id = "9a593eea-7b4d-4562-9d89-1ef85433a5e5"
 
 [[env.staging.kv_namespaces]]
 binding = "KV_PROMPTS"
-id = "placeholder-staging-kv-id"
+id = "35b9f45b0fa44bde89b20cc1b9fc9d80"
 
 [[env.staging.services]]
 binding = "SECURITY"

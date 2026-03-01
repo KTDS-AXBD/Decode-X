@@ -1,0 +1,60 @@
+name: Service Health Check
+
+on:
+  # Run every 30 minutes
+  schedule:
+    - cron: "*/30 * * * *"
+
+  # Manual trigger
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        type: choice
+        options:
+          - production
+          - staging
+        default: production
+
+jobs:
+  health-check:
+    name: "Health Check"
+    runs-on: ubuntu-latest
+    env:
+      CHECK_ENV: ${{ github.event.inputs.environment || 'production' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run health check
+        id: check
+        run: |
+          chmod +x scripts/health-check.sh
+          RESULT=$(./scripts/health-check.sh --env "$CHECK_ENV" --json)
+          echo "$RESULT" | jq .
+
+          # Save to file for later steps
+          echo "$RESULT" > /tmp/health-result.json
+
+          UNHEALTHY=$(echo "$RESULT" | jq -r '.unhealthy')
+          if [[ "$UNHEALTHY" -gt 0 ]]; then
+            echo "has_failures=true" >> "$GITHUB_OUTPUT"
+            echo "::error::$UNHEALTHY service(s) unhealthy"
+          else
+            echo "has_failures=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Post summary
+        if: always()
+        run: |
+          RESULT_JSON=$(cat /tmp/health-result.json)
+          echo "## Health Check Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Service | Status | HTTP | Latency |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---------|--------|------|---------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "$RESULT_JSON" | jq -r '.results[] | "| \(.service) | \(if .status == "healthy" then "pass" else "FAIL" end) | \(.http_code) | \(.latency_ms)ms |"' >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          HEALTHY=$(echo "$RESULT_JSON" | jq -r '.healthy')
+          TOTAL=$(echo "$RESULT_JSON" | jq -r '.total')
+          TIMESTAMP=$(echo "$RESULT_JSON" | jq -r '.timestamp')
+          echo "**${HEALTHY}/${TOTAL} healthy** at ${TIMESTAMP}" >> "$GITHUB_STEP_SUMMARY"

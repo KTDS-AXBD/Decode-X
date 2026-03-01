@@ -43,7 +43,7 @@ vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-skill" }
 [[env.staging.d1_databases]]
 binding = "DB_SKILL"
 database_name = "db-skill-staging"
-database_id = "placeholder-staging-id"
+database_id = "2166b6b5-8f49-4c3d-97b3-02dbd70eaea7"
 
 [[env.staging.r2_buckets]]
 binding = "R2_SKILL_PACKAGES"

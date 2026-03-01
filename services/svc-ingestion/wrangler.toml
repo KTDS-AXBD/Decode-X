@@ -41,7 +41,7 @@ vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-ingestion", MAX_FILE_SIZE_
 [[env.staging.d1_databases]]
 binding = "DB_INGESTION"
 database_name = "db-ingestion-staging"
-database_id = "placeholder-staging-id"
+database_id = "27f0a859-c5d1-4f3b-9619-7861a4bf5626"
 
 [[env.staging.r2_buckets]]
 binding = "R2_DOCUMENTS"

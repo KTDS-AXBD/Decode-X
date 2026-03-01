@@ -43,7 +43,7 @@ vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-extraction" }
 [[env.staging.d1_databases]]
 binding = "DB_EXTRACTION"
 database_name = "db-structure-staging"
-database_id = "placeholder-staging-id"
+database_id = "6b50dfe0-ac8d-401a-8122-c39fde3e19bd"
 
 [[env.staging.services]]
 binding = "SECURITY"

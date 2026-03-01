@@ -1,0 +1,220 @@
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import {
+  LayoutDashboard,
+  Upload,
+  FileSearch,
+  CheckSquare,
+  Network,
+  Package,
+  Plug,
+  ShieldCheck,
+  FileText,
+  Settings,
+  User,
+  Moon,
+  Sun,
+} from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { useTheme } from '@/contexts/ThemeContext';
+
+interface MenuItem {
+  icon: React.ReactNode;
+  label: string;
+  labelEn: string;
+  path: string;
+}
+
+interface SidebarProps {
+  userRole?: string;
+  userName?: string;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({
+  userRole = '분석 엔지니어',
+  userName = '김민준',
+}) => {
+  const location = useLocation();
+
+  const menuItems: MenuItem[] = [
+    {
+      icon: <LayoutDashboard className="w-5 h-5" />,
+      label: '대시보드',
+      labelEn: 'Dashboard',
+      path: '/',
+    },
+    {
+      icon: <Upload className="w-5 h-5" />,
+      label: '문서 업로드',
+      labelEn: 'Document Upload',
+      path: '/upload',
+    },
+    {
+      icon: <FileSearch className="w-5 h-5" />,
+      label: '분석 결과',
+      labelEn: 'Analysis',
+      path: '/analysis',
+    },
+    {
+      icon: <CheckSquare className="w-5 h-5" />,
+      label: 'HITL 검토',
+      labelEn: 'HITL Review',
+      path: '/hitl',
+    },
+    {
+      icon: <Network className="w-5 h-5" />,
+      label: '온톨로지',
+      labelEn: 'Ontology',
+      path: '/ontology',
+    },
+    {
+      icon: <Package className="w-5 h-5" />,
+      label: 'Skill 카탈로그',
+      labelEn: 'Skill Catalog',
+      path: '/skills',
+    },
+    {
+      icon: <Plug className="w-5 h-5" />,
+      label: 'API 연결',
+      labelEn: 'API Console',
+      path: '/api-console',
+    },
+    {
+      icon: <ShieldCheck className="w-5 h-5" />,
+      label: '신뢰도 대시보드',
+      labelEn: 'Trust Dashboard',
+      path: '/trust',
+    },
+    {
+      icon: <FileText className="w-5 h-5" />,
+      label: '감사 로그',
+      labelEn: 'Audit Log',
+      path: '/audit',
+    },
+    {
+      icon: <Settings className="w-5 h-5" />,
+      label: '설정',
+      labelEn: 'Settings',
+      path: '/settings',
+    },
+  ];
+
+  const isActive = (item: MenuItem) => {
+    return location.pathname === item.path;
+  };
+
+  const { darkMode, toggleDarkMode } = useTheme();
+
+  return (
+    <aside className="w-60 h-screen flex flex-col border-r" style={{ backgroundColor: 'var(--primary)', borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+      {/* Logo */}
+      <div className="p-6 border-b" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+        <Link to="/" className="flex items-center gap-3">
+          <div
+            className="w-10 h-10 rounded-lg flex items-center justify-center shadow-lg"
+            style={{ backgroundColor: 'var(--accent)' }}
+          >
+            <span className="text-xl font-bold" style={{ color: 'var(--accent-foreground)' }}>
+              AI
+            </span>
+          </div>
+          <div>
+            <h1 className="text-xl font-bold" style={{ color: 'var(--primary-foreground)' }}>
+              AI Foundry
+            </h1>
+            <p className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+              Enterprise Platform
+            </p>
+          </div>
+        </Link>
+      </div>
+
+      {/* Navigation Menu */}
+      <nav className="flex-1 p-4 overflow-auto">
+        <ul className="space-y-1">
+          {menuItems.map((item, index) => {
+            const active = isActive(item);
+            return (
+              <li key={index}>
+                <Link
+                  to={item.path}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200"
+                  style={{
+                    backgroundColor: active ? 'var(--accent)' : 'transparent',
+                    color: active ? 'var(--accent-foreground)' : 'var(--primary-foreground)',
+                    boxShadow: active ? '0 2px 8px rgba(246, 173, 85, 0.3)' : 'none',
+                  }}
+                >
+                  <span style={{ color: active ? 'var(--accent-foreground)' : 'rgba(255, 255, 255, 0.8)' }}>
+                    {item.icon}
+                  </span>
+                  <div className="flex-1 text-left">
+                    <div className="text-sm font-medium">{item.label}</div>
+                    <div
+                      className="text-xs"
+                      style={{ color: active ? 'var(--accent-foreground)' : 'rgba(255, 255, 255, 0.5)' }}
+                    >
+                      {item.labelEn}
+                    </div>
+                  </div>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+
+      {/* User Profile */}
+      <div className="p-4 border-t" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+        <div
+          className="flex items-center gap-3 p-3 rounded-lg transition-all duration-200 hover:bg-white/5"
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
+        >
+          <Avatar>
+            <AvatarFallback style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-foreground)' }}>
+              <User className="w-5 h-5" />
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1">
+            <div className="text-sm font-medium" style={{ color: 'var(--primary-foreground)' }}>
+              {userName}
+            </div>
+            <Badge
+              className="mt-1 text-xs"
+              style={{
+                backgroundColor: 'rgba(246, 173, 85, 0.2)',
+                color: 'var(--accent)',
+                border: '1px solid var(--accent)',
+              }}
+            >
+              {userRole}
+            </Badge>
+          </div>
+        </div>
+      </div>
+
+      {/* Theme Toggle */}
+      <div className="p-4 border-t" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+        <button
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 hover:bg-white/5"
+          style={{
+            backgroundColor: 'transparent',
+            color: 'var(--primary-foreground)',
+          }}
+          onClick={toggleDarkMode}
+        >
+          <span style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+            {darkMode ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+          </span>
+          <div className="flex-1 text-left">
+            <div className="text-sm font-medium">{darkMode ? '다크 모드' : '라이트 모드'}</div>
+            <div className="text-xs" style={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+              {darkMode ? 'Dark Mode' : 'Light Mode'}
+            </div>
+          </div>
+        </button>
+      </div>
+    </aside>
+  );
+};

@@ -1,389 +1,189 @@
-import { useState, useEffect } from "react";
-import { fetchSkills } from "../api/skill.ts";
-import { fetchAuditLogs, type AuditRow } from "../api/security.ts";
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import {
+  Upload,
+  FileSearch,
+  CheckSquare,
+  Package,
+  ShieldCheck,
+  TrendingUp,
+  AlertCircle,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { fetchSkills } from '@/api/skill';
+import { fetchAuditLogs } from '@/api/security';
+import type { AuditRow } from '@/api/security';
 
-interface KpiData {
-  totalSkills: number;
-  totalPolicies: number;
-  trustDistribution: Record<string, number>;
-  recentActivity: AuditRow[];
-}
-
-const TRUST_COLORS: Record<string, string> = {
-  unreviewed: "#9ca3af",
-  reviewed: "#f59e0b",
-  validated: "#22c55e",
-};
-
-const TRUST_LABELS: Record<string, string> = {
-  unreviewed: "미검토",
-  reviewed: "검토됨",
-  validated: "검증됨",
-};
-
-export default function DashboardPage() {
-  const [kpi, setKpi] = useState<KpiData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-
-    Promise.all([
-      fetchSkills({ limit: 100 }),
-      fetchAuditLogs({ limit: 10 }),
-    ])
-      .then(([skillsRes, auditRes]) => {
-        if (cancelled) return;
-
-        const data: KpiData = {
-          totalSkills: 0,
-          totalPolicies: 0,
-          trustDistribution: {},
-          recentActivity: [],
-        };
-
-        if (skillsRes.success) {
-          data.totalSkills = skillsRes.data.skills.length;
-          for (const skill of skillsRes.data.skills) {
-            data.totalPolicies += skill.policyCount;
-            const level = skill.trust.level;
-            data.trustDistribution[level] =
-              (data.trustDistribution[level] ?? 0) + 1;
-          }
-        }
-
-        if (auditRes.success) {
-          data.recentActivity = auditRes.data.items;
-        }
-
-        setKpi(data);
-        setLoading(false);
-      })
-      .catch((err: unknown) => {
-        if (cancelled) return;
-        setError(
-          err instanceof Error
-            ? err.message
-            : "대시보드 데이터를 불러오는 데 실패했습니다.",
-        );
-        setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return (
-    <div
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#f8f9fa",
-        padding: "24px 32px",
-        fontFamily:
-          "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      }}
-    >
-      {/* Header */}
-      <div style={{ marginBottom: "24px" }}>
-        <h1
-          style={{
-            fontSize: "22px",
-            fontWeight: 700,
-            color: "#111827",
-            margin: 0,
-          }}
-        >
-          대시보드
-        </h1>
-        <p
-          style={{
-            color: "#6b7280",
-            marginTop: "6px",
-            marginBottom: 0,
-            fontSize: "14px",
-          }}
-        >
-          AI Foundry KPI 요약 및 현황을 확인합니다.
-        </p>
-      </div>
-
-      {/* Error */}
-      {error !== null && (
-        <div
-          style={{
-            backgroundColor: "#fef2f2",
-            border: "1px solid #fecaca",
-            borderRadius: "8px",
-            padding: "12px 16px",
-            color: "#dc2626",
-            marginBottom: "16px",
-            fontSize: "14px",
-          }}
-        >
-          오류: {error}
-        </div>
-      )}
-
-      {loading ? (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "64px",
-            color: "#9ca3af",
-            fontSize: "14px",
-          }}
-        >
-          불러오는 중...
-        </div>
-      ) : kpi !== null ? (
-        <>
-          {/* KPI cards */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-              gap: "16px",
-              marginBottom: "24px",
-            }}
-          >
-            <KpiCard label="총 Skill 수" value={String(kpi.totalSkills)} color="#3b82f6" />
-            <KpiCard label="총 정책 수" value={String(kpi.totalPolicies)} color="#8b5cf6" />
-            <KpiCard
-              label="검증된 Skill"
-              value={String(kpi.trustDistribution["validated"] ?? 0)}
-              color="#22c55e"
-            />
-            <KpiCard
-              label="최근 감사 이벤트"
-              value={String(kpi.recentActivity.length)}
-              color="#f59e0b"
-            />
-          </div>
-
-          {/* Trust distribution */}
-          <div
-            style={{
-              backgroundColor: "#ffffff",
-              borderRadius: "8px",
-              padding: "24px",
-              marginBottom: "16px",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-            }}
-          >
-            <div
-              style={{
-                fontSize: "13px",
-                fontWeight: 600,
-                color: "#6b7280",
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
-                marginBottom: "16px",
-              }}
-            >
-              Trust Level 분포
-            </div>
-            {kpi.totalSkills === 0 ? (
-              <div style={{ fontSize: "14px", color: "#9ca3af" }}>
-                Skill 데이터 없음
-              </div>
-            ) : (
-              <div style={{ display: "flex", gap: "24px", flexWrap: "wrap" }}>
-                {(["unreviewed", "reviewed", "validated"] as const).map(
-                  (level) => {
-                    const count = kpi.trustDistribution[level] ?? 0;
-                    const pct =
-                      kpi.totalSkills > 0
-                        ? Math.round((count / kpi.totalSkills) * 100)
-                        : 0;
-                    const color = TRUST_COLORS[level] ?? "#9ca3af";
-                    const label = TRUST_LABELS[level] ?? level;
-                    return (
-                      <div key={level} style={{ flex: 1, minWidth: "120px" }}>
-                        <div
-                          style={{
-                            fontSize: "13px",
-                            color: "#6b7280",
-                            marginBottom: "6px",
-                          }}
-                        >
-                          {label}
-                        </div>
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "baseline",
-                            gap: "6px",
-                          }}
-                        >
-                          <span
-                            style={{
-                              fontSize: "28px",
-                              fontWeight: 700,
-                              color,
-                            }}
-                          >
-                            {count}
-                          </span>
-                          <span
-                            style={{ fontSize: "13px", color: "#9ca3af" }}
-                          >
-                            ({pct}%)
-                          </span>
-                        </div>
-                        <div
-                          style={{
-                            marginTop: "8px",
-                            height: "6px",
-                            backgroundColor: "#f3f4f6",
-                            borderRadius: "3px",
-                            overflow: "hidden",
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: `${pct}%`,
-                              height: "100%",
-                              backgroundColor: color,
-                              borderRadius: "3px",
-                            }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  },
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Recent activity */}
-          <div
-            style={{
-              backgroundColor: "#ffffff",
-              borderRadius: "8px",
-              padding: "24px",
-              boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-            }}
-          >
-            <div
-              style={{
-                fontSize: "13px",
-                fontWeight: 600,
-                color: "#6b7280",
-                textTransform: "uppercase",
-                letterSpacing: "0.06em",
-                marginBottom: "16px",
-              }}
-            >
-              최근 활동
-            </div>
-            {kpi.recentActivity.length === 0 ? (
-              <div style={{ fontSize: "14px", color: "#9ca3af" }}>
-                최근 활동 없음
-              </div>
-            ) : (
-              <div>
-                {kpi.recentActivity.map((item) => (
-                  <div
-                    key={item.audit_id}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "12px",
-                      padding: "10px 0",
-                      borderBottom: "1px solid #f3f4f6",
-                    }}
-                  >
-                    <span
-                      style={{
-                        fontSize: "12px",
-                        backgroundColor: "#e0e7ff",
-                        color: "#3730a3",
-                        padding: "2px 8px",
-                        borderRadius: "4px",
-                        fontWeight: 500,
-                        flexShrink: 0,
-                      }}
-                    >
-                      {item.action}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: "13px",
-                        color: "#374151",
-                        flex: 1,
-                      }}
-                    >
-                      {item.user_id} → {item.resource}
-                      {item.resource_id !== null
-                        ? ` (${item.resource_id.slice(0, 8)})`
-                        : ""}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: "12px",
-                        color: "#9ca3af",
-                        flexShrink: 0,
-                      }}
-                    >
-                      {new Date(item.occurred_at).toLocaleString("ko-KR")}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </>
-      ) : null}
-    </div>
-  );
-}
-
-// ── Local sub-component ──────────────────────────────────────────────────────
-
-function KpiCard({
-  label,
-  value,
-  color,
-}: {
+interface SystemStat {
   label: string;
   value: string;
   color: string;
-}) {
+  icon: LucideIcon;
+}
+
+export default function DashboardPage() {
+  const [stats, setStats] = useState<SystemStat[]>([
+    { label: '처리 중인 문서', value: '—', color: '#3B82F6', icon: FileSearch },
+    { label: '검토 대기', value: '—', color: 'var(--accent)', icon: AlertCircle },
+    { label: '활성 Skill', value: '—', color: 'var(--success)', icon: ShieldCheck },
+    { label: '감사 이벤트', value: '—', color: '#6B7280', icon: TrendingUp },
+  ]);
+  const [recentActivities, setRecentActivities] = useState<AuditRow[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadData() {
+      try {
+        const [skillsRes, auditRes] = await Promise.allSettled([
+          fetchSkills({ limit: 100 }),
+          fetchAuditLogs({ limit: 10 }),
+        ]);
+
+        if (cancelled) return;
+
+        const skillCount = skillsRes.status === 'fulfilled' && skillsRes.value.success
+          ? skillsRes.value.data.skills.length : 0;
+        const auditData = auditRes.status === 'fulfilled' && auditRes.value.success
+          ? auditRes.value.data : null;
+
+        setStats([
+          { label: '처리 중인 문서', value: '—', color: '#3B82F6', icon: FileSearch },
+          { label: '검토 대기', value: '—', color: 'var(--accent)', icon: AlertCircle },
+          { label: '활성 Skill', value: `${skillCount}개`, color: 'var(--success)', icon: ShieldCheck },
+          { label: '감사 이벤트', value: `${auditData?.pagination.total ?? 0}건`, color: '#6B7280', icon: TrendingUp },
+        ]);
+
+        if (auditData) {
+          setRecentActivities(auditData.items.slice(0, 4));
+        }
+      } catch {
+        // graceful fallback
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    void loadData();
+    return () => { cancelled = true; };
+  }, []);
+
+  const quickActions = [
+    { icon: Upload, label: '문서 업로드', path: '/upload', color: '#3B82F6', bg: 'rgba(59, 130, 246, 0.1)' },
+    { icon: FileSearch, label: '분석 결과', path: '/analysis', color: '#10B981', bg: 'rgba(16, 185, 129, 0.1)' },
+    { icon: CheckSquare, label: 'HITL 검토', path: '/hitl', color: 'var(--accent)', bg: 'rgba(246, 173, 85, 0.1)' },
+    { icon: Package, label: 'Skill 카탈로그', path: '/skills', color: '#9333EA', bg: 'rgba(147, 51, 234, 0.1)' },
+  ];
+
   return (
-    <div
-      style={{
-        backgroundColor: "#ffffff",
-        borderRadius: "8px",
-        padding: "20px",
-        boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-        borderLeft: `4px solid ${color}`,
-      }}
-    >
-      <div
-        style={{
-          fontSize: "12px",
-          fontWeight: 600,
-          color: "#6b7280",
-          textTransform: "uppercase",
-          letterSpacing: "0.06em",
-          marginBottom: "8px",
-        }}
-      >
-        {label}
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+          대시보드 Dashboard
+        </h1>
+        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+          AI Foundry 플랫폼 통합 관리
+        </p>
       </div>
-      <div
-        style={{
-          fontSize: "28px",
-          fontWeight: 700,
-          color: "#111827",
-        }}
-      >
-        {value}
+
+      {/* System Status */}
+      <div className="grid grid-cols-4 gap-4">
+        {stats.map((stat, index) => (
+          <Card key={index} style={{ borderRadius: 'var(--radius-lg)' }}>
+            <CardContent className="p-6">
+              <div className="text-sm mb-2" style={{ color: 'var(--text-secondary)' }}>{stat.label}</div>
+              <div className="text-3xl font-bold" style={{ color: stat.color }}>
+                {loading ? '...' : stat.value}
+              </div>
+              <div className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
+                <stat.icon className="w-4 h-4 inline-block" />
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Quick Actions */}
+      <Card style={{ borderRadius: 'var(--radius-lg)' }}>
+        <CardHeader>
+          <CardTitle>빠른 실행 Quick Actions</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-4 gap-4">
+            {quickActions.map((action, index) => {
+              const Icon = action.icon;
+              return (
+                <Link key={index} to={action.path}>
+                  <Card className="cursor-pointer transition-all hover:shadow-lg" style={{ borderRadius: 'var(--radius-lg)' }}>
+                    <CardContent className="p-6 flex flex-col items-center text-center">
+                      <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4" style={{ backgroundColor: action.bg }}>
+                        <Icon className="w-8 h-8" style={{ color: action.color }} />
+                      </div>
+                      <div className="font-semibold" style={{ color: 'var(--text-primary)' }}>{action.label}</div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Recent Activities + Notifications */}
+      <div className="grid grid-cols-2 gap-6">
+        <Card style={{ borderRadius: 'var(--radius-lg)' }}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="w-5 h-5" />
+              최근 활동 Recent Activities
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {recentActivities.length > 0 ? recentActivities.map((item) => (
+                <div key={item.audit_id} className="flex items-start gap-3 p-3 rounded-lg" style={{ backgroundColor: 'var(--surface)' }}>
+                  <div className="text-xs shrink-0" style={{ color: 'var(--text-secondary)' }}>
+                    {new Date(item.occurred_at).toLocaleString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-sm" style={{ color: 'var(--text-primary)' }}>
+                      {item.action} — {item.resource}
+                    </div>
+                    <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                      by {item.user_id}
+                    </div>
+                  </div>
+                </div>
+              )) : (
+                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  {loading ? '불러오는 중...' : '최근 활동 없음'}
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card style={{ borderRadius: 'var(--radius-lg)' }}>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <AlertCircle className="w-5 h-5" />
+              알림 Notifications
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="p-3 rounded-lg border-l-4" style={{ backgroundColor: 'rgba(246, 173, 85, 0.05)', borderColor: 'var(--accent)' }}>
+                <div className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>검토 대기 중</div>
+                <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>정책이 검토를 기다리고 있습니다</div>
+              </div>
+              <div className="p-3 rounded-lg border-l-4" style={{ backgroundColor: 'var(--success-light)', borderColor: 'var(--success)' }}>
+                <div className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>시스템 정상 작동</div>
+                <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>모든 서비스가 정상적으로 운영 중입니다</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

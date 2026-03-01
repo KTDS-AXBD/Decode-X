@@ -6,7 +6,11 @@
     "jsx": "react-jsx",
     "noEmit": true,
     "moduleResolution": "Bundler",
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["src/**/*", "index.html"]
 }

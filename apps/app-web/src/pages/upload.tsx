@@ -1,54 +1,62 @@
-import { useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import { uploadDocument, type UploadResult } from "../api/ingestion.ts";
+import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import {
+  Upload,
+  FileText,
+  CheckCircle,
+  Clock,
+  AlertCircle,
+  X,
+  FileSearch,
+  Zap,
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { uploadDocument, fetchDocuments } from '@/api/ingestion';
+import type { DocumentRow } from '@/api/ingestion';
 
 const ACCEPTED_TYPES = [
-  "application/pdf",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "application/vnd.ms-excel",
-  "image/png",
-  "image/jpeg",
+  'application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'image/png',
+  'image/jpeg',
 ];
 
-const FORMAT_LABELS = ["PDF", "DOCX", "PPTX", "XLSX", "PNG", "JPG"];
-
-export default function UploadPage() {
+export default function DocumentUploadPage() {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [dragging, setDragging] = useState(false);
+  const [documents, setDocuments] = useState<DocumentRow[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<UploadResult | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  const handleFile = (file: File) => {
-    setError(null);
-    setResult(null);
+  useEffect(() => {
+    void fetchDocuments().then((res) => {
+      if (res.success) setDocuments(res.data.documents);
+    });
+  }, []);
+
+  const handleFileUpload = async (file: File) => {
     if (!ACCEPTED_TYPES.includes(file.type)) {
-      setError(`지원하지 않는 파일 형식입니다: ${file.type || file.name}`);
+      toast.error(`지원하지 않는 파일 형식: ${file.name}`);
       return;
     }
-    setSelectedFile(file);
-  };
-
-  const handleUpload = async () => {
-    if (selectedFile === null) return;
     setUploading(true);
-    setError(null);
     try {
-      const res = await uploadDocument(selectedFile);
+      const res = await uploadDocument(file);
       if (res.success) {
-        setResult(res.data);
-        setSelectedFile(null);
+        toast.success(`업로드 완료: ${file.name}`);
+        const refreshed = await fetchDocuments();
+        if (refreshed.success) setDocuments(refreshed.data.documents);
       } else {
-        setError(res.error.message);
+        toast.error(res.error.message);
       }
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "업로드 중 오류가 발생했습니다.",
-      );
+    } catch {
+      toast.error('업로드 중 오류가 발생했습니다');
     } finally {
       setUploading(false);
     }
@@ -56,242 +64,168 @@ export default function UploadPage() {
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    setDragging(false);
+    setIsDragging(false);
     const file = e.dataTransfer.files[0];
-    if (file) handleFile(file);
+    if (file) void handleFileUpload(file);
   };
 
+  const handleFileSelect = () => fileInputRef.current?.click();
+
+  const getStatusBadge = (status: string) => {
+    const config: Record<string, { label: string; color: string; bg: string }> = {
+      pending: { label: '대기', color: '#6B7280', bg: 'rgba(107, 114, 128, 0.1)' },
+      processing: { label: '처리 중', color: 'var(--accent)', bg: 'rgba(246, 173, 85, 0.15)' },
+      completed: { label: '완료', color: 'var(--success)', bg: 'rgba(56, 161, 105, 0.1)' },
+      failed: { label: '오류', color: 'var(--danger)', bg: 'rgba(229, 62, 62, 0.1)' },
+    };
+    const c = config[status] ?? config['pending']!;
+    return <Badge style={{ backgroundColor: c.bg, color: c.color, border: 'none' }} className="text-xs">{c.label}</Badge>;
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'completed': return <CheckCircle className="w-5 h-5" style={{ color: 'var(--success)' }} />;
+      case 'processing': return <Clock className="w-5 h-5" style={{ color: 'var(--accent)' }} />;
+      case 'failed': return <AlertCircle className="w-5 h-5" style={{ color: 'var(--danger)' }} />;
+      default: return <Clock className="w-5 h-5" style={{ color: '#6B7280' }} />;
+    }
+  };
+
+  const completedCount = documents.filter((d) => d.status === 'completed').length;
+  const processingCount = documents.filter((d) => d.status === 'processing').length;
+
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#f8f9fa",
-        padding: "24px 32px",
-        fontFamily:
-          "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      }}
-    >
-      {/* Header */}
-      <div style={{ marginBottom: "24px" }}>
-        <h1
-          style={{
-            fontSize: "22px",
-            fontWeight: 700,
-            color: "#111827",
-            margin: 0,
-          }}
-        >
-          문서 업로드
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+          문서 업로드 및 파싱 Document Upload & Parsing
         </h1>
-        <p
-          style={{
-            color: "#6b7280",
-            marginTop: "6px",
-            marginBottom: 0,
-            fontSize: "14px",
-          }}
-        >
-          SI 프로젝트 산출물을 업로드하여 AI 파이프라인 처리를 시작합니다.
+        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+          정책 문서, 약관, 가이드 업로드 및 자동 파싱
         </p>
       </div>
 
-      {/* Supported formats */}
-      <div
-        style={{
-          display: "flex",
-          gap: "8px",
-          marginBottom: "20px",
-          flexWrap: "wrap",
-        }}
-      >
-        <span style={{ fontSize: "13px", color: "#6b7280" }}>
-          지원 형식:
-        </span>
-        {FORMAT_LABELS.map((fmt) => (
-          <span
-            key={fmt}
-            style={{
-              fontSize: "12px",
-              backgroundColor: "#e0e7ff",
-              color: "#3730a3",
-              padding: "2px 10px",
-              borderRadius: "12px",
-              fontWeight: 500,
-            }}
-          >
-            {fmt}
-          </span>
-        ))}
+      {/* Stats */}
+      <div className="grid grid-cols-4 gap-4">
+        <Card className="shadow-sm"><CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>총 문서</div>
+              <div className="text-3xl font-bold mt-2" style={{ color: 'var(--text-primary)' }}>{documents.length}</div>
+            </div>
+            <FileText className="w-10 h-10" style={{ color: '#3B82F6', opacity: 0.2 }} />
+          </div>
+        </CardContent></Card>
+        <Card className="shadow-sm"><CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>완료</div>
+              <div className="text-3xl font-bold mt-2" style={{ color: 'var(--success)' }}>{completedCount}</div>
+            </div>
+            <CheckCircle className="w-10 h-10" style={{ color: 'var(--success)', opacity: 0.2 }} />
+          </div>
+        </CardContent></Card>
+        <Card className="shadow-sm"><CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>처리 중</div>
+              <div className="text-3xl font-bold mt-2" style={{ color: 'var(--accent)' }}>{processingCount}</div>
+            </div>
+            <Zap className="w-10 h-10" style={{ color: 'var(--accent)', opacity: 0.2 }} />
+          </div>
+        </CardContent></Card>
+        <Card className="shadow-sm"><CardContent className="p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>오류</div>
+              <div className="text-3xl font-bold mt-2" style={{ color: 'var(--danger)' }}>
+                {documents.filter((d) => d.status === 'failed').length}
+              </div>
+            </div>
+            <FileSearch className="w-10 h-10" style={{ color: '#9333EA', opacity: 0.2 }} />
+          </div>
+        </CardContent></Card>
       </div>
 
-      {/* Drop zone */}
-      <div
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragging(true);
-        }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={handleDrop}
-        onClick={() => fileInputRef.current?.click()}
-        style={{
-          border: `2px dashed ${dragging ? "#3b82f6" : "#d1d5db"}`,
-          borderRadius: "12px",
-          padding: "48px 32px",
-          textAlign: "center",
-          backgroundColor: dragging ? "#eff6ff" : "#ffffff",
-          cursor: "pointer",
-          marginBottom: "20px",
-          transition: "all 0.15s ease",
-        }}
-      >
-        <div
-          style={{ fontSize: "40px", marginBottom: "12px", color: "#9ca3af" }}
-        >
-          ↑
-        </div>
-        <div style={{ fontSize: "15px", color: "#374151", fontWeight: 500 }}>
-          파일을 드래그하거나 클릭하여 선택
-        </div>
-        <div
-          style={{ fontSize: "13px", color: "#9ca3af", marginTop: "6px" }}
-        >
-          최대 파일 크기: 100MB
-        </div>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept={ACCEPTED_TYPES.join(",")}
-          style={{ display: "none" }}
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) handleFile(file);
-          }}
-        />
-      </div>
-
-      {/* Selected file info */}
-      {selectedFile !== null && (
-        <div
-          style={{
-            backgroundColor: "#ffffff",
-            borderRadius: "8px",
-            padding: "16px 20px",
-            marginBottom: "16px",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <div>
-            <div style={{ fontSize: "14px", fontWeight: 500, color: "#111827" }}>
-              {selectedFile.name}
-            </div>
-            <div style={{ fontSize: "12px", color: "#9ca3af", marginTop: "2px" }}>
-              {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-            </div>
-          </div>
-          <button
-            onClick={() => void handleUpload()}
-            disabled={uploading}
-            style={{
-              padding: "10px 28px",
-              borderRadius: "6px",
-              border: "none",
-              backgroundColor: uploading ? "#d1d5db" : "#3b82f6",
-              color: "#ffffff",
-              fontSize: "14px",
-              fontWeight: 600,
-              cursor: uploading ? "not-allowed" : "pointer",
-            }}
-          >
-            {uploading ? "업로드 중..." : "업로드"}
-          </button>
-        </div>
-      )}
-
-      {/* Error */}
-      {error !== null && (
-        <div
-          style={{
-            backgroundColor: "#fef2f2",
-            border: "1px solid #fecaca",
-            borderRadius: "8px",
-            padding: "12px 16px",
-            color: "#dc2626",
-            marginBottom: "16px",
-            fontSize: "14px",
-          }}
-        >
-          오류: {error}
-        </div>
-      )}
-
-      {/* Success */}
-      {result !== null && (
-        <div
-          style={{
-            backgroundColor: "#f0fdf4",
-            border: "1px solid #bbf7d0",
-            borderRadius: "8px",
-            padding: "20px",
-            marginBottom: "16px",
-          }}
-        >
+      {/* Upload Area */}
+      <Card className="shadow-sm">
+        <CardContent className="p-8">
           <div
+            className="border-2 border-dashed rounded-xl p-12 text-center transition-all"
             style={{
-              fontSize: "15px",
-              fontWeight: 600,
-              color: "#166534",
-              marginBottom: "12px",
+              borderColor: isDragging ? 'var(--primary)' : 'var(--border)',
+              backgroundColor: isDragging ? 'rgba(26, 54, 93, 0.05)' : 'transparent',
             }}
+            onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={handleDrop}
           >
-            업로드 성공
-          </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "auto 1fr",
-              gap: "6px 16px",
-              fontSize: "13px",
-              color: "#374151",
-            }}
-          >
-            <span style={{ color: "#6b7280" }}>Document ID</span>
-            <code
-              style={{
-                backgroundColor: "#f3f4f6",
-                padding: "2px 6px",
-                borderRadius: "4px",
-                fontFamily: "monospace",
-                fontSize: "12px",
+            <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)' }}>
+              <Upload className="w-8 h-8" style={{ color: '#3B82F6' }} />
+            </div>
+            <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
+              파일을 드래그하여 업로드
+            </h3>
+            <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
+              또는 클릭하여 파일 선택 (PDF, DOCX, PPTX, XLSX, 이미지 지원)
+            </p>
+            <Button onClick={handleFileSelect} disabled={uploading}>
+              <Upload className="w-4 h-4 mr-2" />
+              {uploading ? '업로드 중...' : '파일 선택'}
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept={ACCEPTED_TYPES.join(',')}
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) void handleFileUpload(file);
               }}
-            >
-              {result.documentId}
-            </code>
-            <span style={{ color: "#6b7280" }}>상태</span>
-            <span>{result.status}</span>
-            <span style={{ color: "#6b7280" }}>업로드 시각</span>
-            <span>{new Date(result.uploadedAt).toLocaleString("ko-KR")}</span>
+            />
           </div>
-          <button
-            onClick={() => navigate("/pipeline")}
-            style={{
-              marginTop: "16px",
-              padding: "8px 20px",
-              borderRadius: "6px",
-              border: "1px solid #3b82f6",
-              backgroundColor: "#ffffff",
-              color: "#3b82f6",
-              fontSize: "14px",
-              fontWeight: 500,
-              cursor: "pointer",
-            }}
-          >
-            파이프라인 모니터로 이동 →
-          </button>
-        </div>
-      )}
+        </CardContent>
+      </Card>
+
+      {/* File List */}
+      <Card className="shadow-sm">
+        <CardHeader>
+          <CardTitle>업로드된 문서 목록</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {documents.length === 0 ? (
+            <p className="text-sm py-8 text-center" style={{ color: 'var(--text-secondary)' }}>
+              업로드된 문서가 없습니다.
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {documents.map((doc) => (
+                <div key={doc.document_id} className="border rounded-lg p-4 transition-shadow hover:shadow-md" style={{ borderColor: 'var(--border)' }}>
+                  <div className="flex items-start gap-4">
+                    <div className="mt-1">{getStatusIcon(doc.status)}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h4 className="font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{doc.original_name}</h4>
+                        {getStatusBadge(doc.status)}
+                        <Badge variant="outline" className="text-xs" style={{ color: 'var(--text-secondary)' }}>{doc.file_type}</Badge>
+                      </div>
+                      <div className="flex items-center gap-4 text-xs" style={{ color: 'var(--text-secondary)' }}>
+                        <span>{(doc.file_size_byte / 1024 / 1024).toFixed(2)} MB</span>
+                        <span>|</span>
+                        <span>{new Date(doc.uploaded_at).toLocaleString('ko-KR')}</span>
+                      </div>
+                      {doc.status === 'processing' && <Progress value={50} className="h-2 mt-2" />}
+                    </div>
+                    <Button variant="ghost" size="icon" className="shrink-0" onClick={() => navigate(`/analysis?doc=${doc.document_id}`)}>
+                      <FileSearch className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -1,388 +1,168 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { fetchSkills, type SkillRow } from "../api/skill.ts";
+import { useState, useEffect } from 'react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Search, Package, Star, Download, TrendingUp, CheckCircle, Filter } from 'lucide-react';
+import { toast } from 'sonner';
+import { fetchSkills, downloadSkill } from '@/api/skill';
+import type { SkillRow } from '@/api/skill';
 
-const LIMIT = 20;
-
-const TRUST_COLORS: Record<string, string> = {
-  unreviewed: "#9ca3af",
-  reviewed: "#f59e0b",
-  validated: "#22c55e",
-};
-
-const TRUST_LABELS: Record<string, string> = {
-  unreviewed: "미검토",
-  reviewed: "검토됨",
-  validated: "검증됨",
+const TRUST_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
+  unreviewed: { label: '미검토', color: '#9CA3AF', bg: 'rgba(156, 163, 175, 0.1)' },
+  reviewed: { label: '검토됨', color: 'var(--accent)', bg: 'rgba(246, 173, 85, 0.15)' },
+  validated: { label: '검증됨', color: 'var(--success)', bg: 'rgba(56, 161, 105, 0.1)' },
 };
 
 export default function SkillCatalogPage() {
-  const navigate = useNavigate();
   const [skills, setSkills] = useState<SkillRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [domainFilter, setDomainFilter] = useState("");
-  const [trustFilter, setTrustFilter] = useState("");
-  const [page, setPage] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [trustFilter, setTrustFilter] = useState('');
 
   useEffect(() => {
-    let cancelled = false;
     setLoading(true);
-    setError(null);
+    void fetchSkills(trustFilter ? { limit: 100, trustLevel: trustFilter } : { limit: 100 })
+      .then((res) => { if (res.success) setSkills(res.data.skills); })
+      .catch(() => toast.error('Skill 목록을 불러올 수 없습니다'))
+      .finally(() => setLoading(false));
+  }, [trustFilter]);
 
-    const params: {
-      limit: number;
-      offset: number;
-      domain?: string;
-      trustLevel?: string;
-    } = {
-      limit: LIMIT,
-      offset: page * LIMIT,
-    };
-    if (domainFilter !== "") params.domain = domainFilter;
-    if (trustFilter !== "") params.trustLevel = trustFilter;
+  const handleDownload = async (skillId: string) => {
+    try {
+      const blob = await downloadSkill(skillId);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${skillId}.skill.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success('다운로드 완료');
+    } catch {
+      toast.error('다운로드 실패');
+    }
+  };
 
-    void fetchSkills(params)
-      .then((res) => {
-        if (cancelled) return;
-        if (res.success) {
-          setSkills(res.data.skills);
-        } else {
-          setError(res.error.message);
-        }
-        setLoading(false);
-      })
-      .catch((err: unknown) => {
-        if (cancelled) return;
-        setError(
-          err instanceof Error
-            ? err.message
-            : "데이터를 불러오는 데 실패했습니다.",
-        );
-        setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [domainFilter, trustFilter, page]);
+  const filteredSkills = searchQuery
+    ? skills.filter((s) =>
+        s.metadata.domain.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.skillId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.metadata.tags.some((t) => t.toLowerCase().includes(searchQuery.toLowerCase()))
+      )
+    : skills;
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#f8f9fa",
-        padding: "24px 32px",
-        fontFamily:
-          "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      }}
-    >
-      {/* Header */}
-      <div style={{ marginBottom: "24px" }}>
-        <h1
-          style={{
-            fontSize: "22px",
-            fontWeight: 700,
-            color: "#111827",
-            margin: 0,
-          }}
-        >
-          Skill 카탈로그
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+          Skill 카탈로그 Skill Catalog
         </h1>
-        <p
-          style={{
-            color: "#6b7280",
-            marginTop: "6px",
-            marginBottom: 0,
-            fontSize: "14px",
-          }}
-        >
-          AI Skill 패키지를 탐색하고 다운로드합니다.
+        <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
+          AI Foundry Skill 패키지 탐색 및 다운로드
         </p>
       </div>
 
       {/* Filters */}
-      <div
-        style={{
-          display: "flex",
-          gap: "12px",
-          marginBottom: "20px",
-          flexWrap: "wrap",
-        }}
-      >
-        <input
-          value={domainFilter}
-          onChange={(e) => {
-            setDomainFilter(e.target.value);
-            setPage(0);
-          }}
-          placeholder="도메인 필터..."
-          style={{
-            padding: "8px 12px",
-            borderRadius: "6px",
-            border: "1px solid #d1d5db",
-            fontSize: "13px",
-            color: "#111827",
-            width: "200px",
-          }}
-        />
-        <select
-          value={trustFilter}
-          onChange={(e) => {
-            setTrustFilter(e.target.value);
-            setPage(0);
-          }}
-          style={{
-            padding: "8px 12px",
-            borderRadius: "6px",
-            border: "1px solid #d1d5db",
-            fontSize: "13px",
-            color: "#111827",
-            backgroundColor: "#ffffff",
-          }}
-        >
-          <option value="">전체 Trust Level</option>
-          <option value="unreviewed">미검토</option>
-          <option value="reviewed">검토됨</option>
-          <option value="validated">검증됨</option>
-        </select>
-      </div>
-
-      {/* Error */}
-      {error !== null && (
-        <div
-          style={{
-            backgroundColor: "#fef2f2",
-            border: "1px solid #fecaca",
-            borderRadius: "8px",
-            padding: "12px 16px",
-            color: "#dc2626",
-            marginBottom: "16px",
-            fontSize: "14px",
-          }}
-        >
-          오류: {error}
+      <div className="flex items-center gap-4">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
+          <Input placeholder="Skill 검색..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10" />
         </div>
-      )}
-
-      {/* Grid */}
-      {loading ? (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "64px",
-            color: "#9ca3af",
-            fontSize: "14px",
-          }}
-        >
-          불러오는 중...
-        </div>
-      ) : skills.length === 0 ? (
-        <div
-          style={{
-            textAlign: "center",
-            padding: "64px",
-            color: "#9ca3af",
-            fontSize: "14px",
-            backgroundColor: "#ffffff",
-            borderRadius: "8px",
-          }}
-        >
-          Skill 패키지가 없습니다.
-        </div>
-      ) : (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
-            gap: "16px",
-          }}
-        >
-          {skills.map((skill) => (
-            <SkillCard
-              key={skill.skillId}
-              skill={skill}
-              onClick={() => navigate(`/skills/${skill.skillId}`)}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Pagination */}
-      {!loading && skills.length === LIMIT && (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            gap: "12px",
-            marginTop: "24px",
-          }}
-        >
-          <button
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
-            disabled={page === 0}
-            style={{
-              padding: "8px 20px",
-              borderRadius: "6px",
-              border: "1px solid #d1d5db",
-              backgroundColor: "#ffffff",
-              cursor: page === 0 ? "not-allowed" : "pointer",
-              color: page === 0 ? "#9ca3af" : "#374151",
-              fontSize: "14px",
-            }}
-          >
-            이전
-          </button>
-          <span
-            style={{
-              padding: "8px",
-              fontSize: "14px",
-              color: "#6b7280",
-            }}
-          >
-            페이지 {page + 1}
-          </span>
-          <button
-            onClick={() => setPage((p) => p + 1)}
-            style={{
-              padding: "8px 20px",
-              borderRadius: "6px",
-              border: "1px solid #d1d5db",
-              backgroundColor: "#ffffff",
-              cursor: "pointer",
-              color: "#374151",
-              fontSize: "14px",
-            }}
-          >
-            다음
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── Local sub-component ──────────────────────────────────────────────────────
-
-function SkillCard({
-  skill,
-  onClick,
-}: {
-  skill: SkillRow;
-  onClick: () => void;
-}) {
-  const [hovered, setHovered] = useState(false);
-  const trustColor = TRUST_COLORS[skill.trust.level] ?? "#9ca3af";
-  const trustLabel = TRUST_LABELS[skill.trust.level] ?? skill.trust.level;
-
-  return (
-    <div
-      onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        backgroundColor: "#ffffff",
-        borderRadius: "8px",
-        padding: "20px",
-        boxShadow: hovered
-          ? "0 4px 12px rgba(0,0,0,0.12)"
-          : "0 1px 3px rgba(0,0,0,0.08)",
-        cursor: "pointer",
-        transition: "box-shadow 0.15s ease",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          marginBottom: "12px",
-        }}
-      >
-        <div>
-          <code
-            style={{
-              fontSize: "11px",
-              backgroundColor: "#f3f4f6",
-              padding: "2px 6px",
-              borderRadius: "4px",
-              fontFamily: "monospace",
-              color: "#374151",
-            }}
-          >
-            {skill.skillId.slice(0, 8)}
-          </code>
-        </div>
-        <span
-          style={{
-            display: "inline-block",
-            padding: "2px 10px",
-            borderRadius: "12px",
-            fontSize: "11px",
-            fontWeight: 600,
-            backgroundColor: `${trustColor}1a`,
-            color: trustColor,
-          }}
-        >
-          {trustLabel}
-        </span>
-      </div>
-
-      <div
-        style={{
-          fontSize: "15px",
-          fontWeight: 600,
-          color: "#111827",
-          marginBottom: "8px",
-        }}
-      >
-        {skill.metadata.domain}
-        {skill.metadata.subdomain ? ` / ${skill.metadata.subdomain}` : ""}
-      </div>
-
-      <div
-        style={{
-          display: "flex",
-          gap: "16px",
-          fontSize: "12px",
-          color: "#6b7280",
-          marginBottom: "12px",
-        }}
-      >
-        <span>정책 {skill.policyCount}건</span>
-        <span>v{skill.metadata.version}</span>
-        <span>Score {(skill.trust.score * 100).toFixed(0)}%</span>
-      </div>
-
-      {skill.metadata.tags.length > 0 && (
-        <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
-          {skill.metadata.tags.slice(0, 4).map((tag) => (
-            <span
-              key={tag}
-              style={{
-                fontSize: "11px",
-                backgroundColor: "#f3f4f6",
-                color: "#374151",
-                padding: "1px 8px",
-                borderRadius: "10px",
-              }}
+        <div className="flex gap-2">
+          {['', 'unreviewed', 'reviewed', 'validated'].map((filter) => (
+            <Button
+              key={filter}
+              variant={trustFilter === filter ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setTrustFilter(filter)}
             >
-              {tag}
-            </span>
+              {filter === '' ? '전체' : TRUST_CONFIG[filter]?.label ?? filter}
+            </Button>
           ))}
         </div>
-      )}
-
-      <div
-        style={{
-          fontSize: "11px",
-          color: "#9ca3af",
-          marginTop: "12px",
-        }}
-      >
-        {skill.metadata.author} ·{" "}
-        {new Date(skill.metadata.createdAt).toLocaleDateString("ko-KR")}
       </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-4 gap-4">
+        <Card className="shadow-sm"><CardContent className="p-4">
+          <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>총 Skill</div>
+          <div className="text-2xl font-bold mt-1" style={{ color: 'var(--text-primary)' }}>{skills.length}</div>
+        </CardContent></Card>
+        <Card className="shadow-sm"><CardContent className="p-4">
+          <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>검증됨</div>
+          <div className="text-2xl font-bold mt-1" style={{ color: 'var(--success)' }}>
+            {skills.filter((s) => s.trust.level === 'validated').length}
+          </div>
+        </CardContent></Card>
+        <Card className="shadow-sm"><CardContent className="p-4">
+          <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>검토 중</div>
+          <div className="text-2xl font-bold mt-1" style={{ color: 'var(--accent)' }}>
+            {skills.filter((s) => s.trust.level === 'reviewed').length}
+          </div>
+        </CardContent></Card>
+        <Card className="shadow-sm"><CardContent className="p-4">
+          <div className="text-sm" style={{ color: 'var(--text-secondary)' }}>총 정책</div>
+          <div className="text-2xl font-bold mt-1" style={{ color: '#9333EA' }}>
+            {skills.reduce((sum, s) => sum + s.policyCount, 0)}
+          </div>
+        </CardContent></Card>
+      </div>
+
+      {/* Skill Grid */}
+      {loading ? (
+        <div className="text-center py-16" style={{ color: 'var(--text-secondary)' }}>불러오는 중...</div>
+      ) : filteredSkills.length === 0 ? (
+        <Card><CardContent className="p-16 text-center">
+          <Package className="w-12 h-12 mx-auto mb-3" style={{ color: 'var(--text-secondary)', opacity: 0.3 }} />
+          <p style={{ color: 'var(--text-secondary)' }}>Skill 패키지가 없습니다</p>
+        </CardContent></Card>
+      ) : (
+        <div className="grid grid-cols-3 gap-4">
+          {filteredSkills.map((skill) => {
+            const trust = TRUST_CONFIG[skill.trust.level] ?? TRUST_CONFIG['unreviewed']!;
+            return (
+              <Card key={skill.skillId} className="shadow-sm hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between mb-3">
+                    <code className="text-xs px-2 py-1 rounded font-mono" style={{ backgroundColor: 'var(--surface)', color: 'var(--primary)' }}>
+                      {skill.skillId.slice(0, 12)}
+                    </code>
+                    <Badge style={{ backgroundColor: trust.bg, color: trust.color, border: 'none' }} className="text-xs">
+                      {trust.label}
+                    </Badge>
+                  </div>
+                  <h3 className="font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
+                    {skill.metadata.domain}
+                    {skill.metadata.subdomain ? ` / ${skill.metadata.subdomain}` : ''}
+                  </h3>
+                  <div className="flex items-center gap-3 text-xs mb-3" style={{ color: 'var(--text-secondary)' }}>
+                    <span>v{skill.metadata.version}</span>
+                    <span>|</span>
+                    <span>정책 {skill.policyCount}건</span>
+                    <span>|</span>
+                    <span className="flex items-center gap-1">
+                      <Star className="w-3 h-3" /> {(skill.trust.score * 100).toFixed(0)}%
+                    </span>
+                  </div>
+                  {skill.metadata.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {skill.metadata.tags.slice(0, 4).map((tag) => (
+                        <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between text-xs" style={{ color: 'var(--text-secondary)' }}>
+                    <span>{skill.metadata.author} | {new Date(skill.metadata.createdAt).toLocaleDateString('ko-KR')}</span>
+                    <Button variant="outline" size="sm" onClick={() => void handleDownload(skill.skillId)}>
+                      <Download className="w-3 h-3 mr-1" /> 다운로드
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

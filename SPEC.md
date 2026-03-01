@@ -195,7 +195,12 @@
   - svc-security: 153 tests (97.14% stmts)
   - svc-queue-router: 43 tests (100% stmts)
 - **Test Coverage**: svc-ingestion 96.66%, svc-extraction 100%, svc-policy 73.55%, svc-skill 80.41%, svc-notification 96.72%, svc-analytics 89.65%, svc-governance 100%, svc-llm-router 98.85%, svc-ontology 100%, svc-security 97.14%, svc-queue-router 100% (709 tests, vitest)
-- **Frontend**: https://ai-foundry-web.pages.dev (Cloudflare Pages)
+- **Frontend**: https://ai-foundry-web.pages.dev (Cloudflare Pages) + https://ai-foundry.minu.best (커스텀 도메인)
+  - 6 pages real API 연동 (upload, analysis, hitl, audit, skill-catalog, dashboard)
+  - 3 pages real API 연동 완료 (ontology, api-console, trust) — 세션 026
+  - 5 sub-components still mock (PolicyQualityChart, HitlOperationsCard 등)
+- **E2E 스크립트**: `--staging`, `--real-doc <path>`, `--json`, `--wait-queue` 지원
+- **샘플 문서**: test-docs/ (퇴직연금 합성 3건)
 - **Staging 배포**: ✅ 11/11 Workers staging 배포 완료 (2026-03-01)
   - URL 패턴: `https://svc-xxx-staging.sinclair-account.workers.dev`
   - Service binding: staging worker 간 격리 (`-staging` 접미사)

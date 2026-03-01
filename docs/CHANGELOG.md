@@ -2,6 +2,21 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 026 — 2026-03-01
+
+**Phase 2 프론트엔드 API 연동 + E2E 스크립트 확장**:
+- ✅ ontology.tsx: mockNodes → fetchTerms() 실제 API + termsToNodes() 트리 변환
+- ✅ api-console.tsx: mockMappings → fetchSkills() + fetchSkillMcp() 실제 MCP 어댑터
+- ✅ trust.tsx: 하드코딩 scores → fetchTrust() + extractScore() 가중평균
+- ✅ API 클라이언트 신규/확장: ontology.ts (신규), governance.ts (+fetchTrust), skill.ts (+fetchSkillMcp)
+- ✅ test-e2e-pipeline.sh: --staging, --real-doc, --json, --wait-queue 4개 플래그 추가
+- ✅ generate-sample-docs.sh: 퇴직연금 합성 문서 3건 (중도인출/가입자격/급여계산)
+- ✅ Health check: Production 12/12, Staging 12/12 정상
+
+**검증 결과**:
+- ✅ typecheck 16/16 PASS
+- ✅ 6 files changed, +488/-232 (frontend) + 5 files, +601/-34 (scripts)
+
 ## 세션 025 — 2026-03-01
 
 **Phase 2 파일럿 PDCA 완료 — 테스트 수정 + Gap 분석 + 리포트**:

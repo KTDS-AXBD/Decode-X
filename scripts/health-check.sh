@@ -58,8 +58,10 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Adjust Pages URL for staging
+# Adjust for staging environment
+WORKER_SUFFIX=""
 if [[ "$ENVIRONMENT" == "staging" ]]; then
+  WORKER_SUFFIX="-staging"
   PAGES_URL="https://staging.ai-foundry-web.pages.dev"
 fi
 
@@ -70,7 +72,7 @@ TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
 check_service() {
   local svc="$1"
-  local url="https://${svc}.${DOMAIN}/health"
+  local url="https://${svc}${WORKER_SUFFIX}.${DOMAIN}/health"
   local start_ms
   start_ms=$(date +%s%N)
 

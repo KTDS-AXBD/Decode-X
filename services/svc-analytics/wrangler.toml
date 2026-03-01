@@ -32,7 +32,7 @@ database_id = "1a2f1511-e842-4bec-a213-f2e429d47b08"
 
 [[env.staging.services]]
 binding = "SECURITY"
-service = "svc-security"
+service = "svc-security-staging"
 
 # ---------------------------------------------------------------------------
 # Production environment

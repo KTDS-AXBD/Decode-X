@@ -47,11 +47,11 @@ database_id = "3a1a3a3c-aded-4c61-85ef-2bdef3c9ab86"
 
 [[env.staging.services]]
 binding = "SECURITY"
-service = "svc-security"
+service = "svc-security-staging"
 
 [[env.staging.services]]
 binding = "LLM_ROUTER"
-service = "svc-llm-router"
+service = "svc-llm-router-staging"
 
 [[env.staging.queues.producers]]
 binding = "QUEUE_PIPELINE"

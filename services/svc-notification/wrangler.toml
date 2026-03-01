@@ -40,7 +40,7 @@ database_id = "e8a57ad8-3f7d-4ad2-b9ac-dd26aba31db6"
 
 [[env.staging.services]]
 binding = "SECURITY"
-service = "svc-security"
+service = "svc-security-staging"
 
 [[env.staging.queues.producers]]
 binding = "QUEUE_PIPELINE"

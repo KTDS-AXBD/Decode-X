@@ -53,7 +53,7 @@ queue = "ai-foundry-pipeline-staging"
 
 [[env.staging.services]]
 binding = "SECURITY"
-service = "svc-security"
+service = "svc-security-staging"
 
 # ---------------------------------------------------------------------------
 # Production environment

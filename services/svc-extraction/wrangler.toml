@@ -47,11 +47,11 @@ database_id = "6b50dfe0-ac8d-401a-8122-c39fde3e19bd"
 
 [[env.staging.services]]
 binding = "SECURITY"
-service = "svc-security"
+service = "svc-security-staging"
 
 [[env.staging.services]]
 binding = "LLM_ROUTER"
-service = "svc-llm-router"
+service = "svc-llm-router-staging"
 
 [[env.staging.queues.producers]]
 binding = "QUEUE_PIPELINE"
@@ -59,7 +59,7 @@ queue = "ai-foundry-pipeline-staging"
 
 [[env.staging.services]]
 binding = "SVC_INGESTION"
-service = "svc-ingestion"
+service = "svc-ingestion-staging"
 
 # ---------------------------------------------------------------------------
 # Production environment

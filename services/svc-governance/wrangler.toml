@@ -40,7 +40,7 @@ id = "35b9f45b0fa44bde89b20cc1b9fc9d80"
 
 [[env.staging.services]]
 binding = "SECURITY"
-service = "svc-security"
+service = "svc-security-staging"
 
 # ---------------------------------------------------------------------------
 # Production environment

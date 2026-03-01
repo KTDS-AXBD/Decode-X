@@ -59,20 +59,20 @@ database_id = "63741d31-4234-4694-a9d2-7e383fdacdaf"
 
 [[env.staging.services]]
 binding = "SECURITY"
-service = "svc-security"
+service = "svc-security-staging"
 
 [[env.staging.services]]
 binding = "LLM_ROUTER"
-service = "svc-llm-router"
+service = "svc-llm-router-staging"
 
 [[env.staging.services]]
 binding = "NOTIFICATION"
-service = "svc-notification"
+service = "svc-notification-staging"
 
 [[env.staging.durable_objects.bindings]]
 name = "HITL_SESSION"
 class_name = "HitlSession"
-script_name = "svc-policy"
+script_name = "svc-policy-staging"
 
 [[env.staging.migrations]]
 tag = "v1"

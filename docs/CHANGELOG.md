@@ -2,6 +2,34 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 016 — 2026-03-01
+
+- ✅ **Gap Analysis** — 전체 프로젝트 설계-구현 갭 분석 (92% match rate)
+  - M-1/M-2: svc-notification/svc-analytics RBAC 미적용 (이번 세션 해결)
+  - M-3~M-7: 5개 서비스 unit test 누락 (이번 세션 해결)
+  - M-8: staging 리소스 placeholder (다음 세션)
+- ✅ **I-01** RBAC 미들웨어 확장 — svc-notification + svc-analytics
+  - packages/types/src/rbac.ts: "notification" 리소스 추가, 6개 역할별 권한 매트릭스
+  - svc-notification: SECURITY service binding + notification:read/update + audit
+  - svc-analytics: analytics:read + dashboards audit logging
+- ✅ **I-02** Unit test 대규모 확장 — 5개 서비스 440 tests (병렬 작성)
+  - svc-governance: 59 tests (100% stmts)
+  - svc-llm-router: 85 tests (98.85% stmts)
+  - svc-ontology: 100 tests (100% stmts)
+  - svc-security: 153 tests (97.14% stmts)
+  - svc-queue-router: 43 tests (100% stmts)
+  - ServiceBinding 축소 타입으로 keyof Env TS 에러 해결
+
+**검증**
+- typecheck: 16/16 pass
+- tests: 709/709 pass (269 기존 + 440 신규)
+
+**커밋**
+- `4f940bd` feat(rbac): add RBAC middleware to svc-notification and svc-analytics (I-01)
+- `aa7235c` test(services): add unit tests for 5 services (440 tests, 97-100% coverage)
+
+---
+
 ## 세션 015 — 2026-02-28
 
 - ✅ **H-06** Neo4j Aura 연결 — Query API v2 리팩토링 + 4 secrets 설정 + 배포 + 그래프 검증

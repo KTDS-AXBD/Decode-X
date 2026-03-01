@@ -52,7 +52,7 @@
 
 ## 5) Current Status
 
-- **Last Updated**: 2026-02-28 (세션 015)
+- **Last Updated**: 2026-03-01 (세션 016)
 - **Repo Bootstrap**: ✅
 - **PRD Seed Document**: ✅ (`docs/AI_Foundry_PRD_TDS_v0.6.docx`)
 - **.claude Skills/Agents Migration**: ✅
@@ -184,7 +184,17 @@
   - deploy-services.yml: 통합 matrix 배포 (push→staging, release→production)
   - deploy-pages.yml: 환경별 Pages 배포
   - scripts/deploy.sh: 수동 배포 스크립트
-- **Test Coverage**: svc-ingestion 96.66%, svc-extraction 100%, svc-policy 73.55%, svc-skill 80.41%, svc-notification 96.72%, svc-analytics 89.65% (269 tests, vitest)
+- **I-01 RBAC 확장**: ✅ svc-notification + svc-analytics RBAC 미들웨어 추가 (2026-03-01)
+  - packages/types/src/rbac.ts: "notification" 리소스 추가, 6개 역할별 권한 매트릭스
+  - svc-notification: SECURITY service binding + notification:read/update RBAC + audit
+  - svc-analytics: analytics:read RBAC + dashboards audit logging
+- **I-02 Unit Test 대규모 확장**: ✅ 5개 서비스 440 tests 추가 (2026-03-01)
+  - svc-governance: 59 tests (100% stmts)
+  - svc-llm-router: 85 tests (98.85% stmts)
+  - svc-ontology: 100 tests (100% stmts)
+  - svc-security: 153 tests (97.14% stmts)
+  - svc-queue-router: 43 tests (100% stmts)
+- **Test Coverage**: svc-ingestion 96.66%, svc-extraction 100%, svc-policy 73.55%, svc-skill 80.41%, svc-notification 96.72%, svc-analytics 89.65%, svc-governance 100%, svc-llm-router 98.85%, svc-ontology 100%, svc-security 97.14%, svc-queue-router 100% (709 tests, vitest)
 - **Frontend**: https://ai-foundry-web.pages.dev (Cloudflare Pages)
 
 ---
@@ -259,9 +269,10 @@
 - [x] **H-08** 프로덕션 환경 분리 — staging/prod wrangler.toml + 통합 CI/CD + deploy.sh
 
 ### 🔜 Phase I — Staging Provisioning + Polish
+- [x] **I-01** — svc-notification + svc-analytics RBAC 미들웨어 추가 (notification 리소스 타입 포함)
+- [x] **I-02** — 5개 서비스 unit test 추가 (440 tests, 97-100% coverage)
 - [ ] Staging 리소스 프로비저닝 (D1×10, R2×2, Queue×1, KV×2) → placeholder ID 교체
 - [ ] GitHub Environments 설정 (staging/production protection rules)
-- [ ] 추가 서비스 unit test (svc-governance, svc-security, svc-ontology, svc-llm-router 등)
 - [ ] 프로덕션 모니터링/알림 설정
 
 ---
@@ -305,3 +316,5 @@
 - 2026-02-28: H-07 Unit test 확대 — svc-ingestion 53 tests (96.66%), svc-extraction 52 tests (100%). CfProperties→IncomingRequestCfProperties 타입 불일치는 테스트 내 `as any` 캐스트로 해결
 - 2026-02-28: H-08 환경 분리 — 개별 deploy workflow 3개 → deploy-services.yml 통합 (matrix strategy). push→staging 자동, release→production 자동, workflow_dispatch→수동 선택. deploy.sh 스크립트 추가
 - 2026-02-28: Phase H 완료 → Phase I (Staging Provisioning + Polish) 진입 결정
+- 2026-03-01: I-01 RBAC 확장 — svc-notification/svc-analytics에 RBAC 미들웨어 적용. "notification" 리소스를 ResourceSchema에 추가. 선택적 RBAC: /internal/queue-event는 skip, 사용자 대면 엔드포인트만 적용
+- 2026-03-01: I-02 Unit test 대규모 확장 — 5개 서비스 병렬 작성 (440 tests). svc-queue-router keyof Env 타입 이슈 해결 (ServiceBinding 축소 타입). 총 테스트: 269→709

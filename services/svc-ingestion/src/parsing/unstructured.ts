@@ -1,3 +1,4 @@
+import { createLogger } from "@ai-foundry/utils";
 import type { Env } from "../env.js";
 
 export type UnstructuredElement = {
@@ -13,7 +14,9 @@ export async function parseDocument(
   env: Env,
 ): Promise<UnstructuredElement[]> {
   if (!env.UNSTRUCTURED_API_KEY) {
-    return [{ type: "Text", text: "PARSE_PENDING" }];
+    const logger = createLogger("svc-ingestion");
+    logger.warn("UNSTRUCTURED_API_KEY not set — skipping document parsing");
+    return [];
   }
 
   const formData = new FormData();

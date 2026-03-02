@@ -57,9 +57,9 @@ export async function processQueueEvent(body: unknown, env: Env, ctx: ExecutionC
     if (!r2Object) {
       logger.error("R2 object not found", { documentId, r2Key });
       await env.DB_INGESTION.prepare(
-        "UPDATE documents SET status = 'failed' WHERE document_id = ?",
+        "UPDATE documents SET status = 'failed', error_message = ? WHERE document_id = ?",
       )
-        .bind(documentId)
+        .bind("R2 object not found: " + r2Key, documentId)
         .run();
       return new Response(JSON.stringify({ ok: false, error: "r2_object_not_found" }), {
         status: 500,
@@ -152,9 +152,9 @@ export async function processQueueEvent(body: unknown, env: Env, ctx: ExecutionC
     logger.error("Queue event processing failed", { documentId, error: String(e) });
 
     await env.DB_INGESTION.prepare(
-      "UPDATE documents SET status = 'failed' WHERE document_id = ?",
+      "UPDATE documents SET status = 'failed', error_message = ? WHERE document_id = ?",
     )
-      .bind(documentId)
+      .bind(String(e).slice(0, 500), documentId)
       .run();
 
     return new Response(JSON.stringify({ ok: false, error: String(e) }), {

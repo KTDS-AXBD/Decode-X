@@ -102,10 +102,7 @@ export default {
             classification: string;
             word_count: number;
           }>();
-        return new Response(JSON.stringify({ documentId, chunks: results }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
+        return Response.json({ success: true, data: { documentId, chunks: results } });
       }
 
       // GET /documents/:id

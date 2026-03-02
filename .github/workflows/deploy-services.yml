@@ -51,7 +51,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 10
 
       - name: Determine environment
         id: env
@@ -73,6 +73,7 @@ jobs:
         env:
           EVENT_NAME: ${{ github.event_name }}
           INPUT_SERVICES: ${{ github.event.inputs.services }}
+          PUSH_BEFORE: ${{ github.event.before }}
         run: |
           # For releases, deploy everything
           if [[ "$EVENT_NAME" == "release" ]]; then
@@ -86,14 +87,14 @@ jobs:
             exit 0
           fi
 
-          # For push events, detect changed services
+          # For push events, detect changed services (compare all pushed commits)
           if [[ "$EVENT_NAME" == "push" ]]; then
             # If shared packages changed, deploy all services
-            if git diff --name-only HEAD~1 HEAD -- packages/ | grep -q .; then
+            if git diff --name-only "$PUSH_BEFORE" HEAD -- packages/ | grep -q .; then
               echo "services=${ALL_SERVICES}" >> "$GITHUB_OUTPUT"
               exit 0
             fi
-            CHANGED=$(git diff --name-only HEAD~1 HEAD -- services/ | \
+            CHANGED=$(git diff --name-only "$PUSH_BEFORE" HEAD -- services/ | \
               grep -oP 'services/\K[^/]+' | sort -u | tr '\n' ',' | sed 's/,$//')
             echo "services=${CHANGED}" >> "$GITHUB_OUTPUT"
             exit 0
@@ -166,6 +167,17 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: "services/${{ matrix.service }}"
           command: "deploy --env ${{ needs.prepare.outputs.environment }}"
+
+      # Production service bindings reference default-env Workers (e.g. svc-extraction),
+      # not the -production suffixed ones. Deploy to default env as well.
+      - name: Deploy default env (for service bindings)
+        if: needs.prepare.outputs.environment == 'production'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: "services/${{ matrix.service }}"
+          command: "deploy"
 
   # -----------------------------------------------------------------------
   # Summary

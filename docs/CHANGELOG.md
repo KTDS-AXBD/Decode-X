@@ -2,6 +2,17 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 039 — 2026-03-02
+**svc-policy org ID 이슈 수정 — 품질 대시보드 policy 메트릭 0건 해결**:
+- ✅ svc-analytics: orgId "default" fallback 제거 → event.payload.organizationId 직접 사용 (4개 event case 수정)
+- ✅ svc-policy: 불필요한 `eventOrgId ?? "system"` fallback 제거
+
+**Root Cause**: svc-analytics queue handler가 extraction.completed, policy.*, skill.packaged 이벤트에서 orgId를 "default"로 기록 → 품질 대시보드 쿼리 시 실제 org와 불일치
+
+**검증 결과**:
+- ✅ svc-analytics 22/22 PASS
+- ✅ svc-policy 68/68 PASS
+
 ## 세션 038 — 2026-03-02
 **Production E2E 파이프라인 테스트 검증**:
 - ✅ E2E 전체 테스트 769/769 PASS (45 파일, 11 서비스)

@@ -170,8 +170,10 @@ jobs:
 
       # Production service bindings reference default-env Workers (e.g. svc-extraction),
       # not the -production suffixed ones. Deploy to default env as well.
+      # Skip svc-queue-router: its queue consumer conflicts with the production env consumer
+      # (Cloudflare allows only one consumer per queue). No service binds to queue-router anyway.
       - name: Deploy default env (for service bindings)
-        if: needs.prepare.outputs.environment == 'production'
+        if: needs.prepare.outputs.environment == 'production' && matrix.service != 'svc-queue-router'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}

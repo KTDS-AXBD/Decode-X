@@ -2,6 +2,17 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 044 — 2026-03-02
+**HITL 정책 승인 + pending 정리 + extraction 품질 개선**:
+- ✅ HITL 정책 승인: org-test-redeploy 19/19 policies approved → Stage 4 (100 terms) → Stage 5 (83 skills) 파이프라인 검증
+- ✅ Pending extraction cleanup: 77 stale pending 레코드 Production DB에서 삭제
+- ✅ Extraction 품질 개선 3가지:
+  1. 적응형 프롬프트: 문서 분류(api_spec, erd, screen_design 등)별 맞춤 추출 지시
+  2. 스마트 청크 선택: head 3 + word_count 상위 17개 (naive slice 대체)
+  3. maxTokens 2048→4096 (JSON 잘림 방지)
+- ✅ 확장된 entity 유형: system, interface, table 추가
+- ✅ 60/60 tests PASS, typecheck 16/16 PASS
+
 ## 세션 043 — 2026-03-02
 **extraction pending + org ID "default" 두 버그 해결 + Production E2E 8/8 PASS**:
 - ✅ Bug #1 (P0): `fetchChunks` 응답 파싱 `data.chunks` → `data.data.chunks` (mock-reality divergence)

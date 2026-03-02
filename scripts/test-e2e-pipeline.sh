@@ -197,7 +197,7 @@ else
   MANUAL_RESP=$(api -X POST "$EXTRACTION_BASE/extract" \
     -H "X-Internal-Secret: $SECRET" \
     -H "Content-Type: application/json" \
-    -d "{\"documentId\":\"$DOC_ID\",\"chunks\":[\"퇴직연금 중도인출 요건: 무주택 세대주 조건으로 가입기간 5년 이상이며 인출한도는 적립금의 50%이다. 주택구입, 전세자금, 6개월 이상 요양, 파산 또는 개인회생 사유에 해당해야 한다.\"],\"tier\":\"haiku\"}")
+    -d "{\"documentId\":\"$DOC_ID\",\"organizationId\":\"$ORG_ID\",\"chunks\":[\"퇴직연금 중도인출 요건: 무주택 세대주 조건으로 가입기간 5년 이상이며 인출한도는 적립금의 50%이다. 주택구입, 전세자금, 6개월 이상 요양, 파산 또는 개인회생 사유에 해당해야 한다.\"],\"tier\":\"haiku\"}")
   EXTRACTION_ID=$(echo "$MANUAL_RESP" | jqr '.data.extractionId // .extractionId')
 fi
 

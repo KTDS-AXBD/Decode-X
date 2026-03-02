@@ -2,6 +2,25 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 036 — 2026-03-02
+
+**Stage 2 추출 품질 개선 — 동적 LLM 티어 + 청크 전략 최적화** (`/team` 2-worker 병렬):
+- ✅ svc-extraction: 동적 LLM 티어 선택 (haiku/sonnet) — 10K 문자 이상이면 sonnet 사용
+- ✅ svc-extraction: 프롬프트 청크 예산 확대 (MAX_CHUNK_CHARS 4K→10K, MAX_TOTAL_CHARS 60K)
+- ✅ svc-extraction: 비례 축소 전략으로 긴 문서도 골고루 포함 (최소 500자 보장)
+- ✅ svc-extraction: JSON 파싱 실패 시 rawContent 프리뷰 로깅 추가
+- ✅ packages/types: fileType에 "txt" 추가 (Phase 2-C 배치 문서 지원)
+- ✅ scripts/test-e2e-batch.sh: 합성 문서 text/plain 업로드 수정
+- ✅ .gitignore: test-docs/, wireframe-*.png, .bkit/ 정리
+- ✅ Production + Staging 배포: svc-extraction, svc-ingestion
+
+**검증 결과**:
+- ✅ typecheck 16/16 PASS
+- ✅ svc-extraction tests 56/56 PASS
+- ✅ Production health: svc-extraction 200, svc-ingestion 200
+
+**배경**: Production DB 분석 결과 84.6% 추출이 빈 결과 (13건 중 11건). 원인: haiku 티어 고정 + 95.7% 청크 잘림 + 무음 JSON 실패
+
 ## 세션 035 — 2026-03-02
 
 **Phase 2-C 시작 — E2E 인프라 보강 + MCP/OpenAPI adapter + 테스트 문서 세트** (`/team` 3-worker 병렬):

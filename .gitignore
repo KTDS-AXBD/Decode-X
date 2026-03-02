@@ -62,3 +62,6 @@ test-docs/
 
 # Wireframe images (design artifacts)
 wireframe-*.png
+
+# Source documents (real SI deliverables — large binary, not for VCS)
+docs/retirement-pension-source/

@@ -2,6 +2,18 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 031 — 2026-03-02
+
+**ctx.waitUntil → await 전체 서비스 수정 + Staging E2E 검증 완료**:
+- ✅ 4개 서비스(svc-policy, svc-ontology, svc-skill, svc-ingestion) 10개 위치 ctx.waitUntil → await 전환
+- ✅ GitHub Actions 배포: svc-policy, svc-ontology, svc-skill, svc-ingestion staging 재배포
+- ✅ Staging 5-Stage E2E 자동 파이프라인 전체 PASS (extraction → policy 8건 → HITL 승인 → ontology → skill)
+- ✅ INTERNAL_API_SECRET 환경변수 저장 (~/.bashrc)
+
+**검증 결과**:
+- ✅ Staging E2E: 5-Stage 전체 자동화 검증 완료 (skill auto-packaging 성공)
+- ✅ svc-policy 68/68, svc-ontology 51/51, svc-skill 70/70, svc-ingestion 11/11 테스트 통과
+
 ## 세션 030 — 2026-03-02
 
 **Trust 페이지 4개 컴포넌트 API 연동 완료**:

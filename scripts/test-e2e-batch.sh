@@ -158,15 +158,16 @@ for i in $(seq 0 $((DOC_COUNT - 1))); do
   echo "--- Document $((i+1))/$DOC_COUNT: $DOC_NAME ---"
 
   # Stage 1: Upload (multipart/form-data — matches svc-ingestion API)
+  # Synthetic documents are plain text; upload as text/plain for reliable parsing.
+  # Real binary files (PDF/DOCX) should use --dir with actual files instead.
   echo "  [1/5] Uploading..."
-  DOC_MIME=$(mime_type "$DOC_TYPE")
-  TMPFILE="$TMPDIR_BATCH/$DOC_NAME"
+  TMPFILE="$TMPDIR_BATCH/${DOC_NAME%.${DOC_TYPE}}.txt"
   echo "$DOC_CONTENT" > "$TMPFILE"
   UPLOAD_RESP=$(curl -s -X POST "$INGESTION_URL/documents" \
     -H "$SECRET_HEADER" \
     -H "X-Organization-Id: $ORG_ID" \
     -H "X-User-Id: batch-test" \
-    -F "file=@${TMPFILE};filename=${DOC_NAME};type=${DOC_MIME}" \
+    -F "file=@${TMPFILE};filename=${DOC_NAME%.${DOC_TYPE}}.txt;type=text/plain" \
     2>/dev/null || echo '{"success":false}')
 
   DOC_ID=$(echo "$UPLOAD_RESP" | jq -r '.data.documentId // empty')

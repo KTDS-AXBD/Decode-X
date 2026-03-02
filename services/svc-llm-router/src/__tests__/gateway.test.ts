@@ -8,11 +8,14 @@ function mockEnv(overrides?: Partial<Env>): Env {
   return {
     DB_LLM: {} as D1Database,
     KV_PROMPTS: {} as KVNamespace,
+    AI: {} as Ai,
     ENVIRONMENT: "development",
     SERVICE_NAME: "svc-llm-router",
     INTERNAL_API_SECRET: "test-secret",
     ANTHROPIC_API_KEY: "sk-ant-test-key",
     CLOUDFLARE_AI_GATEWAY_URL: "https://gateway.ai.cloudflare.com/v1/acct/gw",
+    OPENAI_API_KEY: "sk-openai-test",
+    GOOGLE_AI_API_KEY: "AIza-test",
     ...overrides,
   };
 }

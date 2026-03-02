@@ -1,6 +1,7 @@
-import type { LlmTier, LlmRequest } from "@ai-foundry/types";
+import type { LlmTier, LlmProvider, LlmRequest } from "@ai-foundry/types";
 import { TIER_MODELS } from "@ai-foundry/types";
 import type { Logger } from "@ai-foundry/utils";
+import { resolveProvider } from "./execute.js";
 
 // Only svc-policy is allowed to call opus tier
 const OPUS_AUTHORIZED_SERVICES = new Set(["svc-policy"]);
@@ -9,11 +10,12 @@ const OPUS_AUTHORIZED_SERVICES = new Set(["svc-policy"]);
  * Resolve which LLM tier and model to use.
  * - Enforces opus authorization (only svc-policy may use opus)
  * - Downgrades unauthorized opus calls to sonnet
+ * - Resolves provider from request or defaults by tier
  */
 export function resolveTier(
-  request: Pick<LlmRequest, "tier" | "callerService" | "complexityScore">,
+  request: Pick<LlmRequest, "tier" | "callerService" | "complexityScore" | "provider">,
   logger: Logger,
-): { tier: LlmTier; model: string; downgraded: boolean } {
+): { tier: LlmTier; model: string; downgraded: boolean; provider: LlmProvider } {
   let { tier } = request;
   let downgraded = false;
 
@@ -40,11 +42,13 @@ export function resolveTier(
   }
 
   const model = TIER_MODELS[tier];
-  return { tier, model, downgraded };
+  const provider = resolveProvider({ tier, provider: request.provider });
+  return { tier, model, downgraded, provider };
 }
 
 /**
  * Build the Anthropic Messages API request body.
+ * Kept for backward compatibility (used by stream.ts for Anthropic-only streaming).
  */
 export function buildAnthropicBody(
   request: LlmRequest,

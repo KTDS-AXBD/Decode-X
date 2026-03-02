@@ -23,11 +23,14 @@ function mockEnv(overrides?: Partial<Env>): Env {
   return {
     DB_LLM: mockDb(),
     KV_PROMPTS: { get: vi.fn(), put: vi.fn() } as unknown as KVNamespace,
+    AI: { run: vi.fn() } as unknown as Ai,
     ENVIRONMENT: "development",
     SERVICE_NAME: "svc-llm-router",
     INTERNAL_API_SECRET: "test-secret",
     ANTHROPIC_API_KEY: "sk-ant-test-key",
     CLOUDFLARE_AI_GATEWAY_URL: "https://gateway.ai.cloudflare.com/v1/acct/gw",
+    OPENAI_API_KEY: "sk-openai-test",
+    GOOGLE_AI_API_KEY: "AIza-test",
     ...overrides,
   };
 }
@@ -282,11 +285,12 @@ describe("handleComplete", () => {
     );
   });
 
-  it("returns 502 when upstream Anthropic call fails", async () => {
+  it("returns 502 when all upstream providers fail", async () => {
     const env = mockEnv();
     const ctx = mockCtx();
-    const fetchSpy = vi.fn().mockResolvedValue(
-      new Response("Anthropic is down", { status: 503 }),
+    // Each call needs a fresh Response (body can only be consumed once)
+    const fetchSpy = vi.fn().mockImplementation(() =>
+      Promise.resolve(new Response("Provider is down", { status: 503 })),
     );
     globalThis.fetch = fetchSpy;
 

@@ -3,6 +3,9 @@ main = "src/index.ts"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 
+[ai]
+binding = "AI"
+
 [dev]
 port = 8706
 inspector_port = 9206
@@ -28,6 +31,8 @@ SERVICE_NAME = "svc-llm-router"
 # INTERNAL_API_SECRET — shared HMAC secret for inter-service auth
 # ANTHROPIC_API_KEY — Anthropic API key
 # CLOUDFLARE_AI_GATEWAY_URL — AI Gateway base URL
+# OPENAI_API_KEY — OpenAI API key (fallback provider)
+# GOOGLE_AI_API_KEY — Google AI Studio API key (fallback provider)
 
 # ---------------------------------------------------------------------------
 # Staging environment

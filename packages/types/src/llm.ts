@@ -9,12 +9,45 @@ export const LlmTierSchema = z.enum([
 
 export type LlmTier = z.infer<typeof LlmTierSchema>;
 
-// Model IDs per tier
+export const LlmProviderSchema = z.enum([
+  "anthropic",
+  "openai",
+  "google",
+  "workers-ai",
+]);
+
+export type LlmProvider = z.infer<typeof LlmProviderSchema>;
+
+// Model IDs per tier (Anthropic-only, kept for backward compatibility)
 export const TIER_MODELS: Record<LlmTier, string> = {
   opus: "claude-opus-4-6",
   sonnet: "claude-sonnet-4-6",
   haiku: "claude-haiku-4-5-20251001",
   workers: "@cf/baai/bge-base-en-v1.5",
+};
+
+// Per-provider tier→model mapping (workers-ai has no opus equivalent)
+export const PROVIDER_TIER_MODELS: Record<LlmProvider, Partial<Record<LlmTier, string>>> = {
+  anthropic: {
+    opus: "claude-opus-4-6",
+    sonnet: "claude-sonnet-4-6",
+    haiku: "claude-haiku-4-5-20251001",
+    workers: "@cf/baai/bge-base-en-v1.5",
+  },
+  openai: {
+    opus: "gpt-4o",
+    sonnet: "gpt-4o-mini",
+    haiku: "gpt-4o-mini",
+  },
+  google: {
+    opus: "gemini-2.0-flash",
+    sonnet: "gemini-2.0-flash",
+    haiku: "gemini-2.0-flash-lite",
+  },
+  "workers-ai": {
+    sonnet: "@cf/meta/llama-3.1-70b-instruct",
+    haiku: "@cf/meta/llama-3.1-8b-instruct",
+  },
 };
 
 export const LlmMessageSchema = z.object({
@@ -33,6 +66,7 @@ export const LlmRequestSchema = z.object({
   stream: z.boolean().default(false),
   callerService: z.string(),    // which SVC is calling (e.g. "svc-policy")
   complexityScore: z.number().min(0).max(1).optional(),
+  provider: LlmProviderSchema.optional(), // explicit provider override; omit for default routing
   metadata: z.record(z.string()).optional(),
 });
 
@@ -54,6 +88,8 @@ export const LlmResponseSchema = z.object({
   usage: LlmUsageSchema,
   durationMs: z.number(),
   cached: z.boolean().default(false),
+  provider: LlmProviderSchema.optional(),
+  fallbackFrom: LlmProviderSchema.optional(),
 });
 
 export type LlmResponse = z.infer<typeof LlmResponseSchema>;
@@ -68,5 +104,7 @@ export type LlmCostLogEntry = {
   outputTokens: number;
   durationMs: number;
   cached: boolean;
+  provider: LlmProvider;
+  fallbackFrom: LlmProvider | null;
   createdAt: string; // ISO-8601
 };

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { resolveTier, buildAnthropicBody } from "../router.js";
-import type { LlmRequest, LlmTier } from "@ai-foundry/types";
+import type { LlmRequest, LlmTier, LlmProvider } from "@ai-foundry/types";
 import { TIER_MODELS } from "@ai-foundry/types";
 import type { Logger } from "@ai-foundry/utils";
 
@@ -16,7 +16,7 @@ function mockLogger(): Logger {
   };
 }
 
-function makeRequest(overrides: Partial<Pick<LlmRequest, "tier" | "callerService" | "complexityScore">> = {}): Pick<LlmRequest, "tier" | "callerService" | "complexityScore"> {
+function makeRequest(overrides: Partial<Pick<LlmRequest, "tier" | "callerService" | "complexityScore" | "provider">> = {}): Pick<LlmRequest, "tier" | "callerService" | "complexityScore" | "provider"> {
   return {
     tier: "sonnet",
     callerService: "svc-extraction",
@@ -183,6 +183,32 @@ describe("resolveTier", () => {
     // but callerService is not svc-policy, so stays sonnet.
     expect(result.tier).toBe("sonnet");
     expect(result.downgraded).toBe(true);
+  });
+
+  // ── provider resolution ────────────────────────────────────────
+
+  it("defaults to anthropic provider for non-workers tier", () => {
+    const logger = mockLogger();
+    const result = resolveTier(makeRequest({ tier: "sonnet" }), logger);
+    expect(result.provider).toBe("anthropic");
+  });
+
+  it("defaults to workers-ai provider for workers tier", () => {
+    const logger = mockLogger();
+    const result = resolveTier(makeRequest({ tier: "workers" }), logger);
+    expect(result.provider).toBe("workers-ai");
+  });
+
+  it("uses explicit provider when specified", () => {
+    const logger = mockLogger();
+    const result = resolveTier(makeRequest({ tier: "sonnet", provider: "openai" }), logger);
+    expect(result.provider).toBe("openai");
+  });
+
+  it("uses explicit google provider", () => {
+    const logger = mockLogger();
+    const result = resolveTier(makeRequest({ tier: "haiku", provider: "google" }), logger);
+    expect(result.provider).toBe("google");
   });
 });
 

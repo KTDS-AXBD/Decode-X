@@ -5,6 +5,9 @@ export interface Env {
   // KV for prompt registry cache
   KV_PROMPTS: KVNamespace;
 
+  // Workers AI binding (for workers-ai provider)
+  AI: Ai;
+
   // Vars
   ENVIRONMENT: string;
   SERVICE_NAME: string;
@@ -13,4 +16,6 @@ export interface Env {
   INTERNAL_API_SECRET: string;
   ANTHROPIC_API_KEY: string;
   CLOUDFLARE_AI_GATEWAY_URL: string;
+  OPENAI_API_KEY: string;
+  GOOGLE_AI_API_KEY: string;
 }

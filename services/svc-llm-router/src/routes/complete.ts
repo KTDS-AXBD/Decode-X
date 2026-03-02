@@ -2,8 +2,8 @@ import { LlmRequestSchema } from "@ai-foundry/types";
 import type { LlmCostLogEntry } from "@ai-foundry/types";
 import { ok, errFromUnknown, badRequest, createLogger } from "@ai-foundry/utils";
 import type { Env } from "../env.js";
-import { resolveTier, buildAnthropicBody } from "../router.js";
-import { gatewayComplete, parseAnthropicResponse } from "../gateway.js";
+import { resolveTier } from "../router.js";
+import { executeWithFallback } from "../execute.js";
 
 export async function handleComplete(
   request: Request,
@@ -29,23 +29,30 @@ export async function handleComplete(
   const reqLogger = logger.child({ requestId, callerService: llmRequest.callerService });
 
   try {
-    const { tier, model, downgraded } = resolveTier(llmRequest, reqLogger);
+    const { tier, downgraded, provider } = resolveTier(llmRequest, reqLogger);
 
     if (downgraded) {
       reqLogger.info("Tier downgraded", { from: llmRequest.tier, to: tier });
     }
 
-    const anthropicBody = buildAnthropicBody({ ...llmRequest, tier }, model);
-    const { raw, durationMs, cached } = await gatewayComplete(env, model, anthropicBody, requestId);
-    const llmResponse = parseAnthropicResponse(raw, requestId, tier, model, durationMs, cached);
+    const result = await executeWithFallback(
+      env,
+      { ...llmRequest, tier },
+      tier,
+      provider,
+      requestId,
+      reqLogger,
+    );
 
     reqLogger.info("LLM call completed", {
       tier,
-      model,
-      durationMs,
-      cached,
-      inputTokens: llmResponse.usage.inputTokens,
-      outputTokens: llmResponse.usage.outputTokens,
+      provider: result.provider,
+      model: result.model,
+      durationMs: result.durationMs,
+      cached: result.cached,
+      inputTokens: result.usage.inputTokens,
+      outputTokens: result.usage.outputTokens,
+      fallbackFrom: result.fallbackFrom,
     });
 
     // Fire-and-forget cost logging to D1
@@ -53,16 +60,28 @@ export async function handleComplete(
       requestId,
       callerService: llmRequest.callerService,
       tier,
-      model,
-      inputTokens: llmResponse.usage.inputTokens,
-      outputTokens: llmResponse.usage.outputTokens,
-      durationMs,
-      cached,
+      model: result.model,
+      inputTokens: result.usage.inputTokens,
+      outputTokens: result.usage.outputTokens,
+      durationMs: result.durationMs,
+      cached: result.cached,
+      provider: result.provider,
+      fallbackFrom: result.fallbackFrom,
       createdAt: new Date().toISOString(),
     };
     ctx.waitUntil(writeCostLog(env.DB_LLM, logEntry));
 
-    return ok(llmResponse);
+    return ok({
+      id: requestId,
+      tier,
+      model: result.model,
+      content: result.content,
+      usage: result.usage,
+      durationMs: result.durationMs,
+      cached: result.cached,
+      provider: result.provider,
+      fallbackFrom: result.fallbackFrom,
+    });
   } catch (e) {
     reqLogger.error("LLM call failed", { error: String(e) });
     return errFromUnknown(e);
@@ -73,8 +92,8 @@ async function writeCostLog(db: D1Database, entry: LlmCostLogEntry): Promise<voi
   await db
     .prepare(
       `INSERT INTO llm_cost_log
-        (request_id, caller_service, tier, model, input_tokens, output_tokens, duration_ms, cached, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        (request_id, caller_service, tier, model, input_tokens, output_tokens, duration_ms, cached, provider, fallback_from, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .bind(
       entry.requestId,
@@ -85,6 +104,8 @@ async function writeCostLog(db: D1Database, entry: LlmCostLogEntry): Promise<voi
       entry.outputTokens,
       entry.durationMs,
       entry.cached ? 1 : 0,
+      entry.provider,
+      entry.fallbackFrom,
       entry.createdAt,
     )
     .run();

@@ -75,6 +75,7 @@ export default function DocumentUploadPage() {
     const config: Record<string, { label: string; color: string; bg: string }> = {
       pending: { label: '대기', color: '#6B7280', bg: 'rgba(107, 114, 128, 0.1)' },
       processing: { label: '처리 중', color: 'var(--accent)', bg: 'rgba(246, 173, 85, 0.15)' },
+      parsed: { label: '파싱 완료', color: '#3B82F6', bg: 'rgba(59, 130, 246, 0.1)' },
       completed: { label: '완료', color: 'var(--success)', bg: 'rgba(56, 161, 105, 0.1)' },
       failed: { label: '오류', color: 'var(--danger)', bg: 'rgba(229, 62, 62, 0.1)' },
     };
@@ -84,6 +85,7 @@ export default function DocumentUploadPage() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
+      case 'parsed': return <CheckCircle className="w-5 h-5" style={{ color: '#3B82F6' }} />;
       case 'completed': return <CheckCircle className="w-5 h-5" style={{ color: 'var(--success)' }} />;
       case 'processing': return <Clock className="w-5 h-5" style={{ color: 'var(--accent)' }} />;
       case 'failed': return <AlertCircle className="w-5 h-5" style={{ color: 'var(--danger)' }} />;
@@ -91,7 +93,7 @@ export default function DocumentUploadPage() {
     }
   };
 
-  const completedCount = documents.filter((d) => d.status === 'completed').length;
+  const completedCount = documents.filter((d) => d.status === 'completed' || d.status === 'parsed').length;
   const processingCount = documents.filter((d) => d.status === 'processing').length;
 
   return (

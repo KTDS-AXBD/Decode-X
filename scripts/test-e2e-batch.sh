@@ -122,17 +122,31 @@ if [[ "$DRY_RUN" == "true" ]]; then
     TYPE=$(echo "$DOC" | jq -r '.fileType // empty')
     CONTENT=$(echo "$DOC" | jq -r '.content // empty')
 
+    FILEPATH=$(echo "$DOC" | jq -r '.filePath // empty')
+
     if [[ -z "$NAME" ]]; then
       echo "  [ERROR] Document $((i+1)): missing 'name'"
       ERRORS=$((ERRORS + 1))
     elif [[ -z "$TYPE" ]]; then
       echo "  [ERROR] Document $((i+1)) ($NAME): missing 'fileType'"
       ERRORS=$((ERRORS + 1))
+    elif [[ -n "$FILEPATH" ]]; then
+      # Real file mode — validate filePath existence
+      if [[ "$FILEPATH" != /* ]]; then
+        FILEPATH="$DOC_DIR/$FILEPATH"
+      fi
+      if [[ -f "$FILEPATH" ]]; then
+        FILE_SIZE=$(stat -c%s "$FILEPATH" 2>/dev/null || stat -f%z "$FILEPATH" 2>/dev/null || echo 0)
+        echo "  [OK] $NAME ($TYPE, real file: $(( FILE_SIZE / 1024 )) KB)"
+      else
+        echo "  [ERROR] Document $((i+1)) ($NAME): file not found: $FILEPATH"
+        ERRORS=$((ERRORS + 1))
+      fi
     elif [[ -z "$CONTENT" ]]; then
-      echo "  [ERROR] Document $((i+1)) ($NAME): missing 'content'"
+      echo "  [ERROR] Document $((i+1)) ($NAME): missing 'content' (and no 'filePath')"
       ERRORS=$((ERRORS + 1))
     else
-      echo "  [OK] $NAME ($TYPE)"
+      echo "  [OK] $NAME ($TYPE, synthetic)"
     fi
   done
   echo ""
@@ -153,22 +167,47 @@ for i in $(seq 0 $((DOC_COUNT - 1))); do
   DOC=$(echo "$DOCS" | jq -r ".documents[$i]")
   DOC_NAME=$(echo "$DOC" | jq -r '.name')
   DOC_TYPE=$(echo "$DOC" | jq -r '.fileType')
-  DOC_CONTENT=$(echo "$DOC" | jq -r '.content')
+  DOC_CONTENT=$(echo "$DOC" | jq -r '.content // empty')
+  DOC_FILEPATH=$(echo "$DOC" | jq -r '.filePath // empty')
 
   echo "--- Document $((i+1))/$DOC_COUNT: $DOC_NAME ---"
 
   # Stage 1: Upload (multipart/form-data — matches svc-ingestion API)
-  # Synthetic documents are plain text; upload as text/plain for reliable parsing.
-  # Real binary files (PDF/DOCX) should use --dir with actual files instead.
   echo "  [1/5] Uploading..."
-  TMPFILE="$TMPDIR_BATCH/${DOC_NAME%.${DOC_TYPE}}.txt"
-  echo "$DOC_CONTENT" > "$TMPFILE"
-  UPLOAD_RESP=$(curl -s --max-time 30 -X POST "$INGESTION_URL/documents" \
-    -H "$SECRET_HEADER" \
-    -H "X-Organization-Id: $ORG_ID" \
-    -H "X-User-Id: batch-test" \
-    -F "file=@${TMPFILE};filename=${DOC_NAME%.${DOC_TYPE}}.txt;type=text/plain" \
-    2>/dev/null || echo '{"success":false}')
+
+  if [[ -n "$DOC_FILEPATH" ]]; then
+    # Real binary file upload — resolve relative paths against DOC_DIR
+    if [[ "$DOC_FILEPATH" != /* ]]; then
+      DOC_FILEPATH="$DOC_DIR/$DOC_FILEPATH"
+    fi
+    if [[ ! -f "$DOC_FILEPATH" ]]; then
+      echo "  FAILED: File not found: $DOC_FILEPATH"
+      FAILED=$((FAILED + 1))
+      RESULTS_JSON=$(echo "$RESULTS_JSON" | jq \
+        --arg name "$DOC_NAME" \
+        '. + [{"name":$name,"status":"failed","stage":"upload","documentId":null,"policies":0}]')
+      continue
+    fi
+    UPLOAD_MIME=$(mime_type "$DOC_TYPE")
+    FILE_SIZE=$(stat -c%s "$DOC_FILEPATH" 2>/dev/null || stat -f%z "$DOC_FILEPATH" 2>/dev/null || echo 0)
+    echo "  Real file: $DOC_FILEPATH ($(( FILE_SIZE / 1024 )) KB, $UPLOAD_MIME)"
+    UPLOAD_RESP=$(curl -s --max-time 120 -X POST "$INGESTION_URL/documents" \
+      -H "$SECRET_HEADER" \
+      -H "X-Organization-Id: $ORG_ID" \
+      -H "X-User-Id: batch-test" \
+      -F "file=@${DOC_FILEPATH};filename=${DOC_NAME};type=${UPLOAD_MIME}" \
+      2>/dev/null || echo '{"success":false}')
+  else
+    # Synthetic text upload (legacy behavior)
+    TMPFILE="$TMPDIR_BATCH/${DOC_NAME%.${DOC_TYPE}}.txt"
+    echo "$DOC_CONTENT" > "$TMPFILE"
+    UPLOAD_RESP=$(curl -s --max-time 30 -X POST "$INGESTION_URL/documents" \
+      -H "$SECRET_HEADER" \
+      -H "X-Organization-Id: $ORG_ID" \
+      -H "X-User-Id: batch-test" \
+      -F "file=@${TMPFILE};filename=${DOC_NAME%.${DOC_TYPE}}.txt;type=text/plain" \
+      2>/dev/null || echo '{"success":false}')
+  fi
 
   DOC_ID=$(echo "$UPLOAD_RESP" | jq -r '.data.documentId // empty')
   if [[ -z "$DOC_ID" ]]; then
@@ -181,14 +220,50 @@ for i in $(seq 0 $((DOC_COUNT - 1))); do
   fi
   echo "  OK: documentId=$DOC_ID"
 
-  # Wait for queue-driven pipeline (Stage 1→2→3)
-  echo "  [2-4/5] Waiting for pipeline (15s)..."
+  # Poll document status until parsed/failed (real files can take 30-90s via Unstructured.io)
+  if [[ -n "$DOC_FILEPATH" ]]; then
+    MAX_PARSE_POLLS=18
+    PARSE_INTERVAL=5
+  else
+    MAX_PARSE_POLLS=6
+    PARSE_INTERVAL=3
+  fi
+  echo "  [2/5] Waiting for document parsing..."
+  DOC_PARSE_STATUS="pending"
+  CHUNK_COUNT=0
+  for poll in $(seq 1 "$MAX_PARSE_POLLS"); do
+    STATUS_RESP=$(curl -s --max-time 10 "$INGESTION_URL/documents/$DOC_ID" \
+      -H "$SECRET_HEADER" 2>/dev/null || echo '{}')
+    DOC_PARSE_STATUS=$(echo "$STATUS_RESP" | jq -r '.data.status // .status // "pending"')
+    if [[ "$DOC_PARSE_STATUS" == "parsed" || "$DOC_PARSE_STATUS" == "completed" ]]; then
+      echo "  Document parsed successfully"
+      # Fetch chunk count
+      CHUNKS_RESP=$(curl -s --max-time 10 "$INGESTION_URL/documents/$DOC_ID/chunks" \
+        -H "$SECRET_HEADER" 2>/dev/null || echo '{}')
+      CHUNK_COUNT=$(echo "$CHUNKS_RESP" | jq '.data.chunks | length // 0' 2>/dev/null || echo 0)
+      echo "  Chunks: $CHUNK_COUNT"
+      break
+    elif [[ "$DOC_PARSE_STATUS" == "failed" ]]; then
+      ERROR_MSG=$(echo "$STATUS_RESP" | jq -r '.data.error_message // "unknown"')
+      echo "  WARN: Document parsing failed: $ERROR_MSG"
+      break
+    fi
+    if [[ "$poll" -lt "$MAX_PARSE_POLLS" ]]; then
+      sleep "$PARSE_INTERVAL"
+    fi
+  done
+  if [[ "$DOC_PARSE_STATUS" == "pending" ]]; then
+    echo "  WARN: Document still pending after polling (queue may be delayed)"
+  fi
+
+  # Wait for downstream pipeline (extraction → policy)
+  echo "  [3-4/5] Waiting for extraction + policy pipeline (15s)..."
   sleep 15
 
   # Check policies (poll a few times — async pipeline may still be running)
   POLICY_COUNT=0
   POLICIES_RESP='{"success":false}'
-  for attempt in 1 2 3; do
+  for attempt in 1 2 3 4 5; do
     POLICIES_RESP=$(curl -s --max-time 15 "$POLICY_URL/policies?documentId=$DOC_ID" \
       -H "$SECRET_HEADER" 2>/dev/null || echo '{"success":false}')
     POLICY_COUNT=$(echo "$POLICIES_RESP" | jq '.data.policies | length // 0' 2>/dev/null || echo 0)
@@ -201,7 +276,7 @@ for i in $(seq 0 $((DOC_COUNT - 1))); do
 
   # Auto-approve
   if [[ "$AUTO_APPROVE" == "true" && "$POLICY_COUNT" -gt 0 ]]; then
-    echo "  [3/5] Auto-approving..."
+    echo "  [4/5] Auto-approving..."
     for j in $(seq 0 $((POLICY_COUNT - 1))); do
       POLICY_ID=$(echo "$POLICIES_RESP" | jq -r ".data.policies[$j].policyId // empty")
       POLICY_STATUS=$(echo "$POLICIES_RESP" | jq -r ".data.policies[$j].status // empty")
@@ -223,8 +298,10 @@ for i in $(seq 0 $((DOC_COUNT - 1))); do
   RESULTS_JSON=$(echo "$RESULTS_JSON" | jq \
     --arg name "$DOC_NAME" \
     --arg docId "$DOC_ID" \
+    --arg parseStatus "$DOC_PARSE_STATUS" \
+    --argjson chunks "$CHUNK_COUNT" \
     --argjson policies "$POLICY_COUNT" \
-    '. + [{"name":$name,"status":"passed","stage":"complete","documentId":$docId,"policies":$policies}]')
+    '. + [{"name":$name,"status":"passed","stage":"complete","documentId":$docId,"parseStatus":$parseStatus,"chunks":$chunks,"policies":$policies}]')
   echo ""
 done
 

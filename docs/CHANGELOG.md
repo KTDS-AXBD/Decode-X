@@ -2,6 +2,17 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 032 — 2026-03-02
+
+**로컬 개발 환경 설정 — 11 서비스 동시 기동 가능하도록 포트 할당 + 배치 스타트업 스크립트**:
+- ✅ 11개 서비스 wrangler.toml에 `[dev]` 섹션 추가 (HTTP 8701–8711, inspector 9201–9211)
+- ✅ `scripts/dev-local.sh` 생성 — 5 Wave 순차 기동으로 Service Binding 자동 연결
+- ✅ `package.json`에 `dev:local` 스크립트 추가
+
+**검증 결과**:
+- ✅ typecheck 16/16, tests 13/13 PASS
+- ✅ `bun run dev:local` 실행 시 11/11 Workers + Vite 전부 healthy
+
 ## 세션 031 — 2026-03-02
 
 **ctx.waitUntil → await 전체 서비스 수정 + Staging E2E 검증 완료**:

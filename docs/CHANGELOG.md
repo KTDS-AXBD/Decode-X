@@ -4,18 +4,16 @@
 
 ## 세션 035 — 2026-03-02
 
-**로컬 개발 환경 + 프로덕션 문서 파싱 파이프라인 수정**:
-- ✅ svc-queue-router: Error 객체 JSON 직렬화 버그 수정 (`reason: {}` → 실제 에러 메시지)
-- ✅ svc-queue-router production: `INTERNAL_API_SECRET` 값 불일치 수정 (`e2e-test-secret-2026`으로 통일)
-- ✅ db-ingestion production: `0002_chunks.sql` 마이그레이션 적용 (`document_chunks` 테이블 생성)
-- ✅ svc-skill: OpenAPI 3.0 어댑터 엔드포인트 추가 (`GET /skills/:id/openapi`)
+**Phase 2-C 시작 — E2E 인프라 보강 + MCP/OpenAPI adapter + 테스트 문서 세트** (`/team` 3-worker 병렬):
+- ✅ test-docs/phase-2c: 퇴직연금 10개 합성 문서 세트 (DB/DC/IRP/수급/인출/세금/자산운용/사업자변경/법률/민원)
+- ✅ svc-skill: OpenAPI 3.0 어댑터 엔드포인트 추가 (`GET /skills/:id/openapi`, 248L)
 - ✅ svc-skill: MCP 어댑터 2024-11-05 프로토콜 준수 (protocolVersion, capabilities, serverInfo, instructions, annotations)
-- ✅ batch E2E 스크립트: `--phase`, `--dry-run`, `--help` 옵션 + JSON 결과 파일 생성
-- ✅ 프로덕션 문서 파싱 성공: 요구사항정의서(264KB xlsx) → 13개 청크 추출, status: `parsed`
+- ✅ batch E2E 스크립트: `--phase`, `--dry-run`, `--help` 옵션 + quality metrics 수집 + JSON 결과 파일 생성
+- ✅ svc-queue-router: Error 객체 JSON 직렬화 버그 수정 (`reason: {}` → 실제 에러 메시지)
 
 **검증 결과**:
-- ✅ typecheck + lint 통과
-- ✅ Queue 파이프라인 E2E: Upload → Queue → svc-queue-router → svc-ingestion → Unstructured.io → chunks → parsed
+- ✅ typecheck 16/16 (강제 실행)
+- ✅ svc-skill tests 97/97 PASS
 
 ## 세션 034 — 2026-03-02
 

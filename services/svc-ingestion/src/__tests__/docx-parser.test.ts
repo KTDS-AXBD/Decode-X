@@ -30,6 +30,9 @@ const FILES = [
 const VALID_TYPES = new Set(["Title", "Header", "NarrativeText", "ListItem", "Table"]);
 const KOREAN_RE = /[가-힣]/;
 
+/** Whether real DOCX fixture files are available (local dev only, not in CI). */
+const HAS_REAL_FILES = existsSync(DOCX_DIR) && FILES.every((f) => existsSync(resolve(DOCX_DIR, f)));
+
 /** Load a DOCX file from the test fixtures directory. */
 function loadDocx(filename: string): ArrayBuffer {
   const filepath = resolve(DOCX_DIR, filename);
@@ -37,9 +40,9 @@ function loadDocx(filename: string): ArrayBuffer {
   return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
 }
 
-// ── Precondition: files exist ───────────────────────────────────
+// ── Real-file tests (skipped in CI — files not committed) ───────
 
-describe("docx-parser: precondition", () => {
+describe.skipIf(!HAS_REAL_FILES)("docx-parser: precondition", () => {
   it("all 7 DOCX files exist on disk", () => {
     for (const file of FILES) {
       const filepath = resolve(DOCX_DIR, file);
@@ -48,9 +51,7 @@ describe("docx-parser: precondition", () => {
   });
 });
 
-// ── Test 1: Basic parsing — all 7 files parse without error ─────
-
-describe("docx-parser: basic parsing", () => {
+describe.skipIf(!HAS_REAL_FILES)("docx-parser: basic parsing", () => {
   for (const file of FILES) {
     it(`parses ${file} without error`, () => {
       const bytes = loadDocx(file);
@@ -75,7 +76,7 @@ describe("docx-parser: basic parsing", () => {
 
 // ── Test 2: Element types are valid ─────────────────────────────
 
-describe("docx-parser: element types", () => {
+describe.skipIf(!HAS_REAL_FILES)("docx-parser: element types", () => {
   for (const file of FILES) {
     it(`all element types are valid in ${file}`, () => {
       const bytes = loadDocx(file);
@@ -101,7 +102,7 @@ describe("docx-parser: element types", () => {
 // NarrativeText. Fix: extend classifyParagraph() to resolve numeric
 // styleIds via styles.xml lookup or match bare-number patterns.
 
-describe("docx-parser: heading detection", () => {
+describe.skipIf(!HAS_REAL_FILES)("docx-parser: heading detection", () => {
   const HEADING_CANDIDATES = [
     "MR_RSR_INFRA_AD_01.아키텍처정의서_V1.2_20210813.docx",
     "MR_RSR_INFRA_AD_03.개발표준가이드_v1.4_20210216.docx",
@@ -157,7 +158,7 @@ describe("docx-parser: heading detection", () => {
 
 // ── Test 4: Tables detected ─────────────────────────────────────
 
-describe("docx-parser: table detection", () => {
+describe.skipIf(!HAS_REAL_FILES)("docx-parser: table detection", () => {
   it("at least some files contain Table elements", () => {
     let filesWithTables = 0;
 
@@ -203,7 +204,7 @@ describe("docx-parser: table detection", () => {
 
 // ── Test 5: Korean text preserved ───────────────────────────────
 
-describe("docx-parser: Korean text", () => {
+describe.skipIf(!HAS_REAL_FILES)("docx-parser: Korean text", () => {
   for (const file of FILES) {
     it(`preserves Korean text in ${file}`, () => {
       const bytes = loadDocx(file);
@@ -222,7 +223,7 @@ describe("docx-parser: Korean text", () => {
 
 // ── Test 6: Reasonable chunk counts ─────────────────────────────
 
-describe("docx-parser: reasonable chunk counts", () => {
+describe.skipIf(!HAS_REAL_FILES)("docx-parser: reasonable chunk counts", () => {
   it("all files produce at least 5 elements", () => {
     const summary: Array<{ file: string; count: number; types: Record<string, number> }> = [];
 

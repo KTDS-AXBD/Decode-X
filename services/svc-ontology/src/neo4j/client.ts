@@ -161,6 +161,13 @@ export interface AnalysisGraphInput {
     finding: string;
     relatedProcesses: string[];
   }>;
+  requirements?: Array<{
+    requirementId: string;
+    name: string;
+    description?: string;
+    source?: string; // document ID or reference
+    satisfiedBy: string[]; // process names
+  }>;
 }
 
 /**
@@ -171,7 +178,7 @@ export interface AnalysisGraphInput {
  * - Method     → (Process)-[:HAS_METHOD]->(Method)
  * - Condition  → (Method)-[:TRIGGERED_BY]->(Condition)
  * - Actor      → (Actor)-[:PARTICIPATES_IN]->(Process)
- * - Requirement (reserved for future) → (Requirement)-[:SATISFIED_BY]->(Process)
+ * - Requirement → (Requirement)-[:SATISFIED_BY]->(Process)
  * - DiagnosisFinding → (DiagnosisFinding)-[:RELATES_TO]->(Process|Entity)
  *
  * 실패 시 graceful degradation (호출부에서 catch 필수).
@@ -280,6 +287,40 @@ export async function upsertAnalysisGraph(
           documentId: input.documentId,
         } as Record<string, unknown>,
       });
+    }
+  }
+
+  // 6. Requirement 노드 + (Requirement)-[:SATISFIED_BY]->(Process) 관계
+  if (input.requirements?.length) {
+    for (const req of input.requirements) {
+      statements.push({
+        statement:
+          "MERGE (r:Requirement {requirementId: $reqId}) " +
+          "SET r.name = $name, r.description = $desc, r.source = $source, " +
+          "    r.analysisId = $analysisId",
+        parameters: {
+          reqId: req.requirementId,
+          name: req.name,
+          desc: req.description ?? "",
+          source: req.source ?? "",
+          analysisId: input.analysisId,
+        } as Record<string, unknown>,
+      });
+
+      // SATISFIED_BY 관계 — 관련 프로세스별
+      for (const processName of req.satisfiedBy) {
+        statements.push({
+          statement:
+            "MATCH (r:Requirement {requirementId: $reqId}) " +
+            "MERGE (p:Process {name: $processName, documentId: $documentId}) " +
+            "MERGE (r)-[:SATISFIED_BY]->(p)",
+          parameters: {
+            reqId: req.requirementId,
+            processName,
+            documentId: input.documentId,
+          } as Record<string, unknown>,
+        });
+      }
     }
   }
 

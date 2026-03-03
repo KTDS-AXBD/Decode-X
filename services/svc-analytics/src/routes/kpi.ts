@@ -29,13 +29,6 @@ interface CostRow {
   cached_requests: number | null;
 }
 
-interface SkillUsageRow {
-  skill_id: string;
-  date: string;
-  adapter_type: string;
-  download_count: number | null;
-}
-
 function parseDateRange(url: URL): { startDate: string; endDate: string } {
   const endDate = url.searchParams.get("endDate") ?? new Date().toISOString().slice(0, 10);
   const defaultStart = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);

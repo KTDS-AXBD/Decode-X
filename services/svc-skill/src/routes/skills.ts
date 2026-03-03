@@ -64,7 +64,7 @@ export interface SkillRow {
 export async function handleCreateSkill(
   request: Request,
   env: Env,
-  ctx: ExecutionContext,
+  _ctx: ExecutionContext,
 ): Promise<Response> {
   let raw: unknown;
   try {

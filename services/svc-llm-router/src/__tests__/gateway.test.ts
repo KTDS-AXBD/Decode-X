@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { gatewayComplete, gatewayStream, parseAnthropicResponse } from "../gateway.js";
+import type { LlmTier } from "@ai-foundry/types";
 import type { Env } from "../env.js";
 
 // ── Helpers ──────────────────────────────────────────────────────
@@ -396,7 +397,7 @@ describe("parseAnthropicResponse", () => {
   });
 
   it("handles all tier types correctly", () => {
-    const tiers: Array<import("@ai-foundry/types").LlmTier> = ["opus", "sonnet", "haiku", "workers"];
+    const tiers: Array<LlmTier> = ["opus", "sonnet", "haiku", "workers"];
     for (const tier of tiers) {
       const raw = makeAnthropicResponseBody();
       const result = parseAnthropicResponse(raw, `req-${tier}`, tier, `model-${tier}`, 100, false);

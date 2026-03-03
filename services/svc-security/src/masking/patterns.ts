@@ -34,7 +34,7 @@ export const PII_PATTERNS: PiiPattern[] = [
   {
     // 이메일
     entityType: "PII_EMAIL",
-    regex: /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g,
+    regex: /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g,
   },
   {
     // 계좌번호: 3~6자리-2~6자리-4~6자리 (카드, 주민번호 이후 적용)

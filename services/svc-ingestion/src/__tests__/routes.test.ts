@@ -267,7 +267,7 @@ describe("svc-ingestion router (index.ts)", () => {
     const env = mockEnv();
     const ctx = mockCtx();
     const req = new Request("https://test.internal/health");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const res = await worker.fetch!(req as any, env, ctx);
     expect(res.status).toBe(200);
     const body = await res.json() as { data: { status: string; service: string } };
@@ -279,7 +279,7 @@ describe("svc-ingestion router (index.ts)", () => {
     const env = mockEnv();
     const ctx = mockCtx();
     const req = new Request("https://test.internal/documents", { method: "POST" });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const res = await worker.fetch!(req as any, env, ctx);
     expect(res.status).toBe(401);
   });
@@ -291,7 +291,7 @@ describe("svc-ingestion router (index.ts)", () => {
       method: "POST",
       headers: { "X-Internal-Secret": "wrong-secret" },
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const res = await worker.fetch!(req as any, env, ctx);
     expect(res.status).toBe(401);
   });
@@ -302,7 +302,7 @@ describe("svc-ingestion router (index.ts)", () => {
     const req = new Request("https://test.internal/unknown", {
       headers: { "X-Internal-Secret": "test-secret" },
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const res = await worker.fetch!(req as any, env, ctx);
     expect(res.status).toBe(404);
   });
@@ -318,7 +318,7 @@ describe("svc-ingestion router (index.ts)", () => {
     const req = new Request("https://test.internal/documents/doc-abc", {
       headers: { "X-Internal-Secret": "test-secret" },
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const res = await worker.fetch!(req as any, env, ctx);
     expect(res.status).toBe(200);
     const body = await res.json() as { success: boolean; data: { document_id: string } };
@@ -336,7 +336,7 @@ describe("svc-ingestion router (index.ts)", () => {
     const req = new Request("https://test.internal/documents/doc-1/chunks", {
       headers: { "X-Internal-Secret": "test-secret" },
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const res = await worker.fetch!(req as any, env, ctx);
     expect(res.status).toBe(200);
     const body = await res.json() as { success: boolean; data: { documentId: string; chunks: Array<{ chunk_id: string }> } };

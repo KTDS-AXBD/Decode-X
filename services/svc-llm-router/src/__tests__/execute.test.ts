@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { resolveProvider, resolveModel, executeWithFallback } from "../execute.js";
-import type { LlmRequest, LlmProvider, LlmTier } from "@ai-foundry/types";
+import type { LlmRequest } from "@ai-foundry/types";
 import type { Logger } from "@ai-foundry/utils";
 import type { Env } from "../env.js";
 

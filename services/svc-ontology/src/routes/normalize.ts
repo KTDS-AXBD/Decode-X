@@ -16,11 +16,6 @@ interface TermInput {
   definition?: string;
 }
 
-interface NormalizeRequest {
-  policyId: string;
-  terms: TermInput[];
-  organizationId: string;
-}
 
 interface OntologyRow {
   ontology_id: string;

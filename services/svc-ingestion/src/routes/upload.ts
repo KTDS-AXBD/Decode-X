@@ -31,7 +31,7 @@ const MIME_TO_EXT: Record<string, DocumentUploadedEvent["payload"]["fileType"]> 
 export async function handleUpload(
   request: Request,
   env: Env,
-  ctx: ExecutionContext,
+  _ctx: ExecutionContext,
 ): Promise<Response> {
   const logger = createLogger("svc-ingestion");
 

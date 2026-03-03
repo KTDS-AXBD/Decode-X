@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { resolveTier, buildAnthropicBody } from "../router.js";
-import type { LlmRequest, LlmTier, LlmProvider } from "@ai-foundry/types";
+import type { LlmRequest } from "@ai-foundry/types";
 import { TIER_MODELS } from "@ai-foundry/types";
 import type { Logger } from "@ai-foundry/utils";
 

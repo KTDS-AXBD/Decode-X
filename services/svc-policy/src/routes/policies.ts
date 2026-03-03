@@ -34,7 +34,7 @@ export async function handleInferPolicies(
   if (!parsed.success) {
     return badRequest("Invalid request body", parsed.error.flatten());
   }
-  const { extractionId, documentId, organizationId, chunks, sourceDocumentId } = parsed.data;
+  const { extractionId, documentId: _documentId, organizationId, chunks, sourceDocumentId } = parsed.data;
 
   // 2. Build prompt and call Opus
   const { system, userContent } = buildPolicyInferencePrompt(chunks);

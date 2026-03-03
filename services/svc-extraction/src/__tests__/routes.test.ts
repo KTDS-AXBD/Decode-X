@@ -285,7 +285,7 @@ describe("svc-extraction router (index.ts)", () => {
     const env = mockEnv();
     const ctx = mockCtx();
     const req = new Request("https://test.internal/health");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const res = await worker.fetch!(req as any, env, ctx);
     expect(res.status).toBe(200);
     const body = await res.json() as { status: string; service: string };
@@ -297,7 +297,7 @@ describe("svc-extraction router (index.ts)", () => {
     const env = mockEnv();
     const ctx = mockCtx();
     const req = new Request("https://test.internal/extract", { method: "POST" });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const res = await worker.fetch!(req as any, env, ctx);
     expect(res.status).toBe(401);
   });
@@ -309,7 +309,7 @@ describe("svc-extraction router (index.ts)", () => {
       method: "POST",
       headers: { "X-Internal-Secret": "wrong" },
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const res = await worker.fetch!(req as any, env, ctx);
     expect(res.status).toBe(401);
   });
@@ -320,7 +320,7 @@ describe("svc-extraction router (index.ts)", () => {
     const req = new Request("https://test.internal/unknown", {
       headers: { "X-Internal-Secret": "test-secret" },
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const res = await worker.fetch!(req as any, env, ctx);
     expect(res.status).toBe(404);
   });
@@ -331,7 +331,7 @@ describe("svc-extraction router (index.ts)", () => {
     const req = new Request("https://test.internal/extractions", {
       headers: { "X-Internal-Secret": "test-secret" },
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const res = await worker.fetch!(req as any, env, ctx);
     expect(res.status).toBe(200);
     const body = await res.json() as { success: boolean; data: { extractions: unknown[] } };
@@ -356,7 +356,7 @@ describe("svc-extraction router (index.ts)", () => {
     const req = new Request("https://test.internal/extractions?documentId=doc-1", {
       headers: { "X-Internal-Secret": "test-secret" },
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const res = await worker.fetch!(req as any, env, ctx);
     expect(res.status).toBe(200);
     const body = await res.json() as {
@@ -386,7 +386,7 @@ describe("svc-extraction router (index.ts)", () => {
     const req = new Request("https://test.internal/extractions/ext-1", {
       headers: { "X-Internal-Secret": "test-secret" },
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const res = await worker.fetch!(req as any, env, ctx);
     expect(res.status).toBe(200);
     const body = await res.json() as {
@@ -403,7 +403,7 @@ describe("svc-extraction router (index.ts)", () => {
     const req = new Request("https://test.internal/extractions/ext-999", {
       headers: { "X-Internal-Secret": "test-secret" },
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const res = await worker.fetch!(req as any, env, ctx);
     expect(res.status).toBe(404);
   });
@@ -425,7 +425,7 @@ describe("svc-extraction router (index.ts)", () => {
     const req = new Request("https://test.internal/extractions/ext-2", {
       headers: { "X-Internal-Secret": "test-secret" },
     });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const res = await worker.fetch!(req as any, env, ctx);
     expect(res.status).toBe(200);
     const body = await res.json() as {

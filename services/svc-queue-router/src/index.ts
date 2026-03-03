@@ -61,7 +61,7 @@ export default {
     return new Response("svc-queue-router — pipeline event bus", { status: 200 });
   },
 
-  async queue(batch: MessageBatch<unknown>, env: Env, ctx: ExecutionContext): Promise<void> {
+  async queue(batch: MessageBatch<unknown>, env: Env, _ctx: ExecutionContext): Promise<void> {
     const logger = createLogger("svc-queue-router");
 
     for (const message of batch.messages) {

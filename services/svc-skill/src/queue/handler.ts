@@ -88,7 +88,7 @@ function toPolicy(p: PolicyApiResponse["data"]): Policy {
 export async function processQueueEvent(
   body: unknown,
   env: Env,
-  ctx: ExecutionContext,
+  _ctx: ExecutionContext,
 ): Promise<Response> {
   const parsed = PipelineEventSchema.safeParse(body);
   if (!parsed.success) {

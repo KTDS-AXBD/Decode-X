@@ -1,4 +1,4 @@
-import type { LlmResponse, LlmUsage } from "@ai-foundry/types";
+import type { LlmResponse, LlmTier, LlmUsage } from "@ai-foundry/types";
 import { UpstreamError } from "@ai-foundry/utils";
 import type { Env } from "./env.js";
 
@@ -88,7 +88,7 @@ export async function gatewayStream(
 export function parseAnthropicResponse(
   raw: Record<string, unknown>,
   requestId: string,
-  tier: import("@ai-foundry/types").LlmTier,
+  tier: LlmTier,
   model: string,
   durationMs: number,
   cached: boolean,

@@ -50,7 +50,6 @@ export async function handleGetGoldenTests(
 
     const runs = recentRuns.results ?? [];
     const latestRun = runs[0];
-    const latestScore = latestRun?.golden_test_passed === 1 ? 1.0 : 0.0;
     const recentScores = runs.slice(0, 5).map((r) =>
       r.golden_test_passed === 1 ? 1.0 : 0.0,
     );

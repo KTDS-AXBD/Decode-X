@@ -25,7 +25,7 @@ const MAX_ELEMENTS = 200;
  * Parses the body with PipelineEventSchema, processes document.uploaded events,
  * and returns a Response.
  */
-export async function processQueueEvent(body: unknown, env: Env, ctx: ExecutionContext): Promise<Response> {
+export async function processQueueEvent(body: unknown, env: Env, _ctx: ExecutionContext): Promise<Response> {
   const logger = createLogger("svc-ingestion");
 
   const parsed = PipelineEventSchema.safeParse(body);

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { detectPii, applyTokens, tokenize, type DetectedPii } from "../masking/tokenizer.js";
+import { detectPii, applyTokens, tokenize } from "../masking/tokenizer.js";
 
 // ── Helpers ──────────────────────────────────────────────────────
 

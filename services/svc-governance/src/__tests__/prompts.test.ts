@@ -162,7 +162,7 @@ describe("handleCreatePrompt", () => {
 
   it("returns 400 when promptName is missing", async () => {
     const payload = { ...VALID_PROMPT };
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     delete (payload as any).promptName;
     const req = createJsonRequest("https://test.internal/prompts", payload);
     const res = await handleCreatePrompt(req, env, ctx);

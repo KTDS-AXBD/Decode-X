@@ -6,7 +6,7 @@
  */
 
 import { CreateQualityEvaluationSchema } from "@ai-foundry/types";
-import { ok, badRequest, createLogger } from "@ai-foundry/utils";
+import { badRequest, createLogger } from "@ai-foundry/utils";
 import type { Env } from "../env.js";
 
 const logger = createLogger("svc-governance:quality-eval");

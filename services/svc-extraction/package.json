@@ -11,7 +11,8 @@
     "build": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src/"
   },
   "dependencies": {
     "@ai-foundry/types": "workspace:*",

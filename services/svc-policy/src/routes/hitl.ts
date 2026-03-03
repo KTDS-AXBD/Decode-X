@@ -6,7 +6,7 @@
  */
 
 import { HitlActionSchema } from "@ai-foundry/types";
-import { ok, badRequest, notFound, createLogger, errFromUnknown } from "@ai-foundry/utils";
+import { ok, badRequest, notFound, createLogger } from "@ai-foundry/utils";
 import type { Env } from "../env.js";
 
 const logger = createLogger("svc-policy:hitl");
@@ -17,7 +17,7 @@ export async function handleApprovePolicy(
   request: Request,
   env: Env,
   policyId: string,
-  ctx: ExecutionContext,
+  _ctx: ExecutionContext,
 ): Promise<Response> {
   let body: unknown;
   try {
@@ -134,7 +134,7 @@ export async function handleModifyPolicy(
   request: Request,
   env: Env,
   policyId: string,
-  ctx: ExecutionContext,
+  _ctx: ExecutionContext,
 ): Promise<Response> {
   let body: unknown;
   try {
@@ -261,7 +261,7 @@ export async function handleRejectPolicy(
   request: Request,
   env: Env,
   policyId: string,
-  ctx: ExecutionContext,
+  _ctx: ExecutionContext,
 ): Promise<Response> {
   let body: unknown;
   try {

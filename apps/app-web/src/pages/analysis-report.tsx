@@ -39,6 +39,7 @@ export default function AnalysisReportPage() {
   const [summary, setSummary] = useState<ExtractionSummary | null>(null);
   const [coreData, setCoreData] = useState<CoreIdentification | null>(null);
   const [diagnosisData, setDiagnosisData] = useState<DiagnosisResult | null>(null);
+  const [llmInfo, setLlmInfo] = useState<{ provider: string; model: string } | null>(null);
 
   // Loading states
   const [loadingDocs, setLoadingDocs] = useState(true);
@@ -83,7 +84,12 @@ export default function AnalysisReportPage() {
 
     void fetchAnalysisSummary(selectedDocId)
       .then((res) => {
-        if (res.success) setSummary(res.data);
+        if (res.success) {
+          setSummary(res.data);
+          const d = res.data as ExtractionSummary & { llmProvider?: string; llmModel?: string };
+          if (d.llmProvider) setLlmInfo({ provider: d.llmProvider, model: d.llmModel ?? "unknown" });
+          else setLlmInfo(null);
+        }
       })
       .catch(() => {/* silently handle — data just won't show */})
       .finally(() => setLoadingSummary(false));
@@ -127,9 +133,23 @@ export default function AnalysisReportPage() {
           <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
             분석 리포트 Analysis Report
           </h1>
-          <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
-            문서별 3-Layer 분석 + 조직 간 비교
-          </p>
+          <div className="flex items-center gap-2 mt-1">
+            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+              문서별 3-Layer 분석 + 조직 간 비교
+            </p>
+            {llmInfo && (
+              <span
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium"
+                style={{
+                  backgroundColor: llmInfo.provider === "anthropic" ? "rgba(147, 51, 234, 0.1)" : "rgba(16, 163, 127, 0.1)",
+                  color: llmInfo.provider === "anthropic" ? "#9333EA" : "#10A37F",
+                  border: `1px solid ${llmInfo.provider === "anthropic" ? "rgba(147, 51, 234, 0.3)" : "rgba(16, 163, 127, 0.3)"}`,
+                }}
+              >
+                {llmInfo.model}
+              </span>
+            )}
+          </div>
         </div>
         {activeTab !== "comparison" && (
           <div className="w-72">

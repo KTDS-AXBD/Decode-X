@@ -4,9 +4,9 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, FileText, CheckCircle, AlertCircle, ChevronDown, ChevronRight, Filter, Download } from 'lucide-react';
+import { Search, FileText, CheckCircle, AlertCircle, ChevronDown, ChevronRight, Filter, Download, RotateCcw, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { fetchDocuments, fetchDocumentChunks, downloadDocument } from '@/api/ingestion';
+import { fetchDocuments, fetchDocumentChunks, downloadDocument, deleteDocument, reprocessDocument } from '@/api/ingestion';
 import type { DocumentRow, DocumentChunk } from '@/api/ingestion';
 import { useOrganization } from '@/contexts/OrganizationContext';
 import { MarkdownContent } from '@/components/markdown-content';
@@ -85,6 +85,47 @@ export default function AnalysisPage() {
       toast.error('원본 파일을 가져올 수 없습니다');
     } finally {
       setDownloading(false);
+    }
+  };
+
+  const refreshDocuments = async () => {
+    const res = await fetchDocuments(organizationId);
+    if (res.success) {
+      setDocuments(res.data.documents);
+      if (selectedDoc) {
+        const updated = res.data.documents.find((d) => d.document_id === selectedDoc.document_id);
+        if (updated) setSelectedDoc(updated);
+        else setSelectedDoc(null);
+      }
+    }
+  };
+
+  const handleReprocess = async (doc: DocumentRow) => {
+    try {
+      const res = await reprocessDocument(organizationId, doc.document_id);
+      if (res.success) {
+        toast.success(`재처리 시작: ${doc.original_name}`);
+        await refreshDocuments();
+      } else {
+        toast.error(res.error.message);
+      }
+    } catch {
+      toast.error('재처리 요청 중 오류가 발생했습니다');
+    }
+  };
+
+  const handleDelete = async (doc: DocumentRow) => {
+    if (!confirm(`정말 삭제하시겠습니까?\n${doc.original_name}`)) return;
+    try {
+      const res = await deleteDocument(organizationId, doc.document_id);
+      if (res.success) {
+        toast.success(`삭제 완료: ${doc.original_name}`);
+        await refreshDocuments();
+      } else {
+        toast.error(res.error.message);
+      }
+    } catch {
+      toast.error('삭제 중 오류가 발생했습니다');
     }
   };
 
@@ -327,7 +368,7 @@ export default function AnalysisPage() {
                   </Badge>
                 </div>
               </div>
-              {(selectedDoc.status === 'failed' || selectedDoc.status === 'encrypted') && selectedDoc.error_message && (
+              {(selectedDoc.status === 'failed' || selectedDoc.status === 'encrypted') && (
                 <div className="mt-4 p-3 rounded-lg border" style={{ borderColor: '#FBBF24', backgroundColor: 'rgba(251, 191, 36, 0.08)' }}>
                   <div className="flex items-center gap-2 mb-1">
                     <AlertCircle className="w-4 h-4" style={{ color: '#D97706' }} />
@@ -338,7 +379,17 @@ export default function AnalysisPage() {
                       <Badge variant="outline" className="text-[10px]">{selectedDoc.error_type}</Badge>
                     )}
                   </div>
-                  <p className="text-xs ml-6" style={{ color: 'var(--text-secondary)' }}>{selectedDoc.error_message}</p>
+                  {selectedDoc.error_message && (
+                    <p className="text-xs ml-6 mb-2" style={{ color: 'var(--text-secondary)' }}>{selectedDoc.error_message}</p>
+                  )}
+                  <div className="flex gap-2 ml-6">
+                    <Button size="sm" variant="outline" onClick={() => void handleReprocess(selectedDoc)}>
+                      <RotateCcw className="w-3.5 h-3.5 mr-1.5" />재처리
+                    </Button>
+                    <Button size="sm" variant="outline" className="text-red-500 hover:text-red-600" onClick={() => void handleDelete(selectedDoc)}>
+                      <Trash2 className="w-3.5 h-3.5 mr-1.5" />삭제
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>

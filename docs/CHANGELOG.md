@@ -10,7 +10,7 @@
 - ✅ Notification API 타입 정렬: 서버 `{ notifications }` + camelCase ↔ 프론트 `{ items }` + snake_case 불일치 수정
 - ✅ Dashboard: `data.total` 사용 (문서/정책), `data.notifications` (알림), audit `limit: 4`
 - ✅ Settings: Notification 프로퍼티 8곳 camelCase 전환
-- ✅ Demo Login: AuthContext + auth-store (7명 데모 사용자, 5 RBAC 역할)
+- ✅ Demo Login: AuthContext + auth-store (7명 실팀원, 5 RBAC 역할, ProtectedRoute, Sidebar 로그아웃)
 - ✅ svc-security audit 테스트 수정 (COUNT 쿼리 mock 대응, calls 인덱스 조정)
 
 **검증**: CI ✅ (typecheck + 1,072 tests), Production 배포 완료 (svc-policy/security/ingestion + Pages)

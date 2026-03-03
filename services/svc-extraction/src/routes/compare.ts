@@ -172,8 +172,14 @@ async function handleCompare(
   try {
     const rawComparison = await callLlm(comparisonPrompt, "sonnet", env.LLM_ROUTER, env.INTERNAL_API_SECRET);
     llmOutput = parseComparisonResult(rawComparison);
-  } catch {
-    llmOutput = { items: [], standardizationCandidates: [] };
+  } catch (e) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: { code: "LLM_ERROR", message: `LLM 비교 분석 실패: ${String(e)}` },
+      }),
+      { status: 502, headers: { "Content-Type": "application/json" } },
+    );
   }
 
   const comparisonId = crypto.randomUUID();

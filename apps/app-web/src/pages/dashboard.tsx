@@ -9,10 +9,15 @@ import {
   ShieldCheck,
   TrendingUp,
   AlertCircle,
+  Bell,
+  FileText,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { fetchSkills } from '@/api/skill';
+import { fetchDocuments } from '@/api/ingestion';
+import { fetchPolicies } from '@/api/policy';
 import { fetchAuditLogs } from '@/api/security';
+import { fetchNotifications, type Notification } from '@/api/notification';
 import type { AuditRow } from '@/api/security';
 import { useOrganization } from '@/contexts/OrganizationContext';
 
@@ -26,12 +31,13 @@ interface SystemStat {
 export default function DashboardPage() {
   const { organizationId } = useOrganization();
   const [stats, setStats] = useState<SystemStat[]>([
-    { label: '처리 중인 문서', value: '—', color: '#3B82F6', icon: FileSearch },
+    { label: '등록 문서', value: '—', color: '#3B82F6', icon: FileText },
     { label: '검토 대기', value: '—', color: 'var(--accent)', icon: AlertCircle },
     { label: '활성 Skill', value: '—', color: 'var(--success)', icon: ShieldCheck },
     { label: '감사 이벤트', value: '—', color: '#6B7280', icon: TrendingUp },
   ]);
   const [recentActivities, setRecentActivities] = useState<AuditRow[]>([]);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -39,27 +45,38 @@ export default function DashboardPage() {
 
     async function loadData() {
       try {
-        const [skillsRes, auditRes] = await Promise.allSettled([
+        const [docsRes, policiesRes, skillsRes, auditRes, notiRes] = await Promise.allSettled([
+          fetchDocuments(organizationId),
+          fetchPolicies(organizationId, { status: 'candidate', limit: 1 }),
           fetchSkills(organizationId, { limit: 1 }),
           fetchAuditLogs(organizationId, { limit: 10 }),
+          fetchNotifications(organizationId),
         ]);
 
         if (cancelled) return;
 
+        const docCount = docsRes.status === 'fulfilled' && docsRes.value.success
+          ? docsRes.value.data.documents.length : 0;
+        const candidateCount = policiesRes.status === 'fulfilled' && policiesRes.value.success
+          ? policiesRes.value.data.total : 0;
         const skillCount = skillsRes.status === 'fulfilled' && skillsRes.value.success
           ? skillsRes.value.data.total : 0;
         const auditData = auditRes.status === 'fulfilled' && auditRes.value.success
           ? auditRes.value.data : null;
 
         setStats([
-          { label: '처리 중인 문서', value: '—', color: '#3B82F6', icon: FileSearch },
-          { label: '검토 대기', value: '—', color: 'var(--accent)', icon: AlertCircle },
+          { label: '등록 문서', value: `${docCount}건`, color: '#3B82F6', icon: FileText },
+          { label: '검토 대기', value: `${candidateCount}건`, color: 'var(--accent)', icon: AlertCircle },
           { label: '활성 Skill', value: `${skillCount}개`, color: 'var(--success)', icon: ShieldCheck },
           { label: '감사 이벤트', value: `${auditData?.pagination.total ?? 0}건`, color: '#6B7280', icon: TrendingUp },
         ]);
 
         if (auditData) {
           setRecentActivities(auditData.items.slice(0, 4));
+        }
+
+        if (notiRes.status === 'fulfilled' && notiRes.value.success) {
+          setNotifications(notiRes.value.data.items.slice(0, 5));
         }
       } catch {
         // graceful fallback
@@ -69,7 +86,7 @@ export default function DashboardPage() {
     }
     void loadData();
     return () => { cancelled = true; };
-  }, []);
+  }, [organizationId]);
 
   const quickActions = [
     { icon: Upload, label: '문서 업로드', path: '/upload', color: '#3B82F6', bg: 'rgba(59, 130, 246, 0.1)' },
@@ -169,20 +186,38 @@ export default function DashboardPage() {
         <Card style={{ borderRadius: 'var(--radius-lg)' }}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="w-5 h-5" />
+              <Bell className="w-5 h-5" />
               알림 Notifications
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <div className="p-3 rounded-lg border-l-4" style={{ backgroundColor: 'rgba(246, 173, 85, 0.05)', borderColor: 'var(--accent)' }}>
-                <div className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>검토 대기 중</div>
-                <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>정책이 검토를 기다리고 있습니다</div>
-              </div>
-              <div className="p-3 rounded-lg border-l-4" style={{ backgroundColor: 'var(--success-light)', borderColor: 'var(--success)' }}>
-                <div className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>시스템 정상 작동</div>
-                <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>모든 서비스가 정상적으로 운영 중입니다</div>
-              </div>
+              {notifications.length > 0 ? notifications.map((n) => (
+                <div
+                  key={n.notification_id}
+                  className="p-3 rounded-lg border-l-4"
+                  style={{
+                    backgroundColor: n.read ? 'var(--surface)' : 'rgba(246, 173, 85, 0.05)',
+                    borderColor: n.read ? 'var(--border)' : 'var(--accent)',
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                      {n.title}
+                    </div>
+                    <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                      {new Date(n.created_at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                  </div>
+                  <div className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
+                    {n.body}
+                  </div>
+                </div>
+              )) : (
+                <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+                  {loading ? '불러오는 중...' : '알림 없음'}
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>

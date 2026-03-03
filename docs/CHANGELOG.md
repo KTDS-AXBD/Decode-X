@@ -2,6 +2,21 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 084 — 2026-03-04
+**대시보드 실데이터 연동 — 백엔드 COUNT 쿼리 + Notification 타입 정렬 + Demo Login**:
+- ✅ svc-policy: `handleListPolicies` COUNT 쿼리 추가 (`total` 필드 반환, 기존 undefined)
+- ✅ svc-security: `handleQueryAudit` COUNT 쿼리 추가 (`results.length` → 실제 total)
+- ✅ svc-ingestion: `GET /documents` COUNT 쿼리 추가 (`total` 필드 신규)
+- ✅ Notification API 타입 정렬: 서버 `{ notifications }` + camelCase ↔ 프론트 `{ items }` + snake_case 불일치 수정
+- ✅ Dashboard: `data.total` 사용 (문서/정책), `data.notifications` (알림), audit `limit: 4`
+- ✅ Settings: Notification 프로퍼티 8곳 camelCase 전환
+- ✅ Demo Login: AuthContext + auth-store (7명 데모 사용자, 5 RBAC 역할)
+- ✅ svc-security audit 테스트 수정 (COUNT 쿼리 mock 대응, calls 인덱스 조정)
+
+**검증**: CI ✅ (typecheck + 1,072 tests), Production 배포 완료 (svc-policy/security/ingestion + Pages)
+**Dashboard 실측치**: 등록 문서 1,300건, 검토 대기 0건 (bulk-approved), 활성 Skill 2,834개, 감사 이벤트 115건
+**변경 파일**: 21 files — 백엔드 3 + 프론트 17 + 테스트 1
+
 ## 세션 083 — 2026-03-04
 **Bulk Approve + Tier 2-3 문서 투입 — 파이프라인 대량 실행**:
 - ✅ `batch-approve.sh` 3건 버그 수정: policyId (camelCase), pagination (100/page), count 파싱 (jq 전환)

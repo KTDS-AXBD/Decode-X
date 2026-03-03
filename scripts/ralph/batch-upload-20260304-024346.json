@@ -1,0 +1,25 @@
+[
+{"path":"/tmp/tier2-upload/01._신계약__MR_RSR_BDNWCT_04.배치Job목록_V1.1_20210930.xlsx","status":"OK","documentId":"ddecb914-5008-4717-804e-1aa56ee62904","error":"","timestamp":"2026-03-03T17:43:48Z"}
+,{"path":"/tmp/tier2-upload/01._신계약__MR_RSR_BDNWCT_AD_03.화면목록_V1.0_20210930.xlsx","status":"OK","documentId":"a9a48964-d0ed-463e-9b66-e09bdefeb539","error":"","timestamp":"2026-03-03T17:43:51Z"}
+,{"path":"/tmp/tier2-upload/02._운용지시__MR_RSR_BDOPOR_AD_03.화면목록_V1.1_운용지시_20210930.xlsx","status":"OK","documentId":"a5445b1f-5fd8-4afc-ab9d-82d3733d7e73","error":"","timestamp":"2026-03-03T17:43:53Z"}
+,{"path":"/tmp/tier2-upload/02._운용지시__MR_RSR_DBOPOR_AD_04.배치Job목록_V1.0_운용지시_20200930.xlsx","status":"OK","documentId":"0fc1990a-89cc-426a-934c-35812eecd49e","error":"","timestamp":"2026-03-03T17:43:55Z"}
+,{"path":"/tmp/tier2-upload/03._지급__MR_RSR_BDPYDL_AD_03.화면목록_V1.1_20210930.xlsx","status":"OK","documentId":"de91cfb3-ef9b-4f9f-a752-26e5cfe44bce","error":"","timestamp":"2026-03-03T17:43:57Z"}
+,{"path":"/tmp/tier2-upload/03._지급__MR_RSR_BDPYDM_AD_03.화면목록_V1.1_20210930.xlsx","status":"OK","documentId":"d9315c34-177c-4695-99f2-253b496e9da1","error":"","timestamp":"2026-03-03T17:44:00Z"}
+,{"path":"/tmp/tier2-upload/03._지급__MR_RSR_업무코드_AD_04.배치Job목록_V1.0_20210930_지급.xlsx","status":"OK","documentId":"c17daae3-cf3b-4965-a7e1-6b3ed388dccd","error":"","timestamp":"2026-03-03T17:44:03Z"}
+,{"path":"/tmp/tier2-upload/04._적립금수수료__MR_RSR_BDACAT_AD_03.화면목록_V1.1_적립금수수료_20210930.xlsx","status":"OK","documentId":"ee876ccc-bcc5-4731-9bfa-1f14cf2ab507","error":"","timestamp":"2026-03-03T17:44:05Z"}
+,{"path":"/tmp/tier2-upload/04._적립금수수료__MR_RSR_DBACAT_AD_04.배치Job목록_V1.1_적립금수수료_20210930.xlsx","status":"OK","documentId":"56302c78-ad4c-42bb-b16b-0ecb65b8f06c","error":"","timestamp":"2026-03-03T17:44:07Z"}
+,{"path":"/tmp/tier2-upload/05._업무공통__MR_RSR_BOGOOD_AD_03.화면목록_V1.1_20210930.xlsx","status":"OK","documentId":"d46dbdfd-04c0-4fdc-850a-63d26929e452","error":"","timestamp":"2026-03-03T17:44:09Z"}
+,{"path":"/tmp/tier2-upload/05._업무공통__MR_RSR_BOSYST_AD_04.배치Job목록_V1.1_20210930.xlsx","status":"OK","documentId":"3b51b328-6e9c-46ad-ad66-28dd1933140c","error":"","timestamp":"2026-03-03T17:44:12Z"}
+,{"path":"/tmp/tier2-upload/06._상품제공__MR_RSR_GODGBS_AD_03.화면목록_V1.1_20210930.xlsx","status":"OK","documentId":"76b6e6d0-69d6-4cb0-b6d7-c24b0c681dfa","error":"","timestamp":"2026-03-03T17:44:14Z"}
+,{"path":"/tmp/tier2-upload/06._상품제공__MR_RSR_GOGDBS_AD_04.배치Job목록_V1.1_20210930.xlsx","status":"OK","documentId":"1d789d1e-e03a-4844-bd8e-0d0635f15aa1","error":"","timestamp":"2026-03-03T17:44:17Z"}
+,{"path":"/tmp/tier2-upload/07._법인영업정보__MR_RSR_EICSAD_AD_03.화면목록_V1.0_20210216.xlsx","status":"OK","documentId":"bea06760-d55b-4338-b332-ee240f9e38a6","error":"","timestamp":"2026-03-03T17:44:20Z"}
+,{"path":"/tmp/tier2-upload/07._법인영업정보__MR_RSR_EIJNED_AD_03.배치Job목록_V1.0_20210216.xlsx","status":"OK","documentId":"b8bcefbf-de23-4f2c-9a9e-566b475adb3d","error":"","timestamp":"2026-03-03T17:44:22Z"}
+,{"path":"/tmp/tier2-upload/07._법인영업정보__MR_RSR_EI_AD_06.메뉴구조도_V1.0_20210216.xlsx","status":"OK","documentId":"e8e8578b-5679-4285-9b60-ebde8f5f3a7f","error":"","timestamp":"2026-03-03T17:44:24Z"}
+,{"path":"/tmp/tier2-upload/07._법인영업정보__MR_RSR_업무코드_AD_02.Gap분석서_V0.1_ 법인정보정리.xlsx","status":"OK","documentId":"8fa2fc76-b86e-47a2-9a1a-4f17b850fa91","error":"","timestamp":"2026-03-03T17:44:26Z"}
+,{"path":"/tmp/tier2-upload/07._법인영업정보__MR_RSR_업무코드_AD_02.Gap분석서_V0.1_ 법인정보정리_신계약.xlsx","status":"OK","documentId":"c9a6823c-8e06-47f7-9d1e-7899629d6ed9","error":"","timestamp":"2026-03-03T17:44:29Z"}
+,{"path":"/tmp/tier2-upload/07._법인영업정보__MR_RSR_업무코드_AD_02.Gap분석서_V0.1_ 법인정보정리_업무공통.xlsx","status":"OK","documentId":"55b4f605-bc3f-425d-89dc-182fec61c781","error":"","timestamp":"2026-03-03T17:44:31Z"}
+,{"path":"/tmp/tier2-upload/07._법인영업정보__MR_RSR_업무코드_AD_02.Gap분석서_V0.1_ 법인정보정리_운용지시.xlsx","status":"OK","documentId":"082750fd-63cb-4d3a-a272-d22ea03f1404","error":"","timestamp":"2026-03-03T17:44:33Z"}
+,{"path":"/tmp/tier2-upload/07._법인영업정보__MR_RSR_업무코드_AD_02.Gap분석서_V0.1_ 법인정보정리_적립금.xlsx","status":"OK","documentId":"6b70d89a-5349-4d5e-adff-b673ad27b964","error":"","timestamp":"2026-03-03T17:44:37Z"}
+,{"path":"/tmp/tier2-upload/07._법인영업정보__MR_RSR_업무코드_AD_02.Gap분석서_V0.1_ 법인정보정리_지급.xlsx","status":"OK","documentId":"c33642b0-9bc3-4d17-b05b-a2b2fefd90ac","error":"","timestamp":"2026-03-03T17:44:40Z"}
+
+]

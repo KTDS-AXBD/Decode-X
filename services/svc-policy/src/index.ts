@@ -16,7 +16,7 @@
 import { createLogger, unauthorized, verifyInternalSecret, errFromUnknown, extractRbacContext, checkPermission, logAudit } from "@ai-foundry/utils";
 import type { Env } from "./env.js";
 import { handleInferPolicies, handleListPolicies, handleGetPolicy } from "./routes/policies.js";
-import { handleApprovePolicy, handleModifyPolicy, handleRejectPolicy, handleGetSession, handleListExpiredSessions, handleCleanupExpiredSessions } from "./routes/hitl.js";
+import { handleApprovePolicy, handleModifyPolicy, handleRejectPolicy, handleGetSession, handleListExpiredSessions, handleCleanupExpiredSessions, handleBulkApprovePolicy } from "./routes/hitl.js";
 import { handleGetHitlStats } from "./routes/stats.js";
 import { handleGetQualityTrend } from "./routes/quality-trend.js";
 import { handleGetReasoningAnalysis } from "./routes/reasoning.js";
@@ -91,6 +91,22 @@ export default {
           if (denied) return denied;
         }
         return await handleListPolicies(request, env);
+      }
+
+      // POST /policies/bulk-approve — batch approve multiple candidates
+      if (method === "POST" && path === "/policies/bulk-approve") {
+        const rbacCtx = extractRbacContext(request);
+        if (rbacCtx) {
+          const denied = await checkPermission(env, rbacCtx.role, "policy", "approve");
+          if (denied) return denied;
+          ctx.waitUntil(logAudit(env, {
+            userId: rbacCtx.userId,
+            organizationId: rbacCtx.organizationId,
+            action: "approve",
+            resource: "policy",
+          }));
+        }
+        return await handleBulkApprovePolicy(request, env, ctx);
       }
 
       // GET /hitl/expired — list expired session candidates

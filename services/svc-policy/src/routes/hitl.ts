@@ -5,7 +5,7 @@
  * (authoritative state machine) for policy approval workflows.
  */
 
-import { HitlActionSchema } from "@ai-foundry/types";
+import { HitlActionSchema, BulkApproveRequestSchema } from "@ai-foundry/types";
 import { ok, badRequest, notFound, createLogger } from "@ai-foundry/utils";
 import type { Env } from "../env.js";
 
@@ -390,4 +390,151 @@ export async function handleCleanupExpiredSessions(
 
   logger.info("Expired sessions cleaned up", { changes: result.meta.changes });
   return ok({ cleaned: result.meta.changes });
+}
+
+// ── POST /policies/bulk-approve ────────────────────────────────────
+
+export async function handleBulkApprovePolicy(
+  request: Request,
+  env: Env,
+  _ctx: ExecutionContext,
+): Promise<Response> {
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return badRequest("Invalid JSON body");
+  }
+
+  const parsed = BulkApproveRequestSchema.safeParse(body);
+  if (!parsed.success) {
+    return badRequest("Validation failed", parsed.error.flatten());
+  }
+  const { policyIds, reviewerId, comment } = parsed.data;
+
+  // Fetch all requested policies in one query
+  const placeholders = policyIds.map(() => "?").join(", ");
+  const policiesResult = await env.DB_POLICY.prepare(
+    `SELECT policy_id, status, organization_id FROM policies WHERE policy_id IN (${placeholders})`,
+  ).bind(...policyIds).all();
+
+  const foundPolicies = policiesResult.results;
+
+  // Build a lookup set of found IDs
+  const foundIds = new Set(foundPolicies.map((r) => r["policy_id"] as string));
+
+  // Collect invalid policies: not found or wrong status
+  const invalidEntries: { policyId: string; reason: string }[] = [];
+
+  for (const requestedId of policyIds) {
+    if (!foundIds.has(requestedId)) {
+      invalidEntries.push({ policyId: requestedId, reason: "Policy not found" });
+    }
+  }
+
+  for (const row of foundPolicies) {
+    const policyId = row["policy_id"] as string;
+    const status = row["status"] as string;
+    if (status !== "candidate" && status !== "in_review") {
+      invalidEntries.push({ policyId, reason: `Policy status is '${status}', expected 'candidate' or 'in_review'` });
+    }
+  }
+
+  if (invalidEntries.length > 0) {
+    return badRequest("Some policies cannot be approved", { invalid: invalidEntries });
+  }
+
+  // Fetch active HITL sessions for all valid policies
+  const sessionRows = await env.DB_POLICY.prepare(
+    `SELECT policy_id, session_id FROM hitl_sessions WHERE policy_id IN (${placeholders}) AND status NOT IN ('completed', 'expired')`,
+  ).bind(...policyIds).all();
+
+  // Build policy_id → session_id map
+  const sessionMap = new Map<string, string>();
+  for (const row of sessionRows.results) {
+    const pid = row["policy_id"] as string;
+    const sid = row["session_id"] as string;
+    sessionMap.set(pid, sid);
+  }
+
+  const now = new Date().toISOString();
+  const approved: string[] = [];
+  const failed: { policyId: string; reason: string }[] = [];
+
+  // Build per-policy update batches (groups of 10 to avoid D1 batch limits)
+  const validPolicies = foundPolicies.filter((row) => {
+    const status = row["status"] as string;
+    return status === "candidate" || status === "in_review";
+  });
+
+  const BATCH_SIZE = 10;
+
+  for (let i = 0; i < validPolicies.length; i += BATCH_SIZE) {
+    const batch = validPolicies.slice(i, i + BATCH_SIZE);
+
+    await Promise.all(
+      batch.map(async (row) => {
+        const policyId = row["policy_id"] as string;
+        const organizationId = (row["organization_id"] as string | null) ?? "unknown";
+        const sessionId = sessionMap.get(policyId);
+
+        if (!sessionId) {
+          failed.push({ policyId, reason: "No active HITL session found" });
+          return;
+        }
+
+        const actionId = crypto.randomUUID();
+
+        try {
+          // Update D1: policy status, hitl session, and insert action record
+          await Promise.all([
+            env.DB_POLICY.prepare(
+              "UPDATE policies SET status = 'approved', trust_level = 'reviewed', updated_at = ? WHERE policy_id = ?",
+            ).bind(now, policyId).run(),
+            env.DB_POLICY.prepare(
+              "UPDATE hitl_sessions SET status = 'completed', completed_at = ? WHERE session_id = ?",
+            ).bind(now, sessionId).run(),
+            env.DB_POLICY.prepare(
+              "INSERT INTO hitl_actions (action_id, session_id, reviewer_id, action, comment, modified_fields, acted_at) VALUES (?, ?, ?, 'approve', ?, NULL, ?)",
+            ).bind(actionId, sessionId, reviewerId, comment ?? null, now).run(),
+          ]);
+
+          // Look up trust score for quality metrics
+          const policyTrustRow = await env.DB_POLICY.prepare(
+            "SELECT trust_score FROM policies WHERE policy_id = ?",
+          ).bind(policyId).first();
+          const trustScoreVal = policyTrustRow?.["trust_score"] as number | null;
+
+          // Emit policy.approved Queue event
+          await env.QUEUE_PIPELINE.send({
+            eventId: crypto.randomUUID(),
+            occurredAt: now,
+            type: "policy.approved" as const,
+            payload: {
+              policyId,
+              hitlSessionId: sessionId,
+              organizationId,
+              approvedBy: reviewerId,
+              approvedAt: now,
+              policyCount: 1,
+              ...(trustScoreVal !== null ? { trustScore: trustScoreVal } : {}),
+              wasModified: false,
+            },
+          });
+
+          approved.push(policyId);
+          logger.info("Policy bulk-approved", { policyId, sessionId, reviewerId });
+        } catch (e) {
+          failed.push({ policyId, reason: String(e) });
+          logger.warn("Bulk approve failed for policy", { policyId, error: String(e) });
+        }
+      }),
+    );
+  }
+
+  return ok({
+    approved,
+    failed,
+    total: policyIds.length,
+  });
 }

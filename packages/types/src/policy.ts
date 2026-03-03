@@ -34,3 +34,12 @@ export const HitlActionSchema = z.object({
   modifiedFields: z.record(z.string()).optional(), // for "modify" action
 });
 export type HitlAction = z.infer<typeof HitlActionSchema>;
+
+// ── Bulk approve request ─────────────────────────────────────────────
+
+export const BulkApproveRequestSchema = z.object({
+  policyIds: z.array(z.string()).min(1).max(100),
+  reviewerId: z.string(),
+  comment: z.string().optional(),
+});
+export type BulkApproveRequest = z.infer<typeof BulkApproveRequestSchema>;

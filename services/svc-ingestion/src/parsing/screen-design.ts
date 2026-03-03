@@ -51,6 +51,12 @@ export function parseScreenDesign(
   const workbook = XLSX.read(new Uint8Array(fileBytes), { type: "array" });
   const elements: UnstructuredElement[] = [];
 
+  // Build workbook summary (same pattern as parseXlsx for Stage 2 context)
+  const summary = buildScreenWorkbookSummary(workbook, fileName);
+  if (summary) {
+    elements.push(summary);
+  }
+
   for (const sheetName of workbook.SheetNames) {
     if (shouldSkipSheet(sheetName)) continue;
 
@@ -77,15 +83,15 @@ function parseScreenSheet(
 ): UnstructuredElement[] {
   const elements: UnstructuredElement[] = [];
 
-  // Extract meta
+  // Detect sections first — sheets without section markers are not screen design sheets
+  const sections = detectSections(sheet);
+  if (sections.length === 0) return elements;
+
+  // Extract meta only for sheets with sections (prevents false-positive from data sheets)
   const meta = extractScreenMeta(sheet, sheetName);
   if (meta) {
     elements.push(meta);
   }
-
-  // Detect sections
-  const sections = detectSections(sheet);
-  if (sections.length === 0) return elements;
 
   for (const section of sections) {
     const title = section.title.toLowerCase();
@@ -155,13 +161,15 @@ export function extractScreenMeta(
   const screenName = getCellValue(sheet, 2, 7); // H3
   const screenIdArea = getCellValue(sheet, 2, 15); // P3
 
-  // Determine screen ID: P3 might be "화면ID" label or the actual value
+  // Determine screen ID: P3 might be "화면ID" label or the actual value.
+  // Use exact label comparison to avoid false negatives when an ID literally contains "화면".
+  const SCREEN_ID_LABEL = "화면ID";
   let screenId = "";
-  if (screenIdArea && !screenIdArea.includes("화면")) {
-    // P3 is the actual ID value
+  if (screenIdArea && screenIdArea.trim() !== SCREEN_ID_LABEL) {
+    // P3 is the actual ID value (not the label)
     screenId = screenIdArea;
   } else {
-    // P3 is "화면ID" label — search nearby cells for the value
+    // P3 is "화면ID" label — search nearby cells (Q3~V3) for the value
     for (let c = 16; c <= 21; c++) {
       const val = getCellValue(sheet, 2, c);
       if (val) {
@@ -224,8 +232,9 @@ export function detectSections(sheet: XLSX.WorkSheet): SectionRange[] {
   const range = XLSX.utils.decode_range(ref);
   const sectionStarts: Array<{ sectionNum: number; title: string; row: number }> = [];
 
-  // Section marker pattern: starts with a digit followed by a dot
-  const sectionPattern = /^(\d+)\.\s*/;
+  // Section marker pattern: starts with a single digit (1-9) followed by a dot.
+  // Capped at 1-9 to avoid matching version numbers ("10.0") or decimals ("3.14").
+  const sectionPattern = /^([1-9])\.\s*/;
 
   for (let r = range.s.r; r <= range.e.r; r++) {
     // Scan columns A(0), B(1), C(2) for section markers
@@ -490,8 +499,12 @@ function findTableHeader(
 }
 
 /**
- * Extract data rows from startRow to endRow, reading only the columns
- * identified by headerCols. Skips entirely empty rows.
+ * Extract data rows from startRow to endRow using column ranges (buckets).
+ *
+ * In heavily-merged 78-column layouts, data values may not be at the exact
+ * header column position. Instead, we compute a range (bucket) for each header
+ * column: [headerCol[i], headerCol[i+1] - 1], and find the first non-empty
+ * cell within that range for each data row.
  */
 function extractTableRows(
   sheet: XLSX.WorkSheet,
@@ -499,15 +512,41 @@ function extractTableRows(
   endRow: number,
   headerCols: number[],
 ): string[][] {
+  const ref = sheet["!ref"];
+  const sheetEnd = ref ? XLSX.utils.decode_range(ref).e.c : 77;
+
+  // Build column buckets: each header col gets a range [start, end]
+  const buckets: Array<{ start: number; end: number }> = [];
+  for (let i = 0; i < headerCols.length; i++) {
+    const colIdx = headerCols[i];
+    if (colIdx === undefined) continue;
+    const nextCol = headerCols[i + 1];
+    const bucketEnd = nextCol !== undefined ? nextCol - 1 : Math.min(colIdx + 15, sheetEnd);
+    buckets.push({ start: colIdx, end: bucketEnd });
+  }
+
   const rows: string[][] = [];
 
   for (let r = startRow; r <= endRow; r++) {
     const row: string[] = [];
     let hasContent = false;
 
-    for (const c of headerCols) {
-      const text = getCellValue(sheet, r, c);
-      const truncated = text ? truncateCell(text) : "";
+    for (const bucket of buckets) {
+      let cellText = "";
+      // Try exact column first, then scan bucket range
+      const exactVal = getCellValue(sheet, r, bucket.start);
+      if (exactVal) {
+        cellText = exactVal;
+      } else {
+        for (let c = bucket.start + 1; c <= bucket.end; c++) {
+          const val = getCellValue(sheet, r, c);
+          if (val) {
+            cellText = val;
+            break;
+          }
+        }
+      }
+      const truncated = cellText ? truncateCell(cellText) : "";
       row.push(truncated);
       if (truncated) hasContent = true;
     }
@@ -551,4 +590,53 @@ function getCellValue(sheet: XLSX.WorkSheet, row: number, col: number): string {
 function truncateCell(value: string): string {
   if (value.length <= MAX_CELL_LENGTH) return value;
   return value.slice(0, MAX_CELL_LENGTH) + "...";
+}
+
+// ── Workbook Summary ────────────────────────────────────────────
+
+/**
+ * Build a workbook-level summary element for 화면설계서.
+ * Provides Stage 2 with context about total sheets, skipped sheets, etc.
+ */
+function buildScreenWorkbookSummary(
+  workbook: XLSX.WorkBook,
+  fileName: string,
+): UnstructuredElement | null {
+  if (workbook.SheetNames.length === 0) return null;
+
+  let skippedCount = 0;
+  const activeSheets: string[] = [];
+
+  for (const sheetName of workbook.SheetNames) {
+    if (shouldSkipSheet(sheetName)) {
+      skippedCount++;
+    } else {
+      activeSheets.push(sheetName);
+    }
+  }
+
+  const lines: string[] = [
+    `# Workbook: ${fileName}`,
+    `- SI Subtype: 화면설계`,
+    `- Sheets: ${workbook.SheetNames.length}` +
+      (skippedCount > 0 ? ` (${skippedCount} skipped)` : ""),
+    `- Active screens: ${activeSheets.length}`,
+    "",
+    ...activeSheets.map((name) => `- ${name}`),
+  ];
+
+  const metadata: Record<string, unknown> = {
+    siSubtype: "화면설계",
+    sheetCount: workbook.SheetNames.length,
+    activeSheetCount: activeSheets.length,
+  };
+  if (skippedCount > 0) {
+    metadata["skippedSheets"] = skippedCount;
+  }
+
+  return {
+    type: "XlWorkbook",
+    text: lines.join("\n").trim(),
+    metadata,
+  };
 }

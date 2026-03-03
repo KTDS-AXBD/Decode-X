@@ -476,6 +476,43 @@ describe("shouldSkipSheet", () => {
   });
 });
 
+// ── shouldSkipSheet integration with parseXlsx ──────────────────
+
+describe("shouldSkipSheet integration in parseXlsx", () => {
+  it("skips 작성가이드 and 명명규칙 sheets in parseXlsx output", () => {
+    const buf = createWorkbook([
+      { name: "작성가이드", data: [["가이드"], ["작성 방법"]] },
+      { name: "명명규칙", data: [["규칙"], ["ID 명명"]] },
+      { name: "DataSheet", data: [["No", "항목"], ["1", "데이터"]] },
+    ]);
+    // Use a non-프로그램설계 filename to avoid dataStartRow=5 offset
+    const elements = parseXlsx(buf, "요구사항정의서.xlsx");
+
+    // Only DataSheet should produce sheet chunks
+    const sheetChunks = elements.filter((e) => e.type.startsWith("XlSheet:"));
+    expect(sheetChunks).toHaveLength(1);
+    expect(sheetChunks[0]!.text).toContain("데이터");
+    const allText = elements.map((e) => e.text).join(" ");
+    expect(allText).not.toContain("작성 방법");
+    expect(allText).not.toContain("ID 명명");
+  });
+
+  it("produces no sheet chunks when all sheets are noise", () => {
+    const buf = createWorkbook([
+      { name: "표지", data: [["Title"]] },
+      { name: "제개정이력", data: [["Version"]] },
+      { name: "샘플시트", data: [["Sample"]] },
+    ]);
+    const elements = parseXlsx(buf, "test.xlsx");
+
+    const sheetChunks = elements.filter((e) => e.type.startsWith("XlSheet:"));
+    expect(sheetChunks).toHaveLength(0);
+    // Workbook summary should still exist
+    expect(elements[0]!.type).toBe("XlWorkbook");
+    expect(elements[0]!.text).toContain("3 skipped");
+  });
+});
+
 // ── extractProgramMeta ──────────────────────────────────────────
 
 describe("extractProgramMeta", () => {
@@ -544,5 +581,52 @@ describe("extractProgramMeta", () => {
     const meta = extractProgramMeta(sheet, "MySheet");
     expect(meta).not.toBeNull();
     expect(meta!.text).toContain("프로그램설계서: MySheet");
+  });
+
+  it("returns null for sheet with exactly 3 rows (needs row index 3)", () => {
+    const wb = getWorkbook([
+      {
+        name: "ThreeRows",
+        data: [
+          ["Row0"],
+          ["Row1"],
+          ["Row2"],
+        ],
+      },
+    ]);
+    const sheet = wb.Sheets["ThreeRows"]!;
+    const meta = extractProgramMeta(sheet, "ThreeRows");
+    // range.e.r = 2, which is < 3, so should return null
+    expect(meta).toBeNull();
+  });
+
+  it("returns null for sheet with exactly 1 row", () => {
+    const wb = getWorkbook([
+      { name: "OneRow", data: [["SingleCell"]] },
+    ]);
+    const sheet = wb.Sheets["OneRow"]!;
+    const meta = extractProgramMeta(sheet, "OneRow");
+    expect(meta).toBeNull();
+  });
+
+  it("extracts only programId when other fields are empty", () => {
+    const wb = getWorkbook([
+      {
+        name: "PartialMeta",
+        data: [
+          ["", "", "", "", ""],
+          ["", "", "", "", ""],
+          ["프로그램 ID", "BEAN_ONLY", "", "프로그램 명", ""],
+          ["고객담당자", "", "", "설계담당자", ""],
+        ],
+      },
+    ]);
+    const sheet = wb.Sheets["PartialMeta"]!;
+    const meta = extractProgramMeta(sheet, "PartialMeta");
+    expect(meta).not.toBeNull();
+    expect(meta!.text).toContain("프로그램ID: BEAN_ONLY");
+    const metaData = meta!.metadata as Record<string, unknown>;
+    expect(metaData["programId"]).toBe("BEAN_ONLY");
+    expect(metaData["programName"]).toBe("");
   });
 });

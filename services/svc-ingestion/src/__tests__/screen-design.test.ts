@@ -162,6 +162,25 @@ describe("shouldSkipSheet", () => {
     expect(SKIP_SHEET_PATTERNS).toContain("제개정이력");
     expect(SKIP_SHEET_REGEXPS.length).toBeGreaterThanOrEqual(3);
   });
+
+  it("does NOT skip empty string", () => {
+    expect(shouldSkipSheet("")).toBe(false);
+  });
+
+  it("does NOT skip whitespace-only string", () => {
+    expect(shouldSkipSheet("   ")).toBe(false);
+    expect(shouldSkipSheet("\t")).toBe(false);
+  });
+
+  it("does NOT skip partial matches that are not regex hits (e.g. '표지123')", () => {
+    // "표지" is exact-match in SKIP_SHEET_PATTERNS, not regex
+    expect(shouldSkipSheet("표지123")).toBe(false);
+    expect(shouldSkipSheet("제개정이력2")).toBe(false);
+  });
+
+  it("skips partial regex matches (e.g. '화면샘플가이드' contains 샘플)", () => {
+    expect(shouldSkipSheet("화면샘플가이드")).toBe(true);
+  });
 });
 
 // ── extractScreenMeta ───────────────────────────────────────────
@@ -224,6 +243,26 @@ describe("extractScreenMeta", () => {
     const result = extractScreenMeta(ws, "SystemOnly");
     expect(result).not.toBeNull();
     expect(result!.text).toContain("시스템: 퇴직연금시스템");
+  });
+
+  it("extracts screen ID directly in P column (not as label)", () => {
+    // When P3 contains the actual ID value (not "화면ID" label)
+    const cells: Record<string, string> = {
+      A1: "퇴직연금시스템",
+      B3: "화면명",
+      H3: "급여조회",
+      P3: "SCRN_DIRECT_099",  // ID value directly in P column
+    };
+    const ws = makeSheetWithCells(cells);
+
+    const result = extractScreenMeta(ws, "급여조회");
+    expect(result).not.toBeNull();
+    expect(result!.text).toContain("화면ID: SCRN_DIRECT_099");
+    expect(result!.metadata).toEqual(
+      expect.objectContaining({
+        screenId: "SCRN_DIRECT_099",
+      }),
+    );
   });
 });
 
@@ -297,6 +336,41 @@ describe("detectSections", () => {
     expect(sections[0]!.sectionNum).toBe(1);
     expect(sections[1]!.sectionNum).toBe(2);
   });
+
+  it("handles non-sequential section numbers (e.g. 1, 3, 5)", () => {
+    const ws = makeSheet([
+      ["1. 레이아웃"],
+      ["", "content"],
+      ["3. 데이터 구성항목"],
+      ["", "data"],
+      ["5. 현업 추가 설명"],
+      ["", "note"],
+    ]);
+
+    const sections = detectSections(ws);
+    expect(sections).toHaveLength(3);
+    expect(sections[0]!.sectionNum).toBe(1);
+    expect(sections[0]!.endRow).toBe(1); // ends before section 3
+    expect(sections[1]!.sectionNum).toBe(3);
+    expect(sections[1]!.endRow).toBe(3); // ends before section 5
+    expect(sections[2]!.sectionNum).toBe(5);
+    expect(sections[2]!.endRow).toBe(5); // last row of sheet
+  });
+
+  it("detects section marker with no space after dot (e.g. '3.데이터')", () => {
+    const ws = makeSheet([
+      ["1.레이아웃"],
+      ["", "content"],
+      ["3.데이터 구성항목"],
+    ]);
+
+    const sections = detectSections(ws);
+    expect(sections).toHaveLength(2);
+    expect(sections[0]!.sectionNum).toBe(1);
+    expect(sections[0]!.title).toBe("1.레이아웃");
+    expect(sections[1]!.sectionNum).toBe(3);
+    expect(sections[1]!.title).toBe("3.데이터 구성항목");
+  });
 });
 
 // ── parseDataFields (section 3) ─────────────────────────────────
@@ -363,6 +437,27 @@ describe("parseDataFields", () => {
 
     expect(parseDataFields(ws, range)).toBeNull();
   });
+
+  it("escapes pipe characters in cell values", () => {
+    const ws = makeSheet([
+      ["3.데이터 구성항목", "", "", ""],
+      ["", "항목명", "컨트롤 유형", "필수"],
+      ["", "입출력|구분", "ComboBox", "Y"],
+    ]);
+
+    const range: SectionRange = {
+      sectionNum: 3,
+      title: "3.데이터 구성항목",
+      startRow: 0,
+      endRow: 2,
+    };
+
+    const result = parseDataFields(ws, range);
+    expect(result).not.toBeNull();
+    // Pipe should be escaped as \| in Markdown table
+    expect(result!.text).toContain("입출력\\|구분");
+    expect(result!.text).not.toContain("입출력|구분");
+  });
 });
 
 // ── parseProcessingLogic (section 4) ────────────────────────────
@@ -410,6 +505,32 @@ describe("parseProcessingLogic", () => {
     };
 
     expect(parseProcessingLogic(ws, range)).toBeNull();
+  });
+
+  it("skips rows where all processing content cells are empty", () => {
+    const ws = makeSheet([
+      ["4.처리로직", "", "", ""],
+      ["", "이벤트명", "입력값/파라미터", "처리내용"],
+      ["", "조회", "가입자ID", "DB 조회"],
+      ["", "", "", ""],  // entirely empty row — should be skipped
+      ["", "저장", "전체", "DB 저장"],
+    ]);
+
+    const range: SectionRange = {
+      sectionNum: 4,
+      title: "4.처리로직",
+      startRow: 0,
+      endRow: 4,
+    };
+
+    const result = parseProcessingLogic(ws, range);
+    expect(result).not.toBeNull();
+    // extractTableRows skips entirely empty rows, so rowCount should be 2
+    expect(result!.metadata).toEqual(
+      expect.objectContaining({ rowCount: 2 }),
+    );
+    expect(result!.text).toContain("조회");
+    expect(result!.text).toContain("저장");
   });
 });
 
@@ -520,6 +641,10 @@ describe("noise sheet skipping", () => {
             screenName: "가입자정보조회",
             screenId: "SCRN001",
           }),
+          // Source now requires section markers for meta extraction
+          A7: "1. 매뉴 레이아웃",
+          B8: "필드1",
+          C8: "값1",
         },
       },
     ]);
@@ -658,6 +783,11 @@ describe("parseScreenDesign (integration)", () => {
         r[15] = "SCRNA";
         return [r];
       })(),
+      ["", "", "", ""],   // row 3
+      ["", "", "", ""],   // row 4
+      ["", "", "", ""],   // row 5
+      ["1. 매뉴 레이아웃", "", "", ""],  // section marker
+      ["", "필드1", "값1", ""],
     ];
 
     const sheet2Data = [
@@ -669,6 +799,11 @@ describe("parseScreenDesign (integration)", () => {
         r[15] = "SCRNB";
         return [r];
       })(),
+      ["", "", "", ""],   // row 3
+      ["", "", "", ""],   // row 4
+      ["", "", "", ""],   // row 5
+      ["1. 매뉴 레이아웃", "", "", ""],  // section marker
+      ["", "필드2", "값2", ""],
     ];
 
     const buf = createWorkbook([
@@ -714,5 +849,54 @@ describe("parseScreenDesign (integration)", () => {
     expect(logic!.metadata).toEqual(
       expect.objectContaining({ fileName: "my_file.xlsx" }),
     );
+  });
+
+  it("processes workbook with mix of screen sheets and program-like sheets", () => {
+    // A screen design workbook may have some sheets that look like
+    // program design (no section markers, just table data) alongside
+    // proper screen design sheets with sections.
+    const screenData: string[][] = [];
+    screenData.push(["퇴직연금시스템"]);
+    screenData.push([""]);
+    const row2 = new Array<string>(17).fill("");
+    row2[1] = "화면명";
+    row2[7] = "급여조회";
+    row2[15] = "화면ID";
+    row2[16] = "SCRN_PAY";
+    screenData.push(row2);
+    screenData.push(new Array<string>(8).fill(""));
+    screenData.push(new Array<string>(8).fill(""));
+    screenData.push(new Array<string>(8).fill(""));
+    screenData.push(["3.데이터 구성항목", "", "", ""]);
+    screenData.push(["", "항목명", "컨트롤 유형", "필수"]);
+    screenData.push(["", "급여액", "TextBox", "Y"]);
+
+    // Program-like sheet: no section markers, just flat table data
+    const programData: string[][] = [
+      ["No", "항목", "설명"],
+      ["1", "가입자ID", "식별자"],
+      ["2", "상품코드", "상품"],
+    ];
+
+    const buf = createWorkbook([
+      { name: "SCRN_PAY_급여조회", data: screenData },
+      { name: "부록_참조데이터", data: programData },
+    ]);
+
+    const elements = parseScreenDesign(buf, "화면설계서_혼합.xlsx");
+
+    // Screen sheet produces meta + data elements
+    const screenMeta = elements.filter((e) => e.type === "XlScreenMeta");
+    expect(screenMeta).toHaveLength(1);
+    expect(screenMeta[0]!.text).toContain("급여조회");
+
+    const screenDataElements = elements.filter((e) => e.type === "XlScreenData");
+    expect(screenDataElements).toHaveLength(1);
+    expect(screenDataElements[0]!.text).toContain("급여액");
+
+    // Program-like sheet has no section markers, so it only produces
+    // metadata (if extractable) — no section-based elements
+    // The total element count should be manageable
+    expect(elements.length).toBeGreaterThanOrEqual(2);
   });
 });

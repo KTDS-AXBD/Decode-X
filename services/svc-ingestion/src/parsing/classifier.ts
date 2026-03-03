@@ -32,14 +32,17 @@ const SI_SUBTYPE_CATEGORY: Partial<Record<SiSubtype, DocumentCategory>> = {
 
 /**
  * Classify xlsx elements using the SI subtype tag embedded in element_type.
- * Element types follow the format "XlSheet:<siSubtype>".
+ * Recognises two naming conventions:
+ * - "XlSheet:<siSubtype>" — from parseXlsx()
+ * - "XlScreen*" — from parseScreenDesign() (XlScreenMeta, XlScreenLogic, etc.)
+ * - "XlProgramMeta" — from extractProgramMeta()
  * Falls back to "general" with low confidence when no subtype is detected.
  */
 export function classifyXlsxElements(
   elements: UnstructuredElement[],
 ): DocumentClassification {
-  // Find the first XlSheet element to extract siSubtype
   for (const el of elements) {
+    // parseXlsx output: "XlSheet:<siSubtype>"
     if (el.type.startsWith("XlSheet:")) {
       const siSubtype = el.type.slice("XlSheet:".length) as SiSubtype;
       const category = SI_SUBTYPE_CATEGORY[siSubtype];
@@ -49,9 +52,19 @@ export function classifyXlsxElements(
       // Known subtype but no category mapping (e.g., "unknown")
       return { category: "general", confidence: 0.5 };
     }
+
+    // parseScreenDesign output: XlScreenMeta, XlScreenLayout, XlScreenData, XlScreenLogic, XlScreenNote
+    if (el.type.startsWith("XlScreen")) {
+      return { category: "screen_design", confidence: 0.9 };
+    }
+
+    // extractProgramMeta output
+    if (el.type === "XlProgramMeta") {
+      return { category: "screen_design", confidence: 0.9 };
+    }
   }
 
-  // No XlSheet elements found (unlikely — only summary)
+  // No XlSheet/XlScreen elements found (unlikely — only summary)
   return { category: "general", confidence: 0.3 };
 }
 

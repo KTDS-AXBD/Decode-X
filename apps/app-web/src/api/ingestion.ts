@@ -16,8 +16,10 @@ export interface DocumentRow {
   file_type: string;
   file_size_byte: number;
   original_name: string;
-  status: "pending" | "processing" | "parsed" | "completed" | "failed";
+  status: "pending" | "processing" | "parsed" | "completed" | "failed" | "encrypted";
   uploaded_at: string;
+  error_message: string | null;
+  error_type: string | null;
 }
 
 export interface DocumentChunk {
@@ -38,8 +40,9 @@ export interface UploadResult {
 
 export async function fetchDocuments(
   organizationId: string,
+  limit = 2000,
 ): Promise<ApiResponse<{ documents: DocumentRow[]; total: number }>> {
-  const res = await fetch(`${API_BASE}/documents`, {
+  const res = await fetch(`${API_BASE}/documents?limit=${limit}`, {
     headers: headers(organizationId),
   });
   return res.json() as Promise<ApiResponse<{ documents: DocumentRow[]; total: number }>>;
@@ -67,6 +70,24 @@ export async function fetchDocumentChunks(
   >;
 }
 
+export async function downloadDocument(
+  organizationId: string,
+  documentId: string,
+): Promise<{ blob: Blob; filename: string }> {
+  const res = await fetch(`${API_BASE}/documents/${documentId}/download`, {
+    headers: headers(organizationId),
+  });
+  if (!res.ok) {
+    throw new Error(`Download failed: ${res.status}`);
+  }
+  const disposition = res.headers.get("Content-Disposition") ?? "";
+  const filenameMatch = disposition.match(/filename\*=UTF-8''(.+)/);
+  const rawName = filenameMatch?.[1];
+  const filename = rawName ? decodeURIComponent(rawName) : `document-${documentId}`;
+  const blob = await res.blob();
+  return { blob, filename };
+}
+
 export async function uploadDocument(
   organizationId: string,
   file: File,
@@ -79,4 +100,26 @@ export async function uploadDocument(
     body: formData,
   });
   return res.json() as Promise<ApiResponse<UploadResult>>;
+}
+
+export async function deleteDocument(
+  organizationId: string,
+  documentId: string,
+): Promise<ApiResponse<{ documentId: string; deleted: boolean }>> {
+  const res = await fetch(`${API_BASE}/documents/${documentId}`, {
+    method: "DELETE",
+    headers: headers(organizationId),
+  });
+  return res.json() as Promise<ApiResponse<{ documentId: string; deleted: boolean }>>;
+}
+
+export async function reprocessDocument(
+  organizationId: string,
+  documentId: string,
+): Promise<ApiResponse<{ documentId: string; status: string; reprocessing: boolean }>> {
+  const res = await fetch(`${API_BASE}/documents/${documentId}/reprocess`, {
+    method: "POST",
+    headers: headers(organizationId),
+  });
+  return res.json() as Promise<ApiResponse<{ documentId: string; status: string; reprocessing: boolean }>>;
 }

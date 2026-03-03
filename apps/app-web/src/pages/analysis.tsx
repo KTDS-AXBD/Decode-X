@@ -1,14 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, FileText, ExternalLink, CheckCircle, AlertCircle } from 'lucide-react';
+import { Search, FileText, CheckCircle, AlertCircle, ChevronDown, ChevronRight, Filter, Download } from 'lucide-react';
 import { toast } from 'sonner';
-import { fetchDocuments, fetchDocumentChunks } from '@/api/ingestion';
+import { fetchDocuments, fetchDocumentChunks, downloadDocument } from '@/api/ingestion';
 import type { DocumentRow, DocumentChunk } from '@/api/ingestion';
 import { useOrganization } from '@/contexts/OrganizationContext';
+import { MarkdownContent } from '@/components/markdown-content';
+import { getDocType, groupDocuments, getStatusInfo } from '@/lib/doc-categories';
 
 export default function AnalysisPage() {
   const { organizationId } = useOrganization();
@@ -18,6 +20,15 @@ export default function AnalysisPage() {
   const [selectedChunk, setSelectedChunk] = useState<DocumentChunk | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+
+  // Filters
+  const [filterDocType, setFilterDocType] = useState<string>('all');
+  const [filterFileType, setFilterFileType] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>('all');
+
+  // Group collapse state
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     void fetchDocuments(organizationId).then((res) => {
@@ -31,7 +42,7 @@ export default function AnalysisPage() {
     }).catch(() => {
       toast.error('문서 목록 API 호출 실패');
     });
-  }, []);
+  }, [organizationId]);
 
   useEffect(() => {
     if (!selectedDoc) return;
@@ -54,9 +65,66 @@ export default function AnalysisPage() {
     });
   }, [selectedDoc]);
 
-  const filteredDocs = searchQuery
-    ? documents.filter((d) => d.original_name.toLowerCase().includes(searchQuery.toLowerCase()))
-    : documents;
+  const handleViewOriginal = async (doc: DocumentRow) => {
+    setDownloading(true);
+    try {
+      const { blob, filename } = await downloadDocument(organizationId, doc.document_id);
+      const url = URL.createObjectURL(blob);
+      const previewable = blob.type.startsWith('image/') || blob.type === 'application/pdf';
+      if (previewable) {
+        window.open(url, '_blank');
+      } else {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+      toast.success(`원본 파일: ${filename}`);
+    } catch {
+      toast.error('원본 파일을 가져올 수 없습니다');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  // Derive filter options from data
+  const docTypes = useMemo(() => {
+    const set = new Set(documents.map((d) => getDocType(d.original_name)));
+    return Array.from(set).sort();
+  }, [documents]);
+
+  const fileTypes = useMemo(() => {
+    const set = new Set(documents.map((d) => d.file_type));
+    return Array.from(set).sort();
+  }, [documents]);
+
+  // Apply filters
+  const filteredDocs = useMemo(() => {
+    return documents.filter((d) => {
+      if (searchQuery && !d.original_name.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+      if (filterDocType !== 'all' && getDocType(d.original_name) !== filterDocType) return false;
+      if (filterFileType !== 'all' && d.file_type !== filterFileType) return false;
+      if (filterStatus !== 'all' && d.status !== filterStatus) return false;
+      return true;
+    });
+  }, [documents, searchQuery, filterDocType, filterFileType, filterStatus]);
+
+  const groups = useMemo(() => groupDocuments(filteredDocs), [filteredDocs]);
+
+  const toggleGroup = (label: string) => {
+    setCollapsedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(label)) {
+        next.delete(label);
+      } else {
+        next.add(label);
+      }
+      return next;
+    });
+  };
+
+  const activeFilterCount = [filterDocType, filterFileType, filterStatus].filter((f) => f !== 'all').length;
 
   return (
     <div className="space-y-0 h-[calc(100vh-4rem)]">
@@ -72,54 +140,139 @@ export default function AnalysisPage() {
       <div className="grid grid-cols-[35%_65%] gap-0 h-[calc(100vh-10rem)]">
         {/* Left Panel */}
         <div className="border-r overflow-hidden flex flex-col pr-4" style={{ borderColor: 'var(--border)' }}>
-          <div className="relative mb-4">
+          {/* Search */}
+          <div className="relative mb-3">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" style={{ color: 'var(--text-secondary)' }} />
             <Input placeholder="문서 검색..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10" />
           </div>
 
+          {/* Filters */}
+          <div className="flex items-center gap-2 mb-3 flex-wrap">
+            <div className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
+              <Filter className="w-3.5 h-3.5" />
+              {activeFilterCount > 0 && (
+                <Badge className="text-[10px] px-1.5 py-0" style={{ backgroundColor: 'var(--primary)', color: '#fff' }}>{activeFilterCount}</Badge>
+              )}
+            </div>
+            <select
+              className="text-xs border rounded px-2 py-1"
+              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--surface)', color: 'var(--text-primary)' }}
+              value={filterDocType}
+              onChange={(e) => setFilterDocType(e.target.value)}
+            >
+              <option value="all">문서 유형</option>
+              {docTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+            <select
+              className="text-xs border rounded px-2 py-1"
+              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--surface)', color: 'var(--text-primary)' }}
+              value={filterFileType}
+              onChange={(e) => setFilterFileType(e.target.value)}
+            >
+              <option value="all">파일 타입</option>
+              {fileTypes.map((t) => <option key={t} value={t}>{t}</option>)}
+            </select>
+            <select
+              className="text-xs border rounded px-2 py-1"
+              style={{ borderColor: 'var(--border)', backgroundColor: 'var(--surface)', color: 'var(--text-primary)' }}
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+            >
+              <option value="all">상태</option>
+              <option value="parsed">파싱 완료</option>
+              <option value="completed">완료</option>
+              <option value="failed">실패</option>
+              <option value="encrypted">암호화</option>
+              <option value="processing">처리 중</option>
+            </select>
+            {activeFilterCount > 0 && (
+              <button
+                className="text-xs underline"
+                style={{ color: 'var(--text-secondary)' }}
+                onClick={() => { setFilterDocType('all'); setFilterFileType('all'); setFilterStatus('all'); }}
+              >
+                초기화
+              </button>
+            )}
+          </div>
+
           <Tabs defaultValue="documents">
             <TabsList className="w-full">
-              <TabsTrigger value="documents" className="flex-1">문서 목록</TabsTrigger>
-              <TabsTrigger value="chunks" className="flex-1">청크 목록</TabsTrigger>
+              <TabsTrigger value="documents" className="flex-1">
+                문서 목록
+                <Badge variant="outline" className="ml-2 text-[10px] px-1.5">{filteredDocs.length}</Badge>
+              </TabsTrigger>
+              <TabsTrigger value="chunks" className="flex-1">
+                청크 목록
+                {chunks.length > 0 && <Badge variant="outline" className="ml-2 text-[10px] px-1.5">{chunks.length}</Badge>}
+              </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="documents" className="mt-4 space-y-3 overflow-auto max-h-[calc(100vh-20rem)]">
-              {filteredDocs.map((doc) => (
-                <Card
-                  key={doc.document_id}
-                  className={`cursor-pointer transition-all shadow-sm ${selectedDoc?.document_id === doc.document_id ? 'ring-2 ring-primary' : ''}`}
-                  onClick={() => setSelectedDoc(doc)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-2 mb-2">
-                      <FileText className="w-5 h-5 mt-1" style={{ color: 'var(--primary)' }} />
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-sm truncate" style={{ color: 'var(--text-primary)' }}>{doc.original_name}</div>
-                        <div className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
-                          {doc.document_id.slice(0, 8)} | {new Date(doc.uploaded_at).toLocaleDateString('ko-KR')}
-                        </div>
-                      </div>
-                      {doc.status === 'parsed' || doc.status === 'completed'
-                        ? <CheckCircle className="w-5 h-5" style={{ color: 'var(--success)' }} />
-                        : doc.status === 'failed'
-                          ? <AlertCircle className="w-5 h-5" style={{ color: '#EF4444' }} />
-                          : <AlertCircle className="w-5 h-5" style={{ color: 'var(--accent)' }} />
+            <TabsContent value="documents" className="mt-3 overflow-auto max-h-[calc(100vh-24rem)]">
+              {groups.map((group) => {
+                const isCollapsed = collapsedGroups.has(group.label);
+                return (
+                  <div key={group.label} className="mb-2">
+                    {/* Group header */}
+                    <button
+                      className="flex items-center gap-2 w-full py-1.5 px-2 rounded text-left transition-colors hover:opacity-80"
+                      style={{ backgroundColor: 'rgba(59, 130, 246, 0.06)' }}
+                      onClick={() => toggleGroup(group.label)}
+                    >
+                      {isCollapsed
+                        ? <ChevronRight className="w-4 h-4 shrink-0" style={{ color: 'var(--text-secondary)' }} />
+                        : <ChevronDown className="w-4 h-4 shrink-0" style={{ color: 'var(--text-secondary)' }} />
                       }
-                    </div>
-                    <div className="flex items-center gap-3 text-xs" style={{ color: 'var(--text-secondary)' }}>
-                      <span>{doc.file_type}</span>
-                      <span>|</span>
-                      <span>{(doc.file_size_byte / 1024).toFixed(0)} KB</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      <span className="text-xs font-semibold flex-1" style={{ color: 'var(--text-primary)' }}>{group.label}</span>
+                      <Badge variant="outline" className="text-[10px] px-1.5">{group.docs.length}</Badge>
+                    </button>
+
+                    {/* Group items */}
+                    {!isCollapsed && (
+                      <div className="space-y-1.5 mt-1.5 ml-2">
+                        {group.docs.map((doc) => (
+                          <div
+                            key={doc.document_id}
+                            className={`cursor-pointer rounded-lg p-3 transition-all border ${selectedDoc?.document_id === doc.document_id ? 'ring-2 ring-primary' : ''}`}
+                            style={{ borderColor: 'var(--border)', backgroundColor: selectedDoc?.document_id === doc.document_id ? 'rgba(26, 54, 93, 0.05)' : 'transparent' }}
+                            onClick={() => setSelectedDoc(doc)}
+                          >
+                            <div className="flex items-start gap-2">
+                              <FileText className="w-4 h-4 mt-0.5 shrink-0" style={{ color: 'var(--primary)' }} />
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium text-xs leading-snug" style={{ color: 'var(--text-primary)' }}>{doc.original_name}</div>
+                                <div className="flex items-center gap-2 mt-1 text-[11px]" style={{ color: 'var(--text-secondary)' }}>
+                                  <Badge variant="outline" className="text-[10px] px-1 py-0">{doc.file_type}</Badge>
+                                  <span>{(doc.file_size_byte / 1024).toFixed(0)} KB</span>
+                                  <span style={{ color: getStatusInfo(doc.status).color }}>
+                                    {getStatusInfo(doc.status).label}
+                                  </span>
+                                </div>
+                              </div>
+                              {doc.status === 'parsed' || doc.status === 'completed'
+                                ? <CheckCircle className="w-4 h-4 shrink-0" style={{ color: 'var(--success)' }} />
+                                : doc.status === 'failed'
+                                  ? <AlertCircle className="w-4 h-4 shrink-0" style={{ color: '#EF4444' }} />
+                                  : doc.status === 'encrypted'
+                                    ? <AlertCircle className="w-4 h-4 shrink-0" style={{ color: '#F59E0B' }} />
+                                    : <AlertCircle className="w-4 h-4 shrink-0" style={{ color: 'var(--accent)' }} />
+                              }
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
               {filteredDocs.length === 0 && (
-                <p className="text-sm text-center py-8" style={{ color: 'var(--text-secondary)' }}>문서가 없습니다.</p>
+                <p className="text-sm text-center py-8" style={{ color: 'var(--text-secondary)' }}>
+                  {documents.length === 0 ? '문서가 없습니다.' : '필터 조건에 맞는 문서가 없습니다.'}
+                </p>
               )}
             </TabsContent>
 
-            <TabsContent value="chunks" className="mt-4 space-y-2 overflow-auto max-h-[calc(100vh-20rem)]">
+            <TabsContent value="chunks" className="mt-3 space-y-2 overflow-auto max-h-[calc(100vh-24rem)]">
               {loading && <p className="text-sm text-center py-4" style={{ color: 'var(--text-secondary)' }}>청크 로딩 중...</p>}
               {chunks.map((chunk) => (
                 <Card
@@ -145,16 +298,17 @@ export default function AnalysisPage() {
           {selectedDoc && (
             <div className="pb-4 mb-4 border-b" style={{ borderColor: 'var(--border)' }}>
               <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h2 className="text-xl font-bold mb-1" style={{ color: 'var(--text-primary)' }}>{selectedDoc.original_name}</h2>
+                <div className="min-w-0 flex-1 mr-4">
+                  <h2 className="text-lg font-bold mb-1 break-words" style={{ color: 'var(--text-primary)' }}>{selectedDoc.original_name}</h2>
                   <div className="flex items-center gap-3 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                    <Badge variant="outline" className="text-xs">{getDocType(selectedDoc.original_name)}</Badge>
                     <span>{selectedDoc.document_id.slice(0, 8)}</span>
                     <span>|</span>
                     <span>{new Date(selectedDoc.uploaded_at).toLocaleString('ko-KR')}</span>
                   </div>
                 </div>
-                <Button variant="outline" size="sm">
-                  <ExternalLink className="w-4 h-4 mr-2" />원본 보기
+                <Button variant="outline" size="sm" className="shrink-0" disabled={downloading} onClick={() => void handleViewOriginal(selectedDoc)}>
+                  <Download className="w-4 h-4 mr-2" />{downloading ? '로딩...' : '원본 보기'}
                 </Button>
               </div>
               <div className="grid grid-cols-3 gap-4">
@@ -168,11 +322,25 @@ export default function AnalysisPage() {
                 </div>
                 <div className="p-3 rounded-lg" style={{ backgroundColor: 'rgba(56, 161, 105, 0.1)' }}>
                   <div className="text-xs mb-1" style={{ color: 'var(--text-secondary)' }}>상태</div>
-                  <Badge style={{ backgroundColor: selectedDoc.status === 'parsed' || selectedDoc.status === 'completed' ? 'var(--success)' : selectedDoc.status === 'failed' ? '#EF4444' : 'var(--accent)', color: '#fff' }}>
-                    {selectedDoc.status === 'parsed' ? '파싱 완료' : selectedDoc.status === 'completed' ? '완료' : selectedDoc.status === 'failed' ? '실패' : selectedDoc.status === 'pending' ? '대기중' : selectedDoc.status}
+                  <Badge style={{ backgroundColor: getStatusInfo(selectedDoc.status).color, color: '#fff' }}>
+                    {getStatusInfo(selectedDoc.status).label}
                   </Badge>
                 </div>
               </div>
+              {(selectedDoc.status === 'failed' || selectedDoc.status === 'encrypted') && selectedDoc.error_message && (
+                <div className="mt-4 p-3 rounded-lg border" style={{ borderColor: '#FBBF24', backgroundColor: 'rgba(251, 191, 36, 0.08)' }}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <AlertCircle className="w-4 h-4" style={{ color: '#D97706' }} />
+                    <span className="text-xs font-semibold" style={{ color: '#D97706' }}>
+                      {selectedDoc.status === 'encrypted' ? '암호화된 파일' : '처리 오류'}
+                    </span>
+                    {selectedDoc.error_type && (
+                      <Badge variant="outline" className="text-[10px]">{selectedDoc.error_type}</Badge>
+                    )}
+                  </div>
+                  <p className="text-xs ml-6" style={{ color: 'var(--text-secondary)' }}>{selectedDoc.error_message}</p>
+                </div>
+              )}
             </div>
           )}
 
@@ -191,8 +359,8 @@ export default function AnalysisPage() {
                 <CardContent className="space-y-6">
                   <div>
                     <h3 className="text-sm font-semibold mb-2" style={{ color: 'var(--text-secondary)' }}>청크 내용</h3>
-                    <div className="p-4 rounded-lg text-sm leading-relaxed whitespace-pre-wrap" style={{ backgroundColor: 'var(--surface)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}>
-                      {selectedChunk.masked_text}
+                    <div className="p-4 rounded-lg" style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--border)' }}>
+                      <MarkdownContent content={selectedChunk.masked_text} />
                     </div>
                   </div>
                   <div className="grid grid-cols-3 gap-4">

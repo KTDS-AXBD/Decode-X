@@ -67,7 +67,7 @@ export const PERMISSIONS: Record<Role, Partial<Record<Resource, Action[]>>> = {
     user: ["create", "read", "update", "delete"],
   },
   Analyst: {
-    document: ["create", "read", "upload", "download"],
+    document: ["create", "read", "update", "upload", "download"],
     extraction: ["read", "execute"],
     policy: ["read"],
     ontology: ["read"],

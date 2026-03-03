@@ -2,6 +2,18 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 066 — 2026-03-04
+**분석 리포트 LLM 모델 변경 재분석 기능**:
+- ✅ Backend: `POST /analyze`에 `preferredProvider`/`preferredTier` 파라미터 추가
+- ✅ Backend: `callLlmWithMeta`에 `LlmCallOptions` 인터페이스 추가, provider 전달
+- ✅ Frontend: `LlmModelBadge` 컴포넌트 신규 (4 provider별 색상 배지 + Bot 아이콘)
+- ✅ Frontend: `ReanalysisPopover` 컴포넌트 신규 (Provider 4종 + Tier 2종 인라인 선택)
+- ✅ Frontend: analysis-report 헤더 통합 — 배지 + 재분석 버튼 + 완료 후 자동 갱신
+
+**검증**: typecheck 16/16, lint 13/13
+
+**산출물**: `177520d` chore(svc-ingestion), `ae776fe` feat(analysis)
+
 ## 세션 065 — 2026-03-04
 **Phase 3 Sprint 2 — Skill 검색 API + Marketplace UX**:
 - ✅ svc-skill: GET /skills 검색 강화 (q, tag, subdomain, sort 파라미터 + total count)

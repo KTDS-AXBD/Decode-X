@@ -97,36 +97,60 @@ echo "  Delay       : ${DELAY_MS}ms"
 echo "  Dry Run     : $DRY_RUN"
 echo "═══════════════════════════════════════════════"
 
-# ── Step 1: Fetch candidate policies ─────────────────────────────────
+# ── Step 1: Fetch candidate policies (paginated) ─────────────────────
 
 echo ""
 echo "[1/3] Fetching policies with status='$STATUS'..."
 
-POLICIES_URL="$BASE_URL/policies?status=$STATUS&limit=1000"
-POLICIES_RESPONSE=$(curl -s -w "\n%{http_code}" \
-  -H "X-Internal-Secret: $SECRET" \
-  "$POLICIES_URL")
-
-HTTP_CODE=$(echo "$POLICIES_RESPONSE" | tail -1)
-POLICIES_BODY=$(echo "$POLICIES_RESPONSE" | sed '$d')
-
-if [[ "$HTTP_CODE" != "200" ]]; then
-  echo "ERROR: Failed to fetch policies (HTTP $HTTP_CODE)" >&2
-  echo "$POLICIES_BODY" >&2
+if ! command -v jq &>/dev/null; then
+  echo "ERROR: jq is required for paginated fetching" >&2
   exit 1
 fi
 
-# Extract policy IDs (using jq if available, fallback to grep)
-if command -v jq &>/dev/null; then
-  POLICY_IDS=$(echo "$POLICIES_BODY" | jq -r '.data.policies[]?.policy_id // empty' 2>/dev/null || echo "$POLICIES_BODY" | jq -r '.data[]?.policy_id // empty' 2>/dev/null || echo "")
-  TOTAL_COUNT=$(echo "$POLICY_IDS" | grep -c . || echo "0")
-else
-  echo "WARNING: jq not found. Using grep fallback (may be less reliable)" >&2
-  POLICY_IDS=$(echo "$POLICIES_BODY" | grep -oP '"policy_id"\s*:\s*"\K[^"]+' || echo "")
-  TOTAL_COUNT=$(echo "$POLICY_IDS" | grep -c . || echo "0")
-fi
+POLICY_IDS=""
+PAGE_OFFSET=0
+PAGE_LIMIT=100
 
-echo "  Found: $TOTAL_COUNT policies with status='$STATUS'"
+while true; do
+  POLICIES_RESPONSE=$(curl -s -w "\n%{http_code}" \
+    -H "X-Internal-Secret: $SECRET" \
+    "$BASE_URL/policies?status=$STATUS&limit=$PAGE_LIMIT&offset=$PAGE_OFFSET")
+
+  HTTP_CODE=$(echo "$POLICIES_RESPONSE" | tail -1)
+  POLICIES_BODY=$(echo "$POLICIES_RESPONSE" | sed '$d')
+
+  if [[ "$HTTP_CODE" != "200" ]]; then
+    echo "ERROR: Failed to fetch policies at offset=$PAGE_OFFSET (HTTP $HTTP_CODE)" >&2
+    echo "$POLICIES_BODY" >&2
+    exit 1
+  fi
+
+  PAGE_IDS=$(echo "$POLICIES_BODY" | jq -r '.data.policies[].policyId' 2>/dev/null || true)
+  PAGE_COUNT=$(echo "$POLICIES_BODY" | jq '.data.policies | length' 2>/dev/null || echo 0)
+
+  if [[ "$PAGE_COUNT" -eq 0 ]]; then
+    break
+  fi
+
+  if [[ -z "$POLICY_IDS" ]]; then
+    POLICY_IDS="$PAGE_IDS"
+  else
+    POLICY_IDS="$POLICY_IDS"$'\n'"$PAGE_IDS"
+  fi
+
+  echo "  Fetched offset=$PAGE_OFFSET: $PAGE_COUNT policies"
+  PAGE_OFFSET=$((PAGE_OFFSET + PAGE_LIMIT))
+
+  if [[ "$PAGE_OFFSET" -gt 50000 ]]; then
+    echo "WARNING: Stopping at 50,000 policies (safety cap)" >&2
+    break
+  fi
+done
+
+# Filter empty lines and count
+POLICY_IDS=$(echo "$POLICY_IDS" | sed '/^$/d')
+TOTAL_COUNT=$(echo "$POLICY_IDS" | wc -l | tr -d ' ')
+echo "  Total found: $TOTAL_COUNT policies with status='$STATUS'"
 
 if [[ "$TOTAL_COUNT" -eq 0 ]]; then
   echo "No policies to approve. Done."
@@ -138,7 +162,7 @@ fi
 if [[ "$DRY_RUN" == "true" ]]; then
   echo ""
   echo "[DRY RUN] Would approve $TOTAL_COUNT policies:"
-  echo "$POLICY_IDS" | head -20
+  echo "$POLICY_IDS" | head -20 || true
   if [[ "$TOTAL_COUNT" -gt 20 ]]; then
     echo "  ... and $((TOTAL_COUNT - 20)) more"
   fi

@@ -9,7 +9,7 @@
 
 **검증**: typecheck PASS
 
-**산출물**: `da8ce9d` feat(app-web): show LLM model badge on analysis report page header
+**산출물**: `da8ce9d` feat(app-web): show LLM model badge, `d586e0e` fix(svc-extraction): test 수정
 
 ## 세션 063 — 2026-03-03
 **Phase 3 — Skill Evaluate Sprint 1 완료 (PDCA Plan→Design→Do→Deploy→E2E)**:

@@ -11,7 +11,7 @@
 - **Repo**: `AX-BD-Team/res-ai-foundry`
 - **Goal**: SI 산출물에서 암묵지를 추출해 재사용 가능한 Skill 자산으로 패키징
 - **Domain Pilot**: 퇴직연금
-- **Current Phase**: Phase 1 완료 → Phase 2 준비
+- **Current Phase**: Phase 2-D 진행중 (퇴직연금 실문서 파일럿)
 
 ---
 
@@ -52,12 +52,14 @@
 
 ## 5) Current Status
 
-- **Last Updated**: 2026-03-02 (세션 036)
-- **Current Phase**: Phase 2-C 진행중 (Staging 배치 E2E 완료, Production 배포 대기)
-- **Production E2E**: ✅ 8/8 PASS (synthetic) + 7/7 PASS (real-doc) — Phase 2-B 기준
-- **Staging Batch E2E**: ✅ 10/10 PASS — Phase 2-C 퇴직연금 합성 문서 배치 테스트
+- **Last Updated**: 2026-03-03 (세션 049)
+- **Current Phase**: Phase 2-D 진행중 (퇴직연금 실문서 파일럿)
+- **Production E2E**: ✅ 8/8 PASS (synthetic) + 7/7 PASS (real-doc) + Batch 9/11 parsed (real-doc)
+- **Real Document Pilot**: ✅ 13/15 문서 파싱 완료 (Batch 1: 4건, Batch 2: 9/11건)
+- **Production Data**: policies 134+ approved, terms 1,441, skills 171 (org-mirae-pension)
+- **Multi-Provider LLM**: ✅ Anthropic→OpenAI→Google→Workers AI 4-provider fallback 구현 + 검증
 - **Phase 3 Prep**: ✅ MCP 2024-11-05 protocol + OpenAPI 3.0 adapter (Staging 배포 완료)
-- **Phase 2-C Test Docs**: ✅ 10개 퇴직연금 합성 문서 세트 준비 + 배치 실행 완료
+- **Quality Infra**: ✅ DB 마이그레이션 + API + 대시보드 배포 완료 (org별 메트릭 기록)
 - **Frontend API**: ✅ 10/10 페이지 API 연동 완료 (Settings Health 모니터링 + 알림 연동 포함)
 - **Repo Bootstrap**: ✅
 - **PRD Seed Document**: ✅ (`docs/AI_Foundry_PRD_TDS_v0.6.docx`)
@@ -200,18 +202,19 @@
   - svc-ontology: 100 tests (100% stmts)
   - svc-security: 153 tests (97.14% stmts)
   - svc-queue-router: 43 tests (100% stmts)
-- **Test Coverage**: svc-ingestion 96.66%, svc-extraction 100%, svc-policy 73.55%, svc-skill 80.41%, svc-notification 96.72%, svc-analytics 89.65%, svc-governance 100%, svc-llm-router 98.85%, svc-ontology 100%, svc-security 97.14%, svc-queue-router 100% (769 tests, vitest)
+- **Test Coverage**: 822 tests, 11 services (vitest) — svc-llm-router 134, svc-security 153, svc-ontology 100, svc-skill 97, svc-governance 75, svc-policy 68, svc-extraction 60, svc-ingestion 54, svc-queue-router 43, svc-analytics 22, svc-notification 16
 - **Frontend**: https://ai-foundry-web.pages.dev (Cloudflare Pages) + https://ai-foundry.minu.best (커스텀 도메인)
-  - 6 pages real API 연동 (upload, analysis, hitl, audit, skill-catalog, dashboard)
-  - 3 pages real API 연동 완료 (ontology, api-console, trust) — 세션 026
-  - 5 sub-components still mock (PolicyQualityChart, HitlOperationsCard 등)
+  - 10/10 pages real API 연동 완료 (upload, analysis, hitl, audit, skill-catalog, dashboard, ontology, api-console, trust, settings)
 - **E2E 스크립트**: `--staging`, `--real-doc <path>`, `--json`, `--wait-queue` 지원
 - **샘플 문서**: test-docs/ (퇴직연금 합성 3건)
-- **Staging 배포**: ✅ 11/11 Workers staging 배포 완료 (2026-03-01)
+- **Staging 배포**: ✅ 11/11 Workers staging 배포 완료 + 12/12 healthy
   - URL 패턴: `https://svc-xxx-staging.sinclair-account.workers.dev`
   - Service binding: staging worker 간 격리 (`-staging` 접미사)
-  - Secrets: INTERNAL_API_SECRET ×11 + ANTHROPIC_API_KEY(placeholder) + AI_GATEWAY_URL + JWT_SECRET
-  - Health check: 11/11 healthy, API 기능 검증 통과
+  - Secrets: INTERNAL_API_SECRET ×11 + OPENAI_API_KEY + GOOGLE_AI_API_KEY + AI_GATEWAY_URL + JWT_SECRET
+- **Production 배포**: ✅ 11/11 Workers + Pages 배포 완료 + 12/12 healthy
+  - CI/CD: push→staging, release/manual→production + svc-queue-router default env skip
+  - Monitoring: health-check.sh + GitHub Actions cron (30분)
+- **로컬 개발**: ✅ 11개 서비스 동시 기동 (`bun run dev:local`, HTTP 8701-8711)
 
 ---
 
@@ -292,6 +295,40 @@
 - [x] **I-05** — GitHub Environments 설정 (repo secrets + production deployment_branch_policy)
 - [x] **I-06** — 프로덕션 모니터링 (health-check.sh + GitHub Actions cron 30분)
 
+### 🔄 Phase 2 — Real Document Pilot (진행중)
+
+#### ✅ Phase 2-A — Production E2E 검증 (완료)
+- [x] Production 11/11 배포 + 12/12 healthy
+- [x] E2E Pipeline 8/8 PASS (synthetic) + 7/7 PASS (real-doc)
+- [x] UNSTRUCTURED_API_KEY 시크릿 설정
+
+#### ✅ Phase 2-B — 품질 메트릭 인프라 (완료)
+- [x] D1 마이그레이션: quality_metrics, stage_latency, quality_evaluations
+- [x] 이벤트 페이로드 확장: parseDurationMs, ruleCount, wasModified, termCount
+- [x] svc-analytics GET /quality + svc-governance /quality-evaluations API
+- [x] 파일럿 대시보드 (Trust 페이지 탭 추가)
+- [x] Settings 페이지: 시스템 Health 모니터링 + 알림 연동
+
+#### ✅ Phase 2-C — Staging 배치 테스트 (완료)
+- [x] 퇴직연금 합성 문서 10건 세트 준비 + 배치 E2E 10/10 PASS
+- [x] svc-extraction 품질 개선 (적응형 프롬프트, 스마트 청크 선택)
+- [x] org ID 전파 버그 수정 (Stage 3-5 이벤트 스키마 + 7개 서비스)
+- [x] extraction pending 버그 해결 (fetchChunks 파싱 + failed 상태 전환)
+
+#### 🔄 Phase 2-D — 실문서 파일럿 (진행중)
+- [x] 멀티 프로바이더 LLM (Anthropic→OpenAI→Google→Workers AI fallback)
+- [x] HITL 47건+34건 승인 — policies 134+, terms 1,441, skills 171
+- [x] 퇴직연금 대표 문서 11건 업로드 (9/11 parsed, 2건 SCDSA002 비표준)
+- [ ] SCDSA002 비표준 XLSX 조사 (메뉴구조도, 테이블정의서)
+- [ ] Anthropic 크레딧 충전 후 품질 비교 (Anthropic vs OpenAI extraction)
+- [ ] 추가 문서 업로드 (764건 XLSX 중 선별)
+- [ ] PDF 대용량 문서 파싱 (Unstructured.io 524 timeout 해결)
+
+### Phase 3 — MCP/OpenAPI 실사용 (예정)
+- [ ] MCP adapter를 실제 MCP 클라이언트(Claude Desktop 등)에서 테스트
+- [ ] OpenAPI adapter 외부 시스템 연동 검증
+- [ ] Skill 패키지 재사용성 검증
+
 ---
 
 ## 7) Risks & Assumptions
@@ -347,3 +384,16 @@
 - 2026-03-01: UNSTRUCTURED_API_KEY staging secret 설정 + set-secret workflow 추가
 - 2026-03-01: **Staging E2E 7/7 PASS** — 실제 pension-withdrawal.pdf 5-Stage 파이프라인 검증 성공
 - 2026-03-01: **Production 배포 11/11** — 전체 Workers production 재배포 + UNSTRUCTURED_API_KEY production secret 설정
+- 2026-03-02: 로컬 개발 환경 — 11 서비스 포트 할당 (8701-8711) + Wave 순차 기동 스크립트 (`dev-local.sh`)
+- 2026-03-02: Phase 2-B 품질 메트릭 인프라 — db-analytics/db-governance 마이그레이션 + 이벤트 enrichment + quality API + 파일럿 대시보드
+- 2026-03-02: Phase 2-B Production 배포 — 6서비스 + Pages + D1 마이그레이션 + 실문서 E2E 7/7 PASS
+- 2026-03-02: Phase 2-C Staging 배치 E2E 10/10 PASS — 합성 문서 10건, 품질 메트릭 org별 수집 확인
+- 2026-03-02: svc-extraction 품질 개선 — 적응형 프롬프트 (문서 분류별), 스마트 청크 선택 (head 3 + word_count top 17), maxTokens 4096
+- 2026-03-02: CI/CD 수정 — multi-commit push 변경 감지 + production default env 동시 배포
+- 2026-03-02: extraction pending 버그 해결 — fetchChunks 응답 파싱 + failed 상태 전환 + org ID 필수 검증
+- 2026-03-02: **Production E2E 8/8 PASS** (real-doc pension-withdrawal.pdf, queue-driven)
+- 2026-03-03: 멀티 프로바이더 LLM — Anthropic+OpenAI+Google+Workers AI 4-provider fallback. Provider adapter 패턴, D1 provider/fallback_from 컬럼 추가
+- 2026-03-03: HITL 47건 승인 — 7개 org, Stage 4 terms 1,228건, Stage 5 skills 134건
+- 2026-03-03: Production 전체 배포 동기화 — CI/CD svc-queue-router default env skip + 14/14 jobs success
+- 2026-03-03: 퇴직연금 실문서 파일럿 — 카테고리별 대표 11건 업로드, 9/11 parsed, 34 policies, 220 terms, 37 skills
+- 2026-03-03: SCDSA002 비표준 XLSX 발견 — 메뉴구조도/테이블정의서 2건 magic bytes 비표준 (Unstructured.io 파싱 불가)

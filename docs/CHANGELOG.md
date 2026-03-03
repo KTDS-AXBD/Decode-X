@@ -2,6 +2,23 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 049 — 2026-03-03
+**SPEC.md 동기화 + ESLint 도입 + 기술부채 정리**:
+- ✅ SPEC.md Current Status 업데이트 (세션 036→048 반영, Phase 2-D 상태)
+- ✅ SPEC.md Phase 2 실행계획 추가 (2-A~2-D + Phase 3 예정)
+- ✅ SPEC.md Decision Log 18건 추가 (세션 036-048)
+- ✅ CLAUDE.md Status 동기화 (822 tests, 멀티 프로바이더, 실문서 파일럿)
+- ✅ ESLint flat config 신규 설정 (eslint.config.mjs + typescript-eslint)
+- ✅ 13 package.json에 lint script 추가
+- ✅ 15개 소스 파일 lint 수정 (unused imports, _ctx, type imports, regex escape)
+- ✅ 이전 세션 미커밋 WIP 코드 `wip/pipeline-hardening` 브랜치로 분리 보관
+- ✅ MEMORY.md 정리: 해결된 이슈 제거, Lessons Learned 섹션 추가
+
+**검증 결과**:
+- ✅ typecheck 16/16 PASS
+- ✅ tests 822/822 PASS (11 services)
+- ✅ lint 0 errors, 0 warnings
+
 ## 세션 048 — 2026-03-03
 **퇴직연금 프로젝트 실문서 대량 업로드 + 5-Stage 파이프라인 E2E 검증**:
 - ✅ 퇴직연금 프로젝트 카테고리별 대표 11건 Production 업로드

@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Full product requirements and technical design are in `docs/AI_Foundry_PRD_TDS_v0.6.docx`. This is the authoritative reference for all design decisions.
 
-> **Status**: Phase 1 완료. 11 Workers 전체 구현+배포, 769 tests, staging/production 환경 분리 완료. 다음 단계: Phase 2 — 실제 퇴직연금 문서 투입 파일럿.
+> **Status**: Phase 2-D 진행중. 11 Workers 전체 구현+배포, 822 tests, staging/production 환경 분리 완료. 퇴직연금 실문서 파일럿: 13/15 문서 파싱, policies 134+, terms 1,441, skills 171. 멀티 프로바이더 LLM (Anthropic/OpenAI/Google/Workers AI) fallback 완비.
 
 ---
 

@@ -2,6 +2,19 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 090 — 2026-03-04
+**온톨로지 Term Type Classification — LLM 기반 3분류 + 시각화**:
+- ✅ D1 migration: `0002_add_term_type.sql` (term_type 컬럼 + 인덱스, staging+production 적용)
+- ✅ Shared types: `packages/types/src/ontology.ts` — TermTypeSchema, ClassifiedTermSchema
+- ✅ LLM 분류 함수: `classify-terms.ts` — Haiku tier, graceful fallback (실패 시 entity 기본값)
+- ✅ Queue handler: regex 추출 → LLM 분류 → D1/Neo4j term_type 저장
+- ✅ API routes: `?type=` 필터, `byType` stats, graph visualization에 type 반영
+- ✅ Frontend: 타입별 노드 모양(원/마름모/사각형) + 색상(파랑/보라/초록) + 필터 토글 + 범례
+- ✅ 테스트: classify-terms 8개 + handler LLM mock 2개
+
+**검증**: typecheck ✅, lint ✅, Production 배포 완료, D1 migration 적용 (staging 2,116행 + production 26,827행)
+**변경 파일**: 12 files — infra/migrations 1, packages/types 2, svc-ontology 5 (llm, queue, routes, tests), app-web 3 (api, component, page)
+
 ## 세션 088 — 2026-03-04
 **실패 문서 관리 + 중복 정리 + UX 개선**:
 - ✅ Backend: GET /documents에 error_message/error_type 필드 추가

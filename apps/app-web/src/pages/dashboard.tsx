@@ -40,14 +40,14 @@ export default function DashboardPage() {
     async function loadData() {
       try {
         const [skillsRes, auditRes] = await Promise.allSettled([
-          fetchSkills(organizationId, { limit: 100 }),
+          fetchSkills(organizationId, { limit: 1 }),
           fetchAuditLogs(organizationId, { limit: 10 }),
         ]);
 
         if (cancelled) return;
 
         const skillCount = skillsRes.status === 'fulfilled' && skillsRes.value.success
-          ? skillsRes.value.data.skills.length : 0;
+          ? skillsRes.value.data.total : 0;
         const auditData = auditRes.status === 'fulfilled' && auditRes.value.success
           ? auditRes.value.data : null;
 

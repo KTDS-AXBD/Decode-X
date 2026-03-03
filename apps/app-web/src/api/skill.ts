@@ -50,7 +50,7 @@ export async function fetchSkills(
     limit?: number;
     offset?: number;
   },
-): Promise<ApiResponse<{ skills: SkillRow[]; limit: number; offset: number }>> {
+): Promise<ApiResponse<{ skills: SkillRow[]; total: number; limit: number; offset: number }>> {
   const qs = new URLSearchParams();
   if (params !== undefined) {
     if (params.domain !== undefined) qs.set("domain", params.domain);
@@ -65,7 +65,7 @@ export async function fetchSkills(
     { headers: headers(organizationId) },
   );
   return res.json() as Promise<
-    ApiResponse<{ skills: SkillRow[]; limit: number; offset: number }>
+    ApiResponse<{ skills: SkillRow[]; total: number; limit: number; offset: number }>
   >;
 }
 

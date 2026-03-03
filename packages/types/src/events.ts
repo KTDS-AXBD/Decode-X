@@ -105,6 +105,16 @@ export const SkillPackagedEventSchema = BaseEventSchema.extend({
   }),
 });
 
+// Stage 2 → Stage 2A: request analysis after extraction completes
+export const AnalysisRequestedEventSchema = BaseEventSchema.extend({
+  type: z.literal("analysis.requested"),
+  payload: z.object({
+    documentId: z.string(),
+    extractionId: z.string(),
+    organizationId: z.string(),
+  }),
+});
+
 // Stage 2A+2B: analysis (scoring + diagnosis) completed
 export const AnalysisCompletedEventSchema = BaseEventSchema.extend({
   type: z.literal("analysis.completed"),
@@ -149,6 +159,7 @@ export const PipelineEventSchema = z.discriminatedUnion("type", [
   PolicyApprovedEventSchema,
   OntologyNormalizedEventSchema,
   SkillPackagedEventSchema,
+  AnalysisRequestedEventSchema,
   AnalysisCompletedEventSchema,
   DiagnosisCompletedEventSchema,
   DiagnosisReviewCompletedEventSchema,
@@ -161,6 +172,7 @@ export type PolicyCandidateReadyEvent = z.infer<typeof PolicyCandidateReadyEvent
 export type PolicyApprovedEvent = z.infer<typeof PolicyApprovedEventSchema>;
 export type OntologyNormalizedEvent = z.infer<typeof OntologyNormalizedEventSchema>;
 export type SkillPackagedEvent = z.infer<typeof SkillPackagedEventSchema>;
+export type AnalysisRequestedEvent = z.infer<typeof AnalysisRequestedEventSchema>;
 export type AnalysisCompletedEvent = z.infer<typeof AnalysisCompletedEventSchema>;
 export type DiagnosisCompletedEvent = z.infer<typeof DiagnosisCompletedEventSchema>;
 export type DiagnosisReviewCompletedEvent = z.infer<typeof DiagnosisReviewCompletedEventSchema>;

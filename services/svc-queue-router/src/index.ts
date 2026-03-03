@@ -32,6 +32,7 @@ type EventType =
   | "policy.approved"
   | "ontology.normalized"
   | "skill.packaged"
+  | "analysis.requested"
   | "analysis.completed"
   | "diagnosis.completed"
   | "diagnosis.review_completed";
@@ -60,6 +61,8 @@ function getTargets(type: EventType, env: Env): NamedTarget[] {
         return [{ name: "svc-skill", fetcher: env.SVC_SKILL }];
       case "skill.packaged":
         return [{ name: "svc-notification", fetcher: env.SVC_NOTIFICATION }];
+      case "analysis.requested":
+        return [{ name: "svc-extraction", fetcher: env.SVC_EXTRACTION }];
       case "analysis.completed":
         return [{ name: "svc-notification", fetcher: env.SVC_NOTIFICATION }];
       case "diagnosis.completed":

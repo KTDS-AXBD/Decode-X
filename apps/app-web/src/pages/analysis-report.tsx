@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { fetchDocuments } from "@/api/ingestion";
+import { fetchExtractions } from "@/api/extraction";
 import type { DocumentRow } from "@/api/ingestion";
 import {
   fetchAnalysisSummary,
@@ -53,6 +54,7 @@ export default function AnalysisReportPage() {
   const [loadingCore, setLoadingCore] = useState(false);
   const [loadingFindings, setLoadingFindings] = useState(false);
   const [reanalyzing, setReanalyzing] = useState(false);
+  const [triggering, setTriggering] = useState(false);
 
   // Load document list
   useEffect(() => {
@@ -90,21 +92,21 @@ export default function AnalysisReportPage() {
           else setLlmInfo(null);
         }
       })
-      .catch(() => {/* silently handle — data just won't show */})
+      .catch(() => toast.error("추출 요약 API 호출 실패"))
       .finally(() => setLoadingSummary(false));
 
     void fetchCoreProcesses(organizationId, docId)
       .then((res) => {
         if (res.success) setCoreData(res.data);
       })
-      .catch(() => {})
+      .catch(() => toast.error("핵심 프로세스 API 호출 실패"))
       .finally(() => setLoadingCore(false));
 
     void fetchFindings(organizationId, docId)
       .then((res) => {
         if (res.success) setDiagnosisData(res.data);
       })
-      .catch(() => {})
+      .catch(() => toast.error("진단 소견 API 호출 실패"))
       .finally(() => setLoadingFindings(false));
   }, [organizationId]);
 
@@ -144,6 +146,41 @@ export default function AnalysisReportPage() {
     }
   }, [selectedDocId, summary, loadAnalysisData]);
 
+  // Trigger analysis for a document that has no analysis data yet
+  const handleTriggerAnalysis = useCallback(async () => {
+    if (!selectedDocId) return;
+    setTriggering(true);
+    try {
+      // Find the extractionId for this document
+      const extRes = await fetchExtractions(organizationId, selectedDocId);
+      if (!extRes.success) {
+        toast.error("추출 데이터 조회 실패: " + extRes.error.message);
+        return;
+      }
+      const completed = extRes.data.extractions.find((e) => e.status === "completed");
+      if (!completed) {
+        toast.error("완료된 추출이 없습니다. 먼저 문서 파싱이 완료되어야 합니다.");
+        return;
+      }
+
+      const res = await triggerAnalysis(organizationId, {
+        documentId: selectedDocId,
+        extractionId: completed.extractionId,
+        organizationId,
+      });
+      if (res.success) {
+        toast.success("분석 완료");
+        loadAnalysisData(selectedDocId);
+      } else {
+        toast.error("분석 실패: " + res.error.message);
+      }
+    } catch {
+      toast.error("분석 API 호출 실패");
+    } finally {
+      setTriggering(false);
+    }
+  }, [selectedDocId, organizationId, loadAnalysisData]);
+
   const handleProcessClick = useCallback((processName: string) => {
     setTargetProcess(processName);
     setActiveTab("core");
@@ -156,7 +193,7 @@ export default function AnalysisReportPage() {
       .then((res) => {
         if (res.success) setDiagnosisData(res.data);
       })
-      .catch(() => {})
+      .catch(() => toast.error("진단 소견 API 호출 실패"))
       .finally(() => setLoadingFindings(false));
   }, [organizationId, selectedDocId]);
 
@@ -221,6 +258,8 @@ export default function AnalysisReportPage() {
             data={summary}
             loading={loadingSummary}
             onProcessClick={handleProcessClick}
+            onTriggerAnalysis={handleTriggerAnalysis}
+            triggering={triggering}
           />
         </TabsContent>
 
@@ -229,6 +268,8 @@ export default function AnalysisReportPage() {
             data={coreData}
             loading={loadingCore}
             initialProcess={targetProcess}
+            onTriggerAnalysis={handleTriggerAnalysis}
+            triggering={triggering}
           />
         </TabsContent>
 
@@ -238,6 +279,8 @@ export default function AnalysisReportPage() {
             loading={loadingFindings}
             documentId={selectedDocId}
             onRefresh={handleRefreshFindings}
+            onTriggerAnalysis={handleTriggerAnalysis}
+            triggering={triggering}
           />
         </TabsContent>
 

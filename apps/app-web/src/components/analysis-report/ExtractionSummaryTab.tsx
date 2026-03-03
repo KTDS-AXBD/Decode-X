@@ -5,7 +5,10 @@ import {
   BookOpen,
   Link2,
   ArrowUpDown,
+  Play,
+  Loader2,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -23,6 +26,8 @@ interface ExtractionSummaryTabProps {
   data: ExtractionSummary | null;
   loading: boolean;
   onProcessClick?: (processName: string) => void;
+  onTriggerAnalysis?: () => void;
+  triggering?: boolean;
 }
 
 type SortKey = "importanceScore" | "referenceCount" | "name";
@@ -31,6 +36,8 @@ export function ExtractionSummaryTab({
   data,
   loading,
   onProcessClick,
+  onTriggerAnalysis,
+  triggering,
 }: ExtractionSummaryTabProps) {
   const [sortKey, setSortKey] = useState<SortKey>("importanceScore");
   const [sortAsc, setSortAsc] = useState(false);
@@ -72,8 +79,16 @@ export function ExtractionSummaryTab({
 
   if (!data) {
     return (
-      <div className="flex items-center justify-center h-64 text-sm" style={{ color: "var(--text-secondary)" }}>
-        분석 데이터가 없습니다. 문서를 선택해주세요.
+      <div className="flex flex-col items-center justify-center h-64 gap-3">
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+          분석 데이터가 없습니다.
+        </p>
+        {onTriggerAnalysis && (
+          <Button onClick={onTriggerAnalysis} disabled={triggering} size="sm">
+            {triggering ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Play className="w-4 h-4 mr-2" />}
+            분석 실행
+          </Button>
+        )}
       </div>
     );
   }

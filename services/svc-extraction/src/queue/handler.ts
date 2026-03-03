@@ -168,12 +168,15 @@ async function runExtraction(
 
     logger.info("Emitted extraction.completed event", { extractionId, documentId, organizationId });
 
-    // Auto-trigger Pass 1+2 analysis (non-blocking — must not interrupt the pipeline)
-    ctx.waitUntil(
-      runAnalysis(env, { documentId, extractionId, organizationId, parsed }).catch((e) => {
-        logger.warn("Auto-analysis failed (non-blocking)", { documentId, extractionId, error: String(e) });
-      })
-    );
+    // Emit analysis.requested → triggers runAnalysis via queue-router (reliable, not ctx.waitUntil)
+    await env.QUEUE_PIPELINE.send({
+      eventId: crypto.randomUUID(),
+      occurredAt: new Date().toISOString(),
+      type: "analysis.requested",
+      payload: { documentId, extractionId, organizationId },
+    });
+
+    logger.info("Emitted analysis.requested event", { extractionId, documentId, organizationId });
 
     return { extractionId, processNodeCount, entityCount };
   } catch (e) {
@@ -198,17 +201,33 @@ async function runAnalysis(
     documentId: string;
     extractionId: string;
     organizationId: string;
-    parsed: ExtractionResult;
+    parsed?: ExtractionResult;
   }
-): Promise<void> {
-  const { documentId, extractionId, organizationId, parsed } = opts;
+): Promise<{ analysisId: string; findingCount: number }> {
+  const { documentId, extractionId, organizationId } = opts;
+
+  // If parsed data not provided (Queue path), fetch from DB
+  let parsed: ExtractionResult;
+  if (opts.parsed) {
+    parsed = opts.parsed;
+  } else {
+    const row = await env.DB_EXTRACTION.prepare(
+      `SELECT result_json FROM extractions WHERE id = ? AND status = 'completed'`,
+    )
+      .bind(extractionId)
+      .first<{ result_json: string }>();
+    if (!row) {
+      throw new Error(`Extraction ${extractionId} not found or not completed`);
+    }
+    parsed = JSON.parse(row.result_json) as ExtractionResult;
+  }
   const analysisId = crypto.randomUUID();
   const now = new Date().toISOString();
 
-  // Too little data — skip analysis, emit info finding
+  // Too little data — skip analysis
   if ((parsed.processes?.length ?? 0) < 3) {
     logger.info("Skipping analysis: too few processes extracted", { documentId, processCount: parsed.processes?.length ?? 0 });
-    return;
+    return { analysisId, findingCount: 0 };
   }
 
   // Pass 1: Scoring + Core Identification
@@ -277,7 +296,7 @@ async function runAnalysis(
       .run();
   } catch (e) {
     logger.warn("Failed to insert analysis record", { analysisId, error: String(e) });
-    return;
+    return { analysisId, findingCount: 0 };
   }
 
   // Pass 2: Diagnosis
@@ -338,6 +357,8 @@ async function runAnalysis(
   });
 
   logger.info("Auto-analysis completed", { analysisId, documentId, coreProcessCount: coreSummary.coreProcessCount, findingCount: findings.length });
+
+  return { analysisId, findingCount: findings.length };
 }
 
 /**
@@ -353,6 +374,19 @@ export async function processQueueEvent(
   if (!parseResult.success) {
     logger.warn("Invalid pipeline event", { error: parseResult.error.message });
     return Response.json({ skipped: true }, { status: 200 });
+  }
+
+  // Handle analysis.requested — run Pass 1+2 analysis from DB data
+  if (parseResult.data.type === "analysis.requested") {
+    const { documentId, extractionId, organizationId } = parseResult.data.payload;
+    try {
+      const result = await runAnalysis(env, { documentId, extractionId, organizationId });
+      logger.info("Analysis completed via queue", result);
+      return Response.json({ success: true, ...result }, { status: 200 });
+    } catch (e) {
+      logger.error("Analysis failed", { documentId, extractionId, error: String(e) });
+      return Response.json({ success: false, error: String(e) }, { status: 500 });
+    }
   }
 
   if (parseResult.data.type !== "ingestion.completed") {

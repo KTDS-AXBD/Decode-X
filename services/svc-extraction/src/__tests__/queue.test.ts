@@ -162,12 +162,14 @@ describe("processQueueEvent", () => {
     expect(insertCalls.length).toBeGreaterThan(0);
   });
 
-  it("emits extraction.completed event via queue send", async () => {
+  it("emits extraction.completed and analysis.requested events via queue send", async () => {
     await processQueueEvent(validIngestionCompletedEvent, env, ctx);
     const sendMock = env.QUEUE_PIPELINE.send as ReturnType<typeof vi.fn>;
-    expect(sendMock).toHaveBeenCalledOnce();
-    const sentEvent = sendMock.mock.calls[0]?.[0] as Record<string, unknown>;
-    expect(sentEvent["type"]).toBe("extraction.completed");
+    expect(sendMock).toHaveBeenCalledTimes(2);
+    const firstEvent = sendMock.mock.calls[0]?.[0] as Record<string, unknown>;
+    expect(firstEvent["type"]).toBe("extraction.completed");
+    const secondEvent = sendMock.mock.calls[1]?.[0] as Record<string, unknown>;
+    expect(secondEvent["type"]).toBe("analysis.requested");
   });
 
   it("returns 500 when svc-ingestion returns non-ok response", async () => {

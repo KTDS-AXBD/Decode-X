@@ -1,4 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
+import { Play, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { CoreIdentification, CoreJudgment, ProcessTreeNode } from "@ai-foundry/types";
 import { ProcessTree } from "./ProcessTree";
@@ -8,6 +10,8 @@ interface CoreProcessesTabProps {
   data: CoreIdentification | null;
   loading: boolean;
   initialProcess?: string | null;
+  onTriggerAnalysis?: () => void;
+  triggering?: boolean;
 }
 
 function findTreeNode(
@@ -26,6 +30,8 @@ export function CoreProcessesTab({
   data,
   loading,
   initialProcess,
+  onTriggerAnalysis,
+  triggering,
 }: CoreProcessesTabProps) {
   const [selectedName, setSelectedName] = useState<string | null>(
     initialProcess ?? null,
@@ -56,8 +62,16 @@ export function CoreProcessesTab({
 
   if (!data) {
     return (
-      <div className="flex items-center justify-center h-64 text-sm" style={{ color: "var(--text-secondary)" }}>
-        핵심 프로세스 데이터가 없습니다. 문서를 선택해주세요.
+      <div className="flex flex-col items-center justify-center h-64 gap-3">
+        <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
+          핵심 프로세스 데이터가 없습니다.
+        </p>
+        {onTriggerAnalysis && (
+          <Button onClick={onTriggerAnalysis} disabled={triggering} size="sm">
+            {triggering ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Play className="w-4 h-4 mr-2" />}
+            분석 실행
+          </Button>
+        )}
       </div>
     );
   }

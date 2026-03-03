@@ -8,6 +8,8 @@
  *   /api/documents/**  → svc-ingestion
  *   /api/extractions/**  → svc-extraction
  *   /api/extract/**  → svc-extraction
+ *   /api/analysis/**  → svc-extraction
+ *   /api/analyze/**  → svc-extraction
  *   /api/policies/**  → svc-policy
  *   /api/sessions/**  → svc-policy
  *   /api/skills/**  → svc-skill
@@ -33,6 +35,8 @@ const ROUTE_TABLE: Record<string, string> = {
   documents: "svc-ingestion",
   extractions: "svc-extraction",
   extract: "svc-extraction",
+  analysis: "svc-extraction",
+  analyze: "svc-extraction",
   policies: "svc-policy",
   sessions: "svc-policy",
   skills: "svc-skill",

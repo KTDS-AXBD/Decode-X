@@ -16,6 +16,8 @@ const SERVICE_MAP: Record<string, { service: string; port: number }> = {
   documents: { service: "svc-ingestion", port: 8701 },
   extractions: { service: "svc-extraction", port: 8702 },
   extract: { service: "svc-extraction", port: 8702 },
+  analysis: { service: "svc-extraction", port: 8702 },
+  analyze: { service: "svc-extraction", port: 8702 },
   policies: { service: "svc-policy", port: 8703 },
   sessions: { service: "svc-policy", port: 8703 },
   terms: { service: "svc-ontology", port: 8704 },

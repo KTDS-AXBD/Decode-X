@@ -29,6 +29,7 @@ import {
 } from "./routes/skills.js";
 import { handleGetMcpAdapter } from "./routes/mcp.js";
 import { handleGetOpenApiAdapter } from "./routes/openapi.js";
+import { handleEvaluateSkill, handleListEvaluations } from "./routes/evaluate.js";
 import { processQueueEvent } from "./queue/handler.js";
 
 export default {
@@ -114,6 +115,35 @@ export default {
             );
           }
           return await handleDownloadSkill(request, env, skillId, ctx);
+        }
+
+        // POST /skills/:id/evaluate — policy evaluation
+        if (method === "POST" && subpath === "evaluate") {
+          const rbacCtx = extractRbacContext(request);
+          if (rbacCtx) {
+            const denied = await checkPermission(env, rbacCtx.role, "skill", "read");
+            if (denied) return denied;
+            ctx.waitUntil(
+              logAudit(env, {
+                userId: rbacCtx.userId,
+                organizationId: rbacCtx.organizationId,
+                action: "evaluate",
+                resource: "skill",
+                resourceId: skillId,
+              }),
+            );
+          }
+          return await handleEvaluateSkill(request, env, skillId, ctx);
+        }
+
+        // GET /skills/:id/evaluations — evaluation history
+        if (method === "GET" && subpath === "evaluations") {
+          const rbacCtx = extractRbacContext(request);
+          if (rbacCtx) {
+            const denied = await checkPermission(env, rbacCtx.role, "skill", "read");
+            if (denied) return denied;
+          }
+          return await handleListEvaluations(request, env, skillId);
         }
 
         // GET /skills/:id/mcp — MCP adapter projection

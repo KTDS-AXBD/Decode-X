@@ -95,3 +95,43 @@ export type SkillSummary = Pick<SkillPackage, "skillId" | "metadata" | "trust"> 
   policyCount: number;
   r2Key: string;
 };
+
+// ── Evaluate schemas (Phase 3) ──────────────────────────────────────
+
+// LlmProvider/LlmProviderSchema are exported from llm.ts — reuse here
+import { LlmProviderSchema as _LlmProviderSchema } from "./llm.js";
+
+export const EvaluateRequestSchema = z.object({
+  policyCode: z.string().min(1),
+  context: z.string().min(1).max(10_000),
+  parameters: z.record(z.unknown()).optional(),
+  provider: _LlmProviderSchema.optional(),
+  benchmark: z.boolean().optional(),
+});
+
+export type EvaluateRequest = z.infer<typeof EvaluateRequestSchema>;
+
+export const EvaluateResultSchema = z.object({
+  evaluationId: z.string().uuid(),
+  skillId: z.string().uuid(),
+  policyCode: z.string(),
+  provider: z.string(),
+  model: z.string(),
+  result: z.string(),
+  confidence: z.number().min(0).max(1),
+  reasoning: z.string(),
+  latencyMs: z.number(),
+});
+
+export type EvaluateResult = z.infer<typeof EvaluateResultSchema>;
+
+export const EvaluateBenchmarkResultSchema = z.object({
+  benchmark: z.literal(true),
+  results: z.array(EvaluateResultSchema),
+  consensus: z.object({
+    agreementRate: z.number().min(0).max(1),
+    summary: z.string(),
+  }),
+});
+
+export type EvaluateBenchmarkResult = z.infer<typeof EvaluateBenchmarkResultSchema>;

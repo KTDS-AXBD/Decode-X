@@ -2,6 +2,15 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 076 — 2026-03-04
+**Phase 4 Sprint 1 잔여 커밋 정리**:
+- ✅ feat(svc-ingestion): 내부 DOCX 파서 추가 (mammoth.js, 587 lines)
+- ✅ docs: PDCA Plan + Analysis 문서 (retirement-pension-batch-analysis)
+- ✅ chore: Ralph batch upload 로그 14건 + erwin extract 스크립트
+- ✅ chore: .gitignore 강화 (ralph runtime, agent-memory, temp screenshots, Zone.Identifier)
+
+**검증**: typecheck 17/17, lint 14/14
+
 ## 세션 075 — 2026-03-04
 **전체 서비스 점검 (PDCA full-service-inspection) — 12서비스 품질 강화**:
 - ✅ Phase A: Critical Gap 해소 — svc-mcp-server(19), svc-policy(17), svc-governance(8) route 테스트 추가

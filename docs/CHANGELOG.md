@@ -2,6 +2,16 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 085 — 2026-03-04
+**243건 Candidate Bulk Approve — Phase 4 Sprint 2 파이프라인 완결**:
+- ✅ `batch-approve.sh --env production --yes` 실행: 243건 candidate → 5 배치 → 전체 approved (0 fail)
+- ✅ 예상 194건보다 49건 추가 (파이프라인 추가 라운드 생성분)
+- ✅ Downstream 전파 완료: Terms +1,584 (25,231→26,815), Skills +291 (2,812→3,103)
+
+**최종 파이프라인 수치**: documents 111, policies 3,046 approved / 0 candidate, terms 26,815, skills 3,103
+**Phase 4 Sprint 2**: 완결 — 전체 파이프라인 fully processed
+**변경 파일**: 0 (운영 작업만 수행, 코드 변경 없음)
+
 ## 세션 084 — 2026-03-04
 **대시보드 실데이터 연동 — 백엔드 COUNT 쿼리 + Notification 타입 정렬 + Demo Login**:
 - ✅ svc-policy: `handleListPolicies` COUNT 쿼리 추가 (`total` 필드 반환, 기존 undefined)

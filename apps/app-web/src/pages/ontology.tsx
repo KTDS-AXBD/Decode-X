@@ -14,6 +14,7 @@ import {
   Database,
   GitBranch,
   Hash,
+  X,
 } from "lucide-react";
 import {
   fetchTerms,
@@ -159,10 +160,35 @@ export default function OntologyPage() {
   const [selectedGraphTerm, setSelectedGraphTerm] = useState<string | null>(
     null,
   );
+  const [graphSearchQuery, setGraphSearchQuery] = useState("");
+  const [graphSearchOpen, setGraphSearchOpen] = useState(false);
+  const [allTermLabels, setAllTermLabels] = useState<string[]>([]);
+  const graphSearchRef = useRef<HTMLDivElement>(null);
 
   // Graph container sizing
   const graphContainerRef = useRef<HTMLDivElement>(null);
   const [graphSize, setGraphSize] = useState({ width: 800, height: 600 });
+
+  // Close search dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        graphSearchRef.current &&
+        !graphSearchRef.current.contains(e.target as Node)
+      ) {
+        setGraphSearchOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Load all term labels for autocomplete (from initial full graph)
+  useEffect(() => {
+    if (graphNodes.length > 0 && allTermLabels.length === 0) {
+      setAllTermLabels(graphNodes.map((n) => n.label));
+    }
+  }, [graphNodes, allTermLabels.length]);
 
   // Resize observer
   useEffect(() => {
@@ -272,8 +298,32 @@ export default function OntologyPage() {
 
   const handleResetGraph = useCallback(() => {
     setSelectedGraphTerm(null);
+    setGraphSearchQuery("");
     loadGraph();
   }, [loadGraph]);
+
+  const handleGraphSearch = useCallback(
+    (term: string) => {
+      setGraphSearchQuery(term);
+      setGraphSearchOpen(false);
+      setSelectedGraphTerm(term);
+      loadGraph(term);
+    },
+    [loadGraph],
+  );
+
+  const graphSearchSuggestions = graphSearchQuery.trim()
+    ? allTermLabels
+        .concat(
+          graphNodes
+            .map((n) => n.label)
+            .filter((l) => !allTermLabels.includes(l)),
+        )
+        .filter((label) =>
+          label.toLowerCase().includes(graphSearchQuery.toLowerCase()),
+        )
+        .slice(0, 12)
+    : [];
 
   // List view helpers
   const toggleNode = (nodeId: string) => {
@@ -525,22 +575,148 @@ export default function OntologyPage() {
           <div className="flex h-full">
             {/* Graph Canvas */}
             <div ref={graphContainerRef} className="flex-1 relative">
-              {selectedGraphTerm && (
-                <div className="absolute top-3 left-3 z-10">
+              {/* Search Bar Overlay */}
+              <div
+                ref={graphSearchRef}
+                className="absolute top-3 left-3 right-3 z-10 flex items-center gap-2"
+                style={{ maxWidth: "400px" }}
+              >
+                <div className="relative flex-1">
+                  <Search
+                    className="absolute left-2.5 top-1/2 transform -translate-y-1/2 w-4 h-4"
+                    style={{ color: "var(--text-secondary)" }}
+                  />
+                  <input
+                    type="text"
+                    placeholder="용어 검색으로 관계 탐색..."
+                    value={graphSearchQuery}
+                    onChange={(e) => {
+                      setGraphSearchQuery(e.target.value);
+                      setGraphSearchOpen(e.target.value.trim().length > 0);
+                    }}
+                    onFocus={() => {
+                      if (graphSearchQuery.trim().length > 0) {
+                        setGraphSearchOpen(true);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (
+                        e.key === "Enter" &&
+                        graphSearchQuery.trim().length > 0
+                      ) {
+                        const firstMatch = graphSearchSuggestions[0];
+                        if (firstMatch) {
+                          handleGraphSearch(firstMatch);
+                        } else {
+                          handleGraphSearch(graphSearchQuery.trim());
+                        }
+                      }
+                      if (e.key === "Escape") {
+                        setGraphSearchOpen(false);
+                      }
+                    }}
+                    className="w-full pl-8 pr-8 py-1.5 text-sm rounded-lg border outline-none"
+                    style={{
+                      backgroundColor: "var(--bg-primary)",
+                      borderColor: "var(--border)",
+                      color: "var(--text-primary)",
+                    }}
+                  />
+                  {graphSearchQuery && (
+                    <button
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 p-0.5 rounded hover:bg-gray-200"
+                      onClick={() => {
+                        setGraphSearchQuery("");
+                        setGraphSearchOpen(false);
+                        if (selectedGraphTerm) {
+                          handleResetGraph();
+                        }
+                      }}
+                    >
+                      <X
+                        className="w-3.5 h-3.5"
+                        style={{ color: "var(--text-secondary)" }}
+                      />
+                    </button>
+                  )}
+                  {/* Autocomplete Dropdown */}
+                  {graphSearchOpen && graphSearchSuggestions.length > 0 && (
+                    <div
+                      className="absolute top-full left-0 right-0 mt-1 rounded-lg border shadow-lg overflow-hidden"
+                      style={{
+                        backgroundColor: "var(--bg-primary)",
+                        borderColor: "var(--border)",
+                        maxHeight: "240px",
+                        overflowY: "auto",
+                      }}
+                    >
+                      {graphSearchSuggestions.map((label) => {
+                        const node = graphNodes.find(
+                          (n) => n.label === label,
+                        );
+                        return (
+                          <button
+                            key={label}
+                            className="w-full text-left px-3 py-2 text-sm flex items-center gap-2 transition-colors"
+                            style={{
+                              color: "var(--text-primary)",
+                            }}
+                            onMouseEnter={(e) => {
+                              (
+                                e.currentTarget as HTMLElement
+                              ).style.backgroundColor =
+                                "rgba(26, 54, 93, 0.08)";
+                            }}
+                            onMouseLeave={(e) => {
+                              (
+                                e.currentTarget as HTMLElement
+                              ).style.backgroundColor = "transparent";
+                            }}
+                            onClick={() => handleGraphSearch(label)}
+                          >
+                            <span
+                              className="w-2 h-2 rounded-full flex-shrink-0"
+                              style={{
+                                backgroundColor: node
+                                  ? node.group === "core"
+                                    ? "#3B82F6"
+                                    : node.group === "important"
+                                      ? "#F6AD55"
+                                      : "#10B981"
+                                  : "var(--text-secondary)",
+                              }}
+                            />
+                            <span className="truncate">{label}</span>
+                            {node && (
+                              <span
+                                className="text-xs ml-auto flex-shrink-0"
+                                style={{ color: "var(--text-secondary)" }}
+                              >
+                                {node.frequency}회
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+                {selectedGraphTerm && (
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={handleResetGraph}
+                    className="flex-shrink-0"
                     style={{
                       backgroundColor: "var(--bg-primary)",
                       borderColor: "var(--border)",
                     }}
                   >
                     <Network className="w-4 h-4 mr-1" />
-                    전체 보기
+                    전체
                   </Button>
-                </div>
-              )}
+                )}
+              </div>
               {/* Legend */}
               <div
                 className="absolute bottom-3 left-3 z-10 flex gap-3 px-3 py-2 rounded-lg text-xs"

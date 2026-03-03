@@ -2,6 +2,20 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 050 — 2026-03-03
+**Pipeline Hardening — 파이프라인 안정성 3대 이슈 해결**:
+- ✅ HITL DO 세션 자동 만료: 7일 TTL 알람 + expired 상태 + 410 Gone + cleanup API
+- ✅ SCDSA002 비표준 XLSX 사전 검증: magic bytes 검증 모듈 + error_type D1 컬럼
+- ✅ 대용량 PDF 타임아웃 + 재시도: AbortController 60s + 지수 백오프 (max 2회)
+- ✅ Bun 테스트 격리 문제 해결: vi.mock → globalThis.fetch mock 전환
+- ✅ PDCA 전체 사이클 완료: Plan→Design→Do→Check(100%)→Report
+
+**검증 결과**:
+- ✅ typecheck 16/16 PASS
+- ✅ tests 847/847 PASS (11 services, +25 신규 테스트)
+- ✅ lint 0 errors
+- ✅ gap analysis 100% match rate (81/81 design items)
+
 ## 세션 049 — 2026-03-03
 **SPEC.md 동기화 + ESLint 도입 + 기술부채 정리**:
 - ✅ SPEC.md Current Status 업데이트 (세션 036→048 반영, Phase 2-D 상태)

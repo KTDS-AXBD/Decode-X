@@ -34,7 +34,7 @@ export default function LoginPage() {
       className="min-h-screen flex items-center justify-center p-6"
       style={{ backgroundColor: 'var(--background)' }}
     >
-      <div className="w-full max-w-3xl">
+      <div className="w-full max-w-4xl">
         <div className="text-center mb-8">
           <div
             className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center"
@@ -52,7 +52,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {DEMO_USERS.map((user) => {
             const config = ROLE_CONFIG[user.userRole] ?? ROLE_CONFIG["Client"]!;
             const Icon = config.icon;

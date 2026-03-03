@@ -175,6 +175,16 @@ export async function handleCreateSkill(
   return created(summary);
 }
 
+// ── Sort options ──────────────────────────────────────────────────────
+
+const SORT_OPTIONS: Record<string, string> = {
+  newest: "created_at DESC",
+  oldest: "created_at ASC",
+  trust_desc: "trust_score DESC",
+  trust_asc: "trust_score ASC",
+  policy_count: "policy_count DESC",
+};
+
 // ── GET /skills ───────────────────────────────────────────────────────
 
 export async function handleListSkills(
@@ -183,34 +193,149 @@ export async function handleListSkills(
 ): Promise<Response> {
   const url = new URL(request.url);
   const domain = url.searchParams.get("domain");
+  const subdomain = url.searchParams.get("subdomain");
   const status = url.searchParams.get("status");
   const trustLevel = url.searchParams.get("trustLevel");
+  const q = url.searchParams.get("q");
+  const tag = url.searchParams.get("tag");
+  const sort = url.searchParams.get("sort") ?? "newest";
   const limit = Math.min(Number(url.searchParams.get("limit") ?? "50"), 100);
   const offset = Number(url.searchParams.get("offset") ?? "0");
 
-  let query = "SELECT * FROM skills WHERE 1=1";
+  let whereClause = "WHERE 1=1";
   const binds: (string | number)[] = [];
 
   if (domain) {
-    query += " AND domain = ?";
+    whereClause += " AND domain = ?";
     binds.push(domain);
   }
+  if (subdomain) {
+    whereClause += " AND subdomain = ?";
+    binds.push(subdomain);
+  }
   if (status) {
-    query += " AND status = ?";
+    whereClause += " AND status = ?";
     binds.push(status);
   }
   if (trustLevel) {
-    query += " AND trust_level = ?";
+    whereClause += " AND trust_level = ?";
     binds.push(trustLevel);
   }
+  if (q) {
+    whereClause += " AND (domain LIKE ? OR subdomain LIKE ? OR author LIKE ? OR tags LIKE ?)";
+    const pattern = `%${q}%`;
+    binds.push(pattern, pattern, pattern, pattern);
+  }
+  if (tag) {
+    whereClause += " AND tags LIKE ?";
+    binds.push(`%"${tag}"%`);
+  }
 
-  query += " ORDER BY created_at DESC LIMIT ? OFFSET ?";
-  binds.push(limit, offset);
+  // Count query (same filters, no ORDER/LIMIT/OFFSET)
+  const countQuery = `SELECT COUNT(*) as cnt FROM skills ${whereClause}`;
+  const countResult = await env.DB_SKILL.prepare(countQuery)
+    .bind(...binds)
+    .first<{ cnt: number }>();
+  const total = countResult?.cnt ?? 0;
 
-  const result = await env.DB_SKILL.prepare(query).bind(...binds).all<SkillRow>();
+  // Data query with sort, limit, offset
+  const orderBy = SORT_OPTIONS[sort] ?? SORT_OPTIONS["newest"]!;
+  const dataQuery = `SELECT * FROM skills ${whereClause} ORDER BY ${orderBy} LIMIT ? OFFSET ?`;
+  const dataBinds = [...binds, limit, offset];
+
+  const result = await env.DB_SKILL.prepare(dataQuery).bind(...dataBinds).all<SkillRow>();
   const skills = (result.results ?? []).map(rowToSummary);
 
-  return ok({ skills, limit, offset });
+  return ok({ skills, total, limit, offset });
+}
+
+// ── GET /skills/search/tags ──────────────────────────────────────────
+
+export async function handleSearchTags(
+  _request: Request,
+  env: Env,
+): Promise<Response> {
+  const result = await env.DB_SKILL.prepare(
+    "SELECT DISTINCT tags FROM skills WHERE status != 'archived'",
+  )
+    .all<{ tags: string }>();
+
+  const rows = result.results ?? [];
+  const tagSet = new Set<string>();
+  for (const row of rows) {
+    const parsed = parseTags(row.tags);
+    for (const t of parsed) {
+      tagSet.add(t);
+    }
+  }
+
+  const tags = [...tagSet].sort();
+  return ok({ tags });
+}
+
+// ── GET /skills/stats ────────────────────────────────────────────────
+
+export async function handleGetSkillStats(
+  _request: Request,
+  env: Env,
+): Promise<Response> {
+  // Total skills and total policies
+  const totals = await env.DB_SKILL.prepare(
+    "SELECT COUNT(*) as total_skills, COALESCE(SUM(policy_count), 0) as total_policies FROM skills",
+  )
+    .first<{ total_skills: number; total_policies: number }>();
+
+  const totalSkills = totals?.total_skills ?? 0;
+  const totalPolicies = totals?.total_policies ?? 0;
+
+  // By trust level
+  const trustRows = await env.DB_SKILL.prepare(
+    "SELECT trust_level, COUNT(*) as cnt FROM skills GROUP BY trust_level",
+  )
+    .all<{ trust_level: string; cnt: number }>();
+
+  const byTrustLevel: Record<string, number> = { unreviewed: 0, reviewed: 0, validated: 0 };
+  for (const row of trustRows.results ?? []) {
+    byTrustLevel[row.trust_level] = row.cnt;
+  }
+
+  // By domain
+  const domainRows = await env.DB_SKILL.prepare(
+    "SELECT domain, COUNT(*) as cnt FROM skills GROUP BY domain",
+  )
+    .all<{ domain: string; cnt: number }>();
+
+  const byDomain: Record<string, number> = {};
+  for (const row of domainRows.results ?? []) {
+    byDomain[row.domain] = row.cnt;
+  }
+
+  // Top tags — aggregate from all non-archived skills
+  const tagRows = await env.DB_SKILL.prepare(
+    "SELECT tags FROM skills WHERE status != 'archived'",
+  )
+    .all<{ tags: string }>();
+
+  const tagCounts = new Map<string, number>();
+  for (const row of tagRows.results ?? []) {
+    const parsed = parseTags(row.tags);
+    for (const t of parsed) {
+      tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1);
+    }
+  }
+
+  const topTags = [...tagCounts.entries()]
+    .map(([tag, count]) => ({ tag, count }))
+    .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag))
+    .slice(0, 20);
+
+  return ok({
+    totalSkills,
+    totalPolicies,
+    byTrustLevel,
+    byDomain,
+    topTags,
+  });
 }
 
 // ── GET /skills/:id ───────────────────────────────────────────────────

@@ -8,10 +8,16 @@ function mockDb(overrides?: {
   firstResult?: Record<string, unknown> | null;
   allResults?: Record<string, unknown>[];
 }) {
+  // When firstResult is explicitly provided, use it for all .first() calls.
+  // Otherwise, default to { cnt: N } for count queries (handleListSkills) or null.
+  const defaultFirst = "firstResult" in (overrides ?? {})
+    ? (overrides?.firstResult ?? null)
+    : { cnt: (overrides?.allResults ?? []).length };
+
   return {
     prepare: vi.fn().mockReturnValue({
       bind: vi.fn().mockReturnValue({
-        first: vi.fn().mockResolvedValue(overrides?.firstResult ?? null),
+        first: vi.fn().mockResolvedValue(defaultFirst),
         all: vi.fn().mockResolvedValue({ results: overrides?.allResults ?? [] }),
         run: vi.fn().mockResolvedValue({ success: true }),
       }),
@@ -64,24 +70,26 @@ function mockCtx(): ExecutionContext {
 // ── handleListSkills ──────────────────────────────────────────────
 
 describe("handleListSkills", () => {
-  it("returns empty list", async () => {
+  it("returns empty list with total=0", async () => {
     const env = mockEnv({ allResults: [] });
     const req = new Request("https://test.internal/skills");
     const res = await handleListSkills(req, env);
     expect(res.status).toBe(200);
-    const body = await res.json() as ApiOk<{ skills: unknown[]; limit: number }>;
+    const body = await res.json() as ApiOk<{ skills: unknown[]; total: number; limit: number }>;
     expect(body.data.skills).toEqual([]);
+    expect(body.data.total).toBe(0);
     expect(body.data.limit).toBe(50);
   });
 
-  it("returns formatted skills", async () => {
+  it("returns formatted skills with total", async () => {
     const env = mockEnv({ allResults: [sampleRow] });
     const req = new Request("https://test.internal/skills?domain=퇴직연금");
     const res = await handleListSkills(req, env);
     expect(res.status).toBe(200);
-    const body = await res.json() as ApiOk<{ skills: Array<{ skillId: string }> }>;
+    const body = await res.json() as ApiOk<{ skills: Array<{ skillId: string }>; total: number }>;
     expect(body.data.skills).toHaveLength(1);
     expect(body.data.skills[0]?.skillId).toBe("sk-001");
+    expect(body.data.total).toBe(1);
   });
 
   it("caps limit at 100", async () => {

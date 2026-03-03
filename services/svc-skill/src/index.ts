@@ -26,6 +26,8 @@ import {
   handleListSkills,
   handleGetSkill,
   handleDownloadSkill,
+  handleSearchTags,
+  handleGetSkillStats,
 } from "./routes/skills.js";
 import { handleGetMcpAdapter } from "./routes/mcp.js";
 import { handleGetOpenApiAdapter } from "./routes/openapi.js";
@@ -87,6 +89,26 @@ export default {
           if (denied) return denied;
         }
         return await handleListSkills(request, env);
+      }
+
+      // GET /skills/search/tags — unique tag list for filter dropdowns
+      if (method === "GET" && path === "/skills/search/tags") {
+        const rbacCtx = extractRbacContext(request);
+        if (rbacCtx) {
+          const denied = await checkPermission(env, rbacCtx.role, "skill", "read");
+          if (denied) return denied;
+        }
+        return await handleSearchTags(request, env);
+      }
+
+      // GET /skills/stats — marketplace dashboard stats
+      if (method === "GET" && path === "/skills/stats") {
+        const rbacCtx = extractRbacContext(request);
+        if (rbacCtx) {
+          const denied = await checkPermission(env, rbacCtx.role, "skill", "read");
+          if (denied) return denied;
+        }
+        return await handleGetSkillStats(request, env);
       }
 
       // Match /skills/:id and /skills/:id/download

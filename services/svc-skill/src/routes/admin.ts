@@ -24,7 +24,6 @@ interface SkillPackageJson {
  * Processes in batches to avoid Worker timeout.
  * Query params:
  *   - batchSize (default 50, max 200): skills per batch
- *   - offset (default 0): starting offset for resumable processing
  */
 export async function handleBackfillDepth(
   request: Request,
@@ -32,13 +31,13 @@ export async function handleBackfillDepth(
 ): Promise<Response> {
   const url = new URL(request.url);
   const batchSize = Math.min(Number(url.searchParams.get("batchSize") ?? "50"), 200);
-  const offset = Number(url.searchParams.get("offset") ?? "0");
 
   // Fetch skills that haven't been scored yet (content_depth = 0)
+  // Always use OFFSET 0 since each batch updates rows, shrinking the result set
   const rows = await env.DB_SKILL.prepare(
-    "SELECT skill_id, r2_key FROM skills WHERE content_depth = 0 ORDER BY created_at ASC LIMIT ? OFFSET ?",
+    "SELECT skill_id, r2_key FROM skills WHERE content_depth = 0 ORDER BY created_at ASC LIMIT ?",
   )
-    .bind(batchSize, offset)
+    .bind(batchSize)
     .all<{ skill_id: string; r2_key: string }>();
 
   const results = rows.results ?? [];
@@ -86,7 +85,6 @@ export async function handleBackfillDepth(
     updated,
     failed,
     batchSize,
-    offset,
     remaining: remaining?.cnt ?? 0,
   });
 }

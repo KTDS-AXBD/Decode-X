@@ -1,0 +1,39 @@
+name = "svc-mcp-server"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[dev]
+port = 8712
+inspector_port = 9212
+
+# Service binding to svc-skill (MCP adapter + evaluate)
+[[services]]
+binding = "SVC_SKILL"
+service = "svc-skill"
+
+[vars]
+ENVIRONMENT = "development"
+SERVICE_NAME = "svc-mcp-server"
+# Secrets (set via `wrangler secret put`):
+# INTERNAL_API_SECRET
+
+# ---------------------------------------------------------------------------
+# Staging environment
+# ---------------------------------------------------------------------------
+[env.staging]
+vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-mcp-server" }
+
+[[env.staging.services]]
+binding = "SVC_SKILL"
+service = "svc-skill-staging"
+
+# ---------------------------------------------------------------------------
+# Production environment
+# ---------------------------------------------------------------------------
+[env.production]
+vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-mcp-server" }
+
+[[env.production.services]]
+binding = "SVC_SKILL"
+service = "svc-skill"

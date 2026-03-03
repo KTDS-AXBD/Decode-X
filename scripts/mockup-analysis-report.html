@@ -1,0 +1,2052 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Foundry — 프로세스 정밀분석 리포트</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            sidebar: '#0f172a',
+            'sidebar-hover': '#1e293b',
+            'sidebar-active': '#334155',
+            accent: '#6366f1',
+            'accent-light': '#818cf8',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+    .accordion-content.open { max-height: 2000px; }
+    .tree-children { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+    .tree-children.open { max-height: 2000px; }
+    .finding-detail { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+    .finding-detail.open { max-height: 1000px; }
+    .bar-fill { transition: width 0.6s ease-out; }
+    .radar-label { font-size: 11px; fill: #64748b; font-weight: 500; }
+    .radar-value { font-size: 10px; fill: #6366f1; font-weight: 600; }
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 1000;
+      transform: translateY(100px); opacity: 0; transition: all 0.3s ease-out;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-900">
+<!-- Toast -->
+<div id="toast" class="toast bg-gray-900 text-white px-5 py-3 rounded-lg shadow-xl flex items-center gap-3">
+  <svg class="w-5 h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+  <span id="toast-msg" class="text-sm font-medium"></span>
+</div>
+<div class="flex h-screen overflow-hidden">
+  <!-- SIDEBAR -->
+  <aside class="w-64 bg-sidebar text-white flex flex-col flex-shrink-0">
+    <div class="px-5 py-5 border-b border-white/10">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
+          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+        </div>
+        <div>
+          <div class="font-semibold text-sm">AI Foundry</div>
+          <div class="text-xs text-gray-400">프로세스 정밀분석</div>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 py-4 px-3 space-y-1">
+      <div class="px-3 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">문서</div>
+      <button onclick="navigateTo('docs')" id="nav-docs"
+        class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors bg-sidebar-active text-white">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+        문서 관리
+      </button>
+      <div class="px-3 py-2 mt-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">분석</div>
+      <button onclick="navigateTo('single')" id="nav-single"
+        class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-gray-300 hover:bg-sidebar-hover hover:text-white">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        분석 리포트
+      </button>
+      <button onclick="navigateTo('compare')" id="nav-compare"
+        class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-gray-300 hover:bg-sidebar-hover hover:text-white">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+        조직 비교
+      </button>
+      <div class="px-3 py-2 mt-6 text-xs font-semibold text-gray-400 uppercase tracking-wider">문서 정보</div>
+      <div class="px-3 py-2 space-y-2">
+        <div class="flex justify-between text-xs"><span class="text-gray-400">문서</span><span class="text-gray-200">SCDPD001_중도인출.pdf</span></div>
+        <div class="flex justify-between text-xs"><span class="text-gray-400">조직</span><span class="text-gray-200">미래에셋생명</span></div>
+        <div class="flex justify-between text-xs"><span class="text-gray-400">분석일</span><span class="text-gray-200">2026-03-03</span></div>
+        <div class="flex justify-between text-xs"><span class="text-gray-400">상태</span><span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-300">완료</span></div>
+      </div>
+      <div class="px-3 py-2 mt-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">파이프라인</div>
+      <div class="px-3 py-2 space-y-1.5">
+        <div class="flex items-center gap-2 text-xs text-gray-300"><div class="w-2 h-2 rounded-full bg-green-400"></div> Stage 1 — 문서 수집</div>
+        <div class="flex items-center gap-2 text-xs text-gray-300"><div class="w-2 h-2 rounded-full bg-green-400"></div> Stage 2 — 구조 추출</div>
+        <div class="flex items-center gap-2 text-xs text-gray-300"><div class="w-2 h-2 rounded-full bg-green-400"></div> Stage 2A — 핵심 식별</div>
+        <div class="flex items-center gap-2 text-xs text-gray-300"><div class="w-2 h-2 rounded-full bg-green-400"></div> Stage 2B — 진단</div>
+        <div class="flex items-center gap-2 text-xs text-gray-300"><div class="w-2 h-2 rounded-full bg-yellow-400"></div> Stage 3 — HITL 리뷰</div>
+      </div>
+    </nav>
+    <div class="px-5 py-4 border-t border-white/10 flex items-center gap-3">
+      <div class="w-8 h-8 bg-accent-light rounded-full flex items-center justify-center text-sm font-semibold">SJ</div>
+      <div><div class="text-sm font-medium">서정호</div><div class="text-xs text-gray-400">Analyst</div></div>
+    </div>
+  </aside>
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 overflow-y-auto">
+
+    <!-- SCREEN 0: 문서 관리 -->
+    <div id="screen-docs" class="screen" style="display:block;">
+      <!-- 문서 목록 뷰 -->
+      <div id="docs-list-view">
+        <div class="bg-white border-b px-8 py-5">
+          <div class="flex items-center justify-between">
+            <div>
+              <h1 class="text-xl font-bold text-gray-900">문서 관리</h1>
+              <p class="text-sm text-gray-500 mt-1">미래에셋생명 퇴직연금 — 업로드 문서 15건</p>
+            </div>
+            <button class="inline-flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-light transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              문서 추가 업로드
+            </button>
+          </div>
+        </div>
+        <!-- 상태 요약 카드 -->
+        <div class="px-8 py-6">
+          <div class="grid grid-cols-4 gap-4 mb-6">
+            <div class="bg-white rounded-xl border p-4"><div class="text-2xl font-bold text-gray-900">15</div><div class="text-xs text-gray-500 mt-1">전체 문서</div></div>
+            <div class="bg-white rounded-xl border p-4"><div class="text-2xl font-bold text-green-600">13</div><div class="text-xs text-gray-500 mt-1">파싱 완료</div></div>
+            <div class="bg-white rounded-xl border p-4"><div class="text-2xl font-bold text-blue-600">11</div><div class="text-xs text-gray-500 mt-1">분석 완료</div></div>
+            <div class="bg-white rounded-xl border p-4"><div class="text-2xl font-bold text-red-600">2</div><div class="text-xs text-gray-500 mt-1">오류 / 미완료</div></div>
+          </div>
+          <!-- 문서 목록 테이블 -->
+          <div class="bg-white rounded-xl border overflow-hidden">
+            <div class="px-6 py-3 border-b bg-gray-50 flex items-center gap-4">
+              <span class="text-xs font-semibold text-gray-500 uppercase flex-1">파일명</span>
+              <span class="text-xs font-semibold text-gray-500 uppercase w-24 text-center">유형</span>
+              <span class="text-xs font-semibold text-gray-500 uppercase w-24 text-center">파싱</span>
+              <span class="text-xs font-semibold text-gray-500 uppercase w-24 text-center">분석</span>
+              <span class="text-xs font-semibold text-gray-500 uppercase w-32 text-center">추출 결과</span>
+              <span class="text-xs font-semibold text-gray-500 uppercase w-20 text-center">재시도</span>
+              <span class="text-xs font-semibold text-gray-500 uppercase w-16"></span>
+            </div>
+            <div id="doc-list-body"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 파일 상세 뷰 (파일 클릭 시) -->
+      <div id="docs-detail-view" class="hidden">
+        <div class="bg-white border-b px-8 py-5">
+          <div class="flex items-center gap-4">
+            <button onclick="backToDocList()" class="p-2 hover:bg-gray-100 rounded-lg transition-colors">
+              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+            <div class="flex-1">
+              <h1 id="detail-filename" class="text-xl font-bold text-gray-900"></h1>
+              <p id="detail-meta" class="text-sm text-gray-500 mt-1"></p>
+            </div>
+            <div class="flex gap-2">
+              <button onclick="openCorrectionPanel()" class="inline-flex items-center gap-2 px-4 py-2 border border-orange-300 text-orange-700 bg-orange-50 rounded-lg text-sm font-medium hover:bg-orange-100 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                보정 지시
+              </button>
+              <button onclick="retryAnalysis()" class="inline-flex items-center gap-2 px-4 py-2 bg-accent text-white rounded-lg text-sm font-medium hover:bg-accent-light transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                재분석
+              </button>
+            </div>
+          </div>
+          <!-- 탭 -->
+          <div class="mt-4 flex gap-1 flex-wrap">
+            <button onclick="switchDetailTab('extraction')" class="detail-tab px-4 py-2 text-sm font-medium rounded-lg transition-colors bg-accent/10 text-accent">추출 결과</button>
+            <button onclick="switchDetailTab('parsing')" class="detail-tab px-4 py-2 text-sm font-medium rounded-lg transition-colors text-gray-500 hover:bg-gray-100">파싱/분석 상세</button>
+            <button onclick="switchDetailTab('crossdoc')" class="detail-tab px-4 py-2 text-sm font-medium rounded-lg transition-colors text-gray-500 hover:bg-gray-100">문서 간 관계</button>
+            <button onclick="switchDetailTab('correction')" class="detail-tab px-4 py-2 text-sm font-medium rounded-lg transition-colors text-gray-500 hover:bg-gray-100">보정 / 재시도</button>
+            <button onclick="switchDetailTab('history')" class="detail-tab px-4 py-2 text-sm font-medium rounded-lg transition-colors text-gray-500 hover:bg-gray-100">분석 이력</button>
+          </div>
+        </div>
+
+        <!-- Tab: 추출 결과 -->
+        <div id="detail-tab-extraction" class="detail-tab-content px-8 py-6">
+          <!-- 추출 요약 카드 -->
+          <div id="detail-extract-summary" class="grid grid-cols-4 gap-4 mb-6"></div>
+          <!-- 추출 항목 아코디언 -->
+          <div class="space-y-4">
+            <!-- 프로세스 -->
+            <div class="bg-white rounded-xl border overflow-hidden">
+              <button onclick="toggleDetailAccordion('processes')" class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center"><svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg></div>
+                  <span class="text-sm font-semibold text-gray-900">프로세스</span>
+                  <span id="detail-proc-count" class="text-xs text-gray-400"></span>
+                </div>
+                <svg id="detail-acc-processes" class="w-5 h-5 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              </button>
+              <div id="detail-processes" class="accordion-content border-t divide-y"></div>
+            </div>
+            <!-- 엔티티 -->
+            <div class="bg-white rounded-xl border overflow-hidden">
+              <button onclick="toggleDetailAccordion('entities')" class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center"><svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg></div>
+                  <span class="text-sm font-semibold text-gray-900">엔티티</span>
+                  <span id="detail-ent-count" class="text-xs text-gray-400"></span>
+                </div>
+                <svg id="detail-acc-entities" class="w-5 h-5 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              </button>
+              <div id="detail-entities" class="accordion-content border-t divide-y"></div>
+            </div>
+            <!-- 규칙 -->
+            <div class="bg-white rounded-xl border overflow-hidden">
+              <button onclick="toggleDetailAccordion('rules')" class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center"><svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg></div>
+                  <span class="text-sm font-semibold text-gray-900">규칙</span>
+                  <span id="detail-rule-count" class="text-xs text-gray-400"></span>
+                </div>
+                <svg id="detail-acc-rules" class="w-5 h-5 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              </button>
+              <div id="detail-rules" class="accordion-content border-t divide-y"></div>
+            </div>
+            <!-- 관계 -->
+            <div class="bg-white rounded-xl border overflow-hidden">
+              <button onclick="toggleDetailAccordion('relations')" class="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center"><svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg></div>
+                  <span class="text-sm font-semibold text-gray-900">관계</span>
+                  <span id="detail-rel-count" class="text-xs text-gray-400"></span>
+                </div>
+                <svg id="detail-acc-relations" class="w-5 h-5 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              </button>
+              <div id="detail-relations" class="accordion-content border-t divide-y"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab: 파싱/분석 상세 -->
+        <div id="detail-tab-parsing" class="detail-tab-content px-8 py-6 hidden">
+          <div class="space-y-6">
+            <!-- 문서 식별 + 버전 -->
+            <div id="parsing-doc-identity" class="grid grid-cols-2 gap-4"></div>
+            <!-- 파싱 방법 상세 -->
+            <div id="parsing-method-detail" class="bg-white rounded-xl border overflow-hidden"></div>
+            <!-- 분석 결과 상세 -->
+            <div id="parsing-analysis-detail" class="bg-white rounded-xl border overflow-hidden"></div>
+            <!-- 온톨로지 표준화 -->
+            <div id="parsing-ontology" class="bg-white rounded-xl border overflow-hidden"></div>
+            <!-- 다이어그램 해석 (해당 시) -->
+            <div id="parsing-diagram" class="bg-white rounded-xl border overflow-hidden"></div>
+            <!-- 엑셀 조건 해석 (해당 시) -->
+            <div id="parsing-excel-conditions" class="bg-white rounded-xl border overflow-hidden"></div>
+          </div>
+        </div>
+
+        <!-- Tab: 문서 간 관계 -->
+        <div id="detail-tab-crossdoc" class="detail-tab-content px-8 py-6 hidden">
+          <div class="space-y-6">
+            <div id="crossdoc-mappings"></div>
+            <div id="crossdoc-empty" class="hidden text-center py-12 text-gray-400 text-sm">이 문서에 대한 교차 문서 매핑 정보가 아직 생성되지 않았습니다.</div>
+          </div>
+        </div>
+
+        <!-- Tab: 보정 / 재시도 -->
+        <div id="detail-tab-correction" class="detail-tab-content px-8 py-6 hidden">
+          <div class="max-w-3xl">
+            <div class="bg-white rounded-xl border p-6 mb-6">
+              <h3 class="text-sm font-semibold text-gray-900 mb-1">보정 지시</h3>
+              <p class="text-xs text-gray-500 mb-4">추출 결과에서 부족하거나 잘못된 부분을 지시하세요. 재분석 시 이 지시가 LLM 프롬프트에 반영됩니다.</p>
+              <textarea id="correction-input" rows="5" class="w-full border rounded-lg px-4 py-3 text-sm resize-y focus:ring-2 focus:ring-accent/30 focus:border-accent" placeholder="예시:
+- '중도인출 프로세스'의 하위 단계 중 '세금 계산' 단계가 누락되었습니다. 추가해주세요.
+- '가입자격 확인'과 '자격 재확인'은 동일한 프로세스입니다. 하나로 합쳐주세요.
+- 화면설계서 SC-045에 있는 '긴급인출 승인' 프로세스가 추출되지 않았습니다."></textarea>
+              <div class="mt-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <label class="text-xs text-gray-500 flex items-center gap-2">
+                    <input type="checkbox" id="correction-keep" checked class="rounded border-gray-300 text-accent focus:ring-accent">
+                    기존 추출 결과 유지 (보정 분만 추가)
+                  </label>
+                </div>
+                <div class="flex gap-2">
+                  <button onclick="saveCorrectionDraft()" class="px-4 py-2 border rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">임시 저장</button>
+                  <button onclick="submitCorrection()" class="px-4 py-2 bg-orange-500 text-white rounded-lg text-sm font-medium hover:bg-orange-600 transition-colors flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    보정 지시 포함 재분석
+                  </button>
+                </div>
+              </div>
+            </div>
+            <!-- 빠른 보정 액션 -->
+            <div class="bg-white rounded-xl border p-6">
+              <h3 class="text-sm font-semibold text-gray-900 mb-4">빠른 보정 액션</h3>
+              <div class="space-y-3" id="quick-correction-actions">
+                <label class="flex items-start gap-3 p-3 rounded-lg border hover:bg-gray-50 cursor-pointer transition-colors">
+                  <input type="checkbox" class="mt-0.5 rounded border-gray-300 text-accent focus:ring-accent">
+                  <div><div class="text-sm font-medium text-gray-900">프로세스 하위 단계 더 세분화</div><div class="text-xs text-gray-500">각 프로세스의 step을 더 상세하게 분해합니다</div></div>
+                </label>
+                <label class="flex items-start gap-3 p-3 rounded-lg border hover:bg-gray-50 cursor-pointer transition-colors">
+                  <input type="checkbox" class="mt-0.5 rounded border-gray-300 text-accent focus:ring-accent">
+                  <div><div class="text-sm font-medium text-gray-900">엔티티 속성 더 추출</div><div class="text-xs text-gray-500">각 엔티티의 속성/필드를 문서에서 더 상세히 추출합니다</div></div>
+                </label>
+                <label class="flex items-start gap-3 p-3 rounded-lg border hover:bg-gray-50 cursor-pointer transition-colors">
+                  <input type="checkbox" class="mt-0.5 rounded border-gray-300 text-accent focus:ring-accent">
+                  <div><div class="text-sm font-medium text-gray-900">암묵적 규칙 탐지 강화</div><div class="text-xs text-gray-500">문서에 명시되지 않은 규칙을 화면 흐름과 데이터 흐름에서 추론합니다</div></div>
+                </label>
+                <label class="flex items-start gap-3 p-3 rounded-lg border hover:bg-gray-50 cursor-pointer transition-colors">
+                  <input type="checkbox" class="mt-0.5 rounded border-gray-300 text-accent focus:ring-accent">
+                  <div><div class="text-sm font-medium text-gray-900">관계 그래프 보강</div><div class="text-xs text-gray-500">프로세스-엔티티-규칙 간 누락된 연결을 추가로 탐지합니다</div></div>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab: 분석 이력 -->
+        <div id="detail-tab-history" class="detail-tab-content px-8 py-6 hidden">
+          <div class="max-w-3xl">
+            <div class="bg-white rounded-xl border overflow-hidden">
+              <div class="px-6 py-4 border-b bg-gray-50"><h3 class="text-sm font-semibold text-gray-900">분석 이력</h3></div>
+              <div id="analysis-history"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCREEN 1: 분석 리포트 -->
+    <div id="screen-single" class="screen" style="display:none;">
+      <div class="bg-white border-b px-8 py-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-xl font-bold text-gray-900">분석 리포트</h1>
+            <p class="text-sm text-gray-500 mt-1">SCDPD001_중도인출_프로세스정의서.pdf — 미래에셋생명 퇴직연금</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button class="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              내보내기
+            </button>
+            <button class="px-4 py-2 text-sm font-medium text-white bg-accent rounded-lg hover:bg-accent-light transition-colors flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              재분석
+            </button>
+          </div>
+        </div>
+        <div class="flex gap-1 mt-5">
+          <button onclick="switchTab('summary')" id="tab-summary" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg border border-b-0 bg-white text-accent border-gray-200">추출 요약</button>
+          <button onclick="switchTab('core')" id="tab-core" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg border border-b-0 bg-gray-100 text-gray-500 border-transparent hover:text-gray-700">핵심 프로세스</button>
+          <button onclick="switchTab('diagnosis')" id="tab-diagnosis" class="tab-btn px-4 py-2 text-sm font-medium rounded-t-lg border border-b-0 bg-gray-100 text-gray-500 border-transparent hover:text-gray-700">진단 소견</button>
+        </div>
+      </div>
+      <div class="px-8 py-6">
+        <!-- TAB 1: 추출 요약 -->
+        <div id="tab-content-summary" class="tab-content active">
+          <div class="grid grid-cols-4 gap-4 mb-8">
+            <div class="bg-white rounded-xl border p-5 hover:shadow-md transition-shadow">
+              <div class="flex items-center justify-between">
+                <div class="text-sm font-medium text-gray-500">프로세스</div>
+                <div class="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center">
+                  <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm0 8a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zm12 0a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+                </div>
+              </div>
+              <div class="mt-3 text-3xl font-bold text-gray-900">47</div>
+              <div class="mt-1 text-xs text-gray-400">Core 8 | Supporting 24 | Peripheral 15</div>
+            </div>
+            <div class="bg-white rounded-xl border p-5 hover:shadow-md transition-shadow">
+              <div class="flex items-center justify-between">
+                <div class="text-sm font-medium text-gray-500">엔티티</div>
+                <div class="w-10 h-10 bg-emerald-50 rounded-lg flex items-center justify-center">
+                  <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                </div>
+              </div>
+              <div class="mt-3 text-3xl font-bold text-gray-900">82</div>
+              <div class="mt-1 text-xs text-gray-400">계좌 12 | 인물 8 | 상품 15 | 시스템 47</div>
+            </div>
+            <div class="bg-white rounded-xl border p-5 hover:shadow-md transition-shadow">
+              <div class="flex items-center justify-between">
+                <div class="text-sm font-medium text-gray-500">규칙</div>
+                <div class="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center">
+                  <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                </div>
+              </div>
+              <div class="mt-3 text-3xl font-bold text-gray-900">23</div>
+              <div class="mt-1 text-xs text-gray-400">조건-기준-결과 트리플</div>
+            </div>
+            <div class="bg-white rounded-xl border p-5 hover:shadow-md transition-shadow">
+              <div class="flex items-center justify-between">
+                <div class="text-sm font-medium text-gray-500">관계</div>
+                <div class="w-10 h-10 bg-rose-50 rounded-lg flex items-center justify-center">
+                  <svg class="w-5 h-5 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+                </div>
+              </div>
+              <div class="mt-3 text-3xl font-bold text-gray-900">156</div>
+              <div class="mt-1 text-xs text-gray-400">프로세스-엔티티-규칙 연결</div>
+            </div>
+          </div>
+          <div class="bg-white rounded-xl border">
+            <div class="px-6 py-4 border-b flex items-center justify-between">
+              <h3 class="font-semibold text-gray-900">프로세스 중요도 순위</h3>
+              <div class="flex items-center gap-2 text-xs">
+                <span class="inline-flex items-center px-2 py-1 rounded-md bg-red-50 text-red-700 font-medium">mega</span>
+                <span class="inline-flex items-center px-2 py-1 rounded-md bg-indigo-50 text-indigo-700 font-medium">core</span>
+                <span class="inline-flex items-center px-2 py-1 rounded-md bg-blue-50 text-blue-700 font-medium">supporting</span>
+                <span class="inline-flex items-center px-2 py-1 rounded-md bg-gray-100 text-gray-600 font-medium">peripheral</span>
+              </div>
+            </div>
+            <div class="divide-y" id="process-list"></div>
+          </div>
+        </div>
+        <!-- TAB 2: 핵심 프로세스 -->
+        <div id="tab-content-core" class="tab-content">
+          <div class="grid grid-cols-5 gap-6">
+            <div class="col-span-3 bg-white rounded-xl border">
+              <div class="px-6 py-4 border-b">
+                <h3 class="font-semibold text-gray-900">프로세스 계층 트리</h3>
+                <p class="text-xs text-gray-400 mt-1">Mega → Core → Supporting → Peripheral</p>
+              </div>
+              <div class="p-6" id="process-tree"></div>
+            </div>
+            <div class="col-span-2 space-y-6">
+              <div class="bg-white rounded-xl border p-6" id="core-detail-panel">
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-gray-900" id="radar-process-name">중도인출</h4>
+                    <span class="text-xs text-indigo-600 font-medium" id="radar-process-category">core</span>
+                  </div>
+                </div>
+                <div class="flex justify-center">
+                  <svg id="radar-chart" width="280" height="260" viewBox="0 0 280 260"></svg>
+                </div>
+                <div class="mt-4 bg-indigo-50 rounded-lg p-4">
+                  <div class="text-xs font-semibold text-indigo-700 mb-2">왜 핵심인가</div>
+                  <p class="text-sm text-indigo-900 leading-relaxed" id="radar-reasoning">6개 문서에서 참조되며, 12개 규칙과 직접 연관. 퇴직연금 가입자의 중도인출은 도메인 핵심 업무로, 적립금 산정/세금 계산/승인 절차 등 다수의 하위 프로세스를 트리거합니다.</p>
+                </div>
+              </div>
+              <div class="bg-white rounded-xl border">
+                <div class="px-6 py-4 border-b"><h3 class="font-semibold text-gray-900">핵심 프로세스 판정 결과</h3></div>
+                <div class="divide-y" id="core-list"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- TAB 3: 진단 소견 -->
+        <div id="tab-content-diagnosis" class="tab-content">
+          <div class="grid grid-cols-3 gap-4 mb-6">
+            <div class="bg-white rounded-xl border p-5 flex items-center gap-4">
+              <div class="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center text-lg font-bold text-red-600">C</div>
+              <div><div class="text-2xl font-bold text-gray-900">3</div><div class="text-sm text-gray-500">Critical</div></div>
+            </div>
+            <div class="bg-white rounded-xl border p-5 flex items-center gap-4">
+              <div class="w-12 h-12 bg-yellow-50 rounded-full flex items-center justify-center text-lg font-bold text-yellow-600">W</div>
+              <div><div class="text-2xl font-bold text-gray-900">8</div><div class="text-sm text-gray-500">Warning</div></div>
+            </div>
+            <div class="bg-white rounded-xl border p-5 flex items-center gap-4">
+              <div class="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center text-lg font-bold text-blue-600">I</div>
+              <div><div class="text-2xl font-bold text-gray-900">5</div><div class="text-sm text-gray-500">Info</div></div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 mb-4">
+            <span class="text-sm font-medium text-gray-500">필터:</span>
+            <button onclick="filterFindings('all')" class="finding-filter px-3 py-1.5 text-xs font-medium rounded-full bg-gray-900 text-white">전체 16</button>
+            <button onclick="filterFindings('critical')" class="finding-filter px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200">Critical 3</button>
+            <button onclick="filterFindings('warning')" class="finding-filter px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200">Warning 8</button>
+            <button onclick="filterFindings('info')" class="finding-filter px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200">Info 5</button>
+            <div class="flex-1"></div>
+            <span class="text-sm font-medium text-gray-500">유형:</span>
+            <button onclick="filterFindingsByType('all')" class="type-filter px-3 py-1.5 text-xs font-medium rounded-full bg-gray-900 text-white">전체</button>
+            <button onclick="filterFindingsByType('missing')" class="type-filter px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200">누락</button>
+            <button onclick="filterFindingsByType('duplicate')" class="type-filter px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200">중복</button>
+            <button onclick="filterFindingsByType('overspec')" class="type-filter px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200">오버스펙</button>
+            <button onclick="filterFindingsByType('inconsistency')" class="type-filter px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200">정합성위반</button>
+          </div>
+          <div class="space-y-3" id="findings-list"></div>
+        </div>
+      </div>
+    </div>
+    <!-- SCREEN 2: 조직 비교 -->
+    <div id="screen-compare" class="screen" style="display:none;">
+      <div class="bg-white border-b px-8 py-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-xl font-bold text-gray-900">조직 간 비교 분석</h1>
+            <p class="text-sm text-gray-500 mt-1">퇴직연금 도메인 — 2개 조직 비교</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button class="px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              리포트 내보내기
+            </button>
+            <button class="px-4 py-2 text-sm font-medium text-white bg-accent rounded-lg hover:bg-accent-light transition-colors">+ 조직 추가</button>
+          </div>
+        </div>
+        <div class="flex gap-1 mt-5">
+          <button onclick="switchCompareTab('dashboard')" id="ctab-dashboard" class="ctab-btn px-4 py-2 text-sm font-medium rounded-t-lg border border-b-0 bg-white text-accent border-gray-200">비교 대시보드</button>
+          <button onclick="switchCompareTab('groups')" id="ctab-groups" class="ctab-btn px-4 py-2 text-sm font-medium rounded-t-lg border border-b-0 bg-gray-100 text-gray-500 border-transparent hover:text-gray-700">서비스 분석 그룹</button>
+        </div>
+      </div>
+      <div class="px-8 py-6">
+        <!-- COMPARE TAB 1: 비교 대시보드 -->
+        <div id="ctab-content-dashboard" class="tab-content active">
+          <div class="grid grid-cols-2 gap-6 mb-8">
+            <div class="bg-white rounded-xl border p-6">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-lg font-bold text-indigo-700">M</div>
+                <div><h3 class="font-semibold text-gray-900">미래에셋생명 퇴직연금</h3><p class="text-xs text-gray-400">org-mirae-pension</p></div>
+              </div>
+              <div class="grid grid-cols-3 gap-4">
+                <div class="text-center"><div class="text-2xl font-bold text-gray-900">15</div><div class="text-xs text-gray-500">문서</div></div>
+                <div class="text-center"><div class="text-2xl font-bold text-gray-900">47</div><div class="text-xs text-gray-500">프로세스</div></div>
+                <div class="text-center"><div class="text-2xl font-bold text-gray-900">67</div><div class="text-xs text-gray-500">정책</div></div>
+              </div>
+            </div>
+            <div class="bg-white rounded-xl border p-6">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center text-lg font-bold text-emerald-700">H</div>
+                <div><h3 class="font-semibold text-gray-900">현대증권 퇴직연금</h3><p class="text-xs text-gray-400">org-hyundai-pension</p></div>
+              </div>
+              <div class="grid grid-cols-3 gap-4">
+                <div class="text-center"><div class="text-2xl font-bold text-gray-900">12</div><div class="text-xs text-gray-500">문서</div></div>
+                <div class="text-center"><div class="text-2xl font-bold text-gray-900">38</div><div class="text-xs text-gray-500">프로세스</div></div>
+                <div class="text-center"><div class="text-2xl font-bold text-gray-900">52</div><div class="text-xs text-gray-500">정책</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-6">
+            <!-- Venn Diagram -->
+            <div class="bg-white rounded-xl border p-6">
+              <h3 class="font-semibold text-gray-900 mb-2">프로세스 공통/고유 분포</h3>
+              <p class="text-xs text-gray-400 mb-4">Venn 다이어그램 — 프로세스 매칭 결과</p>
+              <div class="flex justify-center">
+                <svg width="420" height="300" viewBox="0 0 420 300">
+                  <circle cx="160" cy="150" r="110" fill="#6366f1" fill-opacity="0.15" stroke="#6366f1" stroke-width="2" stroke-opacity="0.4"/>
+                  <circle cx="260" cy="150" r="110" fill="#10b981" fill-opacity="0.15" stroke="#10b981" stroke-width="2" stroke-opacity="0.4"/>
+                  <text x="105" y="135" text-anchor="middle" font-size="13" font-weight="700" fill="#4338ca">미래에셋</text>
+                  <text x="105" y="155" text-anchor="middle" font-size="13" font-weight="700" fill="#4338ca">고유</text>
+                  <text x="105" y="185" text-anchor="middle" font-size="28" font-weight="700" fill="#4338ca">8</text>
+                  <text x="210" y="135" text-anchor="middle" font-size="13" font-weight="700" fill="#374151">공통</text>
+                  <text x="210" y="175" text-anchor="middle" font-size="36" font-weight="700" fill="#374151">12</text>
+                  <text x="315" y="135" text-anchor="middle" font-size="13" font-weight="700" fill="#047857">현대증권</text>
+                  <text x="315" y="155" text-anchor="middle" font-size="13" font-weight="700" fill="#047857">고유</text>
+                  <text x="315" y="185" text-anchor="middle" font-size="28" font-weight="700" fill="#047857">6</text>
+                  <text x="210" y="285" text-anchor="middle" fill="#6b7280" font-size="12">총 26개 고유 프로세스 분석 완료</text>
+                </svg>
+              </div>
+            </div>
+            <!-- Pie Chart -->
+            <div class="bg-white rounded-xl border p-6">
+              <h3 class="font-semibold text-gray-900 mb-2">서비스 분석 그룹 분포</h3>
+              <p class="text-xs text-gray-400 mb-4">4대 분류 기준 비율</p>
+              <div class="flex items-center justify-center gap-8">
+                <svg width="200" height="200" viewBox="0 0 200 200">
+                  <circle cx="100" cy="100" r="80" fill="transparent" stroke="#22c55e" stroke-width="40" stroke-dasharray="201.06 301.59" stroke-dashoffset="0" transform="rotate(-90 100 100)"/>
+                  <circle cx="100" cy="100" r="80" fill="transparent" stroke="#3b82f6" stroke-width="40" stroke-dasharray="150.80 351.86" stroke-dashoffset="-201.06" transform="rotate(-90 100 100)"/>
+                  <circle cx="100" cy="100" r="80" fill="transparent" stroke="#eab308" stroke-width="40" stroke-dasharray="75.40 427.26" stroke-dashoffset="-351.86" transform="rotate(-90 100 100)"/>
+                  <circle cx="100" cy="100" r="80" fill="transparent" stroke="#ef4444" stroke-width="40" stroke-dasharray="75.40 427.26" stroke-dashoffset="-427.26" transform="rotate(-90 100 100)"/>
+                  <circle cx="100" cy="100" r="60" fill="white"/>
+                  <text x="100" y="95" text-anchor="middle" fill="#111827" font-size="20" font-weight="700">26</text>
+                  <text x="100" y="112" text-anchor="middle" fill="#6b7280" font-size="11">프로세스</text>
+                </svg>
+                <div class="space-y-3">
+                  <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full bg-green-500"></div><div><div class="text-sm font-medium text-gray-900">공통/표준</div><div class="text-xs text-gray-400">40% (10건)</div></div></div>
+                  <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full bg-blue-500"></div><div><div class="text-sm font-medium text-gray-900">조직 고유</div><div class="text-xs text-gray-400">30% (8건)</div></div></div>
+                  <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full bg-yellow-500"></div><div><div class="text-sm font-medium text-gray-900">암묵지</div><div class="text-xs text-gray-400">15% (4건)</div></div></div>
+                  <div class="flex items-center gap-3"><div class="w-3 h-3 rounded-full bg-red-500"></div><div><div class="text-sm font-medium text-gray-900">핵심 차별</div><div class="text-xs text-gray-400">15% (4건)</div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- COMPARE TAB 2: 서비스 분석 그룹 -->
+        <div id="ctab-content-groups" class="tab-content">
+          <div class="space-y-4" id="service-groups"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script>
+// ========================
+// DATA
+// ========================
+var processData = [
+  { name: '중도인출', category: 'core', score: 0.95, refs: 18, desc: '가입자의 퇴직연금 중도인출 처리 — 적립금 산정, 세금 계산, 승인 절차 포함' },
+  { name: '퇴직급여 산정', category: 'core', score: 0.91, refs: 15, desc: '퇴직 시 급여 산정 기준 — 근속연수, 평균임금, DB/DC형 계산' },
+  { name: '가입자격 확인', category: 'core', score: 0.88, refs: 14, desc: '퇴직연금 가입 자격 확인 — 근로자 요건, 사업장 요건 검증' },
+  { name: '자산배분', category: 'core', score: 0.85, refs: 12, desc: '퇴직연금 적립금의 자산배분 포트폴리오 관리' },
+  { name: '연금수령', category: 'core', score: 0.82, refs: 11, desc: '퇴직연금 연금 수령 절차 — 연금 vs 일시금 선택' },
+  { name: '퇴직연금 가입', category: 'mega', score: 0.80, refs: 10, desc: '퇴직연금 신규 가입 프로세스 — 사업장 등록, 계좌 개설' },
+  { name: '계좌이체', category: 'core', score: 0.78, refs: 9, desc: '퇴직연금 계좌 간 이체 처리' },
+  { name: 'DC형 부담금 납부', category: 'core', score: 0.75, refs: 8, desc: '확정기여형(DC) 사용자 부담금 납부 프로세스' },
+  { name: 'IRP 계좌 개설', category: 'core', score: 0.72, refs: 7, desc: '개인형 퇴직연금(IRP) 계좌 개설 절차' },
+  { name: '자동이체 설정', category: 'supporting', score: 0.65, refs: 6, desc: '부담금 자동이체 설정 관리' },
+  { name: '적립금 조회', category: 'supporting', score: 0.58, refs: 5, desc: '가입자 적립금 잔액 조회 기능' },
+  { name: '운용지시 변경', category: 'supporting', score: 0.52, refs: 4, desc: '투자 운용지시 변경 프로세스' },
+  { name: '위험등급 재평가', category: 'supporting', score: 0.48, refs: 4, desc: '투자 위험등급 주기적 재평가' },
+  { name: '수수료 산정', category: 'supporting', score: 0.42, refs: 3, desc: '퇴직연금 운용 수수료 산정' },
+  { name: '알림 발송', category: 'peripheral', score: 0.30, refs: 2, desc: '가입자 알림(SMS, 이메일) 발송' },
+  { name: '감사 로그 기록', category: 'peripheral', score: 0.25, refs: 2, desc: '시스템 감사 로그 자동 기록' },
+  { name: '보고서 생성', category: 'peripheral', score: 0.20, refs: 1, desc: '관리자용 통계 보고서 생성' }
+];
+
+var coreProcesses = [
+  { name: '중도인출', score: 0.95, factors: { frequency: 0.92, dependency: 0.96, domain: 0.98, centrality: 0.90 }, reasoning: '6개 문서에서 참조되며, 12개 규칙과 직접 연관. 퇴직연금 가입자의 중도인출은 도메인 핵심 업무로, 적립금 산정/세금 계산/승인 절차 등 다수의 하위 프로세스를 트리거합니다.' },
+  { name: '퇴직급여 산정', score: 0.91, factors: { frequency: 0.88, dependency: 0.90, domain: 0.95, centrality: 0.85 }, reasoning: '퇴직급여는 퇴직연금의 최종 산출물입니다. DB형/DC형 별 산정 로직이 분리되어 있어 5개 규칙과 직접 연관되며, 세금 계산과 연금/일시금 선택으로 이어집니다.' },
+  { name: '가입자격 확인', score: 0.88, factors: { frequency: 0.85, dependency: 0.80, domain: 0.92, centrality: 0.88 }, reasoning: '모든 가입/변경/인출 프로세스의 선행 조건으로 작용합니다. 근로자 요건/사업장 요건/계약 유효성 3중 검증 구조가 필요하며, 누락 시 전체 파이프라인이 무효화됩니다.' },
+  { name: '자산배분', score: 0.85, factors: { frequency: 0.78, dependency: 0.82, domain: 0.90, centrality: 0.83 }, reasoning: 'DC형/IRP의 핵심 투자 관리 기능입니다. 위험등급 평가, 투자 한도 규칙, 포트폴리오 재조정이 연계되어 있으며 금융 규제 준수가 필수적입니다.' },
+  { name: '연금수령', score: 0.82, factors: { frequency: 0.75, dependency: 0.78, domain: 0.88, centrality: 0.80 }, reasoning: '퇴직연금의 최종 실행 단계입니다. 연금/일시금 선택, 수령 주기 설정, 세금 원천징수 규칙이 결합되어 있으며 가입자 만족도에 직접 영향을 미칩니다.' }
+];
+
+var processTree = [
+  { name: '퇴직연금 관리', type: 'mega', expanded: true, children: [
+    { name: '가입/변경', type: 'core', expanded: true, children: [
+      { name: '가입자격 확인', type: 'core', children: [] },
+      { name: '퇴직연금 가입', type: 'core', children: [
+        { name: 'DB형 가입', type: 'supporting', children: [] },
+        { name: 'DC형 가입', type: 'supporting', children: [] },
+        { name: 'IRP 계좌 개설', type: 'core', children: [] }
+      ]},
+      { name: '계약 변경', type: 'supporting', children: [] }
+    ]},
+    { name: '적립/운용', type: 'core', expanded: true, children: [
+      { name: 'DC형 부담금 납부', type: 'core', children: [
+        { name: '자동이체 설정', type: 'supporting', children: [] }
+      ]},
+      { name: '자산배분', type: 'core', children: [
+        { name: '운용지시 변경', type: 'supporting', children: [] },
+        { name: '위험등급 재평가', type: 'supporting', children: [] }
+      ]},
+      { name: '적립금 조회', type: 'supporting', children: [] }
+    ]},
+    { name: '급여/수령', type: 'core', expanded: false, children: [
+      { name: '퇴직급여 산정', type: 'core', children: [
+        { name: '수수료 산정', type: 'supporting', children: [] }
+      ]},
+      { name: '중도인출', type: 'core', children: [] },
+      { name: '연금수령', type: 'core', children: [] },
+      { name: '계좌이체', type: 'core', children: [] }
+    ]},
+    { name: '관리/감사', type: 'peripheral', expanded: false, children: [
+      { name: '알림 발송', type: 'peripheral', children: [] },
+      { name: '감사 로그 기록', type: 'peripheral', children: [] },
+      { name: '보고서 생성', type: 'peripheral', children: [] }
+    ]}
+  ]}
+];
+var findings = [
+  { id: 'F-001', type: 'missing', severity: 'critical', finding: '퇴직급여 산정 프로세스에 세금 계산 단계 누락', evidence: '프로세스정의서 SCDPD001 3.2에 "퇴직소득세 산정"이 명시되어 있으나, 화면설계서 SC-045에 해당 화면이 없음.', recommendation: '화면 SC-045와 SC-046 사이에 "퇴직소득세 산정" 단계를 추가하고, 세율 테이블 엔티티를 연결하세요.', relatedProcesses: ['퇴직급여 산정', '중도인출'], confidence: 0.92, hitlStatus: 'pending' },
+  { id: 'F-002', type: 'missing', severity: 'critical', finding: '중도인출 승인 프로세스에 관리자 승인 단계 누락', evidence: 'API 명세서에 approval_status 필드가 존재하지만, 프로세스정의서에 승인 절차가 정의되지 않음.', recommendation: '중도인출 신청과 완료 사이에 "관리자 승인" 단계를 삽입하고, 승인 권한 규칙을 정의하세요.', relatedProcesses: ['중도인출'], confidence: 0.89, hitlStatus: 'pending' },
+  { id: 'F-003', type: 'inconsistency', severity: 'critical', finding: 'DB형/DC형 적립금 산정 로직 문서 간 불일치', evidence: '요구사항 정의서에서 DB형 적립금은 "최종 3개월 평균임금 기준"이나, ERD의 calculation_base 필드는 "연간 평균"으로 정의됨.', recommendation: '도메인 전문가와 확인 후 기준을 통일하세요. 현행 법규(근로자퇴직급여보장법 제16조)에 따르면 "최종 3개월 평균임금"이 정확합니다.', relatedProcesses: ['퇴직급여 산정', 'DC형 부담금 납부'], confidence: 0.95, hitlStatus: 'pending' },
+  { id: 'F-004', type: 'duplicate', severity: 'warning', finding: '가입자격 확인 로직이 2곳에 중복 정의', evidence: '프로세스정의서에서 가입 시 자격 확인과 변경 시 자격 재확인이 동일한 로직을 별도로 정의함.', recommendation: '가입자격 확인을 공통 서브프로세스로 분리하여 가입/변경 모두에서 호출하는 구조로 개선하세요.', relatedProcesses: ['가입자격 확인', '퇴직연금 가입'], confidence: 0.85, hitlStatus: 'pending' },
+  { id: 'F-005', type: 'duplicate', severity: 'warning', finding: '적립금 조회가 3개 화면에서 개별 구현', evidence: '화면설계서 SC-012, SC-034, SC-058에서 각각 독립적인 적립금 조회 기능을 구현함.', recommendation: '적립금 조회를 공통 컴포넌트로 분리하고, 단일 API 엔드포인트를 통해 데이터를 제공하세요.', relatedProcesses: ['적립금 조회'], confidence: 0.80, hitlStatus: 'pending' },
+  { id: 'F-006', type: 'overspec', severity: 'warning', finding: '실시간 환율 변환 기능이 국내 전용 퇴직연금에 불필요', evidence: '화면설계서 SC-067에 실시간 환율 변환 기능이 정의되어 있으나, 현재 미래에셋 퇴직연금은 국내 원화 전용.', recommendation: '환율 변환 기능은 Phase 2 해외 투자 상품 도입 시로 연기하세요.', relatedProcesses: ['자산배분'], confidence: 0.78, hitlStatus: 'pending' },
+  { id: 'F-007', type: 'inconsistency', severity: 'warning', finding: '연금수령 주기 옵션 문서 간 상이', evidence: '요구사항 정의서: 월/분기/반기/연 4가지. 화면설계서: 월/분기 2가지만 제공. API 명세서: 3가지.', recommendation: '비즈니스 요구사항 기준으로 4가지 옵션을 확정하고 전 문서를 통일하세요.', relatedProcesses: ['연금수령'], confidence: 0.88, hitlStatus: 'pending' },
+  { id: 'F-008', type: 'missing', severity: 'warning', finding: 'IRP 계좌 개설 시 본인 인증 절차 미정의', evidence: '프로세스정의서에 IRP 계좌 개설 절차가 있으나, 본인 인증 단계가 명시되지 않음.', recommendation: '금융거래 규정에 따라 본인 인증 절차를 IRP 계좌 개설 프로세스 첫 단계에 추가하세요.', relatedProcesses: ['IRP 계좌 개설'], confidence: 0.90, hitlStatus: 'pending' },
+  { id: 'F-009', type: 'inconsistency', severity: 'warning', finding: '수수료율 기준이 ERD와 화면설계서에서 불일치', evidence: 'ERD에서 fee_rate는 연율(%) 기준이나, 화면에서는 일할 계산된 금액으로 표시.', recommendation: '수수료 산정 프로세스에 연율 to 일할 변환 로직을 명시적으로 추가하세요.', relatedProcesses: ['수수료 산정'], confidence: 0.82, hitlStatus: 'pending' },
+  { id: 'F-010', type: 'duplicate', severity: 'warning', finding: '알림 발송 로직이 프로세스별로 개별 구현', evidence: '중도인출, 가입, 연금수령 각 프로세스에서 알림 발송을 독립적으로 처리.', recommendation: '알림을 중앙 집중화 서비스(svc-notification)로 통합하세요.', relatedProcesses: ['알림 발송', '중도인출', '퇴직연금 가입'], confidence: 0.75, hitlStatus: 'pending' },
+  { id: 'F-011', type: 'overspec', severity: 'warning', finding: '관리자 대시보드에 실시간 모니터링 기능 과잉', evidence: '화면설계서 SC-090에 초 단위 실시간 가입자 현황 모니터링이 정의됨. 퇴직연금 특성상 일 단위 배치 처리가 대부분.', recommendation: '실시간 대신 일 단위/시간 단위 갱신으로 변경하세요.', relatedProcesses: ['보고서 생성'], confidence: 0.70, hitlStatus: 'pending' },
+  { id: 'F-012', type: 'missing', severity: 'info', finding: '운용지시 변경 프로세스에 변경 이력 관리 미정의', evidence: '운용지시 변경 기능은 있으나, 변경 이전/이후 비교 이력을 관리하는 프로세스가 없음.', recommendation: '운용지시 변경 시 이전 상태를 자동 스냅샷으로 저장하는 이력 관리 기능을 추가하세요.', relatedProcesses: ['운용지시 변경', '자산배분'], confidence: 0.72, hitlStatus: 'pending' },
+  { id: 'F-013', type: 'missing', severity: 'info', finding: '대량 데이터 처리 시 배치 프로세스 미정의', evidence: '현재 모든 프로세스가 건별 처리 기준으로 설계됨.', recommendation: '사업장 단위 일괄 처리 배치 프로세스를 추가하세요.', relatedProcesses: ['퇴직연금 가입', 'DC형 부담금 납부'], confidence: 0.68, hitlStatus: 'pending' },
+  { id: 'F-014', type: 'missing', severity: 'info', finding: '에러 처리 및 롤백 프로세스 미정의', evidence: '중도인출, 계좌이체 등 금융 트랜잭션에 대한 실패 시 롤백 절차가 정의되지 않음.', recommendation: '각 금융 트랜잭션에 대해 보상 트랜잭션 프로세스를 정의하세요.', relatedProcesses: ['중도인출', '계좌이체'], confidence: 0.85, hitlStatus: 'pending' },
+  { id: 'F-015', type: 'inconsistency', severity: 'info', finding: '보고서 생성 주기가 문서별로 상이하게 기술', evidence: '관리자 매뉴얼: 월간 보고서. 화면설계서: 주간/월간 선택. 요구사항: 일간/주간/월간.', recommendation: '보고서 생성 주기를 사용자가 선택 가능하도록 유연하게 설계하세요.', relatedProcesses: ['보고서 생성'], confidence: 0.65, hitlStatus: 'pending' },
+  { id: 'F-016', type: 'overspec', severity: 'info', finding: '감사 로그에 화면 클릭 이벤트까지 기록하는 것은 과잉', evidence: '감사 로그 설계서에 "모든 UI 클릭 이벤트"를 기록하도록 정의됨.', recommendation: '감사 로그 대상을 금융 거래 행위로 한정하고, UI 행동은 별도 분석 로그로 분리하세요.', relatedProcesses: ['감사 로그 기록'], confidence: 0.73, hitlStatus: 'pending' }
+];
+var serviceGroups = {
+  common_standard: {
+    label: '공통/표준', color: 'green', icon: 'CS', description: '복수 조직에 공통으로 존재하는 프로세스 — 표준화 후보',
+    items: [
+      { name: '중도인출', orgs: ['미래에셋', '현대증권'], stdScore: 0.92, note: '프로세스 단계 90% 유사. 승인 권한 체계만 상이' },
+      { name: '가입자격 확인', orgs: ['미래에셋', '현대증권'], stdScore: 0.95, note: '검증 항목이 거의 동일. 법적 요건 기반으로 표준화 적합도 높음' },
+      { name: '퇴직급여 산정', orgs: ['미래에셋', '현대증권'], stdScore: 0.88, note: 'DB형 산정 로직 동일. DC형 부담금 계산에서 미세 차이 존재' },
+      { name: '연금수령', orgs: ['미래에셋', '현대증권'], stdScore: 0.85, note: '수령 절차 동일. 세금 원천징수율 계산에서 소수점 처리 차이' },
+      { name: '적립금 조회', orgs: ['미래에셋', '현대증권'], stdScore: 0.97, note: '완전 동일. 즉시 표준화 가능' },
+      { name: '감사 로그 기록', orgs: ['미래에셋', '현대증권'], stdScore: 0.90, note: '로그 포맷은 동일. 보관 기간이 다름' },
+      { name: '알림 발송', orgs: ['미래에셋', '현대증권'], stdScore: 0.82, note: '채널 구성이 상이 (SMS+이메일 vs SMS+푸시)' },
+      { name: '보고서 생성', orgs: ['미래에셋', '현대증권'], stdScore: 0.78, note: '보고서 양식이 다름. 템플릿 엔진 표준화 후 적용 가능' },
+      { name: 'DC형 부담금 납부', orgs: ['미래에셋', '현대증권'], stdScore: 0.86, note: '납부 주기 및 금액 산정 로직 동일' },
+      { name: 'IRP 계좌 개설', orgs: ['미래에셋', '현대증권'], stdScore: 0.91, note: '법적 요건 기반 프로세스로 표준화 적합' }
+    ]
+  },
+  org_specific: {
+    label: '조직 고유', color: 'blue', icon: 'OS', description: '한 조직에만 존재하는 고유 프로세스/정책',
+    items: [
+      { name: '자동이체 프로세스', org: '미래에셋', reason: '미래에셋 고유의 자동이체 관리 체계' },
+      { name: '포트폴리오 리밸런싱 알림', org: '미래에셋', reason: '분기별 자동 리밸런싱 알림 서비스' },
+      { name: '가입자 교육 이수 관리', org: '미래에셋', reason: '투자 교육 이수 관리 체계가 별도로 존재' },
+      { name: '위험등급 재평가', org: '현대증권', reason: '현대증권 자체 위험등급 재평가 로직' },
+      { name: '계좌 통합 조회', org: '현대증권', reason: '증권 계좌와 퇴직연금 계좌를 통합 조회하는 기능' },
+      { name: '투자 성과 벤치마크', org: '현대증권', reason: '시장 벤치마크 대비 수익률 비교 서비스' },
+      { name: '사업장 일괄 처리', org: '미래에셋', reason: '대기업 사업장 대상 일괄 가입/변경 처리 기능' },
+      { name: '모바일 전자서명', org: '현대증권', reason: '현대증권 자체 모바일 전자서명 모듈' }
+    ]
+  },
+  tacit_knowledge: {
+    label: '암묵지', color: 'yellow', icon: 'TK', description: '문서에 명시되지 않았지만 흐름에서 추론된 로직',
+    items: [
+      { name: '긴급인출 승인 규칙', org: '미래에셋', evidence: '화면 흐름에서 "긴급" 플래그 시 승인 프로세스 생략 경로가 발견됨. 문서에 명시적 정의 없음.', confidence: 0.78 },
+      { name: '연기금 배분 로직', org: '현대증권', evidence: '보고서 화면에서 "연기금 배분율" 필드가 참조되지만, 배분 로직이 어떤 문서에도 정의되지 않음.', confidence: 0.72 },
+      { name: '야간 배치 정산', org: '미래에셋', evidence: '적립금 잔액 조회 화면에서 "전일 기준" 표시가 있으나, 야간 배치 정산 프로세스가 정의되지 않음.', confidence: 0.81 },
+      { name: '한도 초과 예외 처리', org: '현대증권', evidence: '중도인출 금액이 한도를 초과할 때의 처리 프로세스가 정의되지 않음. API에 error_code=LIMIT_EXCEEDED만 존재.', confidence: 0.68 }
+    ]
+  },
+  core_differentiator: {
+    label: '핵심 차별', color: 'red', icon: 'CD', description: '해당 조직의 경쟁 우위 요소',
+    items: [
+      { name: '자동이체 프로세스', org: '미래에셋', reason: '자동 부담금 납부 + 자산배분 연계 + 리밸런싱 알림까지 원스톱 제공', impact: '가입자 이탈율 12% 감소 (추정)' },
+      { name: '투자 성과 벤치마크', org: '현대증권', reason: '증권사 역량을 활용한 투자 성과 비교 분석 서비스', impact: '신규 가입자 유치율 8% 향상 (추정)' },
+      { name: '포트폴리오 리밸런싱 알림', org: '미래에셋', reason: '분기별 자동 리밸런싱 제안으로 가입자의 투자 최적화 지원', impact: '평균 수익률 0.3%p 개선 (추정)' },
+      { name: '계좌 통합 조회', org: '현대증권', reason: '증권+퇴직연금 통합 조회로 가입자 편의성 극대화', impact: '가입자 만족도 15% 향상 (추정)' }
+    ]
+  }
+};
+
+// ========================
+// DATA: Documents (문서 관리)
+// ========================
+var docData = [
+  { id: 'DOC001', name: 'SCDPD001_중도인출_프로세스정의서.pdf', type: 'PDF', size: '1.2 MB', date: '2026-03-01', parsed: 'done', analysis: 'done', retries: 0, purposes: ['프로세스 정의', '업무 규정'], docVersion: 'v3.2', lastModified: '2025-11-15', versionNote: '중도인출 사유 추가(천재지변)',
+    extraction: {
+      processes: [
+        { name: '중도인출 신청', desc: '가입자가 중도인출을 신청하는 절차', steps: ['신청서 작성', '필요 서류 첨부', '온라인/오프라인 제출'] },
+        { name: '적립금 산정', desc: '인출 가능 적립금 계산', steps: ['DB형 적립금 조회', 'DC형 적립금 조회', '가용 잔액 확인'] },
+        { name: '세금 계산', desc: '퇴직소득세 원천징수 계산', steps: ['퇴직소득세 산출', '지방소득세 산출', '기납부세액 공제'] },
+        { name: '승인 처리', desc: '중도인출 승인/거절 프로세스', steps: ['사업주 확인', '운용관리기관 확인', '지급 승인'] }
+      ],
+      entities: [
+        { name: '가입자', type: 'Actor', attrs: ['가입자번호', '성명', '가입유형'] },
+        { name: '적립금', type: 'Data', attrs: ['금액', '유형', '적립일'] },
+        { name: '인출신청서', type: 'Document', attrs: ['신청일', '사유코드', '금액'] }
+      ],
+      rules: [
+        { condition: '가입 기간 ≥ 5년', outcome: '주택 구입 사유 중도인출 가능' },
+        { condition: '무주택자 확인', outcome: '주택 구입 중도인출 서류 요건 확인' },
+        { condition: '6개월 이상 요양', outcome: '의료비 사유 중도인출 가능' }
+      ],
+      relations: [
+        { from: '가입자', to: '인출신청서', type: '작성' },
+        { from: '인출신청서', to: '적립금', type: '참조' },
+        { from: '승인 처리', to: '세금 계산', type: '선행' }
+      ]
+    },
+    history: [
+      { version: 'v1', date: '2026-03-01 14:23', status: 'completed', duration: '45s', corrections: null },
+      { version: 'v0 (초기)', date: '2026-03-01 14:20', status: 'completed', duration: '38s', corrections: null }
+    ]
+  },
+  { id: 'DOC002', name: 'SCDPD002_퇴직급여산정_프로세스정의서.pdf', type: 'PDF', size: '890 KB', date: '2026-03-01', parsed: 'done', analysis: 'done', retries: 0, purposes: ['프로세스 정의', '업무 규정'], docVersion: 'v2.0', lastModified: '2025-09-20', versionNote: 'DB형 산정식 개정 반영',
+    extraction: {
+      processes: [
+        { name: '퇴직급여 산정', desc: '퇴직 시 급여 산정 기준 적용', steps: ['근속연수 계산', '평균임금 산정', 'DB/DC 구분 처리'] },
+        { name: '수급자격 확인', desc: '퇴직급여 수급 자격 판정', steps: ['가입기간 확인', '퇴직사유 검증', '자격 판정'] }
+      ],
+      entities: [
+        { name: '퇴직급여', type: 'Data', attrs: ['금액', '산정일', '급여유형'] },
+        { name: '근속기간', type: 'Attribute', attrs: ['시작일', '종료일', '기간(년)'] }
+      ],
+      rules: [
+        { condition: '근속연수 ≥ 1년', outcome: '퇴직급여 수급 자격 인정' },
+        { condition: 'DB형 가입자', outcome: '확정급여형 산정식 적용' }
+      ],
+      relations: [
+        { from: '수급자격 확인', to: '퇴직급여 산정', type: '선행' }
+      ]
+    },
+    history: [
+      { version: 'v1', date: '2026-03-01 15:10', status: 'completed', duration: '32s', corrections: null }
+    ]
+  },
+  { id: 'DOC003', name: '화면설계서_SMART퇴직연금_게시자료.pptx', type: 'PPTX', size: '578 KB', date: '2026-03-02', parsed: 'done', analysis: 'done', retries: 0, purposes: ['화면설계'], docVersion: 'v1.0', lastModified: '2025-12-10', versionNote: '게시자료 화면 초안',
+    extraction: {
+      processes: [
+        { name: '게시자료 조회', desc: '퇴직연금 관련 게시자료 목록 조회 및 상세 보기', steps: ['목록 조회', '필터링', '상세 보기'] },
+        { name: '게시자료 등록', desc: '관리자 게시자료 등록/수정', steps: ['문서 업로드', '카테고리 분류', '게시 승인'] }
+      ],
+      entities: [
+        { name: '게시자료', type: 'Document', attrs: ['제목', '작성일', '카테고리', '파일'] },
+        { name: '사용자', type: 'Actor', attrs: ['ID', '역할', '소속'] }
+      ],
+      rules: [
+        { condition: '관리자 권한', outcome: '게시자료 등록/수정/삭제 가능' }
+      ],
+      relations: [
+        { from: '사용자', to: '게시자료', type: '조회/등록' }
+      ]
+    },
+    history: [
+      { version: 'v1', date: '2026-03-02 09:45', status: 'completed', duration: '28s', corrections: null }
+    ]
+  },
+  { id: 'DOC004', name: '마기대지침문의_V1.2.docx', type: 'DOCX', size: '1.1 MB', date: '2026-03-02', parsed: 'done', analysis: 'done', retries: 0, purposes: ['업무 규정'], docVersion: 'v1.2', lastModified: '2025-08-05', versionNote: '마감기한 지침 개정',
+    extraction: {
+      processes: [
+        { name: '마기대 지침 조회', desc: '마감기한 대비 지침 확인', steps: ['지침 검색', '버전 확인', '해당 조항 조회'] },
+        { name: '규정 해석 요청', desc: '지침 해석 질의 및 답변', steps: ['질의 작성', '담당부서 배정', '답변 등록'] }
+      ],
+      entities: [
+        { name: '지침문서', type: 'Document', attrs: ['버전', '시행일', '폐지일'] }
+      ],
+      rules: [
+        { condition: '지침 변경 시', outcome: '관련 프로세스 재검토 필요' }
+      ],
+      relations: [
+        { from: '마기대 지침 조회', to: '규정 해석 요청', type: '참조' }
+      ]
+    },
+    history: [
+      { version: 'v1', date: '2026-03-02 10:30', status: 'completed', duration: '41s', corrections: null }
+    ]
+  },
+  { id: 'DOC005', name: '개발표준가이드_V1.4.docx', type: 'DOCX', size: '1.8 MB', date: '2026-03-02', parsed: 'done', analysis: 'done', retries: 0, purposes: ['개발 가이드'], docVersion: 'v1.4', lastModified: '2026-01-15', versionNote: 'SQL 작성 기준 추가',
+    extraction: {
+      processes: [
+        { name: '코딩 표준 적용', desc: '개발 시 코딩 표준 가이드 적용', steps: ['네이밍 규칙', 'SQL 작성 기준', '에러처리 패턴'] },
+        { name: '코드 리뷰', desc: '표준 준수 여부 코드 리뷰', steps: ['체크리스트 확인', '리뷰 수행', '결과 기록'] }
+      ],
+      entities: [
+        { name: '코딩표준', type: 'Document', attrs: ['카테고리', '버전', '적용범위'] }
+      ],
+      rules: [
+        { condition: '신규 개발 시', outcome: '코딩 표준 가이드 v1.4 적용 필수' }
+      ],
+      relations: [
+        { from: '코드 리뷰', to: '코딩 표준 적용', type: '검증' }
+      ]
+    },
+    history: [
+      { version: 'v1', date: '2026-03-02 11:15', status: 'completed', duration: '35s', corrections: null }
+    ]
+  },
+  { id: 'DOC006', name: '인터페이스목록_V1.1.xlsx', type: 'XLSX', size: '572 KB', date: '2026-03-02', parsed: 'done', analysis: 'done', retries: 0, purposes: ['인터페이스 정의'], docVersion: 'v1.1', lastModified: '2025-10-30', versionNote: 'IF 3건 추가',
+    extraction: {
+      processes: [
+        { name: '인터페이스 연동', desc: '시스템 간 인터페이스 정의 및 연동', steps: ['IF 정의', '매핑 확인', '테스트'] }
+      ],
+      entities: [
+        { name: '인터페이스', type: 'Integration', attrs: ['IF-ID', '소스시스템', '타겟시스템', '방식'] }
+      ],
+      rules: [
+        { condition: '실시간 연동', outcome: 'API 방식 필수' },
+        { condition: '배치 연동', outcome: '파일 전송 또는 DB Link 허용' }
+      ],
+      relations: [
+        { from: '인터페이스', to: '인터페이스 연동', type: '수행' }
+      ]
+    },
+    history: [
+      { version: 'v1', date: '2026-03-02 11:50', status: 'completed', duration: '22s', corrections: null }
+    ]
+  },
+  { id: 'DOC007', name: 'SCDPD003_가입_프로세스정의서.pdf', type: 'PDF', size: '950 KB', date: '2026-03-02', parsed: 'done', analysis: 'done', retries: 0, purposes: ['프로세스 정의', '업무 규정'], docVersion: 'v2.1', lastModified: '2025-10-10', versionNote: 'IRP 가입 절차 추가',
+    extraction: {
+      processes: [
+        { name: '가입 신청', desc: '퇴직연금 가입 신청 절차', steps: ['자격 확인', '상품 선택', '가입서 작성'] },
+        { name: '사업장 등록', desc: '사업장 퇴직연금 제도 가입 등록', steps: ['사업장 정보 등록', '규약 작성', '노사 합의'] },
+        { name: '가입자 확인서 발급', desc: '가입 완료 확인서 발급', steps: ['가입 정보 확인', '확인서 생성', '발급/교부'] }
+      ],
+      entities: [
+        { name: '사업장', type: 'Organization', attrs: ['사업장번호', '사업자등록번호', '상호'] },
+        { name: '가입자', type: 'Actor', attrs: ['가입유형(DB/DC/IRP)', '가입일'] }
+      ],
+      rules: [
+        { condition: '상시근로자 1인 이상', outcome: '퇴직연금 제도 도입 가능' },
+        { condition: 'DC형 선택', outcome: '가입자 직접 운용지시 권한 부여' }
+      ],
+      relations: [
+        { from: '사업장 등록', to: '가입 신청', type: '선행' },
+        { from: '가입 신청', to: '가입자 확인서 발급', type: '후행' }
+      ]
+    },
+    history: [
+      { version: 'v1', date: '2026-03-02 13:20', status: 'completed', duration: '52s', corrections: null }
+    ]
+  },
+  { id: 'DOC008', name: 'SCDPD004_운용_프로세스정의서.pdf', type: 'PDF', size: '1.3 MB', date: '2026-03-02', parsed: 'done', analysis: 'done', retries: 0, purposes: ['프로세스 정의', '업무 규정'], docVersion: 'v1.8', lastModified: '2025-12-01', versionNote: '리밸런싱 프로세스 신규',
+    extraction: {
+      processes: [
+        { name: '운용지시', desc: 'DC형 가입자의 적립금 운용지시', steps: ['상품 조회', '비율 설정', '운용지시 제출'] },
+        { name: '자산배분', desc: '적립금 자산배분 전략 적용', steps: ['위험성향 평가', '포트폴리오 구성', '리밸런싱'] },
+        { name: '수익률 계산', desc: '운용 수익률 계산 및 보고', steps: ['일별 평가', '수익률 산출', '보고서 생성'] }
+      ],
+      entities: [
+        { name: '운용상품', type: 'Product', attrs: ['상품코드', '유형', '수익률', '위험등급'] },
+        { name: '운용지시서', type: 'Document', attrs: ['지시일', '상품코드', '비율'] }
+      ],
+      rules: [
+        { condition: 'DC형 가입자', outcome: '자기 운용지시 가능' },
+        { condition: '위험자산 비중 > 70%', outcome: '추가 확인 필요' }
+      ],
+      relations: [
+        { from: '운용지시', to: '자산배분', type: '참조' },
+        { from: '자산배분', to: '수익률 계산', type: '후행' }
+      ]
+    },
+    history: [
+      { version: 'v1', date: '2026-03-02 14:05', status: 'completed', duration: '48s', corrections: null }
+    ]
+  },
+  { id: 'DOC009', name: 'SCDPD005_수급_프로세스정의서.pdf', type: 'PDF', size: '780 KB', date: '2026-03-02', parsed: 'done', analysis: 'done', retries: 0, purposes: ['프로세스 정의'], docVersion: 'v1.5', lastModified: '2025-07-20', versionNote: '연금 수령 나이 기준 변경',
+    extraction: {
+      processes: [
+        { name: '수급 신청', desc: '퇴직급여 수급 신청 절차', steps: ['수급자격 확인', '수급방법 선택', '신청서 제출'] },
+        { name: '연금 지급', desc: '연금 형태 지급 처리', steps: ['지급주기 설정', '지급액 산정', '계좌 이체'] }
+      ],
+      entities: [
+        { name: '수급자', type: 'Actor', attrs: ['수급자번호', '수급유형', '수급개시일'] }
+      ],
+      rules: [
+        { condition: '55세 이상 + 가입 10년', outcome: '연금 수령 가능' }
+      ],
+      relations: [
+        { from: '수급 신청', to: '연금 지급', type: '선행' }
+      ]
+    },
+    history: [
+      { version: 'v1', date: '2026-03-02 14:40', status: 'completed', duration: '30s', corrections: null }
+    ]
+  },
+  { id: 'DOC010', name: 'SCDPD006_적립금평가_프로세스정의서.pdf', type: 'PDF', size: '670 KB', date: '2026-03-02', parsed: 'done', analysis: 'done', retries: 0, purposes: ['프로세스 정의'], docVersion: 'v1.3', lastModified: '2025-06-10', versionNote: '시가평가 기준 변경',
+    extraction: {
+      processes: [
+        { name: '적립금 평가', desc: '퇴직연금 적립금 시가 평가', steps: ['기준가 조회', '보유량 확인', '평가액 산출'] }
+      ],
+      entities: [
+        { name: '적립금평가', type: 'Data', attrs: ['평가일', '평가액', '수익률'] }
+      ],
+      rules: [
+        { condition: '영업일 기준', outcome: '일별 적립금 평가 수행' }
+      ],
+      relations: []
+    },
+    history: [
+      { version: 'v1', date: '2026-03-02 15:10', status: 'completed', duration: '18s', corrections: null }
+    ]
+  },
+  { id: 'DOC011', name: 'ERD_퇴직연금_데이터모델.xlsx', type: 'XLSX', size: '2.1 MB', date: '2026-03-02', parsed: 'done', analysis: 'done', retries: 1, purposes: ['데이터 모델'], docVersion: 'v4.0', lastModified: '2026-02-01', versionNote: 'IRP 테이블 추가, 인덱스 재정의',
+    extraction: {
+      processes: [],
+      entities: [
+        { name: 'TB_가입자', type: 'Table', attrs: ['가입자ID(PK)', '성명', '주민번호_마스크', '가입유형', '가입일'] },
+        { name: 'TB_적립금', type: 'Table', attrs: ['적립금ID(PK)', '가입자ID(FK)', '금액', '평가일'] },
+        { name: 'TB_운용상품', type: 'Table', attrs: ['상품ID(PK)', '상품명', '유형', '수익률'] },
+        { name: 'TB_인출', type: 'Table', attrs: ['인출ID(PK)', '가입자ID(FK)', '사유코드', '금액', '상태'] },
+        { name: 'TB_규약', type: 'Table', attrs: ['규약ID(PK)', '사업장ID(FK)', '유형', '시행일'] }
+      ],
+      rules: [
+        { condition: 'TB_인출.상태', outcome: '신청→확인→승인→지급 상태 전이 규칙' }
+      ],
+      relations: [
+        { from: 'TB_가입자', to: 'TB_적립금', type: '1:N' },
+        { from: 'TB_가입자', to: 'TB_인출', type: '1:N' },
+        { from: 'TB_운용상품', to: 'TB_적립금', type: '1:N' }
+      ]
+    },
+    history: [
+      { version: 'v2 (재시도)', date: '2026-03-02 16:20', status: 'completed', duration: '67s', corrections: '엔티티 속성을 테이블 컬럼 수준으로 세분화 요청' },
+      { version: 'v1', date: '2026-03-02 16:00', status: 'completed', duration: '25s', corrections: null }
+    ]
+  },
+  { id: 'DOC012', name: 'SCDSA001_API스펙_운용지시.pdf', type: 'PDF', size: '430 KB', date: '2026-03-02', parsed: 'done', analysis: 'pending', retries: 0, purposes: ['API 스펙', '프로그램 정의'], docVersion: 'v1.0', lastModified: '2026-01-20', versionNote: '운용지시 API 초안',
+    extraction: {
+      processes: [{ name: 'API 운용지시', desc: 'REST API를 통한 운용지시 처리', steps: ['POST /api/orders', '요청 검증', '응답 반환'] }],
+      entities: [{ name: 'OrderRequest', type: 'API', attrs: ['productId', 'ratio', 'accountId'] }],
+      rules: [{ condition: 'ratio 합계 = 100%', outcome: '운용지시 접수' }],
+      relations: []
+    },
+    history: [
+      { version: 'v1', date: '2026-03-02 17:00', status: 'completed', duration: '20s', corrections: null }
+    ]
+  },
+  { id: 'DOC013', name: 'SCDSA002_API스펙_조회.xlsx', type: 'XLSX', size: '380 KB', date: '2026-03-02', parsed: 'error', analysis: 'none', retries: 2, purposes: ['API 스펙', '프로그램 정의'], docVersion: 'v1.0', lastModified: '2026-01-20', versionNote: '조회 API 초안',
+    extraction: { processes: [], entities: [], rules: [], relations: [] },
+    history: [
+      { version: 'v2 (재시도)', date: '2026-03-02 17:35', status: 'failed', duration: '5s', corrections: '비표준 XLSX 포맷 — magic bytes 불일치' },
+      { version: 'v1', date: '2026-03-02 17:30', status: 'failed', duration: '3s', corrections: null }
+    ]
+  },
+  { id: 'DOC014', name: '요구사항정의서_퇴직연금_v2.1.docx', type: 'DOCX', size: '3.2 MB', date: '2026-03-03', parsed: 'done', analysis: 'pending', retries: 0, purposes: ['요구사항'], docVersion: 'v2.1', lastModified: '2026-02-15', versionNote: 'Phase 2 요구사항 추가',
+    extraction: {
+      processes: [
+        { name: '요구사항 수집', desc: '업무 요구사항 수집 및 분류', steps: ['인터뷰', '문서 분석', '분류 등록'] },
+        { name: '요구사항 추적', desc: '요구사항→설계→구현 추적', steps: ['추적 매트릭스 작성', '커버리지 확인'] }
+      ],
+      entities: [
+        { name: '요구사항', type: 'Requirement', attrs: ['REQ-ID', '유형', '우선순위', '상태'] }
+      ],
+      rules: [
+        { condition: '우선순위 = 필수', outcome: 'Phase 1 구현 대상' }
+      ],
+      relations: [
+        { from: '요구사항 수집', to: '요구사항 추적', type: '후행' }
+      ]
+    },
+    history: [
+      { version: 'v1', date: '2026-03-03 09:00', status: 'completed', duration: '55s', corrections: null }
+    ]
+  },
+  { id: 'DOC015', name: 'ISP_퇴직연금시스템_마스터플랜.pdf', type: 'PDF', size: '5.8 MB', date: '2026-03-03', parsed: 'pending', analysis: 'none', retries: 0, purposes: ['ISP/마스터플랜', '요구사항'], docVersion: 'v1.0', lastModified: '2025-04-01', versionNote: '초기 마스터플랜',
+    extraction: { processes: [], entities: [], rules: [], relations: [] },
+    history: []
+  }
+];
+
+// 문서 목적 색상 매핑
+var purposeColors = {
+  '프로세스 정의': 'bg-blue-100 text-blue-700',
+  '데이터 모델': 'bg-purple-100 text-purple-700',
+  '화면설계': 'bg-orange-100 text-orange-700',
+  '프로그램 정의': 'bg-teal-100 text-teal-700',
+  'API 스펙': 'bg-cyan-100 text-cyan-700',
+  '요구사항': 'bg-pink-100 text-pink-700',
+  '개발 가이드': 'bg-slate-200 text-slate-700',
+  '인터페이스 정의': 'bg-emerald-100 text-emerald-700',
+  '업무 규정': 'bg-amber-100 text-amber-700',
+  'ISP/마스터플랜': 'bg-red-100 text-red-700'
+};
+
+// 문서별 상세 메타데이터: 파싱 방법, 분석 결과, 온톨로지 매핑, 교차 문서 관계
+var docMetadata = {
+  'DOC001': {
+    parsing: { method: 'Unstructured.io (PDF Partitioning)', chunkCount: 24, totalWords: 3820, duration: '12s', pages: 18, parsedSections: ['목차', '프로세스 정의', '중도인출 사유별 요건', '승인 흐름도', '첨부 서류 목록'], specialNotes: '페이지 12 승인 흐름도를 Claude Vision으로 별도 해석 — 분기 조건 4개 추출' },
+    analysis: { importanceScore: 0.92, category: 'core', standardizationStatus: '표준화 완료', versionClass: '현행 (최신)', keyFindings: ['6건의 중도인출 사유(주택, 의료, 파산, 천재지변, 사망, 기타)에 대한 조건-결과 규칙 추출', '프로세스 3단계(신청→확인→승인) 분기별 예외 처리 로직 포함', '참조 빈도 12회 — 전체 문서 중 최다 참조'] },
+    ontology: [
+      { term: '중도인출', standardTerm: '중도인출(Withdrawal)', concept: 'SKOS:Concept', status: '표준 등록', relCount: 8 },
+      { term: '적립금', standardTerm: '적립금(AccumulatedFund)', concept: 'SKOS:Concept', status: '표준 등록', relCount: 5 },
+      { term: '가입자', standardTerm: '가입자(Participant)', concept: 'SKOS:Concept', status: '표준 등록', relCount: 12 },
+      { term: '인출신청서', standardTerm: '인출신청서(WithdrawalApp)', concept: 'SKOS:Concept', status: '표준 등록', relCount: 3 }
+    ],
+    crossDoc: [
+      { targetDoc: 'DOC011', targetName: 'ERD_퇴직연금_데이터모델.xlsx', mappingType: '데이터 매핑', desc: '중도인출 프로세스의 상태 전이(신청→확인→승인→지급)가 TB_인출 테이블의 상태 컬럼과 1:1 매핑', items: ['인출신청서 → TB_인출.사유코드', '적립금 참조 → TB_적립금.금액', '가입자 → TB_가입자.가입자ID(FK)'] },
+      { targetDoc: 'DOC003', targetName: '화면설계서_SMART퇴직연금.pptx', mappingType: '화면-프로세스 매핑', desc: '중도인출 신청 화면(SC-012)에서 이 프로세스의 시작점과 입력 폼 구조 확인', items: ['사유 선택 드롭다운 → 사유코드 분기 로직', '신청서 입력 폼 → 중도인출 신청 프로세스 시작'] },
+      { targetDoc: 'DOC006', targetName: '인터페이스목록_V1.1.xlsx', mappingType: '인터페이스 매핑', desc: 'IF-023 중도인출 결과 통보 인터페이스에서 승인 처리 결과를 외부 시스템(국세청)으로 전달', items: ['승인 결과 → IF-023 타겟: 국세청', '세금 계산 결과 → IF-024 타겟: 원천징수 시스템'] }
+    ]
+  },
+  'DOC003': {
+    parsing: { method: 'Unstructured.io (PPTX → 슬라이드별 파싱) + Claude Vision (다이어그램)', chunkCount: 42, totalWords: 2100, duration: '28s', pages: 35, parsedSections: ['목록 화면', '상세 조회 화면', '등록/수정 폼', '워크플로우 다이어그램', '네비게이션 구조'], specialNotes: '슬라이드 8-12의 화면 흐름도를 Claude Vision으로 해석 — UI 컴포넌트 트리와 네비게이션 흐름 추출. 슬라이드 15의 다이어그램에서 상태 전이 5단계 식별' },
+    analysis: { importanceScore: 0.65, category: 'supporting', standardizationStatus: '부분 표준화', versionClass: '현행 (초안)', keyFindings: ['게시자료 CRUD 화면 4개 추출', '화면 흐름도에서 권한별 분기(관리자/일반) 식별', '다이어그램 해석: 게시 승인 워크플로우 3단계'] },
+    ontology: [
+      { term: '게시자료', standardTerm: '게시자료(Publication)', concept: 'SKOS:Concept', status: '표준 등록', relCount: 2 },
+      { term: '화면(SC)', standardTerm: '화면(Screen)', concept: 'SKOS:Concept', status: '표준 등록', relCount: 4 }
+    ],
+    crossDoc: [
+      { targetDoc: 'DOC001', targetName: 'SCDPD001_중도인출.pdf', mappingType: '화면-프로세스 매핑', desc: '화면 SC-012(중도인출 신청)가 DOC001의 중도인출 프로세스 시작점', items: ['SC-012 입력폼 → 중도인출 신청 프로세스', 'SC-013 조회화면 → 인출 상태 조회'] },
+      { targetDoc: 'DOC011', targetName: 'ERD_퇴직연금_데이터모델.xlsx', mappingType: '화면-데이터 매핑', desc: '각 화면의 입력/출력 필드가 ERD 테이블 컬럼과 매핑', items: ['SC-012 사유코드 필드 → TB_인출.사유코드', 'SC-010 가입자 조회 → TB_가입자 전체 컬럼'] }
+    ],
+    diagramParsing: [
+      { slideNum: 8, diagramType: '화면 흐름도', interpretation: '메인 → 목록 → 상세 → 수정의 4단계 네비게이션 흐름. 뒤로가기와 새로고침 동작도 포함.', extractedElements: ['화면 4개 (메인, 목록, 상세, 수정)', '전환 화살표 6개', '조건 분기 2개 (권한 체크)'] },
+      { slideNum: 15, diagramType: '상태 전이도', interpretation: '게시자료 상태: 작성중 → 검토요청 → 승인 → 게시완료. 반려 시 작성중으로 복귀.', extractedElements: ['상태 4개', '전이 5개', '반려 경로 1개'] }
+    ]
+  },
+  'DOC006': {
+    parsing: { method: 'Custom Excel Parser (시트별 구조화 파싱)', chunkCount: 8, totalWords: 1560, duration: '22s', pages: 3, parsedSections: ['인터페이스 목록 시트', '매핑 정의 시트', '연동 방식 시트'], specialNotes: 'Excel 셀 구조를 행 단위로 파싱 — 헤더 행 자동 감지 후 데이터 행 추출. 조건 컬럼(D열)의 분기 로직을 규칙으로 변환' },
+    analysis: { importanceScore: 0.58, category: 'supporting', standardizationStatus: '표준화 완료', versionClass: '현행', keyFindings: ['인터페이스 23건 정의 추출', '실시간/배치 구분에 따른 연동 방식 규칙 2건', '소스-타겟 시스템 매핑 관계 23건'] },
+    ontology: [
+      { term: '인터페이스', standardTerm: '인터페이스(Interface)', concept: 'SKOS:Concept', status: '표준 등록', relCount: 6 },
+      { term: 'IF-ID', standardTerm: '인터페이스식별자(InterfaceID)', concept: 'SKOS:Concept', status: '표준 등록', relCount: 23 }
+    ],
+    crossDoc: [
+      { targetDoc: 'DOC001', targetName: 'SCDPD001_중도인출.pdf', mappingType: '인터페이스-프로세스 매핑', desc: 'IF-023(중도인출 결과 통보), IF-024(원천징수 연동)가 중도인출 프로세스의 승인 후 단계와 연결', items: ['IF-023 → 중도인출 승인 처리 완료 후 트리거', 'IF-024 → 세금 계산 완료 후 트리거'] },
+      { targetDoc: 'DOC011', targetName: 'ERD_퇴직연금_데이터모델.xlsx', mappingType: '인터페이스-데이터 매핑', desc: '인터페이스 입출력 필드가 ERD 테이블 컬럼과 매핑', items: ['IF-023 출력필드 → TB_인출(인출ID, 금액, 상태)', 'IF-001 입력필드 → TB_가입자(가입자ID, 성명)'] }
+    ],
+    excelConditions: [
+      { cellRef: 'D열 (연동조건)', condition: '실시간 연동', interpretation: '해당 인터페이스는 API 방식(REST/SOAP)으로 즉시 호출되어야 함', mappedTo: '규칙: "실시간 연동 → API 방식 필수"' },
+      { cellRef: 'D열 (연동조건)', condition: '배치 연동', interpretation: '정해진 주기(일별/월별)로 파일 전송 또는 DB Link로 데이터 동기화', mappedTo: '규칙: "배치 연동 → 파일 전송 또는 DB Link 허용"' },
+      { cellRef: 'E열 (데이터 형식)', condition: 'JSON/XML 구분', interpretation: '송수신 데이터 포맷에 따라 파서 선택이 달라짐 — API 스펙과 연동', mappedTo: 'DOC012 API스펙 운용지시의 요청/응답 형식과 일치 여부 검증' }
+    ]
+  },
+  'DOC008': {
+    parsing: { method: 'Unstructured.io (PDF Partitioning)', chunkCount: 31, totalWords: 5200, duration: '48s', pages: 28, parsedSections: ['운용지시 절차', '자산배분 전략', '리밸런싱 프로세스', '수익률 계산 방법', '위험등급 분류'], specialNotes: '페이지 15-18 자산배분 도표를 Claude Vision으로 해석 — 배분 비율 제약조건 추출' },
+    analysis: { importanceScore: 0.88, category: 'core', standardizationStatus: '표준화 완료', versionClass: '현행', keyFindings: ['DC형 운용지시 프로세스 3단계 추출', '위험자산 비중 제한(70%) 규칙 식별', '리밸런싱 프로세스 v1.8에서 신규 추가 확인'] },
+    ontology: [
+      { term: '운용지시', standardTerm: '운용지시(InvestmentOrder)', concept: 'SKOS:Concept', status: '표준 등록', relCount: 7 },
+      { term: '자산배분', standardTerm: '자산배분(AssetAllocation)', concept: 'SKOS:Concept', status: '표준 등록', relCount: 4 },
+      { term: '운용상품', standardTerm: '운용상품(InvestmentProduct)', concept: 'SKOS:Concept', status: '표준 등록', relCount: 9 }
+    ],
+    crossDoc: [
+      { targetDoc: 'DOC011', targetName: 'ERD_퇴직연금_데이터모델.xlsx', mappingType: '데이터 매핑', desc: '운용지시 프로세스가 TB_운용상품, TB_적립금 테이블과 직접 매핑', items: ['운용상품 → TB_운용상품(상품코드, 유형, 수익률)', '운용지시서 → TB_적립금.운용비율'] },
+      { targetDoc: 'DOC012', targetName: 'SCDSA001_API스펙_운용지시.pdf', mappingType: 'API-프로세스 매핑', desc: 'POST /api/orders API가 이 문서의 운용지시 프로세스를 구현', items: ['API 요청 파라미터 → 운용지시 입력 데이터', 'ratio 합계=100% 검증 → 운용지시 규칙과 일치'] }
+    ]
+  },
+  'DOC011': {
+    parsing: { method: 'Custom Excel Parser (ERD 시트 구조 해석) + Claude Vision (ER 다이어그램)', chunkCount: 15, totalWords: 2800, duration: '67s', pages: 5, parsedSections: ['테이블 정의 시트', 'ER 다이어그램', '컬럼 상세 시트', '인덱스 정의', 'FK 관계 시트'], specialNotes: 'ER 다이어그램(시트2)을 Claude Vision으로 해석: 엔티티 5개, 관계선 8개 추출. 재시도 1회 — 초기 파싱에서 속성이 테이블명 수준이었으나, 보정 후 컬럼 수준으로 세분화' },
+    analysis: { importanceScore: 0.85, category: 'core', standardizationStatus: '표준화 완료', versionClass: '현행 (최신)', keyFindings: ['핵심 테이블 5개 정의 (가입자, 적립금, 운용상품, 인출, 규약)', 'FK 관계 3건 추출 (가입자→적립금 1:N, 가입자→인출 1:N, 운용상품→적립금 1:N)', '상태 전이 규칙: TB_인출.상태 = 신청→확인→승인→지급'] },
+    ontology: [
+      { term: 'TB_가입자', standardTerm: '가입자(Participant)', concept: 'SKOS:Concept', status: '표준 등록 (엔티티 매핑)', relCount: 8 },
+      { term: 'TB_적립금', standardTerm: '적립금(AccumulatedFund)', concept: 'SKOS:Concept', status: '표준 등록 (엔티티 매핑)', relCount: 5 },
+      { term: 'TB_운용상품', standardTerm: '운용상품(InvestmentProduct)', concept: 'SKOS:Concept', status: '표준 등록 (엔티티 매핑)', relCount: 9 },
+      { term: 'TB_인출', standardTerm: '중도인출(Withdrawal)', concept: 'SKOS:Concept', status: '표준 등록 (엔티티 매핑)', relCount: 6 },
+      { term: 'TB_규약', standardTerm: '퇴직연금규약(PensionRule)', concept: 'SKOS:Concept', status: '표준 등록 (엔티티 매핑)', relCount: 3 }
+    ],
+    crossDoc: [
+      { targetDoc: 'DOC001', targetName: 'SCDPD001_중도인출.pdf', mappingType: '데이터-프로세스 매핑', desc: 'TB_인출 테이블의 상태 전이가 중도인출 프로세스의 3단계와 1:1 대응', items: ['TB_인출.상태="신청" → 중도인출 신청 단계', 'TB_인출.상태="승인" → 승인 처리 단계', 'TB_인출.사유코드 → 사유별 분기 조건'] },
+      { targetDoc: 'DOC008', targetName: 'SCDPD004_운용_프로세스정의서.pdf', mappingType: '데이터-프로세스 매핑', desc: 'TB_운용상품과 TB_적립금이 운용지시 프로세스의 핵심 데이터', items: ['TB_운용상품.상품코드 → 운용지시.상품 선택', 'TB_적립금.금액 → 자산배분 계산 기준'] },
+      { targetDoc: 'DOC006', targetName: '인터페이스목록_V1.1.xlsx', mappingType: '데이터-인터페이스 매핑', desc: 'ERD 테이블 컬럼이 인터페이스 입출력 필드와 직접 매핑', items: ['TB_가입자 → IF-001 가입자 조회 출력필드', 'TB_인출 → IF-023 중도인출 결과 출력필드'] }
+    ],
+    diagramParsing: [
+      { slideNum: '시트2', diagramType: 'ER 다이어그램', interpretation: '5개 엔티티(가입자, 적립금, 운용상품, 인출, 규약) 간 관계를 시각적으로 표현. 주요 관계: 가입자→적립금(1:N), 가입자→인출(1:N), 운용상품→적립금(1:N). 규약은 사업장과 1:1 관계.', extractedElements: ['엔티티 박스 5개', '관계선 8개 (1:N 3개, 1:1 2개, N:M 0개)', 'PK/FK 표시 추출'] }
+    ],
+    excelConditions: [
+      { cellRef: '컬럼 상세 시트 — 제약조건 열', condition: 'NOT NULL + FK 참조', interpretation: 'TB_인출.가입자ID는 반드시 TB_가입자에 존재하는 값이어야 함 — 참조 무결성 규칙', mappedTo: '프로세스: 중도인출 신청 시 가입자 존재 여부 사전 검증 필수' },
+      { cellRef: '인덱스 정의 시트', condition: 'IX_인출_상태_일자', interpretation: '인출 상태와 신청일자를 복합 인덱스로 설정 — 상태별 조회 성능 최적화 의도', mappedTo: '화면: SC-013 인출 상태 조회에서 필터링 성능에 영향' }
+    ]
+  },
+  'DOC014': {
+    parsing: { method: 'Unstructured.io (DOCX Partitioning)', chunkCount: 38, totalWords: 8200, duration: '55s', pages: 45, parsedSections: ['기능 요구사항', '비기능 요구사항', '인터페이스 요구사항', '데이터 요구사항', '추적 매트릭스'], specialNotes: '요구사항 ID(REQ-xxx) 자동 추출 — 총 127건의 요구사항 식별' },
+    analysis: { importanceScore: 0.78, category: 'core', standardizationStatus: '부분 표준화', versionClass: '현행', keyFindings: ['요구사항 127건 중 필수 52건, 선택 75건 분류', '추적 매트릭스에서 프로세스→요구사항 커버리지 78% 확인', '미추적 요구사항 28건 식별 — Gap 분석 대상'] },
+    ontology: [
+      { term: '요구사항', standardTerm: '요구사항(Requirement)', concept: 'SKOS:Concept', status: '표준 등록', relCount: 15 },
+      { term: '추적매트릭스', standardTerm: '추적매트릭스(TraceMatrix)', concept: 'SKOS:Concept', status: '신규 등록', relCount: 8 }
+    ],
+    crossDoc: [
+      { targetDoc: 'DOC001', targetName: 'SCDPD001_중도인출.pdf', mappingType: '요구사항-프로세스 매핑', desc: 'REQ-FN-015~025의 중도인출 관련 요구사항이 DOC001 프로세스와 매핑', items: ['REQ-FN-015 → 중도인출 신청 프로세스', 'REQ-FN-020 → 승인 처리 프로세스'] },
+      { targetDoc: 'DOC011', targetName: 'ERD_퇴직연금_데이터모델.xlsx', mappingType: '요구사항-데이터 매핑', desc: '데이터 요구사항 REQ-DA-001~015가 ERD 테이블 설계의 근거', items: ['REQ-DA-003 → TB_가입자 테이블 설계 근거', 'REQ-DA-007 → TB_인출 상태 전이 규칙 근거'] }
+    ]
+  }
+};
+
+var currentDocId = null;
+
+// ========================
+// NAVIGATION
+// ========================
+function navigateTo(screen) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.style.display = 'none'; });
+  document.getElementById('screen-' + screen).style.display = 'block';
+  document.querySelectorAll('.nav-item').forEach(function(n) {
+    n.className = n.className.replace('bg-sidebar-active text-white', 'text-gray-300 hover:bg-sidebar-hover hover:text-white');
+  });
+  var btn = document.getElementById('nav-' + screen);
+  btn.className = btn.className.replace('text-gray-300 hover:bg-sidebar-hover hover:text-white', 'bg-sidebar-active text-white');
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('#screen-single .tab-content').forEach(function(t) { t.classList.remove('active'); });
+  document.getElementById('tab-content-' + tab).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach(function(b) {
+    b.className = 'tab-btn px-4 py-2 text-sm font-medium rounded-t-lg border border-b-0 bg-gray-100 text-gray-500 border-transparent hover:text-gray-700';
+  });
+  document.getElementById('tab-' + tab).className = 'tab-btn px-4 py-2 text-sm font-medium rounded-t-lg border border-b-0 bg-white text-accent border-gray-200';
+}
+
+function switchCompareTab(tab) {
+  document.querySelectorAll('#screen-compare .tab-content').forEach(function(t) { t.classList.remove('active'); });
+  document.getElementById('ctab-content-' + tab).classList.add('active');
+  document.querySelectorAll('.ctab-btn').forEach(function(b) {
+    b.className = 'ctab-btn px-4 py-2 text-sm font-medium rounded-t-lg border border-b-0 bg-gray-100 text-gray-500 border-transparent hover:text-gray-700';
+  });
+  document.getElementById('ctab-' + tab).className = 'ctab-btn px-4 py-2 text-sm font-medium rounded-t-lg border border-b-0 bg-white text-accent border-gray-200';
+}
+
+function showToast(msg) {
+  var toast = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  toast.classList.add('show');
+  setTimeout(function() { toast.classList.remove('show'); }, 2500);
+}
+
+// ========================
+// RENDER: Process List (Tab 1)
+// ========================
+function renderProcessList() {
+  var container = document.getElementById('process-list');
+  var categoryColors = {
+    mega: { bg: 'bg-red-50', text: 'text-red-700', bar: 'bg-red-500' },
+    core: { bg: 'bg-indigo-50', text: 'text-indigo-700', bar: 'bg-indigo-500' },
+    supporting: { bg: 'bg-blue-50', text: 'text-blue-700', bar: 'bg-blue-400' },
+    peripheral: { bg: 'bg-gray-100', text: 'text-gray-600', bar: 'bg-gray-400' }
+  };
+  var html = '';
+  processData.forEach(function(p, i) {
+    var c = categoryColors[p.category];
+    html += '<div class="px-6 py-4 hover:bg-gray-50 transition-colors">' +
+      '<div class="flex items-center gap-4">' +
+        '<div class="w-8 text-right text-sm font-mono text-gray-400">' + (i+1) + '</div>' +
+        '<div class="flex-1 min-w-0">' +
+          '<div class="flex items-center gap-2 mb-1">' +
+            '<span class="font-medium text-sm text-gray-900">' + p.name + '</span>' +
+            '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ' + c.bg + ' ' + c.text + '">' + p.category + '</span>' +
+          '</div>' +
+          '<div class="text-xs text-gray-400">' + p.desc + '</div>' +
+        '</div>' +
+        '<div class="w-48 flex-shrink-0">' +
+          '<div class="flex items-center gap-2">' +
+            '<div class="flex-1 h-2.5 bg-gray-100 rounded-full overflow-hidden">' +
+              '<div class="bar-fill h-full ' + c.bar + ' rounded-full" style="width: ' + (p.score * 100) + '%"></div>' +
+            '</div>' +
+            '<span class="text-xs font-mono font-semibold text-gray-700 w-10 text-right">' + (p.score * 100).toFixed(0) + '%</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="w-16 text-right">' +
+          '<div class="text-sm font-semibold text-gray-700">' + p.refs + '</div>' +
+          '<div class="text-xs text-gray-400">참조</div>' +
+        '</div>' +
+      '</div></div>';
+  });
+  container.innerHTML = html;
+}
+// ========================
+// RENDER: Process Tree (Tab 2)
+// ========================
+function renderProcessTree() {
+  var container = document.getElementById('process-tree');
+  container.innerHTML = renderTreeNode(processTree, 0);
+}
+
+function renderTreeNode(nodes, depth) {
+  var typeIcons = {
+    mega: { color: 'text-red-600 bg-red-50', badge: 'bg-red-50 text-red-700' },
+    core: { color: 'text-indigo-600 bg-indigo-50', badge: 'bg-indigo-50 text-indigo-700' },
+    supporting: { color: 'text-blue-500 bg-blue-50', badge: 'bg-blue-50 text-blue-700' },
+    peripheral: { color: 'text-gray-400 bg-gray-100', badge: 'bg-gray-100 text-gray-600' }
+  };
+  var html = '';
+  nodes.forEach(function(node, idx) {
+    var hasChildren = node.children && node.children.length > 0;
+    var t = typeIcons[node.type];
+    var isCore = coreProcesses.find(function(c) { return c.name === node.name; });
+    var nodeId = 'tree-' + depth + '-' + idx;
+    var isExpanded = node.expanded !== false;
+    html += '<div class="tree-node" style="margin-left: ' + (depth * 24) + 'px;">' +
+      '<div class="flex items-center gap-2 py-2 px-2 rounded-lg hover:bg-gray-50 cursor-pointer group" ' +
+        'onclick="' + (hasChildren ? "toggleTree('" + nodeId + "');" : '') + (isCore ? "selectCoreProcess('" + node.name + "');" : '') + '">' +
+      (hasChildren
+        ? '<svg class="w-4 h-4 text-gray-400 transition-transform ' + (isExpanded ? 'rotate-90' : '') + '" id="chevron-' + nodeId + '" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>'
+        : '<div class="w-4 h-4 flex items-center justify-center"><div class="w-1.5 h-1.5 rounded-full bg-gray-300"></div></div>') +
+      '<div class="w-6 h-6 rounded ' + t.color + ' flex items-center justify-center flex-shrink-0">' +
+        '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5z"/></svg>' +
+      '</div>' +
+      '<span class="text-sm font-medium ' + (node.type === 'peripheral' ? 'text-gray-500' : 'text-gray-900') + '">' + node.name + '</span>' +
+      '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium ' + t.badge + '">' + node.type + '</span>' +
+      (isCore ? '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-50 text-amber-700 opacity-0 group-hover:opacity-100 transition-opacity">score ' + isCore.score.toFixed(2) + '</span>' : '') +
+      '</div>';
+    if (hasChildren) {
+      html += '<div class="tree-children ' + (isExpanded ? 'open' : '') + '" id="children-' + nodeId + '">' +
+        renderTreeNode(node.children, depth + 1) +
+      '</div>';
+    }
+    html += '</div>';
+  });
+  return html;
+}
+
+function toggleTree(nodeId) {
+  var children = document.getElementById('children-' + nodeId);
+  var chevron = document.getElementById('chevron-' + nodeId);
+  if (children) { children.classList.toggle('open'); chevron.classList.toggle('rotate-90'); }
+}
+
+// ========================
+// RENDER: Core Process Detail + Radar Chart
+// ========================
+function selectCoreProcess(name) {
+  var cp = coreProcesses.find(function(c) { return c.name === name; });
+  if (!cp) return;
+  document.getElementById('radar-process-name').textContent = cp.name;
+  document.getElementById('radar-process-category').textContent = 'core (score: ' + cp.score.toFixed(2) + ')';
+  document.getElementById('radar-reasoning').textContent = cp.reasoning;
+  drawRadarChart(cp.factors);
+}
+
+function drawRadarChart(factors) {
+  var svg = document.getElementById('radar-chart');
+  var cx = 140, cy = 125, maxR = 90;
+  var labels = ['빈도', '의존성', '도메인 중요도', '데이터 흐름 중심성'];
+  var keys = ['frequency', 'dependency', 'domain', 'centrality'];
+  var n = 4;
+  var angleStep = (2 * Math.PI) / n;
+
+  function getPoint(index, value) {
+    var angle = angleStep * index - Math.PI / 2;
+    return { x: cx + maxR * value * Math.cos(angle), y: cy + maxR * value * Math.sin(angle) };
+  }
+
+  var html = '';
+  // Grid
+  for (var level = 0.25; level <= 1; level += 0.25) {
+    var pts = [];
+    for (var i = 0; i < n; i++) { var p = getPoint(i, level); pts.push(p.x + ',' + p.y); }
+    html += '<polygon points="' + pts.join(' ') + '" fill="none" stroke="#e2e8f0" stroke-width="1"/>';
+  }
+  // Axes
+  for (var i = 0; i < n; i++) {
+    var p = getPoint(i, 1);
+    html += '<line x1="' + cx + '" y1="' + cy + '" x2="' + p.x + '" y2="' + p.y + '" stroke="#e2e8f0" stroke-width="1"/>';
+  }
+  // Data
+  var dataPts = [];
+  for (var i = 0; i < n; i++) { var p = getPoint(i, factors[keys[i]]); dataPts.push(p.x + ',' + p.y); }
+  html += '<polygon points="' + dataPts.join(' ') + '" fill="#6366f1" fill-opacity="0.2" stroke="#6366f1" stroke-width="2"/>';
+  // Dots
+  for (var i = 0; i < n; i++) {
+    var p = getPoint(i, factors[keys[i]]);
+    html += '<circle cx="' + p.x + '" cy="' + p.y + '" r="4" fill="#6366f1" stroke="white" stroke-width="2"/>';
+  }
+  // Labels
+  for (var i = 0; i < n; i++) {
+    var lp = getPoint(i, 1.22);
+    html += '<text x="' + lp.x + '" y="' + lp.y + '" text-anchor="middle" class="radar-label">' + labels[i] + '</text>';
+    var vp = getPoint(i, factors[keys[i]]);
+    var offsets = [{dx:0,dy:-12},{dx:16,dy:5},{dx:0,dy:18},{dx:-16,dy:5}];
+    html += '<text x="' + (vp.x + offsets[i].dx) + '" y="' + (vp.y + offsets[i].dy) + '" text-anchor="middle" class="radar-value">' + (factors[keys[i]] * 100).toFixed(0) + '%</text>';
+  }
+  svg.innerHTML = html;
+}
+
+function renderCoreList() {
+  var container = document.getElementById('core-list');
+  var html = '';
+  coreProcesses.forEach(function(cp) {
+    html += '<div class="px-6 py-3 hover:bg-indigo-50 cursor-pointer transition-colors flex items-center gap-3" onclick="selectCoreProcess(\'' + cp.name + '\')">' +
+      '<div class="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center text-sm font-bold text-indigo-700">' + (cp.score * 100).toFixed(0) + '</div>' +
+      '<div class="flex-1 min-w-0"><div class="text-sm font-medium text-gray-900">' + cp.name + '</div>' +
+      '<div class="text-xs text-gray-400 truncate">' + cp.reasoning.substring(0, 50) + '...</div></div>' +
+      '<svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>' +
+    '</div>';
+  });
+  container.innerHTML = html;
+}
+// ========================
+// RENDER: Findings (Tab 3)
+// ========================
+var currentSeverityFilter = 'all';
+var currentTypeFilter = 'all';
+
+function renderFindings() {
+  var container = document.getElementById('findings-list');
+  var filtered = findings.filter(function(f) {
+    if (currentSeverityFilter !== 'all' && f.severity !== currentSeverityFilter) return false;
+    if (currentTypeFilter !== 'all' && f.type !== currentTypeFilter) return false;
+    return true;
+  });
+  var severityIcons = {
+    critical: { icon: 'C', iconBg: 'bg-red-100 text-red-700', bg: 'border-l-red-500', label: 'bg-red-50 text-red-700' },
+    warning: { icon: 'W', iconBg: 'bg-yellow-100 text-yellow-700', bg: 'border-l-yellow-500', label: 'bg-yellow-50 text-yellow-700' },
+    info: { icon: 'I', iconBg: 'bg-blue-100 text-blue-700', bg: 'border-l-blue-500', label: 'bg-blue-50 text-blue-700' }
+  };
+  var typeLabels = {
+    missing: { text: '누락', bg: 'bg-red-100 text-red-800' },
+    duplicate: { text: '중복', bg: 'bg-orange-100 text-orange-800' },
+    overspec: { text: '오버스펙', bg: 'bg-purple-100 text-purple-800' },
+    inconsistency: { text: '정합성위반', bg: 'bg-pink-100 text-pink-800' }
+  };
+  var statusStyles = { pending: 'bg-gray-100 text-gray-600', accepted: 'bg-green-100 text-green-700', rejected: 'bg-red-100 text-red-700', modified: 'bg-amber-100 text-amber-700' };
+  var statusLabels = { pending: '대기', accepted: '수락됨', rejected: '거절됨', modified: '수정됨' };
+  var html = '';
+  filtered.forEach(function(f) {
+    var s = severityIcons[f.severity];
+    var t = typeLabels[f.type];
+    var st = statusStyles[f.hitlStatus];
+    html += '<div class="bg-white rounded-xl border border-l-4 ' + s.bg + ' overflow-hidden" id="finding-card-' + f.id + '">' +
+      '<div class="px-6 py-4 cursor-pointer hover:bg-gray-50 transition-colors" onclick="toggleFinding(\'' + f.id + '\')">' +
+        '<div class="flex items-start gap-3">' +
+          '<div class="w-8 h-8 rounded-full ' + s.iconBg + ' flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">' + s.icon + '</div>' +
+          '<div class="flex-1 min-w-0">' +
+            '<div class="flex items-center gap-2 mb-1 flex-wrap">' +
+              '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ' + t.bg + '">' + t.text + '</span>' +
+              '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ' + s.label + '">' + f.severity + '</span>' +
+              '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ' + st + '">' + statusLabels[f.hitlStatus] + '</span>' +
+              '<span class="text-xs text-gray-400 font-mono">' + f.id + '</span>' +
+            '</div>' +
+            '<p class="text-sm font-medium text-gray-900">' + f.finding + '</p>' +
+            '<div class="flex items-center gap-4 mt-2">' +
+              '<span class="text-xs text-gray-400">신뢰도: <span class="font-semibold text-gray-600">' + (f.confidence * 100).toFixed(0) + '%</span></span>' +
+              '<span class="text-xs text-gray-400">관련: ' + f.relatedProcesses.join(', ') + '</span>' +
+            '</div>' +
+          '</div>' +
+          '<svg class="w-5 h-5 text-gray-300 flex-shrink-0 transition-transform" id="finding-chevron-' + f.id + '" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>' +
+        '</div>' +
+      '</div>' +
+      '<div class="finding-detail" id="finding-detail-' + f.id + '">' +
+        '<div class="px-6 pb-5 pt-0 border-t bg-gray-50">' +
+          '<div class="grid grid-cols-2 gap-6 mt-4">' +
+            '<div><h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">근거 (Evidence)</h4><p class="text-sm text-gray-700 leading-relaxed">' + f.evidence + '</p></div>' +
+            '<div><h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">개선 제안 (Recommendation)</h4><p class="text-sm text-gray-700 leading-relaxed">' + f.recommendation + '</p></div>' +
+          '</div>' +
+          '<div class="mt-4"><h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">관련 프로세스</h4><div class="flex gap-2">' +
+            f.relatedProcesses.map(function(rp) { return '<span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-white border text-xs font-medium text-gray-700">' + rp + '</span>'; }).join('') +
+          '</div></div>' +
+          '<div class="mt-5 pt-4 border-t border-gray-200"><div class="flex items-center gap-3">' +
+            '<input type="text" placeholder="코멘트 입력..." id="comment-' + f.id + '" class="flex-1 px-3 py-2 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent bg-white" />' +
+            '<button onclick="reviewFinding(\'' + f.id + '\', \'accepted\')" class="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors">수락</button>' +
+            '<button onclick="reviewFinding(\'' + f.id + '\', \'rejected\')" class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors">거절</button>' +
+            '<button onclick="reviewFinding(\'' + f.id + '\', \'modified\')" class="px-4 py-2 text-sm font-medium text-white bg-amber-600 rounded-lg hover:bg-amber-700 transition-colors">수정</button>' +
+          '</div></div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  });
+  container.innerHTML = html;
+}
+
+function toggleFinding(id) {
+  var detail = document.getElementById('finding-detail-' + id);
+  var chevron = document.getElementById('finding-chevron-' + id);
+  detail.classList.toggle('open');
+  chevron.classList.toggle('rotate-180');
+}
+
+function reviewFinding(id, action) {
+  var finding = findings.find(function(f) { return f.id === id; });
+  if (!finding) return;
+  var commentEl = document.getElementById('comment-' + id);
+  var comment = commentEl ? commentEl.value : '';
+  finding.hitlStatus = action;
+  var labels = { accepted: '수락', rejected: '거절', modified: '수정' };
+  showToast(finding.id + ' — ' + labels[action] + '됨' + (comment ? ' (' + comment + ')' : ''));
+  renderFindings();
+}
+
+function filterFindings(severity) {
+  currentSeverityFilter = severity;
+  document.querySelectorAll('.finding-filter').forEach(function(b) {
+    b.className = 'finding-filter px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200';
+  });
+  event.target.className = 'finding-filter px-3 py-1.5 text-xs font-medium rounded-full bg-gray-900 text-white';
+  renderFindings();
+}
+
+function filterFindingsByType(type) {
+  currentTypeFilter = type;
+  document.querySelectorAll('.type-filter').forEach(function(b) {
+    b.className = 'type-filter px-3 py-1.5 text-xs font-medium rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200';
+  });
+  event.target.className = 'type-filter px-3 py-1.5 text-xs font-medium rounded-full bg-gray-900 text-white';
+  renderFindings();
+}
+// ========================
+// RENDER: Service Groups (Compare Tab 2)
+// ========================
+function renderServiceGroups() {
+  var container = document.getElementById('service-groups');
+  var colorMap = {
+    green: { header: 'bg-green-50 border-green-200 hover:bg-green-100', badge: 'bg-green-100 text-green-800', bar: 'bg-green-500', headerText: 'text-green-900', iconBg: 'bg-green-200 text-green-800' },
+    blue: { header: 'bg-blue-50 border-blue-200 hover:bg-blue-100', badge: 'bg-blue-100 text-blue-800', bar: 'bg-blue-500', headerText: 'text-blue-900', iconBg: 'bg-blue-200 text-blue-800' },
+    yellow: { header: 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100', badge: 'bg-yellow-100 text-yellow-800', bar: 'bg-yellow-500', headerText: 'text-yellow-900', iconBg: 'bg-yellow-200 text-yellow-800' },
+    red: { header: 'bg-red-50 border-red-200 hover:bg-red-100', badge: 'bg-red-100 text-red-800', bar: 'bg-red-500', headerText: 'text-red-900', iconBg: 'bg-red-200 text-red-800' }
+  };
+  var groupKeys = ['common_standard', 'org_specific', 'tacit_knowledge', 'core_differentiator'];
+  var html = '';
+  groupKeys.forEach(function(key, gi) {
+    var group = serviceGroups[key];
+    var c = colorMap[group.color];
+    html += '<div class="bg-white rounded-xl border overflow-hidden">' +
+      '<div class="px-6 py-4 cursor-pointer ' + c.header + ' border transition-colors flex items-center gap-3" onclick="toggleAccordion(' + gi + ')">' +
+        '<div class="w-8 h-8 rounded-lg ' + c.iconBg + ' flex items-center justify-center text-xs font-bold">' + group.icon + '</div>' +
+        '<div class="flex-1">' +
+          '<div class="flex items-center gap-2"><h3 class="font-semibold ' + c.headerText + '">' + group.label + '</h3>' +
+            '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ' + c.badge + '">' + group.items.length + '건</span></div>' +
+          '<p class="text-xs text-gray-500 mt-0.5">' + group.description + '</p>' +
+        '</div>' +
+        '<svg class="w-5 h-5 text-gray-400 transition-transform" id="sg-chevron-' + gi + '" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>' +
+      '</div>' +
+      '<div class="accordion-content ' + (gi === 0 ? 'open' : '') + '" id="sg-content-' + gi + '">' +
+        '<div class="divide-y">' + renderGroupItems(key, group, c) + '</div>' +
+      '</div></div>';
+  });
+  container.innerHTML = html;
+}
+
+function renderGroupItems(key, group, c) {
+  var html = '';
+  if (key === 'common_standard') {
+    group.items.forEach(function(item) {
+      var orgBadges = item.orgs.map(function(o) {
+        return '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600">' + o + '</span>';
+      }).join('');
+      html += '<div class="px-6 py-4 hover:bg-gray-50 transition-colors"><div class="flex items-center gap-4">' +
+        '<div class="flex-1 min-w-0"><div class="flex items-center gap-2 mb-1">' +
+          '<span class="text-sm font-medium text-gray-900">' + item.name + '</span>' + orgBadges +
+        '</div><p class="text-xs text-gray-500">' + item.note + '</p></div>' +
+        '<div class="w-40 flex-shrink-0"><div class="text-xs text-gray-400 mb-1">표준화 적합도</div>' +
+          '<div class="flex items-center gap-2"><div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">' +
+            '<div class="h-full ' + c.bar + ' rounded-full" style="width: ' + (item.stdScore * 100) + '%"></div>' +
+          '</div><span class="text-xs font-mono font-semibold text-gray-700">' + (item.stdScore * 100).toFixed(0) + '%</span></div></div>' +
+      '</div></div>';
+    });
+  } else if (key === 'org_specific') {
+    group.items.forEach(function(item) {
+      var orgColor = item.org === '미래에셋' ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700';
+      html += '<div class="px-6 py-4 hover:bg-gray-50 transition-colors"><div class="flex items-center gap-4">' +
+        '<div class="flex-1 min-w-0"><div class="flex items-center gap-2 mb-1">' +
+          '<span class="text-sm font-medium text-gray-900">' + item.name + '</span>' +
+          '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium ' + orgColor + '">' + item.org + '</span>' +
+        '</div><p class="text-xs text-gray-500">' + item.reason + '</p></div>' +
+        '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700">고유</span>' +
+      '</div></div>';
+    });
+  } else if (key === 'tacit_knowledge') {
+    group.items.forEach(function(item) {
+      var orgColor = item.org === '미래에셋' ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700';
+      html += '<div class="px-6 py-4 hover:bg-gray-50 transition-colors"><div class="flex items-start gap-4">' +
+        '<div class="w-8 h-8 rounded-lg bg-yellow-100 flex items-center justify-center flex-shrink-0 mt-0.5">' +
+          '<svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.072 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>' +
+        '</div>' +
+        '<div class="flex-1 min-w-0"><div class="flex items-center gap-2 mb-1">' +
+          '<span class="text-sm font-medium text-gray-900">' + item.name + '</span>' +
+          '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium ' + orgColor + '">' + item.org + '</span>' +
+          '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-yellow-100 text-yellow-800">추론</span>' +
+        '</div>' +
+        '<div class="bg-yellow-50 rounded-lg p-3 mt-2"><div class="text-xs font-semibold text-yellow-800 mb-1">추론 근거</div>' +
+          '<p class="text-xs text-yellow-900 leading-relaxed">' + item.evidence + '</p></div>' +
+        '<div class="flex items-center gap-3 mt-2"><span class="text-xs text-gray-400">추론 신뢰도: <span class="font-semibold text-gray-600">' + (item.confidence * 100).toFixed(0) + '%</span></span></div>' +
+      '</div></div></div>';
+    });
+  } else if (key === 'core_differentiator') {
+    group.items.forEach(function(item) {
+      var orgColor = item.org === '미래에셋' ? 'bg-indigo-100 text-indigo-700' : 'bg-emerald-100 text-emerald-700';
+      html += '<div class="px-6 py-4 hover:bg-gray-50 transition-colors"><div class="flex items-start gap-4">' +
+        '<div class="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0 mt-0.5">' +
+          '<svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>' +
+        '</div>' +
+        '<div class="flex-1 min-w-0"><div class="flex items-center gap-2 mb-1">' +
+          '<span class="text-sm font-medium text-gray-900">' + item.name + '</span>' +
+          '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium ' + orgColor + '">' + item.org + '</span>' +
+          '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-red-100 text-red-800">경쟁우위</span>' +
+        '</div>' +
+        '<p class="text-xs text-gray-500 mt-1">' + item.reason + '</p>' +
+        '<div class="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-50 rounded-lg">' +
+          '<svg class="w-3.5 h-3.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>' +
+          '<span class="text-xs font-medium text-red-700">예상 효과: ' + item.impact + '</span>' +
+        '</div></div></div></div>';
+    });
+  }
+  return html;
+}
+
+function toggleAccordion(gi) {
+  var content = document.getElementById('sg-content-' + gi);
+  var chevron = document.getElementById('sg-chevron-' + gi);
+  content.classList.toggle('open');
+  chevron.classList.toggle('rotate-180');
+}
+
+// ========================
+// DOCS: Render document list
+// ========================
+function renderDocList() {
+  var container = document.getElementById('doc-list-body');
+  var statusStyles = {
+    done: { bg: 'bg-green-100 text-green-700', text: '완료' },
+    pending: { bg: 'bg-yellow-100 text-yellow-700', text: '진행 중' },
+    error: { bg: 'bg-red-100 text-red-700', text: '오류' },
+    none: { bg: 'bg-gray-100 text-gray-500', text: '—' }
+  };
+  var typeColors = {
+    PDF: 'bg-red-50 text-red-700', PPTX: 'bg-orange-50 text-orange-700',
+    DOCX: 'bg-blue-50 text-blue-700', XLSX: 'bg-green-50 text-green-700'
+  };
+  var html = '';
+  docData.forEach(function(doc) {
+    var ps = statusStyles[doc.parsed] || statusStyles.none;
+    var as = statusStyles[doc.analysis] || statusStyles.none;
+    var tc = typeColors[doc.type] || 'bg-gray-100 text-gray-600';
+    var ext = doc.extraction;
+    var totalExtracted = (ext.processes.length) + (ext.entities.length) + (ext.rules.length) + (ext.relations.length);
+    // Purpose badges
+    var purposeBadges = '';
+    if (doc.purposes && doc.purposes.length > 0) {
+      purposeBadges = doc.purposes.map(function(p) {
+        var pc = purposeColors[p] || 'bg-gray-100 text-gray-600';
+        return '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium ' + pc + '">' + p + '</span>';
+      }).join('');
+    }
+    html += '<div class="px-6 py-3 flex items-center gap-4 hover:bg-gray-50 cursor-pointer transition-colors border-b border-gray-50" onclick="openDocDetail(\'' + doc.id + '\')">' +
+      '<div class="flex-1 min-w-0">' +
+        '<div class="text-sm font-medium text-gray-900 truncate">' + doc.name + '</div>' +
+        '<div class="flex items-center gap-1.5 mt-1 flex-wrap">' + purposeBadges +
+          (doc.docVersion ? '<span class="text-[10px] text-gray-400 ml-1">' + doc.docVersion + (doc.lastModified ? ' · ' + doc.lastModified : '') + '</span>' : '') +
+        '</div>' +
+      '</div>' +
+      '<span class="w-24 text-center"><span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ' + tc + '">' + doc.type + '</span></span>' +
+      '<span class="w-24 text-center"><span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ' + ps.bg + '">' + ps.text + '</span></span>' +
+      '<span class="w-24 text-center"><span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ' + as.bg + '">' + as.text + '</span></span>' +
+      '<span class="w-32 text-center text-xs text-gray-600">' +
+        (totalExtracted > 0 ? '<span class="font-semibold">' + totalExtracted + '</span> 항목' : '<span class="text-gray-400">—</span>') +
+      '</span>' +
+      '<span class="w-20 text-center text-xs">' +
+        (doc.retries > 0 ? '<span class="font-semibold text-orange-600">' + doc.retries + '회</span>' : '<span class="text-gray-400">—</span>') +
+      '</span>' +
+      '<span class="w-16 flex justify-center"><svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></span>' +
+    '</div>';
+  });
+  container.innerHTML = html;
+}
+
+// ========================
+// DOCS: Open document detail
+// ========================
+function openDocDetail(docId) {
+  var doc = docData.find(function(d) { return d.id === docId; });
+  if (!doc) return;
+  currentDocId = docId;
+
+  document.getElementById('docs-list-view').classList.add('hidden');
+  document.getElementById('docs-detail-view').classList.remove('hidden');
+
+  // Header: filename + purpose badges + version
+  document.getElementById('detail-filename').textContent = doc.name;
+  var metaParts = [doc.type, doc.size, '업로드: ' + doc.date];
+  if (doc.docVersion) metaParts.push(doc.docVersion);
+  if (doc.lastModified) metaParts.push('최종수정: ' + doc.lastModified);
+  var metaHtml = metaParts.join(' · ');
+  if (doc.purposes && doc.purposes.length > 0) {
+    metaHtml += ' &nbsp;';
+    doc.purposes.forEach(function(p) {
+      var pc = purposeColors[p] || 'bg-gray-100 text-gray-600';
+      metaHtml += '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ' + pc + ' ml-1">' + p + '</span>';
+    });
+  }
+  document.getElementById('detail-meta').innerHTML = metaHtml;
+
+  // Summary cards (with version note)
+  var ext = doc.extraction;
+  var summaryHtml =
+    '<div class="bg-white rounded-xl border p-4"><div class="text-2xl font-bold text-blue-600">' + ext.processes.length + '</div><div class="text-xs text-gray-500 mt-1">프로세스</div></div>' +
+    '<div class="bg-white rounded-xl border p-4"><div class="text-2xl font-bold text-purple-600">' + ext.entities.length + '</div><div class="text-xs text-gray-500 mt-1">엔티티</div></div>' +
+    '<div class="bg-white rounded-xl border p-4"><div class="text-2xl font-bold text-amber-600">' + ext.rules.length + '</div><div class="text-xs text-gray-500 mt-1">규칙</div></div>' +
+    '<div class="bg-white rounded-xl border p-4"><div class="text-2xl font-bold text-green-600">' + ext.relations.length + '</div><div class="text-xs text-gray-500 mt-1">관계</div></div>';
+  if (doc.versionNote) {
+    summaryHtml += '<div class="col-span-4 bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-center gap-2">' +
+      '<svg class="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' +
+      '<span class="text-xs text-amber-800"><span class="font-semibold">버전 메모:</span> ' + doc.versionNote + '</span></div>';
+  }
+  document.getElementById('detail-extract-summary').innerHTML = summaryHtml;
+
+  // Populate parsing/analysis tab
+  renderParsingTab(doc);
+  // Populate cross-doc tab
+  renderCrossDocTab(doc);
+
+  // Counts
+  document.getElementById('detail-proc-count').textContent = ext.processes.length + '건';
+  document.getElementById('detail-ent-count').textContent = ext.entities.length + '건';
+  document.getElementById('detail-rule-count').textContent = ext.rules.length + '건';
+  document.getElementById('detail-rel-count').textContent = ext.relations.length + '건';
+
+  // Processes
+  var procHtml = '';
+  ext.processes.forEach(function(p) {
+    procHtml += '<div class="px-6 py-3"><div class="text-sm font-medium text-gray-900">' + p.name + '</div>' +
+      '<div class="text-xs text-gray-500 mt-1">' + p.desc + '</div>' +
+      '<div class="flex flex-wrap gap-1.5 mt-2">' +
+        p.steps.map(function(s, i) {
+          return '<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs">' +
+            '<span class="font-mono text-[10px] text-blue-400">' + (i+1) + '</span> ' + s + '</span>';
+        }).join('') +
+      '</div></div>';
+  });
+  document.getElementById('detail-processes').innerHTML = procHtml || '<div class="px-6 py-4 text-sm text-gray-400 text-center">추출된 프로세스 없음</div>';
+
+  // Entities
+  var entHtml = '';
+  ext.entities.forEach(function(e) {
+    entHtml += '<div class="px-6 py-3"><div class="flex items-center gap-2">' +
+      '<span class="text-sm font-medium text-gray-900">' + e.name + '</span>' +
+      '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-50 text-purple-700">' + e.type + '</span>' +
+    '</div>' +
+    '<div class="flex flex-wrap gap-1.5 mt-2">' +
+      e.attrs.map(function(a) { return '<span class="px-2 py-0.5 bg-gray-50 text-gray-600 rounded text-xs">' + a + '</span>'; }).join('') +
+    '</div></div>';
+  });
+  document.getElementById('detail-entities').innerHTML = entHtml || '<div class="px-6 py-4 text-sm text-gray-400 text-center">추출된 엔티티 없음</div>';
+
+  // Rules
+  var ruleHtml = '';
+  ext.rules.forEach(function(r) {
+    ruleHtml += '<div class="px-6 py-3"><div class="flex items-start gap-3">' +
+      '<div class="flex-1"><div class="text-xs text-gray-500 mb-1">조건</div><div class="text-sm text-gray-900">' + r.condition + '</div></div>' +
+      '<svg class="w-5 h-5 text-gray-300 flex-shrink-0 mt-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>' +
+      '<div class="flex-1"><div class="text-xs text-gray-500 mb-1">결과</div><div class="text-sm text-gray-900">' + r.outcome + '</div></div>' +
+    '</div></div>';
+  });
+  document.getElementById('detail-rules').innerHTML = ruleHtml || '<div class="px-6 py-4 text-sm text-gray-400 text-center">추출된 규칙 없음</div>';
+
+  // Relations
+  var relHtml = '';
+  ext.relations.forEach(function(r) {
+    relHtml += '<div class="px-6 py-3 flex items-center gap-3">' +
+      '<span class="text-sm font-medium text-gray-900">' + r.from + '</span>' +
+      '<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-700 rounded text-xs">' + r.type + '</span>' +
+      '<svg class="w-4 h-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>' +
+      '<span class="text-sm font-medium text-gray-900">' + r.to + '</span>' +
+    '</div>';
+  });
+  document.getElementById('detail-relations').innerHTML = relHtml || '<div class="px-6 py-4 text-sm text-gray-400 text-center">추출된 관계 없음</div>';
+
+  // History
+  renderAnalysisHistory(doc);
+
+  // Reset tabs
+  switchDetailTab('extraction');
+}
+
+function backToDocList() {
+  document.getElementById('docs-detail-view').classList.add('hidden');
+  document.getElementById('docs-list-view').classList.remove('hidden');
+  currentDocId = null;
+}
+
+function switchDetailTab(tab) {
+  document.querySelectorAll('.detail-tab-content').forEach(function(c) { c.classList.add('hidden'); });
+  document.getElementById('detail-tab-' + tab).classList.remove('hidden');
+  document.querySelectorAll('.detail-tab').forEach(function(b) {
+    b.className = 'detail-tab px-4 py-2 text-sm font-medium rounded-lg transition-colors text-gray-500 hover:bg-gray-100';
+  });
+  event.currentTarget.className = 'detail-tab px-4 py-2 text-sm font-medium rounded-lg transition-colors bg-accent/10 text-accent';
+}
+
+function toggleDetailAccordion(section) {
+  var content = document.getElementById('detail-' + section);
+  var chevron = document.getElementById('detail-acc-' + section);
+  content.classList.toggle('open');
+  chevron.classList.toggle('rotate-180');
+}
+
+function openCorrectionPanel() {
+  // Switch to correction tab
+  document.querySelectorAll('.detail-tab-content').forEach(function(c) { c.classList.add('hidden'); });
+  document.getElementById('detail-tab-correction').classList.remove('hidden');
+  document.querySelectorAll('.detail-tab').forEach(function(b) {
+    b.className = 'detail-tab px-4 py-2 text-sm font-medium rounded-lg transition-colors text-gray-500 hover:bg-gray-100';
+  });
+  var tabs = document.querySelectorAll('.detail-tab');
+  if (tabs[1]) tabs[1].className = 'detail-tab px-4 py-2 text-sm font-medium rounded-lg transition-colors bg-accent/10 text-accent';
+  document.getElementById('correction-input').focus();
+}
+
+function saveCorrectionDraft() {
+  var text = document.getElementById('correction-input').value;
+  if (!text.trim()) { showToast('보정 지시를 입력하세요'); return; }
+  showToast('보정 지시가 임시 저장되었습니다');
+}
+
+function submitCorrection() {
+  var text = document.getElementById('correction-input').value;
+  var quickActions = [];
+  document.querySelectorAll('#quick-correction-actions input[type=checkbox]:checked').forEach(function(cb) {
+    var label = cb.closest('label').querySelector('.text-sm.font-medium');
+    if (label) quickActions.push(label.textContent);
+  });
+  if (!text.trim() && quickActions.length === 0) {
+    showToast('보정 지시 또는 빠른 액션을 선택하세요');
+    return;
+  }
+  var doc = docData.find(function(d) { return d.id === currentDocId; });
+  if (doc) {
+    doc.retries++;
+    doc.history.unshift({
+      version: 'v' + (doc.history.length + 1) + ' (보정 재분석)',
+      date: new Date().toISOString().replace('T', ' ').slice(0, 16),
+      status: 'running',
+      duration: '...',
+      corrections: text + (quickActions.length > 0 ? '\n빠른 액션: ' + quickActions.join(', ') : '')
+    });
+    renderAnalysisHistory(doc);
+    renderDocList();
+  }
+  showToast('보정 지시 포함 재분석이 시작되었습니다');
+  // Simulate completion after 3 seconds
+  setTimeout(function() {
+    if (doc && doc.history[0] && doc.history[0].status === 'running') {
+      doc.history[0].status = 'completed';
+      doc.history[0].duration = '42s';
+      doc.analysis = 'done';
+      if (currentDocId === doc.id) renderAnalysisHistory(doc);
+      renderDocList();
+      showToast(doc.name + ' — 재분석 완료');
+    }
+  }, 3000);
+}
+
+function retryAnalysis() {
+  var doc = docData.find(function(d) { return d.id === currentDocId; });
+  if (!doc) return;
+  doc.retries++;
+  doc.history.unshift({
+    version: 'v' + (doc.history.length + 1) + ' (재분석)',
+    date: new Date().toISOString().replace('T', ' ').slice(0, 16),
+    status: 'running',
+    duration: '...',
+    corrections: null
+  });
+  renderAnalysisHistory(doc);
+  renderDocList();
+  showToast(doc.name + ' — 재분석 시작됨');
+  setTimeout(function() {
+    if (doc.history[0] && doc.history[0].status === 'running') {
+      doc.history[0].status = 'completed';
+      doc.history[0].duration = '38s';
+      doc.analysis = 'done';
+      if (currentDocId === doc.id) renderAnalysisHistory(doc);
+      renderDocList();
+      showToast(doc.name + ' — 재분석 완료');
+    }
+  }, 3000);
+}
+
+function renderAnalysisHistory(doc) {
+  var container = document.getElementById('analysis-history');
+  if (!doc.history || doc.history.length === 0) {
+    container.innerHTML = '<div class="px-6 py-8 text-center text-sm text-gray-400">아직 분석 이력이 없습니다</div>';
+    return;
+  }
+  var statusColors = {
+    completed: 'bg-green-100 text-green-700',
+    failed: 'bg-red-100 text-red-700',
+    running: 'bg-blue-100 text-blue-700'
+  };
+  var statusLabels = { completed: '완료', failed: '실패', running: '진행 중' };
+  var html = '';
+  doc.history.forEach(function(h, i) {
+    var sc = statusColors[h.status] || 'bg-gray-100 text-gray-600';
+    var sl = statusLabels[h.status] || h.status;
+    html += '<div class="px-6 py-4 flex items-start gap-4 ' + (i > 0 ? 'border-t' : '') + '">' +
+      '<div class="flex flex-col items-center flex-shrink-0">' +
+        '<div class="w-3 h-3 rounded-full ' + (h.status === 'completed' ? 'bg-green-400' : h.status === 'failed' ? 'bg-red-400' : 'bg-blue-400') + '"></div>' +
+        (i < doc.history.length - 1 ? '<div class="w-px h-full bg-gray-200 mt-1"></div>' : '') +
+      '</div>' +
+      '<div class="flex-1 min-w-0">' +
+        '<div class="flex items-center gap-2 mb-1">' +
+          '<span class="text-sm font-medium text-gray-900">' + h.version + '</span>' +
+          '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ' + sc + '">' + sl + '</span>' +
+          '<span class="text-xs text-gray-400">' + h.duration + '</span>' +
+        '</div>' +
+        '<div class="text-xs text-gray-400">' + h.date + '</div>' +
+        (h.corrections ? '<div class="mt-2 p-2 bg-orange-50 border border-orange-200 rounded-lg text-xs text-orange-800"><span class="font-medium">보정 지시:</span> ' + h.corrections + '</div>' : '') +
+      '</div>' +
+    '</div>';
+  });
+  container.innerHTML = html;
+}
+
+// ========================
+// RENDER: 파싱/분석 상세 탭
+// ========================
+function renderParsingTab(doc) {
+  var meta = docMetadata[doc.id];
+  // 문서 식별 + 버전 카드
+  var identHtml = '';
+  identHtml += '<div class="bg-white rounded-xl border p-5">' +
+    '<h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">문서 식별</h4>' +
+    '<div class="space-y-2">' +
+      '<div class="flex justify-between"><span class="text-xs text-gray-500">파일명</span><span class="text-xs font-medium text-gray-900">' + doc.name + '</span></div>' +
+      '<div class="flex justify-between"><span class="text-xs text-gray-500">유형</span><span class="text-xs font-medium text-gray-900">' + doc.type + '</span></div>' +
+      '<div class="flex justify-between"><span class="text-xs text-gray-500">문서 목적</span><div>' +
+        (doc.purposes || []).map(function(p) { var pc = purposeColors[p] || 'bg-gray-100 text-gray-600'; return '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium ' + pc + ' ml-1">' + p + '</span>'; }).join('') +
+      '</div></div>' +
+    '</div></div>';
+  identHtml += '<div class="bg-white rounded-xl border p-5">' +
+    '<h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">버전 / 현행화</h4>' +
+    '<div class="space-y-2">' +
+      '<div class="flex justify-between"><span class="text-xs text-gray-500">문서 버전</span><span class="text-xs font-semibold text-accent">' + (doc.docVersion || '—') + '</span></div>' +
+      '<div class="flex justify-between"><span class="text-xs text-gray-500">최종 수정일</span><span class="text-xs font-medium text-gray-900">' + (doc.lastModified || '—') + '</span></div>' +
+      '<div class="flex justify-between"><span class="text-xs text-gray-500">버전 메모</span><span class="text-xs text-gray-700">' + (doc.versionNote || '—') + '</span></div>' +
+      '<div class="flex justify-between"><span class="text-xs text-gray-500">현행화 상태</span><span class="text-xs font-medium ' + (meta && meta.analysis ? (meta.analysis.versionClass.includes('최신') ? 'text-green-600' : 'text-amber-600') : 'text-gray-400') + '">' + (meta && meta.analysis ? meta.analysis.versionClass : '미확인') + '</span></div>' +
+    '</div></div>';
+  document.getElementById('parsing-doc-identity').innerHTML = identHtml;
+
+  if (!meta) {
+    document.getElementById('parsing-method-detail').innerHTML = '<div class="px-6 py-8 text-center text-sm text-gray-400">이 문서에 대한 상세 파싱 메타데이터가 아직 생성되지 않았습니다.<br><span class="text-xs">분석이 완료되면 자동으로 표시됩니다.</span></div>';
+    document.getElementById('parsing-analysis-detail').innerHTML = '';
+    document.getElementById('parsing-ontology').innerHTML = '';
+    document.getElementById('parsing-diagram').innerHTML = '';
+    document.getElementById('parsing-excel-conditions').innerHTML = '';
+    return;
+  }
+
+  // 파싱 방법 상세
+  var p = meta.parsing;
+  var methodHtml = '<div class="px-6 py-4 border-b bg-gray-50"><h3 class="text-sm font-semibold text-gray-900">파싱 방법 상세</h3><p class="text-xs text-gray-500 mt-0.5">원본 문서가 어떻게 파싱되었는지 보여줍니다</p></div>' +
+    '<div class="px-6 py-5 space-y-4">' +
+      '<div class="grid grid-cols-3 gap-4">' +
+        '<div class="bg-blue-50 rounded-lg p-3"><div class="text-lg font-bold text-blue-700">' + p.method.split('(')[0].trim() + '</div><div class="text-[10px] text-blue-600 mt-0.5">파싱 엔진</div></div>' +
+        '<div class="bg-gray-50 rounded-lg p-3 flex items-center gap-4">' +
+          '<div><div class="text-lg font-bold text-gray-900">' + p.chunkCount + '</div><div class="text-[10px] text-gray-500">청크</div></div>' +
+          '<div><div class="text-lg font-bold text-gray-900">' + p.totalWords.toLocaleString() + '</div><div class="text-[10px] text-gray-500">단어</div></div>' +
+          '<div><div class="text-lg font-bold text-gray-900">' + (p.pages || '—') + '</div><div class="text-[10px] text-gray-500">페이지</div></div>' +
+        '</div>' +
+        '<div class="bg-green-50 rounded-lg p-3"><div class="text-lg font-bold text-green-700">' + p.duration + '</div><div class="text-[10px] text-green-600">파싱 소요시간</div></div>' +
+      '</div>' +
+      '<div><h4 class="text-xs font-semibold text-gray-700 mb-2">파싱 방법</h4><div class="bg-gray-50 rounded-lg p-3 text-xs text-gray-700 font-mono">' + p.method + '</div></div>' +
+      '<div><h4 class="text-xs font-semibold text-gray-700 mb-2">파싱된 섹션 (' + p.parsedSections.length + '개)</h4><div class="flex flex-wrap gap-1.5">' +
+        p.parsedSections.map(function(s, i) { return '<span class="inline-flex items-center gap-1 px-2 py-1 bg-white border rounded-lg text-xs"><span class="text-[10px] text-gray-400 font-mono">' + (i+1) + '</span> ' + s + '</span>'; }).join('') +
+      '</div></div>';
+  if (p.specialNotes) {
+    methodHtml += '<div class="bg-indigo-50 border border-indigo-200 rounded-lg p-3"><div class="flex items-start gap-2">' +
+      '<svg class="w-4 h-4 text-indigo-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>' +
+      '<div><div class="text-xs font-semibold text-indigo-800 mb-0.5">특이사항</div><div class="text-xs text-indigo-700">' + p.specialNotes + '</div></div></div></div>';
+  }
+  methodHtml += '</div>';
+  document.getElementById('parsing-method-detail').innerHTML = methodHtml;
+
+  // 분석 결과 상세
+  var a = meta.analysis;
+  var catColors = { core: 'bg-indigo-100 text-indigo-800', supporting: 'bg-blue-100 text-blue-800', peripheral: 'bg-gray-200 text-gray-700', mega: 'bg-red-100 text-red-800' };
+  var stdColors = { '표준화 완료': 'text-green-600', '부분 표준화': 'text-amber-600' };
+  var analysisHtml = '<div class="px-6 py-4 border-b bg-gray-50"><h3 class="text-sm font-semibold text-gray-900">분석 결과 상세</h3><p class="text-xs text-gray-500 mt-0.5">AI가 분석한 문서의 중요도, 표준화, 핵심 발견사항</p></div>' +
+    '<div class="px-6 py-5 space-y-4">' +
+      '<div class="grid grid-cols-4 gap-3">' +
+        '<div class="text-center p-3 bg-accent/5 rounded-lg"><div class="text-xl font-bold text-accent">' + (a.importanceScore * 100).toFixed(0) + '%</div><div class="text-[10px] text-gray-500">중요도 스코어</div></div>' +
+        '<div class="text-center p-3 rounded-lg"><span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium ' + (catColors[a.category] || '') + '">' + a.category + '</span><div class="text-[10px] text-gray-500 mt-1">카테고리</div></div>' +
+        '<div class="text-center p-3 rounded-lg"><span class="text-sm font-semibold ' + (stdColors[a.standardizationStatus] || 'text-gray-600') + '">' + a.standardizationStatus + '</span><div class="text-[10px] text-gray-500 mt-1">표준화 상태</div></div>' +
+        '<div class="text-center p-3 rounded-lg"><span class="text-sm font-semibold text-gray-900">' + a.versionClass + '</span><div class="text-[10px] text-gray-500 mt-1">버전 분류</div></div>' +
+      '</div>' +
+      '<div><h4 class="text-xs font-semibold text-gray-700 mb-2">핵심 발견사항</h4><div class="space-y-2">' +
+        a.keyFindings.map(function(f, i) {
+          return '<div class="flex items-start gap-2 p-2.5 bg-gray-50 rounded-lg"><div class="w-5 h-5 rounded-full bg-accent/10 flex items-center justify-center flex-shrink-0"><span class="text-[10px] font-bold text-accent">' + (i+1) + '</span></div><span class="text-xs text-gray-700">' + f + '</span></div>';
+        }).join('') +
+      '</div></div></div>';
+  document.getElementById('parsing-analysis-detail').innerHTML = analysisHtml;
+
+  // 온톨로지 표준화
+  var ont = meta.ontology;
+  if (ont && ont.length > 0) {
+    var ontHtml = '<div class="px-6 py-4 border-b bg-gray-50"><h3 class="text-sm font-semibold text-gray-900">온톨로지 표준화</h3><p class="text-xs text-gray-500 mt-0.5">이 문서에서 추출된 용어가 어떻게 표준화되고 정의되었는지</p></div>' +
+      '<div class="divide-y">';
+    ont.forEach(function(o) {
+      ontHtml += '<div class="px-6 py-3 flex items-center gap-4">' +
+        '<div class="flex-1"><div class="text-sm font-medium text-gray-900">' + o.term + '</div><div class="text-xs text-gray-500 mt-0.5">' + o.concept + '</div></div>' +
+        '<svg class="w-4 h-4 text-gray-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>' +
+        '<div class="flex-1"><div class="text-sm font-medium text-accent">' + o.standardTerm + '</div><div class="text-xs text-gray-500 mt-0.5">관계 ' + o.relCount + '건</div></div>' +
+        '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium bg-green-100 text-green-700">' + o.status + '</span>' +
+      '</div>';
+    });
+    ontHtml += '</div>';
+    document.getElementById('parsing-ontology').innerHTML = ontHtml;
+  } else {
+    document.getElementById('parsing-ontology').innerHTML = '';
+  }
+
+  // 다이어그램 해석
+  var diag = meta.diagramParsing;
+  if (diag && diag.length > 0) {
+    var diagHtml = '<div class="px-6 py-4 border-b bg-gray-50"><h3 class="text-sm font-semibold text-gray-900">다이어그램 해석</h3><p class="text-xs text-gray-500 mt-0.5">시각적 다이어그램이 어떻게 파싱되고 해석되었는지</p></div>' +
+      '<div class="divide-y">';
+    diag.forEach(function(d) {
+      diagHtml += '<div class="px-6 py-4">' +
+        '<div class="flex items-center gap-3 mb-3">' +
+          '<div class="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center"><svg class="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></div>' +
+          '<div><div class="text-sm font-medium text-gray-900">' + d.diagramType + '</div><div class="text-xs text-gray-500">위치: ' + d.slideNum + '</div></div>' +
+        '</div>' +
+        '<div class="bg-violet-50 border border-violet-200 rounded-lg p-3 mb-3"><div class="text-xs font-semibold text-violet-800 mb-1">AI 해석 결과</div><div class="text-xs text-violet-700 leading-relaxed">' + d.interpretation + '</div></div>' +
+        '<div><div class="text-xs font-semibold text-gray-700 mb-1.5">추출된 요소</div><div class="flex flex-wrap gap-1.5">' +
+          d.extractedElements.map(function(e) { return '<span class="px-2 py-0.5 bg-white border rounded text-xs text-gray-700">' + e + '</span>'; }).join('') +
+        '</div></div></div>';
+    });
+    diagHtml += '</div>';
+    document.getElementById('parsing-diagram').innerHTML = diagHtml;
+  } else {
+    document.getElementById('parsing-diagram').innerHTML = '';
+  }
+
+  // 엑셀 조건 해석
+  var exCond = meta.excelConditions;
+  if (exCond && exCond.length > 0) {
+    var exHtml = '<div class="px-6 py-4 border-b bg-gray-50"><h3 class="text-sm font-semibold text-gray-900">엑셀 조건 정의 해석</h3><p class="text-xs text-gray-500 mt-0.5">엑셀의 조건/규칙이 어떻게 해석되어 다른 문서의 화면, 데이터 테이블과 매핑됐는지</p></div>' +
+      '<div class="divide-y">';
+    exCond.forEach(function(ec) {
+      exHtml += '<div class="px-6 py-4">' +
+        '<div class="flex items-center gap-3 mb-2">' +
+          '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-green-50 text-green-700">' + ec.cellRef + '</span>' +
+          '<span class="text-sm font-medium text-gray-900">' + ec.condition + '</span>' +
+        '</div>' +
+        '<div class="grid grid-cols-2 gap-3">' +
+          '<div class="bg-blue-50 rounded-lg p-3"><div class="text-[10px] font-semibold text-blue-600 uppercase mb-1">AI 해석</div><div class="text-xs text-blue-800">' + ec.interpretation + '</div></div>' +
+          '<div class="bg-amber-50 rounded-lg p-3"><div class="text-[10px] font-semibold text-amber-600 uppercase mb-1">매핑 결과</div><div class="text-xs text-amber-800">' + ec.mappedTo + '</div></div>' +
+        '</div></div>';
+    });
+    exHtml += '</div>';
+    document.getElementById('parsing-excel-conditions').innerHTML = exHtml;
+  } else {
+    document.getElementById('parsing-excel-conditions').innerHTML = '';
+  }
+}
+
+// ========================
+// RENDER: 문서 간 관계 탭
+// ========================
+function renderCrossDocTab(doc) {
+  var meta = docMetadata[doc.id];
+  var container = document.getElementById('crossdoc-mappings');
+  var emptyEl = document.getElementById('crossdoc-empty');
+
+  if (!meta || !meta.crossDoc || meta.crossDoc.length === 0) {
+    container.innerHTML = '';
+    emptyEl.classList.remove('hidden');
+    return;
+  }
+  emptyEl.classList.add('hidden');
+
+  var mappingColors = {
+    '데이터 매핑': { border: 'border-l-purple-500', icon: 'bg-purple-100 text-purple-700', badge: 'bg-purple-50 text-purple-700' },
+    '화면-프로세스 매핑': { border: 'border-l-orange-500', icon: 'bg-orange-100 text-orange-700', badge: 'bg-orange-50 text-orange-700' },
+    '화면-데이터 매핑': { border: 'border-l-orange-500', icon: 'bg-orange-100 text-orange-700', badge: 'bg-orange-50 text-orange-700' },
+    '인터페이스 매핑': { border: 'border-l-emerald-500', icon: 'bg-emerald-100 text-emerald-700', badge: 'bg-emerald-50 text-emerald-700' },
+    '인터페이스-프로세스 매핑': { border: 'border-l-emerald-500', icon: 'bg-emerald-100 text-emerald-700', badge: 'bg-emerald-50 text-emerald-700' },
+    '인터페이스-데이터 매핑': { border: 'border-l-emerald-500', icon: 'bg-emerald-100 text-emerald-700', badge: 'bg-emerald-50 text-emerald-700' },
+    'API-프로세스 매핑': { border: 'border-l-cyan-500', icon: 'bg-cyan-100 text-cyan-700', badge: 'bg-cyan-50 text-cyan-700' },
+    '데이터-프로세스 매핑': { border: 'border-l-blue-500', icon: 'bg-blue-100 text-blue-700', badge: 'bg-blue-50 text-blue-700' },
+    '데이터-인터페이스 매핑': { border: 'border-l-teal-500', icon: 'bg-teal-100 text-teal-700', badge: 'bg-teal-50 text-teal-700' },
+    '요구사항-프로세스 매핑': { border: 'border-l-pink-500', icon: 'bg-pink-100 text-pink-700', badge: 'bg-pink-50 text-pink-700' },
+    '요구사항-데이터 매핑': { border: 'border-l-pink-500', icon: 'bg-pink-100 text-pink-700', badge: 'bg-pink-50 text-pink-700' }
+  };
+  var defaultColor = { border: 'border-l-gray-400', icon: 'bg-gray-100 text-gray-700', badge: 'bg-gray-50 text-gray-700' };
+
+  var html = '<div class="mb-4"><h3 class="text-sm font-semibold text-gray-900">문서 간 교차 매핑 관계</h3><p class="text-xs text-gray-500 mt-0.5">이 문서의 추출 결과가 다른 문서(화면설계서, 데이터 모델, 인터페이스 등)와 어떻게 연결되는지</p></div>' +
+    '<div class="space-y-4">';
+
+  meta.crossDoc.forEach(function(cd) {
+    var mc = mappingColors[cd.mappingType] || defaultColor;
+    html += '<div class="bg-white rounded-xl border border-l-4 ' + mc.border + ' overflow-hidden">' +
+      '<div class="px-6 py-4">' +
+        '<div class="flex items-center gap-3 mb-3">' +
+          '<div class="w-8 h-8 rounded-lg ' + mc.icon + ' flex items-center justify-center"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg></div>' +
+          '<div class="flex-1">' +
+            '<div class="flex items-center gap-2">' +
+              '<span class="text-sm font-medium text-gray-900">' + cd.targetName + '</span>' +
+              '<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium ' + mc.badge + '">' + cd.mappingType + '</span>' +
+            '</div>' +
+            '<div class="text-xs text-gray-500 mt-0.5">' + cd.desc + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="space-y-1.5 ml-11">' +
+          cd.items.map(function(item) {
+            return '<div class="flex items-center gap-2 text-xs">' +
+              '<svg class="w-3 h-3 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>' +
+              '<span class="text-gray-700">' + item + '</span></div>';
+          }).join('') +
+        '</div>' +
+      '</div></div>';
+  });
+
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// ========================
+// INIT
+// ========================
+document.addEventListener('DOMContentLoaded', function() {
+  renderProcessList();
+  renderProcessTree();
+  renderCoreList();
+  renderFindings();
+  renderServiceGroups();
+  renderDocList();
+  selectCoreProcess('중도인출');
+});
+</script>
+</body>
+</html>

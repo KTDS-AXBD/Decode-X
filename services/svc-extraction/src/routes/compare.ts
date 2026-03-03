@@ -218,7 +218,7 @@ async function handleCompare(
         item.name,
         item.type,
         item.serviceGroup,
-        JSON.stringify(item.presentIn.map((p) => p.organizationId)),
+        JSON.stringify(item.presentIn),
         item.classificationReason,
         item.standardizationScore ?? null,
         item.standardizationNote ?? null,

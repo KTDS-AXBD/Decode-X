@@ -172,12 +172,13 @@ async function handleGetCoreProcesses(env: Env, documentId: string): Promise<Res
 // ── GET /analysis/:documentId/findings ───────────────────────────────
 
 async function handleGetFindings(env: Env, documentId: string): Promise<Response> {
-  // 분석 ID 조회
+  // 분석 ID + 메타데이터 조회
   const analysisRow = await env.DB_EXTRACTION.prepare(
-    `SELECT analysis_id FROM analyses WHERE document_id = ? ORDER BY created_at DESC LIMIT 1`
+    `SELECT analysis_id, extraction_id, organization_id, created_at
+     FROM analyses WHERE document_id = ? ORDER BY created_at DESC LIMIT 1`
   )
     .bind(documentId)
-    .first<{ analysis_id: string }>();
+    .first<{ analysis_id: string; extraction_id: string; organization_id: string; created_at: string }>();
 
   if (!analysisRow) return notFound("analysis", documentId);
 
@@ -200,12 +201,15 @@ async function handleGetFindings(env: Env, documentId: string): Promise<Response
   return ok({
     diagnosisId: analysisRow.analysis_id,
     documentId,
+    extractionId: analysisRow.extraction_id,
+    organizationId: analysisRow.organization_id,
     findings,
     summary: {
       totalFindings: findings.length,
       byType,
       bySeverity,
     },
+    createdAt: analysisRow.created_at,
   });
 }
 
@@ -468,8 +472,9 @@ async function runAnalysisPasses(
       type: "analysis.completed",
       payload: {
         documentId,
-        analysisId,
+        extractionId,
         organizationId,
+        analysisId,
         findingCount: findings.length,
         coreProcessCount: coreSummary.coreProcessCount,
       },

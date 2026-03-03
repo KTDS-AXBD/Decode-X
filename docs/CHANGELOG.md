@@ -2,6 +2,18 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 080 — 2026-03-04
+**CI 수정 + Production 전체 배포**:
+- ✅ fix: docx-parser.test.ts 실문서 테스트 → `describe.skipIf(!HAS_REAL_FILES)` 적용 (CI ENOENT 해결)
+- ✅ CI 복구: svc-ingestion exit code 1 → 15/15 tasks 성공
+- ✅ Staging 배포: 12/12 서비스 healthy
+- ✅ Production 배포: 11/11 서비스 성공 (svc-skill 3차 재시도, Cloudflare Queues 일시 장애)
+- ✅ Production health: 12/12 서비스 HTTP 200
+- ⚠️ Ralph 미완성 stash: app-web organizationId 리팩토링 (38건 typecheck 에러, 호출부 미업데이트)
+
+**검증**: typecheck 17/17, lint 14/14, CI ✅
+**GitHub 인프라**: API 500/502 간헐적 발생 (약 30분, 자동 복구)
+
 ## 세션 079 — 2026-03-04
 **Phase 4 Sprint 2 — Task 1: bulk-approve API 구현**:
 - ✅ `POST /policies/bulk-approve` 엔드포인트 구현 (svc-policy)

@@ -4,6 +4,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 interface Env {
   INTERNAL_API_SECRET: string;
+  ENVIRONMENT?: string;
   SVC_INGESTION: Fetcher;
   SVC_EXTRACTION: Fetcher;
   SVC_POLICY: Fetcher;
@@ -24,6 +25,7 @@ function mockFetcher(): Fetcher {
 function mockEnv(): Env {
   return {
     INTERNAL_API_SECRET: "test-internal-secret",
+    ENVIRONMENT: "test",
     SVC_INGESTION: mockFetcher(),
     SVC_EXTRACTION: mockFetcher(),
     SVC_POLICY: mockFetcher(),
@@ -112,14 +114,16 @@ function makeEvent(
 interface MockMessage {
   id: string;
   body: unknown;
+  attempts: number;
   ack: ReturnType<typeof vi.fn>;
   retry: ReturnType<typeof vi.fn>;
 }
 
-function makeMessage(body: unknown, id = "msg-1"): MockMessage {
+function makeMessage(body: unknown, id = "msg-1", attempts = 1): MockMessage {
   return {
     id,
     body,
+    attempts,
     ack: vi.fn(),
     retry: vi.fn(),
   };
@@ -137,30 +141,33 @@ function makeBatch(messages: MockMessage[]): MessageBatch<unknown> {
 // ── fetch handler tests ──────────────────────────────────────────
 
 describe("svc-queue-router fetch handler", () => {
-  let worker: { fetch: (req: Request) => Promise<Response>; queue: (batch: MessageBatch<unknown>, env: Env, ctx: ExecutionContext) => Promise<void> };
+  let worker: { fetch: (req: Request, env: Env) => Promise<Response>; queue: (batch: MessageBatch<unknown>, env: Env, ctx: ExecutionContext) => Promise<void> };
+  let env: Env;
 
   beforeEach(async () => {
     const mod = await import("../index.js");
     worker = mod.default;
+    env = mockEnv();
   });
 
-  it("GET /health returns status ok", async () => {
-    const res = await worker.fetch(new Request("https://internal/health"));
+  it("GET /health returns status ok with environment", async () => {
+    const res = await worker.fetch(new Request("https://internal/health"), env);
     expect(res.status).toBe(200);
-    const body = (await res.json()) as { status: string; service: string };
+    const body = (await res.json()) as { status: string; service: string; environment: string };
     expect(body.status).toBe("ok");
     expect(body.service).toBe("svc-queue-router");
+    expect(body.environment).toBe("test");
   });
 
   it("GET / returns default response", async () => {
-    const res = await worker.fetch(new Request("https://internal/"));
+    const res = await worker.fetch(new Request("https://internal/"), env);
     expect(res.status).toBe(200);
     const text = await res.text();
     expect(text).toContain("svc-queue-router");
   });
 
   it("GET /unknown returns 200 with default message", async () => {
-    const res = await worker.fetch(new Request("https://internal/unknown"));
+    const res = await worker.fetch(new Request("https://internal/unknown"), env);
     expect(res.status).toBe(200);
     const text = await res.text();
     expect(text).toContain("svc-queue-router");
@@ -170,7 +177,7 @@ describe("svc-queue-router fetch handler", () => {
 // ── queue handler — event routing tests ──────────────────────────
 
 describe("svc-queue-router queue handler — event routing", () => {
-  let worker: { fetch: (req: Request) => Promise<Response>; queue: (batch: MessageBatch<unknown>, env: Env, ctx: ExecutionContext) => Promise<void> };
+  let worker: { fetch: (req: Request, env: Env) => Promise<Response>; queue: (batch: MessageBatch<unknown>, env: Env, ctx: ExecutionContext) => Promise<void> };
   let env: Env;
   let ctx: ExecutionContext;
 
@@ -342,7 +349,7 @@ describe("svc-queue-router queue handler — event routing", () => {
 // ── queue handler — X-Internal-Secret ────────────────────────────
 
 describe("svc-queue-router queue handler — internal auth header", () => {
-  let worker: { fetch: (req: Request) => Promise<Response>; queue: (batch: MessageBatch<unknown>, env: Env, ctx: ExecutionContext) => Promise<void> };
+  let worker: { fetch: (req: Request, env: Env) => Promise<Response>; queue: (batch: MessageBatch<unknown>, env: Env, ctx: ExecutionContext) => Promise<void> };
   let env: Env;
   let ctx: ExecutionContext;
 
@@ -393,7 +400,7 @@ describe("svc-queue-router queue handler — internal auth header", () => {
 // ── queue handler — event body serialization ─────────────────────
 
 describe("svc-queue-router queue handler — event body", () => {
-  let worker: { fetch: (req: Request) => Promise<Response>; queue: (batch: MessageBatch<unknown>, env: Env, ctx: ExecutionContext) => Promise<void> };
+  let worker: { fetch: (req: Request, env: Env) => Promise<Response>; queue: (batch: MessageBatch<unknown>, env: Env, ctx: ExecutionContext) => Promise<void> };
   let env: Env;
   let ctx: ExecutionContext;
 
@@ -439,7 +446,7 @@ describe("svc-queue-router queue handler — event body", () => {
 // ── queue handler — invalid/unknown events ───────────────────────
 
 describe("svc-queue-router queue handler — invalid events", () => {
-  let worker: { fetch: (req: Request) => Promise<Response>; queue: (batch: MessageBatch<unknown>, env: Env, ctx: ExecutionContext) => Promise<void> };
+  let worker: { fetch: (req: Request, env: Env) => Promise<Response>; queue: (batch: MessageBatch<unknown>, env: Env, ctx: ExecutionContext) => Promise<void> };
   let env: Env;
   let ctx: ExecutionContext;
 
@@ -534,7 +541,7 @@ describe("svc-queue-router queue handler — invalid events", () => {
 // ── queue handler — error handling ───────────────────────────────
 
 describe("svc-queue-router queue handler — error handling", () => {
-  let worker: { fetch: (req: Request) => Promise<Response>; queue: (batch: MessageBatch<unknown>, env: Env, ctx: ExecutionContext) => Promise<void> };
+  let worker: { fetch: (req: Request, env: Env) => Promise<Response>; queue: (batch: MessageBatch<unknown>, env: Env, ctx: ExecutionContext) => Promise<void> };
   let env: Env;
   let ctx: ExecutionContext;
 
@@ -576,7 +583,7 @@ describe("svc-queue-router queue handler — error handling", () => {
     const errorCalls = consoleSpy.mock.calls;
     const hasDispatchError = errorCalls.some((call) => {
       const line = String(call[0]);
-      return line.includes("Dispatch failed");
+      return line.includes("Dispatch") && (line.includes("failed") || line.includes("error"));
     });
     expect(hasDispatchError).toBe(true);
 
@@ -599,7 +606,7 @@ describe("svc-queue-router queue handler — error handling", () => {
 // ── queue handler — batch processing ─────────────────────────────
 
 describe("svc-queue-router queue handler — batch processing", () => {
-  let worker: { fetch: (req: Request) => Promise<Response>; queue: (batch: MessageBatch<unknown>, env: Env, ctx: ExecutionContext) => Promise<void> };
+  let worker: { fetch: (req: Request, env: Env) => Promise<Response>; queue: (batch: MessageBatch<unknown>, env: Env, ctx: ExecutionContext) => Promise<void> };
   let env: Env;
   let ctx: ExecutionContext;
 
@@ -707,7 +714,7 @@ describe("svc-queue-router queue handler — batch processing", () => {
 // ── queue handler — fan-out target count ─────────────────────────
 
 describe("svc-queue-router queue handler — fan-out target count", () => {
-  let worker: { fetch: (req: Request) => Promise<Response>; queue: (batch: MessageBatch<unknown>, env: Env, ctx: ExecutionContext) => Promise<void> };
+  let worker: { fetch: (req: Request, env: Env) => Promise<Response>; queue: (batch: MessageBatch<unknown>, env: Env, ctx: ExecutionContext) => Promise<void> };
   let env: Env;
   let ctx: ExecutionContext;
 
@@ -763,7 +770,7 @@ describe("svc-queue-router queue handler — fan-out target count", () => {
 // ── queue handler — dispatch URL ─────────────────────────────────
 
 describe("svc-queue-router queue handler — dispatch endpoint", () => {
-  let worker: { fetch: (req: Request) => Promise<Response>; queue: (batch: MessageBatch<unknown>, env: Env, ctx: ExecutionContext) => Promise<void> };
+  let worker: { fetch: (req: Request, env: Env) => Promise<Response>; queue: (batch: MessageBatch<unknown>, env: Env, ctx: ExecutionContext) => Promise<void> };
   let env: Env;
   let ctx: ExecutionContext;
 

@@ -7,11 +7,12 @@ compatibility_flags = ["nodejs_compat"]
 port = 8711
 inspector_port = 9211
 
-# Sole consumer of the pipeline event bus
-[[queues.consumers]]
-queue = "ai-foundry-pipeline"
-max_batch_size = 10
-max_batch_timeout = 30
+# NOTE: Default env must NOT have a queue consumer.
+# Only staging/production envs consume queues.
+# If default env also declares a consumer for the same queue,
+# Cloudflare will have a consumer conflict (one queue = one consumer).
+# The default env svc-queue-router Worker must be deleted from Cloudflare
+# if it exists — see deploy-services.yml which skips default env for this service.
 
 # Service bindings — fan-out targets
 [[services]]
@@ -58,6 +59,8 @@ vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-queue-router" }
 queue = "ai-foundry-pipeline-staging"
 max_batch_size = 10
 max_batch_timeout = 30
+max_retries = 5
+dead_letter_queue = "ai-foundry-pipeline-staging-dlq"
 
 [[env.staging.services]]
 binding = "SVC_INGESTION"
@@ -97,6 +100,8 @@ vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-queue-router" }
 queue = "ai-foundry-pipeline"
 max_batch_size = 10
 max_batch_timeout = 30
+max_retries = 5
+dead_letter_queue = "ai-foundry-pipeline-dlq"
 
 [[env.production.services]]
 binding = "SVC_INGESTION"

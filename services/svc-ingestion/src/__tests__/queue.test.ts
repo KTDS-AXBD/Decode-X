@@ -232,9 +232,36 @@ describe("processQueueEvent", () => {
     expect(body.error).toContain("Parse failed");
   });
 
-  it("returns format_invalid for non-standard file format", async () => {
-    // SCDSA002 header (non-standard)
-    const badMagic = new Uint8Array([0x53, 0x43, 0x44, 0x53, 0x41, 0x30, 0x30, 0x32, 0x00, 0x00]);
+  it("returns encrypted_scdsa002 for Samsung SDS encrypted file", async () => {
+    // SCDSA002 header (Samsung SDS encrypted)
+    const scdsa = new Uint8Array([0x53, 0x43, 0x44, 0x53, 0x41, 0x30, 0x30, 0x32, 0x00, 0x00]);
+    const scdsaEnv = mockEnv(true, scdsa);
+    const res = await processQueueEvent(validDocumentUploadedEvent, scdsaEnv, ctx);
+    expect(res.status).toBe(500);
+    const body = await res.json() as { ok: boolean; error: string; detail: string };
+    expect(body.error).toBe("encrypted_scdsa002");
+    expect(body.detail).toContain("SCDSA002");
+  });
+
+  it("sets document status to encrypted for SCDSA002 files", async () => {
+    const scdsa = new Uint8Array([0x53, 0x43, 0x44, 0x53, 0x41, 0x30, 0x30, 0x32, 0x00, 0x00]);
+    const scdsaEnv = mockEnv(true, scdsa);
+    await processQueueEvent(validDocumentUploadedEvent, scdsaEnv, ctx);
+    const prepareMock = scdsaEnv.DB_INGESTION.prepare as ReturnType<typeof vi.fn>;
+    const prepareCalls = prepareMock.mock.calls as Array<[string]>;
+    // Should use parameterized status (not hardcoded 'failed')
+    const updateCall = prepareCalls.find(
+      (call) => call[0].includes("UPDATE documents SET status = ?"),
+    );
+    expect(updateCall).toBeDefined();
+    // Check that bind was called with 'encrypted' status
+    const bindMock = prepareMock.mock.results[0]?.value?.bind as ReturnType<typeof vi.fn>;
+    expect(bindMock).toHaveBeenCalledWith("encrypted", expect.stringContaining("SCDSA002"), "encrypted_scdsa002", "doc-1");
+  });
+
+  it("returns format_invalid for non-SCDSA non-standard file format", async () => {
+    // Random non-standard header (not SCDSA002)
+    const badMagic = new Uint8Array([0xAA, 0xBB, 0xCC, 0xDD, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]);
     const badEnv = mockEnv(true, badMagic);
     const res = await processQueueEvent(validDocumentUploadedEvent, badEnv, ctx);
     expect(res.status).toBe(500);

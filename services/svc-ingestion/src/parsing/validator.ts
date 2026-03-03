@@ -1,12 +1,15 @@
 import { createLogger } from "@ai-foundry/utils";
 
-export type ErrorType = "format_invalid" | "parse_error" | "timeout" | "network_error";
+export type ErrorType = "format_invalid" | "encrypted_scdsa002" | "parse_error" | "timeout" | "network_error";
 
 export interface ValidationResult {
   valid: boolean;
   label: string | null;
   error: string | null;
 }
+
+/** Samsung SDS encryption magic bytes: ASCII "SCDSA002" */
+const SCDSA002_MAGIC: readonly number[] = [0x53, 0x43, 0x44, 0x53, 0x41, 0x30, 0x30, 0x32];
 
 interface MagicSignature {
   bytes: number[];
@@ -59,6 +62,16 @@ export function validateFileFormat(fileBytes: ArrayBuffer, fileType: string): Va
     }
   }
 
+  // Check for Samsung SDS encrypted file (SCDSA002) before generic rejection
+  if (isScdsa002Encrypted(fileBytes)) {
+    logger.warn("Samsung SDS encrypted file detected (SCDSA002)", { fileType });
+    return {
+      valid: false,
+      label: "SCDSA002",
+      error: "Samsung SDS encrypted file (SCDSA002) — decryption required",
+    };
+  }
+
   const headerHex = Array.from(header.slice(0, 8))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join(" ");
@@ -69,6 +82,26 @@ export function validateFileFormat(fileBytes: ArrayBuffer, fileType: string): Va
     label: null,
     error: `Expected ${sigs.map((s) => s.label).join(" or ")} header for .${fileType}, got: ${headerHex}`,
   };
+}
+
+/**
+ * Detect Samsung SDS encrypted files by matching the SCDSA002 magic bytes.
+ * These files have their ZIP header replaced with "SCDSA002" (8 bytes)
+ * and require proprietary decryption before parsing.
+ */
+export function isScdsa002Encrypted(fileBytes: ArrayBuffer): boolean {
+  if (fileBytes.byteLength < SCDSA002_MAGIC.length) {
+    return false;
+  }
+
+  const header = new Uint8Array(fileBytes, 0, SCDSA002_MAGIC.length);
+  for (let i = 0; i < SCDSA002_MAGIC.length; i++) {
+    const expected = SCDSA002_MAGIC[i];
+    if (expected === undefined || header[i] !== expected) {
+      return false;
+    }
+  }
+  return true;
 }
 
 /**

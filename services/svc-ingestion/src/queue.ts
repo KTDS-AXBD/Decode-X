@@ -6,7 +6,7 @@ import { parseXlsx, detectSiSubtype } from "./parsing/xlsx.js";
 import { parseScreenDesign } from "./parsing/screen-design.js";
 import { classifyDocument, classifyXlsxElements } from "./parsing/classifier.js";
 import { maskText } from "./parsing/masking.js";
-import { validateFileFormat, classifyParseError, type ErrorType } from "./parsing/validator.js";
+import { validateFileFormat, isScdsa002Encrypted, classifyParseError, type ErrorType } from "./parsing/validator.js";
 
 const MIME_MAP: Record<string, string> = {
   pdf: "application/pdf",
@@ -76,15 +76,28 @@ export async function processQueueEvent(body: unknown, env: Env, _ctx: Execution
     // 2. Validate file format via magic bytes
     const validation = validateFileFormat(fileBytes, fileType);
     if (!validation.valid) {
-      logger.warn("File format invalid", { documentId, fileType, error: validation.error });
-      const errType: ErrorType = "format_invalid";
+      // Distinguish SCDSA002-encrypted files from generic format errors
+      const isScdsa = isScdsa002Encrypted(fileBytes);
+      const errType: ErrorType = isScdsa ? "encrypted_scdsa002" : "format_invalid";
+      const docStatus = isScdsa ? "encrypted" : "failed";
+
+      if (isScdsa) {
+        logger.warn("Samsung SDS encrypted file (SCDSA002) — skipping parse", {
+          documentId,
+          fileType,
+          originalName,
+        });
+      } else {
+        logger.warn("File format invalid", { documentId, fileType, error: validation.error });
+      }
+
       await env.DB_INGESTION.prepare(
-        "UPDATE documents SET status = 'failed', error_message = ?, error_type = ? WHERE document_id = ?",
+        "UPDATE documents SET status = ?, error_message = ?, error_type = ? WHERE document_id = ?",
       )
-        .bind(validation.error ?? "Unknown format", errType, documentId)
+        .bind(docStatus, validation.error ?? "Unknown format", errType, documentId)
         .run();
       return new Response(
-        JSON.stringify({ ok: false, error: "format_invalid", detail: validation.error }),
+        JSON.stringify({ ok: false, error: errType, detail: validation.error }),
         { status: 500, headers: { "Content-Type": "application/json" } },
       );
     }

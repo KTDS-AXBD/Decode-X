@@ -5,6 +5,8 @@ import type {
   DiagnosisResult,
   DiagnosisFinding,
   CrossOrgComparison,
+  TriageResponse,
+  DomainReport,
 } from "@ai-foundry/types";
 import { buildHeaders } from "./headers";
 
@@ -99,6 +101,47 @@ export async function triggerAnalysis(
   return res.json() as Promise<
     ApiResponse<{ analysisId: string; status: string }>
   >;
+}
+
+// ── Triage + Domain Report ───────────────────────────────────────────
+
+export async function fetchTriage(
+  organizationId: string,
+): Promise<ApiResponse<TriageResponse>> {
+  const res = await fetch(
+    `${API_BASE}/analysis/triage?organizationId=${encodeURIComponent(organizationId)}`,
+    { headers: headers(organizationId) },
+  );
+  return res.json() as Promise<ApiResponse<TriageResponse>>;
+}
+
+export async function batchAnalyze(
+  organizationId: string,
+  body: {
+    documentIds: string[];
+    organizationId: string;
+    preferredProvider?: LlmProvider;
+    preferredTier?: LlmTier;
+  },
+): Promise<ApiResponse<{ submitted: number; skipped: number; errors: string[] }>> {
+  const res = await fetch(`${API_BASE}/analysis/batch-analyze`, {
+    method: "POST",
+    headers: headers(organizationId),
+    body: JSON.stringify(body),
+  });
+  return res.json() as Promise<
+    ApiResponse<{ submitted: number; skipped: number; errors: string[] }>
+  >;
+}
+
+export async function fetchDomainReport(
+  organizationId: string,
+): Promise<ApiResponse<DomainReport>> {
+  const res = await fetch(
+    `${API_BASE}/analysis/domain-report?organizationId=${encodeURIComponent(organizationId)}`,
+    { headers: headers(organizationId) },
+  );
+  return res.json() as Promise<ApiResponse<DomainReport>>;
 }
 
 // ── Cross-Org Comparison ─────────────────────────────────────────────

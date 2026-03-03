@@ -183,6 +183,86 @@ export const CrossOrgComparisonSchema = z.object({
   createdAt: z.string().datetime(),
 });
 
+// ── Triage (문서 선별) ──────────────────────────────────────────────
+
+export const TriageDocumentSchema = z.object({
+  documentId: z.string(),
+  extractionId: z.string(),
+  processCount: z.number().int(),
+  entityCount: z.number().int(),
+  ruleCount: z.number().int(),
+  relationshipCount: z.number().int(),
+  triageScore: z.number().min(0).max(1),
+  triageRank: z.enum(["high", "medium", "low"]),
+  analysisStatus: z.enum(["completed"]).nullable(),
+  analysisId: z.string().nullable(),
+  analyzedAt: z.string().nullable(),
+  extractedAt: z.string(),
+});
+
+export const TriageResponseSchema = z.object({
+  documents: z.array(TriageDocumentSchema),
+  summary: z.object({
+    total: z.number().int(),
+    analyzed: z.number().int(),
+    notAnalyzed: z.number().int(),
+    highPriority: z.number().int(),
+    mediumPriority: z.number().int(),
+    lowPriority: z.number().int(),
+  }),
+});
+
+// ── Domain Report (도메인 집계 리포트) ──────────────────────────────
+
+export const AggregatedProcessSchema = z.object({
+  name: z.string(),
+  category: z.enum(["mega", "core", "supporting", "peripheral"]),
+  avgImportanceScore: z.number().min(0).max(1),
+  documentCount: z.number().int(),
+  sourceDocumentIds: z.array(z.string()),
+  isCore: z.boolean(),
+});
+
+export const DomainReportSchema = z.object({
+  organizationId: z.string(),
+  analyzedDocumentCount: z.number().int(),
+  counts: z.object({
+    processes: z.number().int(),
+    entities: z.number().int(),
+    rules: z.number().int(),
+    relationships: z.number().int(),
+    coreProcesses: z.number().int(),
+  }),
+  findingsSummary: z.object({
+    total: z.number().int(),
+    byType: z.object({
+      missing: z.number().int(),
+      duplicate: z.number().int(),
+      overspec: z.number().int(),
+      inconsistency: z.number().int(),
+    }),
+    bySeverity: z.object({
+      critical: z.number().int(),
+      warning: z.number().int(),
+      info: z.number().int(),
+    }),
+  }),
+  topFindings: z.array(z.object({
+    findingId: z.string(),
+    documentId: z.string(),
+    type: z.string(),
+    severity: z.string(),
+    finding: z.string(),
+    evidence: z.string(),
+    recommendation: z.string(),
+    relatedProcesses: z.array(z.string()),
+    confidence: z.number(),
+    hitlStatus: z.string(),
+  })),
+  coreProcesses: z.array(AggregatedProcessSchema),
+  lastAnalyzedAt: z.string().nullable(),
+});
+
 // ── Type Exports ──────────────────────────────────────────────────────
 
 export type ScoredProcess = z.infer<typeof ScoredProcessSchema>;
@@ -194,3 +274,7 @@ export type CoreIdentification = z.infer<typeof CoreIdentificationSchema>;
 export type ServiceGroup = z.infer<typeof ServiceGroupSchema>;
 export type ComparisonItem = z.infer<typeof ComparisonItemSchema>;
 export type CrossOrgComparison = z.infer<typeof CrossOrgComparisonSchema>;
+export type TriageDocument = z.infer<typeof TriageDocumentSchema>;
+export type TriageResponse = z.infer<typeof TriageResponseSchema>;
+export type AggregatedProcess = z.infer<typeof AggregatedProcessSchema>;
+export type DomainReport = z.infer<typeof DomainReportSchema>;

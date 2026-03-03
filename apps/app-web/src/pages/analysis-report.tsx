@@ -27,14 +27,26 @@ import type {
 import { ExtractionSummaryTab } from "@/components/analysis-report/ExtractionSummaryTab";
 import { CoreProcessesTab } from "@/components/analysis-report/CoreProcessesTab";
 import { DiagnosticFindingsTab } from "@/components/analysis-report/DiagnosticFindingsTab";
-import { CrossOrgComparisonTab } from "@/components/analysis-report/CrossOrgComparisonTab";
 import { LlmModelBadge } from "@/components/analysis-report/LlmModelBadge";
 import { ReanalysisPopover } from "@/components/analysis-report/ReanalysisPopover";
+import { TriageView } from "@/components/analysis-report/TriageView";
+import { DomainReportView } from "@/components/analysis-report/DomainReportView";
 import { useOrganization } from "@/contexts/OrganizationContext";
+
+type TopView = "triage" | "report" | "detail";
 
 export default function AnalysisReportPage() {
   const { organizationId } = useOrganization();
   const [searchParams, setSearchParams] = useSearchParams();
+
+  // Top-level view: triage (default), report, or detail (legacy doc-level)
+  const rawView = searchParams.get("view");
+  const topView: TopView =
+    rawView === "report" ? "report"
+    : rawView === "detail" ? "detail"
+    : "triage";
+
+  // Detail view state (legacy doc-level analysis)
   const [documents, setDocuments] = useState<DocumentRow[]>([]);
   const [selectedDocId, setSelectedDocId] = useState<string>(
     searchParams.get("doc") ?? "",
@@ -42,13 +54,11 @@ export default function AnalysisReportPage() {
   const [activeTab, setActiveTab] = useState("summary");
   const [targetProcess, setTargetProcess] = useState<string | null>(null);
 
-  // API data
   const [summary, setSummary] = useState<ExtractionSummary | null>(null);
   const [coreData, setCoreData] = useState<CoreIdentification | null>(null);
   const [diagnosisData, setDiagnosisData] = useState<DiagnosisResult | null>(null);
   const [llmInfo, setLlmInfo] = useState<{ provider: string; model: string } | null>(null);
 
-  // Loading states
   const [loadingDocs, setLoadingDocs] = useState(true);
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [loadingCore, setLoadingCore] = useState(false);
@@ -56,8 +66,12 @@ export default function AnalysisReportPage() {
   const [reanalyzing, setReanalyzing] = useState(false);
   const [triggering, setTriggering] = useState(false);
 
-  // Load document list
+  // Load documents for detail view
   useEffect(() => {
+    if (topView !== "detail") {
+      setLoadingDocs(false);
+      return;
+    }
     void fetchDocuments(organizationId)
       .then((res) => {
         if (res.success) {
@@ -72,9 +86,8 @@ export default function AnalysisReportPage() {
       })
       .catch(() => toast.error("문서 목록 API 호출 실패"))
       .finally(() => setLoadingDocs(false));
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [topView, organizationId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Shared data loading function
   const loadAnalysisData = useCallback((docId: string) => {
     setSummary(null);
     setCoreData(null);
@@ -96,40 +109,29 @@ export default function AnalysisReportPage() {
       .finally(() => setLoadingSummary(false));
 
     void fetchCoreProcesses(organizationId, docId)
-      .then((res) => {
-        if (res.success) setCoreData(res.data);
-      })
+      .then((res) => { if (res.success) setCoreData(res.data); })
       .catch(() => toast.error("핵심 프로세스 API 호출 실패"))
       .finally(() => setLoadingCore(false));
 
     void fetchFindings(organizationId, docId)
-      .then((res) => {
-        if (res.success) setDiagnosisData(res.data);
-      })
+      .then((res) => { if (res.success) setDiagnosisData(res.data); })
       .catch(() => toast.error("진단 소견 API 호출 실패"))
       .finally(() => setLoadingFindings(false));
   }, [organizationId]);
 
-  // Load analysis data when document changes
   useEffect(() => {
-    if (!selectedDocId) return;
-    setSearchParams({ doc: selectedDocId }, { replace: true });
+    if (topView !== "detail" || !selectedDocId) return;
     loadAnalysisData(selectedDocId);
-  }, [selectedDocId, setSearchParams, loadAnalysisData]);
+  }, [selectedDocId, topView, loadAnalysisData]);
 
-  // Re-analysis handler
   const handleReanalyze = useCallback(async (provider: LlmProvider, tier: LlmTier) => {
     if (!selectedDocId || !summary) return;
-
-    const extractionId = summary.extractionId;
-    const organizationId = summary.organizationId;
-
     setReanalyzing(true);
     try {
-      const res = await triggerAnalysis(organizationId, {
+      const res = await triggerAnalysis(summary.organizationId, {
         documentId: selectedDocId,
-        extractionId,
-        organizationId,
+        extractionId: summary.extractionId,
+        organizationId: summary.organizationId,
         preferredProvider: provider,
         preferredTier: tier,
       });
@@ -146,12 +148,10 @@ export default function AnalysisReportPage() {
     }
   }, [selectedDocId, summary, loadAnalysisData]);
 
-  // Trigger analysis for a document that has no analysis data yet
   const handleTriggerAnalysis = useCallback(async () => {
     if (!selectedDocId) return;
     setTriggering(true);
     try {
-      // Find the extractionId for this document
       const extRes = await fetchExtractions(organizationId, selectedDocId);
       if (!extRes.success) {
         toast.error("추출 데이터 조회 실패: " + extRes.error.message);
@@ -159,10 +159,9 @@ export default function AnalysisReportPage() {
       }
       const completed = extRes.data.extractions.find((e) => e.status === "completed");
       if (!completed) {
-        toast.error("완료된 추출이 없습니다. 먼저 문서 파싱이 완료되어야 합니다.");
+        toast.error("완료된 추출이 없습니다.");
         return;
       }
-
       const res = await triggerAnalysis(organizationId, {
         documentId: selectedDocId,
         extractionId: completed.extractionId,
@@ -190,12 +189,16 @@ export default function AnalysisReportPage() {
     if (!selectedDocId) return;
     setLoadingFindings(true);
     void fetchFindings(organizationId, selectedDocId)
-      .then((res) => {
-        if (res.success) setDiagnosisData(res.data);
-      })
+      .then((res) => { if (res.success) setDiagnosisData(res.data); })
       .catch(() => toast.error("진단 소견 API 호출 실패"))
       .finally(() => setLoadingFindings(false));
   }, [organizationId, selectedDocId]);
+
+  function setTopView(view: TopView) {
+    const params: Record<string, string> = { view };
+    if (view === "detail" && selectedDocId) params["doc"] = selectedDocId;
+    setSearchParams(params, { replace: true });
+  }
 
   return (
     <div className="space-y-4">
@@ -203,89 +206,108 @@ export default function AnalysisReportPage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: "var(--text-primary)" }}>
-            분석 리포트 Analysis Report
+            분석 리포트
           </h1>
-          <div className="flex items-center gap-2 mt-1.5">
-            <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-              문서별 3-Layer 분석 + 조직 간 비교
-            </p>
-            <LlmModelBadge provider={llmInfo?.provider ?? null} model={llmInfo?.model ?? null} />
-          </div>
-          {activeTab !== "comparison" && summary && (
-            <div className="mt-2">
-              <ReanalysisPopover
-                currentProvider={llmInfo?.provider}
-                currentModel={llmInfo?.model}
-                onReanalyze={handleReanalyze}
-                disabled={reanalyzing || !summary}
-              />
-            </div>
-          )}
+          <p className="text-sm mt-1" style={{ color: "var(--text-secondary)" }}>
+            {topView === "triage" && "문서 선별 · 분석 가치 기반 우선순위"}
+            {topView === "report" && "도메인 전체 집계 · 핵심 발견사항"}
+            {topView === "detail" && "문서별 3-Layer 분석"}
+          </p>
         </div>
-        {activeTab !== "comparison" && (
-          <div className="w-72">
-            <Select
-              value={selectedDocId}
-              onValueChange={setSelectedDocId}
-              disabled={loadingDocs}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="문서 선택..." />
-              </SelectTrigger>
-              <SelectContent>
-                {documents.map((doc) => (
-                  <SelectItem key={doc.document_id} value={doc.document_id}>
-                    {doc.original_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+        {topView === "detail" && (
+          <div className="flex items-center gap-3">
+            {summary && (
+              <div className="flex items-center gap-2">
+                <LlmModelBadge provider={llmInfo?.provider ?? null} model={llmInfo?.model ?? null} />
+                <ReanalysisPopover
+                  currentProvider={llmInfo?.provider}
+                  currentModel={llmInfo?.model}
+                  onReanalyze={handleReanalyze}
+                  disabled={reanalyzing || !summary}
+                />
+              </div>
+            )}
+            <div className="w-64">
+              <Select
+                value={selectedDocId}
+                onValueChange={(v) => {
+                  setSelectedDocId(v);
+                  setSearchParams({ view: "detail", doc: v }, { replace: true });
+                }}
+                disabled={loadingDocs}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="문서 선택..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {documents.map((doc) => (
+                    <SelectItem key={doc.document_id} value={doc.document_id}>
+                      {doc.original_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         )}
       </div>
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      {/* Top-level Tab Navigation */}
+      <Tabs value={topView} onValueChange={(v) => setTopView(v as TopView)}>
         <TabsList>
-          <TabsTrigger value="summary">추출 요약</TabsTrigger>
-          <TabsTrigger value="core">핵심 프로세스</TabsTrigger>
-          <TabsTrigger value="findings">진단 소견</TabsTrigger>
-          <TabsTrigger value="comparison">조직 비교</TabsTrigger>
+          <TabsTrigger value="triage">문서 선별</TabsTrigger>
+          <TabsTrigger value="report">도메인 리포트</TabsTrigger>
+          <TabsTrigger value="detail">문서 상세</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="summary" className="mt-4">
-          <ExtractionSummaryTab
-            data={summary}
-            loading={loadingSummary}
-            onProcessClick={handleProcessClick}
-            onTriggerAnalysis={handleTriggerAnalysis}
-            triggering={triggering}
-          />
+        <TabsContent value="triage" className="mt-4">
+          <TriageView />
         </TabsContent>
 
-        <TabsContent value="core" className="mt-4">
-          <CoreProcessesTab
-            data={coreData}
-            loading={loadingCore}
-            initialProcess={targetProcess}
-            onTriggerAnalysis={handleTriggerAnalysis}
-            triggering={triggering}
-          />
+        <TabsContent value="report" className="mt-4">
+          <DomainReportView />
         </TabsContent>
 
-        <TabsContent value="findings" className="mt-4">
-          <DiagnosticFindingsTab
-            data={diagnosisData}
-            loading={loadingFindings}
-            documentId={selectedDocId}
-            onRefresh={handleRefreshFindings}
-            onTriggerAnalysis={handleTriggerAnalysis}
-            triggering={triggering}
-          />
-        </TabsContent>
+        <TabsContent value="detail" className="mt-4">
+          {/* Inner tabs for document-level analysis */}
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList>
+              <TabsTrigger value="summary">추출 요약</TabsTrigger>
+              <TabsTrigger value="core">핵심 프로세스</TabsTrigger>
+              <TabsTrigger value="findings">진단 소견</TabsTrigger>
+            </TabsList>
 
-        <TabsContent value="comparison" className="mt-4">
-          <CrossOrgComparisonTab />
+            <TabsContent value="summary" className="mt-4">
+              <ExtractionSummaryTab
+                data={summary}
+                loading={loadingSummary}
+                onProcessClick={handleProcessClick}
+                onTriggerAnalysis={handleTriggerAnalysis}
+                triggering={triggering}
+              />
+            </TabsContent>
+
+            <TabsContent value="core" className="mt-4">
+              <CoreProcessesTab
+                data={coreData}
+                loading={loadingCore}
+                initialProcess={targetProcess}
+                onTriggerAnalysis={handleTriggerAnalysis}
+                triggering={triggering}
+              />
+            </TabsContent>
+
+            <TabsContent value="findings" className="mt-4">
+              <DiagnosticFindingsTab
+                data={diagnosisData}
+                loading={loadingFindings}
+                documentId={selectedDocId}
+                onRefresh={handleRefreshFindings}
+                onTriggerAnalysis={handleTriggerAnalysis}
+                triggering={triggering}
+              />
+            </TabsContent>
+          </Tabs>
         </TabsContent>
       </Tabs>
     </div>

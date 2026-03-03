@@ -1,6 +1,9 @@
 /**
  * 분석 리포트 API 라우트 — svc-extraction (SVC-02) 확장
  *
+ * GET  /analysis/triage                       → TriageResponse (문서 선별)
+ * POST /analysis/batch-analyze                → 일괄 분석 요청 (Queue)
+ * GET  /analysis/domain-report                → DomainReport (도메인 집계)
  * GET  /analysis/:documentId/summary          → ExtractionSummary (Layer 1)
  * GET  /analysis/:documentId/core-processes   → CoreIdentification (Layer 2)
  * GET  /analysis/:documentId/findings         → DiagnosisResult (Layer 3)
@@ -14,6 +17,8 @@ import {
   ExtractionSummarySchema,
   CoreIdentificationSchema,
   type DiagnosisFinding,
+  type TriageDocument,
+  type AggregatedProcess,
 } from "@ai-foundry/types";
 import { buildScoringPrompt, parseScoringResult, buildCoreSummary } from "../prompts/scoring.js";
 import { buildDiagnosisPrompt, parseDiagnosisResult } from "../prompts/diagnosis.js";
@@ -74,6 +79,25 @@ export async function handleAnalysisRoutes(
   const url = new URL(request.url);
   const path = url.pathname;
   const method = request.method;
+
+  // GET /analysis/triage — 문서 선별 (Triage)
+  if (method === "GET" && path === "/analysis/triage") {
+    const organizationId = url.searchParams.get("organizationId");
+    if (!organizationId) return badRequest("organizationId query param required");
+    return handleGetTriage(env, organizationId);
+  }
+
+  // POST /analysis/batch-analyze — 일괄 분석 요청
+  if (method === "POST" && path === "/analysis/batch-analyze") {
+    return handleBatchAnalyze(request, env);
+  }
+
+  // GET /analysis/domain-report — 도메인 집계 리포트
+  if (method === "GET" && path === "/analysis/domain-report") {
+    const organizationId = url.searchParams.get("organizationId");
+    if (!organizationId) return badRequest("organizationId query param required");
+    return handleGetDomainReport(env, organizationId);
+  }
 
   // GET /analysis/organizations — 분석 완료된 조직 목록
   if (method === "GET" && path === "/analysis/organizations") {
@@ -157,6 +181,408 @@ async function handleGetOrganizations(env: Env): Promise<Response> {
       totalProcesses: r.total_processes,
       lastAnalysisAt: r.last_analysis_at,
     })),
+  });
+}
+
+// ── Triage 스코어 계산 ────────────────────────────────────────────────
+
+function computeTriageScore(doc: {
+  ruleCount: number;
+  relationshipCount: number;
+  entityCount: number;
+  processCount: number;
+}): number {
+  const ruleNorm = Math.min(doc.ruleCount / 10, 1.0);
+  const relNorm = Math.min(doc.relationshipCount / 15, 1.0);
+  const entityNorm = Math.min(doc.entityCount / 25, 1.0);
+  const processNorm = Math.min(doc.processCount / 15, 1.0);
+  return ruleNorm * 0.35 + relNorm * 0.25 + entityNorm * 0.25 + processNorm * 0.15;
+}
+
+function triageRank(score: number): "high" | "medium" | "low" {
+  if (score >= 0.6) return "high";
+  if (score >= 0.3) return "medium";
+  return "low";
+}
+
+// ── GET /analysis/triage ─────────────────────────────────────────────
+
+interface TriageRow {
+  id: string;
+  document_id: string;
+  process_node_count: number | null;
+  entity_count: number | null;
+  result_json: string | null;
+  created_at: string;
+  analysis_id: string | null;
+  analysis_status: string | null;
+  analyzed_at: string | null;
+  a_rule_count: number | null;
+  a_relationship_count: number | null;
+}
+
+async function handleGetTriage(env: Env, organizationId: string): Promise<Response> {
+  const { results } = await env.DB_EXTRACTION.prepare(
+    `SELECT e.id, e.document_id, e.process_node_count, e.entity_count,
+            e.result_json, e.created_at,
+            a.analysis_id, a.status AS analysis_status, a.created_at AS analyzed_at,
+            a.rule_count AS a_rule_count, a.relationship_count AS a_relationship_count
+     FROM extractions e
+     LEFT JOIN analyses a ON a.document_id = e.document_id
+       AND a.status = 'completed'
+       AND a.rowid = (SELECT MAX(a2.rowid) FROM analyses a2
+                       WHERE a2.document_id = e.document_id AND a2.status = 'completed')
+     WHERE e.organization_id = ? AND e.status = 'completed'
+     ORDER BY e.process_node_count DESC`
+  )
+    .bind(organizationId)
+    .all<TriageRow>();
+
+  const documents: TriageDocument[] = [];
+  let analyzed = 0;
+  let highPriority = 0;
+  let mediumPriority = 0;
+  let lowPriority = 0;
+
+  for (const row of results) {
+    let ruleCount = row.a_rule_count ?? 0;
+    let relationshipCount = row.a_relationship_count ?? 0;
+
+    // 미분석 문서: result_json에서 rules/relationships count 파싱
+    if (!row.analysis_id && row.result_json) {
+      try {
+        const parsed = JSON.parse(row.result_json) as {
+          rules?: unknown[];
+          relationships?: unknown[];
+        };
+        ruleCount = Array.isArray(parsed.rules) ? parsed.rules.length : 0;
+        relationshipCount = Array.isArray(parsed.relationships) ? parsed.relationships.length : 0;
+      } catch {
+        // JSON 파싱 실패 시 0으로 유지
+      }
+    }
+
+    const processCount = row.process_node_count ?? 0;
+    const entityCount = row.entity_count ?? 0;
+    const score = computeTriageScore({ ruleCount, relationshipCount, entityCount, processCount });
+    const rank = triageRank(score);
+
+    if (row.analysis_id) analyzed++;
+    if (rank === "high") highPriority++;
+    else if (rank === "medium") mediumPriority++;
+    else lowPriority++;
+
+    documents.push({
+      documentId: row.document_id,
+      extractionId: row.id,
+      processCount,
+      entityCount,
+      ruleCount,
+      relationshipCount,
+      triageScore: Math.round(score * 100) / 100,
+      triageRank: rank,
+      analysisStatus: row.analysis_id ? "completed" : null,
+      analysisId: row.analysis_id ?? null,
+      analyzedAt: row.analyzed_at ?? null,
+      extractedAt: row.created_at,
+    });
+  }
+
+  // 스코어 내림차순 정렬
+  documents.sort((a, b) => b.triageScore - a.triageScore);
+
+  return ok({
+    documents,
+    summary: {
+      total: documents.length,
+      analyzed,
+      notAnalyzed: documents.length - analyzed,
+      highPriority,
+      mediumPriority,
+      lowPriority,
+    },
+  });
+}
+
+// ── POST /analysis/batch-analyze ─────────────────────────────────────
+
+interface BatchAnalyzeBody {
+  documentIds: string[];
+  organizationId: string;
+  preferredProvider?: string;
+  preferredTier?: string;
+}
+
+async function handleBatchAnalyze(request: Request, env: Env): Promise<Response> {
+  let body: BatchAnalyzeBody;
+  try {
+    body = (await request.json()) as BatchAnalyzeBody;
+  } catch {
+    return badRequest("Request body must be valid JSON");
+  }
+
+  const { documentIds, organizationId, preferredProvider, preferredTier } = body;
+  if (!Array.isArray(documentIds) || documentIds.length === 0) {
+    return badRequest("documentIds must be a non-empty array");
+  }
+  if (!organizationId) {
+    return badRequest("organizationId is required");
+  }
+
+  let submitted = 0;
+  let skipped = 0;
+  const errors: string[] = [];
+
+  for (const docId of documentIds) {
+    // 이미 분석 완료 확인
+    const existing = await env.DB_EXTRACTION.prepare(
+      `SELECT analysis_id FROM analyses WHERE document_id = ? AND status = 'completed' LIMIT 1`
+    )
+      .bind(docId)
+      .first<{ analysis_id: string }>();
+
+    if (existing) {
+      skipped++;
+      continue;
+    }
+
+    // extraction 확인
+    const extraction = await env.DB_EXTRACTION.prepare(
+      `SELECT id FROM extractions WHERE document_id = ? AND status = 'completed' ORDER BY created_at DESC LIMIT 1`
+    )
+      .bind(docId)
+      .first<{ id: string }>();
+
+    if (!extraction) {
+      errors.push(`${docId}: no completed extraction`);
+      continue;
+    }
+
+    // Queue에 analysis.requested 이벤트 발행
+    await env.QUEUE_PIPELINE.send({
+      eventId: crypto.randomUUID(),
+      occurredAt: new Date().toISOString(),
+      type: "analysis.requested",
+      payload: {
+        documentId: docId,
+        extractionId: extraction.id,
+        organizationId,
+        mode: "diagnosis-sync",
+        ...(preferredProvider ? { preferredProvider } : {}),
+        ...(preferredTier ? { preferredTier } : {}),
+      },
+    });
+
+    submitted++;
+  }
+
+  return ok({ submitted, skipped, errors });
+}
+
+// ── GET /analysis/domain-report ──────────────────────────────────────
+
+interface AggCountRow {
+  doc_count: number;
+  total_processes: number;
+  total_entities: number;
+  total_rules: number;
+  total_relationships: number;
+  total_core: number;
+  last_analyzed_at: string | null;
+}
+
+interface FindingAggRow {
+  type: string;
+  severity: string;
+  cnt: number;
+}
+
+interface TopFindingRow {
+  finding_id: string;
+  document_id: string;
+  type: string;
+  severity: string;
+  finding: string;
+  evidence: string;
+  recommendation: string;
+  related_processes: string | null;
+  confidence: number;
+  hitl_status: string;
+}
+
+interface SummaryJsonRow {
+  document_id: string;
+  summary_json: string;
+}
+
+async function handleGetDomainReport(env: Env, organizationId: string): Promise<Response> {
+  // 4a: 집계 카운트
+  const aggRow = await env.DB_EXTRACTION.prepare(
+    `SELECT COUNT(*) AS doc_count,
+            COALESCE(SUM(process_count), 0) AS total_processes,
+            COALESCE(SUM(entity_count), 0) AS total_entities,
+            COALESCE(SUM(rule_count), 0) AS total_rules,
+            COALESCE(SUM(relationship_count), 0) AS total_relationships,
+            COALESCE(SUM(core_process_count), 0) AS total_core,
+            MAX(created_at) AS last_analyzed_at
+     FROM analyses WHERE organization_id = ? AND status = 'completed'`
+  )
+    .bind(organizationId)
+    .first<AggCountRow>();
+
+  if (!aggRow || aggRow.doc_count === 0) {
+    return ok({
+      organizationId,
+      analyzedDocumentCount: 0,
+      counts: { processes: 0, entities: 0, rules: 0, relationships: 0, coreProcesses: 0 },
+      findingsSummary: {
+        total: 0,
+        byType: { missing: 0, duplicate: 0, overspec: 0, inconsistency: 0 },
+        bySeverity: { critical: 0, warning: 0, info: 0 },
+      },
+      topFindings: [],
+      coreProcesses: [],
+      lastAnalyzedAt: null,
+    });
+  }
+
+  // 4b: 발견사항 집계
+  const { results: findingAgg } = await env.DB_EXTRACTION.prepare(
+    `SELECT type, severity, COUNT(*) AS cnt
+     FROM diagnosis_findings WHERE organization_id = ?
+     GROUP BY type, severity`
+  )
+    .bind(organizationId)
+    .all<FindingAggRow>();
+
+  const byType = { missing: 0, duplicate: 0, overspec: 0, inconsistency: 0 };
+  const bySeverity = { critical: 0, warning: 0, info: 0 };
+  let totalFindings = 0;
+
+  for (const row of findingAgg) {
+    totalFindings += row.cnt;
+    const typeKey = row.type as keyof typeof byType;
+    if (typeKey in byType) byType[typeKey] += row.cnt;
+    const sevKey = row.severity as keyof typeof bySeverity;
+    if (sevKey in bySeverity) bySeverity[sevKey] += row.cnt;
+  }
+
+  // 4c: 상위 30건 발견사항
+  const { results: topFindingRows } = await env.DB_EXTRACTION.prepare(
+    `SELECT finding_id, document_id, type, severity, finding, evidence,
+            recommendation, related_processes, confidence, hitl_status
+     FROM diagnosis_findings WHERE organization_id = ?
+     ORDER BY CASE severity WHEN 'critical' THEN 0 WHEN 'warning' THEN 1 ELSE 2 END,
+              confidence DESC
+     LIMIT 30`
+  )
+    .bind(organizationId)
+    .all<TopFindingRow>();
+
+  const topFindings = topFindingRows.map((r) => ({
+    findingId: r.finding_id,
+    documentId: r.document_id,
+    type: r.type,
+    severity: r.severity,
+    finding: r.finding,
+    evidence: r.evidence,
+    recommendation: r.recommendation,
+    relatedProcesses: r.related_processes ? (JSON.parse(r.related_processes) as string[]) : [],
+    confidence: r.confidence,
+    hitlStatus: r.hitl_status,
+  }));
+
+  // 4d: 핵심 프로세스 집계 — summary_json에서 processes 배열 머지
+  const { results: summaryRows } = await env.DB_EXTRACTION.prepare(
+    `SELECT document_id, summary_json FROM analyses
+     WHERE organization_id = ? AND status = 'completed'`
+  )
+    .bind(organizationId)
+    .all<SummaryJsonRow>();
+
+  const processMap = new Map<string, {
+    scores: number[];
+    categories: string[];
+    documentIds: string[];
+    isCoreVotes: boolean[];
+  }>();
+
+  for (const row of summaryRows) {
+    try {
+      const summary = JSON.parse(row.summary_json) as {
+        processes?: Array<{
+          name: string;
+          importanceScore: number;
+          category: string;
+          isCore: boolean;
+        }>;
+      };
+      if (!Array.isArray(summary.processes)) continue;
+      for (const proc of summary.processes) {
+        const key = proc.name;
+        let entry = processMap.get(key);
+        if (!entry) {
+          entry = { scores: [], categories: [], documentIds: [], isCoreVotes: [] };
+          processMap.set(key, entry);
+        }
+        entry.scores.push(proc.importanceScore);
+        entry.categories.push(proc.category);
+        entry.documentIds.push(row.document_id);
+        entry.isCoreVotes.push(proc.isCore);
+      }
+    } catch {
+      // JSON 파싱 실패 무시
+    }
+  }
+
+  const coreProcesses: AggregatedProcess[] = [];
+  for (const [name, data] of processMap) {
+    const avgScore = data.scores.reduce((a, b) => a + b, 0) / data.scores.length;
+    // 최빈 카테고리
+    const catCounts = new Map<string, number>();
+    for (const c of data.categories) {
+      catCounts.set(c, (catCounts.get(c) ?? 0) + 1);
+    }
+    let topCat = "supporting";
+    let topCatCount = 0;
+    for (const [cat, cnt] of catCounts) {
+      if (cnt > topCatCount) {
+        topCat = cat;
+        topCatCount = cnt;
+      }
+    }
+    const isCore = topCat === "mega" || topCat === "core";
+    coreProcesses.push({
+      name,
+      category: topCat as AggregatedProcess["category"],
+      avgImportanceScore: Math.round(avgScore * 100) / 100,
+      documentCount: new Set(data.documentIds).size,
+      sourceDocumentIds: [...new Set(data.documentIds)],
+      isCore,
+    });
+  }
+
+  // 중요도 내림차순
+  coreProcesses.sort((a, b) => b.avgImportanceScore - a.avgImportanceScore);
+
+  return ok({
+    organizationId,
+    analyzedDocumentCount: aggRow.doc_count,
+    counts: {
+      processes: aggRow.total_processes,
+      entities: aggRow.total_entities,
+      rules: aggRow.total_rules,
+      relationships: aggRow.total_relationships,
+      coreProcesses: aggRow.total_core,
+    },
+    findingsSummary: {
+      total: totalFindings,
+      byType,
+      bySeverity,
+    },
+    topFindings,
+    coreProcesses,
+    lastAnalyzedAt: aggRow.last_analyzed_at ?? null,
   });
 }
 

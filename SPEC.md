@@ -52,12 +52,13 @@
 
 ## 5) Current Status
 
-- **Last Updated**: 2026-03-03 (세션 062)
-- **Current Phase**: Phase 2-E 구현+검증 완료 (17/17 태스크, Gap 100%, Staging 배포)
+- **Last Updated**: 2026-03-03 (세션 063)
+- **Current Phase**: Phase 3 Sprint 1 완료 — Skill Evaluate 엔드포인트 배포+E2E 검증
 - **Production E2E**: ✅ 8/8 PASS (synthetic) + 7/7 PASS (real-doc) + Batch 9/11 parsed (real-doc)
 - **Real Document Pilot**: ✅ 13/15 문서 파싱 완료 (Batch 1: 4건, Batch 2: 9/11건)
 - **Production Data**: policies 134+ approved, terms 1,441, skills 171 (org-mirae-pension)
 - **Multi-Provider LLM**: ✅ Anthropic→OpenAI→Google→Workers AI 4-provider fallback 구현 + 검증
+- **Phase 3 Sprint 1**: ✅ Skill Evaluate endpoint (POST+GET) + D1 마이그레이션 + 3환경 배포 + E2E 검증
 - **Phase 3 Prep**: ✅ MCP 2024-11-05 protocol + OpenAPI 3.0 adapter (Staging 배포 완료)
 - **Quality Infra**: ✅ DB 마이그레이션 + API + 대시보드 배포 완료 (org별 메트릭 기록)
 - **Frontend API**: ✅ 10/10 페이지 API 연동 완료 (Settings Health 모니터링 + 알림 연동 포함)
@@ -325,10 +326,14 @@
 - [ ] 추가 문서 업로드 (764건 XLSX 중 선별)
 - [ ] PDF 대용량 문서 파싱 (Unstructured.io 524 timeout 해결)
 
-### Phase 3 — MCP/OpenAPI 실사용 (예정)
+### Phase 3 — MCP/OpenAPI 실사용 (Sprint 1 완료)
+- [x] Sprint 1: Skill Evaluate 엔드포인트 (POST /skills/:id/evaluate + GET /evaluations)
+- [x] Sprint 1: Multi-provider benchmark (Anthropic/OpenAI/Google 비교 + consensus)
+- [x] Sprint 1: D1 skill_evaluations 테이블 + 3환경 배포 + E2E 검증
+- [ ] Sprint 2: Skill 검색 API + Marketplace UX + Detail 페이지
+- [ ] Sprint 3: MCP Server Worker + Skill 버전 관리
 - [ ] MCP adapter를 실제 MCP 클라이언트(Claude Desktop 등)에서 테스트
 - [ ] OpenAPI adapter 외부 시스템 연동 검증
-- [ ] Skill 패키지 재사용성 검증
 
 ---
 

@@ -83,12 +83,12 @@ describe("resolveModel", () => {
     expect(resolveModel("anthropic", "sonnet")).toBe("claude-sonnet-4-6");
   });
 
-  it("returns exact model for openai opus (maps to gpt-4o)", () => {
-    expect(resolveModel("openai", "opus")).toBe("gpt-4o");
+  it("returns exact model for openai opus (maps to gpt-4.1)", () => {
+    expect(resolveModel("openai", "opus")).toBe("gpt-4.1");
   });
 
   it("falls back to sonnet for workers-ai opus (no opus model)", () => {
-    expect(resolveModel("workers-ai", "opus")).toBe("@cf/meta/llama-3.1-70b-instruct");
+    expect(resolveModel("workers-ai", "opus")).toBe("@cf/zai-org/glm-4.7-flash");
   });
 
   it("returns haiku model for workers-ai haiku", () => {
@@ -96,7 +96,7 @@ describe("resolveModel", () => {
   });
 
   it("returns exact model for google haiku", () => {
-    expect(resolveModel("google", "haiku")).toBe("gemini-2.0-flash-lite");
+    expect(resolveModel("google", "haiku")).toBe("gemini-2.5-flash-lite");
   });
 });
 

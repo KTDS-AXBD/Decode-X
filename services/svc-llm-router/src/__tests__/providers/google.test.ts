@@ -17,7 +17,7 @@ function makeRequest(overrides?: Partial<LlmRequest>): LlmRequest {
 describe("googleAdapter", () => {
   describe("buildBody", () => {
     it("builds Gemini generateContent body with contents/parts format", () => {
-      const body = googleAdapter.buildBody(makeRequest(), "gemini-2.0-flash");
+      const body = googleAdapter.buildBody(makeRequest(), "gemini-2.5-flash");
       const contents = body["contents"] as Array<{ role: string; parts: Array<{ text: string }> }>;
       expect(contents).toHaveLength(1);
       expect(contents[0]?.role).toBe("user");
@@ -32,7 +32,7 @@ describe("googleAdapter", () => {
             { role: "assistant", content: "A" },
           ],
         }),
-        "gemini-2.0-flash",
+        "gemini-2.5-flash",
       );
       const contents = body["contents"] as Array<{ role: string }>;
       expect(contents[0]?.role).toBe("user");
@@ -40,18 +40,18 @@ describe("googleAdapter", () => {
     });
 
     it("includes systemInstruction when system is present", () => {
-      const body = googleAdapter.buildBody(makeRequest({ system: "Be helpful" }), "gemini-2.0-flash");
+      const body = googleAdapter.buildBody(makeRequest({ system: "Be helpful" }), "gemini-2.5-flash");
       const sysInstruction = body["systemInstruction"] as { parts: Array<{ text: string }> };
       expect(sysInstruction.parts[0]?.text).toBe("Be helpful");
     });
 
     it("does not include systemInstruction when system is absent", () => {
-      const body = googleAdapter.buildBody(makeRequest(), "gemini-2.0-flash");
+      const body = googleAdapter.buildBody(makeRequest(), "gemini-2.5-flash");
       expect(body["systemInstruction"]).toBeUndefined();
     });
 
     it("includes generationConfig with maxOutputTokens and temperature", () => {
-      const body = googleAdapter.buildBody(makeRequest(), "gemini-2.0-flash");
+      const body = googleAdapter.buildBody(makeRequest(), "gemini-2.5-flash");
       const config = body["generationConfig"] as { maxOutputTokens: number; temperature: number };
       expect(config.maxOutputTokens).toBe(1024);
       expect(config.temperature).toBe(0.3);
@@ -64,8 +64,8 @@ describe("googleAdapter", () => {
         CLOUDFLARE_AI_GATEWAY_URL: "https://gw.example.com",
         GOOGLE_AI_API_KEY: "AIza-test",
       };
-      const endpoint = googleAdapter.getEndpoint(env, "gemini-2.0-flash");
-      expect(endpoint.url).toBe("https://gw.example.com/google-ai-studio/v1/models/gemini-2.0-flash:generateContent");
+      const endpoint = googleAdapter.getEndpoint(env, "gemini-2.5-flash");
+      expect(endpoint.url).toBe("https://gw.example.com/google-ai-studio/v1/models/gemini-2.5-flash:generateContent");
       expect(endpoint.headers["x-goog-api-key"]).toBe("AIza-test");
     });
   });

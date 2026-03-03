@@ -17,15 +17,15 @@ function makeRequest(overrides?: Partial<LlmRequest>): LlmRequest {
 describe("openaiAdapter", () => {
   describe("buildBody", () => {
     it("builds OpenAI Chat Completions body", () => {
-      const body = openaiAdapter.buildBody(makeRequest(), "gpt-4o");
-      expect(body["model"]).toBe("gpt-4o");
+      const body = openaiAdapter.buildBody(makeRequest(), "gpt-4.1");
+      expect(body["model"]).toBe("gpt-4.1");
       expect(body["max_tokens"]).toBe(1024);
       expect(body["temperature"]).toBe(0.5);
       expect(body["messages"]).toEqual([{ role: "user", content: "Hello" }]);
     });
 
     it("prepends system message when present", () => {
-      const body = openaiAdapter.buildBody(makeRequest({ system: "Be helpful" }), "gpt-4o");
+      const body = openaiAdapter.buildBody(makeRequest({ system: "Be helpful" }), "gpt-4.1");
       const messages = body["messages"] as Array<{ role: string; content: string }>;
       expect(messages[0]).toEqual({ role: "system", content: "Be helpful" });
       expect(messages[1]).toEqual({ role: "user", content: "Hello" });
@@ -40,7 +40,7 @@ describe("openaiAdapter", () => {
             { role: "system", content: "S" },
           ],
         }),
-        "gpt-4o",
+        "gpt-4.1",
       );
       const messages = body["messages"] as Array<{ role: string }>;
       expect(messages.map((m) => m.role)).toEqual(["user", "assistant", "system"]);
@@ -53,7 +53,7 @@ describe("openaiAdapter", () => {
         CLOUDFLARE_AI_GATEWAY_URL: "https://gw.example.com",
         OPENAI_API_KEY: "sk-openai-test",
       };
-      const endpoint = openaiAdapter.getEndpoint(env, "gpt-4o");
+      const endpoint = openaiAdapter.getEndpoint(env, "gpt-4.1");
       expect(endpoint.url).toBe("https://gw.example.com/openai/v1/chat/completions");
       expect(endpoint.headers["Authorization"]).toBe("Bearer sk-openai-test");
     });

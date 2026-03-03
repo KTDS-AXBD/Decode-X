@@ -23,7 +23,7 @@ export const TIER_MODELS: Record<LlmTier, string> = {
   opus: "claude-opus-4-6",
   sonnet: "claude-sonnet-4-6",
   haiku: "claude-haiku-4-5-20251001",
-  workers: "@cf/baai/bge-base-en-v1.5",
+  workers: "@cf/baai/bge-m3",
 };
 
 // Per-provider tier→model mapping (workers-ai has no opus equivalent)
@@ -32,20 +32,20 @@ export const PROVIDER_TIER_MODELS: Record<LlmProvider, Partial<Record<LlmTier, s
     opus: "claude-opus-4-6",
     sonnet: "claude-sonnet-4-6",
     haiku: "claude-haiku-4-5-20251001",
-    workers: "@cf/baai/bge-base-en-v1.5",
+    workers: "@cf/baai/bge-m3",
   },
   openai: {
-    opus: "gpt-4o",
-    sonnet: "gpt-4o-mini",
-    haiku: "gpt-4o-mini",
+    opus: "gpt-4.1",
+    sonnet: "gpt-4.1-mini",
+    haiku: "gpt-4.1-nano",
   },
   google: {
-    opus: "gemini-2.0-flash",
-    sonnet: "gemini-2.0-flash",
-    haiku: "gemini-2.0-flash-lite",
+    opus: "gemini-2.5-pro",
+    sonnet: "gemini-2.5-flash",
+    haiku: "gemini-2.5-flash-lite",
   },
   "workers-ai": {
-    sonnet: "@cf/meta/llama-3.1-70b-instruct",
+    sonnet: "@cf/zai-org/glm-4.7-flash",
     haiku: "@cf/meta/llama-3.1-8b-instruct",
   },
 };

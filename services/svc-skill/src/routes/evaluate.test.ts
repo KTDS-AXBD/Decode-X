@@ -222,7 +222,7 @@ describe("handleEvaluateSkill", () => {
   });
 
   it("supports provider parameter for specific LLM", async () => {
-    const llm = mockLlmRouter(llmSuccessResponse, "openai", "gpt-4o");
+    const llm = mockLlmRouter(llmSuccessResponse, "openai", "gpt-4.1");
     const env = makeEnv({ LLM_ROUTER: llm });
     const ctx = mockCtx();
     const req = makeRequest({

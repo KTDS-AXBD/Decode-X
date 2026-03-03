@@ -2,6 +2,19 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 065 — 2026-03-04
+**Phase 3 Sprint 2 — Skill 검색 API + Marketplace UX**:
+- ✅ svc-skill: GET /skills 검색 강화 (q, tag, subdomain, sort 파라미터 + total count)
+- ✅ svc-skill: GET /skills/search/tags 신규 (태그 목록 deduplicated)
+- ✅ svc-skill: GET /skills/stats 신규 (도메인별, 신뢰도별, topTags 통계)
+- ✅ app-web: skill-detail.tsx 신규 (MCP/OpenAPI 뷰어, 다운로드, 신뢰도 프로그레스바)
+- ✅ app-web: skill-catalog.tsx Marketplace UX (도메인 필터, 태그 칩, 정렬, 반응형 그리드)
+- ✅ app-web: /skills/:id 라우트 등록 + fetchSkillOpenApi() API 추가
+
+**검증**: typecheck 16/16, lint 13/13, svc-skill tests 151/151
+
+**산출물**: `6e76ab2` feat(svc-skill), `30bd892` feat(app-web)
+
 ## 세션 064 — 2026-03-03
 **분석 리포트 LLM 모델 배지 UI 추가**:
 - ✅ 분석 리포트 페이지 헤더에 LLM 모델 배지 표시 (provider별 색상: Anthropic=보라, OpenAI=초록)

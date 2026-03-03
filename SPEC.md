@@ -52,16 +52,17 @@
 
 ## 5) Current Status
 
-- **Last Updated**: 2026-03-03 (세션 063)
-- **Current Phase**: Phase 3 Sprint 1 완료 — Skill Evaluate 엔드포인트 배포+E2E 검증
+- **Last Updated**: 2026-03-04 (세션 065)
+- **Current Phase**: Phase 3 Sprint 2 완료 — Skill 검색 API + Marketplace UX
 - **Production E2E**: ✅ 8/8 PASS (synthetic) + 7/7 PASS (real-doc) + Batch 9/11 parsed (real-doc)
 - **Real Document Pilot**: ✅ 13/15 문서 파싱 완료 (Batch 1: 4건, Batch 2: 9/11건)
 - **Production Data**: policies 134+ approved, terms 1,441, skills 171 (org-mirae-pension)
 - **Multi-Provider LLM**: ✅ Anthropic→OpenAI→Google→Workers AI 4-provider fallback 구현 + 검증
 - **Phase 3 Sprint 1**: ✅ Skill Evaluate endpoint (POST+GET) + D1 마이그레이션 + 3환경 배포 + E2E 검증
+- **Phase 3 Sprint 2**: ✅ Skill 검색 API (q/tag/subdomain/sort + total) + 태그/통계 엔드포인트 + Marketplace UX + Skill Detail 페이지
 - **Phase 3 Prep**: ✅ MCP 2024-11-05 protocol + OpenAPI 3.0 adapter (Staging 배포 완료)
 - **Quality Infra**: ✅ DB 마이그레이션 + API + 대시보드 배포 완료 (org별 메트릭 기록)
-- **Frontend API**: ✅ 10/10 페이지 API 연동 완료 (Settings Health 모니터링 + 알림 연동 포함)
+- **Frontend API**: ✅ 11/11 페이지 API 연동 완료 (Skill Detail 추가, Settings Health 모니터링 + 알림 연동 포함)
 - **Cross-Org Comparison UI**: ✅ analysis-report 4번째 탭 구현 (조직 선택 → 비교 → 4-Group 대시보드)
 - **Repo Bootstrap**: ✅
 - **PRD Seed Document**: ✅ (`docs/AI_Foundry_PRD_TDS_v0.6.docx`)

@@ -1,6 +1,7 @@
 /**
  * POST /chat — AI Agent 가이드 어시스턴트
- * Builds a context-aware system prompt and streams via svc-llm-router (haiku tier).
+ * Builds a context-aware system prompt and calls svc-llm-router (haiku tier, non-streaming).
+ * Non-streaming avoids Cloudflare AI Gateway SSE UTF-8 corruption for Korean text.
  */
 
 import { badRequest, createLogger, extractRbacContext } from "@ai-foundry/utils";
@@ -93,21 +94,21 @@ export async function handleChat(
     { role: "user", content: message },
   ];
 
-  // Build LLM request for svc-llm-router /stream
+  // Build LLM request for svc-llm-router /execute (non-streaming)
+  // Non-streaming avoids AI Gateway SSE chunk-splitting that corrupts Korean UTF-8
   const llmBody = {
-    tier: "haiku",
+    tier: "haiku" as const,
     messages,
     system: systemPrompt,
     maxTokens: 1024,
     temperature: 0.4,
-    stream: true,
     callerService: "svc-governance",
   };
 
   try {
-    // Call svc-llm-router via service binding
+    // Call svc-llm-router via service binding (non-streaming /execute)
     const llmResponse = await env.LLM_ROUTER.fetch(
-      new Request("https://llm-router.internal/stream", {
+      new Request("https://llm-router.internal/execute", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -126,13 +127,11 @@ export async function handleChat(
       );
     }
 
-    // Pass through SSE stream from LLM router
-    return new Response(llmResponse.body, {
+    // Forward the JSON response from LLM router (contains { success, data: { content, ... } })
+    const llmData = await llmResponse.json() as Record<string, unknown>;
+    return new Response(JSON.stringify(llmData), {
       status: 200,
-      headers: {
-        "Content-Type": "text/event-stream; charset=utf-8",
-        "Cache-Control": "no-cache",
-      },
+      headers: { "Content-Type": "application/json; charset=utf-8" },
     });
   } catch (e) {
     logger.error("Chat handler error", { error: String(e) });

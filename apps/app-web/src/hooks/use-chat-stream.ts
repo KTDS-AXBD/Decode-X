@@ -121,7 +121,7 @@ export function useChatStream(opts: UseChatStreamOptions): UseChatStreamReturn {
 
           const contentType = response.headers.get('Content-Type') ?? '';
 
-          // Handle non-streaming JSON response
+          // Handle non-streaming JSON response (primary path — avoids AI Gateway SSE UTF-8 corruption)
           if (contentType.includes('application/json')) {
             const json = await response.json() as Record<string, unknown>;
             const data = json['data'] as Record<string, unknown> | undefined;

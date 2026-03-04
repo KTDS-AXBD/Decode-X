@@ -119,7 +119,7 @@ export function ChatPanel({ messages, isStreaming, error, onSend, onClear, onClo
           <ChatMessage key={i} role={msg.role} content={msg.content} />
         ))}
 
-        {isStreaming && messages.length > 0 && messages[messages.length - 1]?.content === '' && (
+        {isStreaming && messages.length > 0 && (messages[messages.length - 1]?.role === 'user' || messages[messages.length - 1]?.content === '') && (
           <div className="flex items-center gap-2 text-xs" style={{ color: 'var(--text-secondary)' }}>
             <Loader2 className="w-3 h-3 animate-spin" />
             응답 생성 중...

@@ -6,7 +6,7 @@ interface MarkdownContentProps {
 }
 
 interface MarkdownLine {
-  type: 'h1' | 'h2' | 'h3' | 'li' | 'p';
+  type: 'h1' | 'h2' | 'h3' | 'li' | 'ol' | 'hr' | 'p';
   text: string;
 }
 
@@ -15,14 +15,19 @@ function parseLines(content: string): MarkdownLine[] {
     if (line.startsWith('### ')) return { type: 'h3', text: line.slice(4) };
     if (line.startsWith('## ')) return { type: 'h2', text: line.slice(3) };
     if (line.startsWith('# ')) return { type: 'h1', text: line.slice(2) };
+    if (/^---+$/.test(line.trim())) return { type: 'hr', text: '' };
     if (line.startsWith('- ')) return { type: 'li', text: line.slice(2) };
+    // Numbered list: "1. text", "2. text", etc. — preserve original number as prefix
+    const olMatch = /^(\d+)\.\s+(.+)/.exec(line);
+    if (olMatch?.[1] && olMatch[2]) return { type: 'ol', text: `${olMatch[1]}|${olMatch[2]}` };
     return { type: 'p', text: line };
   });
 }
 
 function renderInline(text: string): React.ReactNode[] {
   const parts: React.ReactNode[] = [];
-  const regex = /(\*\*(.+?)\*\*|`(.+?)`)/g;
+  // Match: **bold**, `code`, [link text](url)
+  const regex = /(\*\*(.+?)\*\*|`(.+?)`|\[([^\]]+)\]\(([^)]+)\))/g;
   let lastIndex = 0;
   let match: RegExpExecArray | null;
   let key = 0;
@@ -37,6 +42,12 @@ function renderInline(text: string): React.ReactNode[] {
         <code key={key++} className="px-1.5 py-0.5 rounded text-xs" style={{ backgroundColor: 'var(--border)' }}>
           {match[3]}
         </code>
+      );
+    } else if (match[4] && match[5]) {
+      parts.push(
+        <a key={key++} href={match[5]} className="underline" style={{ color: 'var(--primary)' }}>
+          {match[4]}
+        </a>
       );
     }
     lastIndex = match.index + match[0].length;
@@ -61,6 +72,8 @@ export function MarkdownContent({ content, className }: MarkdownContentProps) {
             return <h4 key={i} className="text-sm font-semibold mt-2.5 mb-1" style={{ color: 'var(--primary)' }}>{inline}</h4>;
           case 'h3':
             return <h5 key={i} className="text-sm font-medium mt-2 mb-1" style={{ color: 'var(--text-secondary)' }}>{inline}</h5>;
+          case 'hr':
+            return <hr key={i} className="my-2 border-t" style={{ borderColor: 'var(--border)' }} />;
           case 'li':
             return (
               <div key={i} className="flex items-start gap-2 ml-2 my-0.5">
@@ -68,6 +81,18 @@ export function MarkdownContent({ content, className }: MarkdownContentProps) {
                 <span className="text-sm" style={{ color: 'var(--text-primary)' }}>{inline}</span>
               </div>
             );
+          case 'ol': {
+            const pipeIdx = line.text.indexOf('|');
+            const num = pipeIdx > 0 ? line.text.slice(0, pipeIdx) : String(i + 1);
+            const olText = pipeIdx > 0 ? line.text.slice(pipeIdx + 1) : line.text;
+            const olInline = renderInline(olText);
+            return (
+              <div key={i} className="flex items-start gap-2 ml-2 my-0.5">
+                <span className="text-sm font-medium shrink-0" style={{ color: 'var(--text-secondary)', minWidth: '1.25rem' }}>{num}.</span>
+                <span className="text-sm" style={{ color: 'var(--text-primary)' }}>{olInline}</span>
+              </div>
+            );
+          }
           default:
             return <p key={i} className="text-sm my-0.5 leading-relaxed" style={{ color: 'var(--text-primary)' }}>{inline}</p>;
         }

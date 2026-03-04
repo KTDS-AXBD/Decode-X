@@ -16,36 +16,66 @@ interface UseChatStreamReturn {
 }
 
 /**
- * Parse Anthropic SSE stream to extract text content.
- * SSE format: event: content_block_delta\ndata: {"type":"content_block_delta","delta":{"type":"text_delta","text":"..."}}
+ * Parse a single complete SSE data line to extract text content.
  */
-function parseSSEChunk(chunk: string): string {
-  let text = '';
-  const lines = chunk.split('\n');
-  for (const line of lines) {
-    if (!line.startsWith('data: ')) continue;
-    const dataStr = line.slice(6);
-    if (dataStr === '[DONE]') continue;
-    try {
-      const data = JSON.parse(dataStr) as Record<string, unknown>;
-      if (data['type'] === 'content_block_delta') {
-        const delta = data['delta'] as Record<string, unknown> | undefined;
-        if (delta && typeof delta['text'] === 'string') {
-          text += delta['text'];
-        }
+function parseSSEDataLine(dataStr: string): string {
+  if (dataStr === '[DONE]') return '';
+  try {
+    const data = JSON.parse(dataStr) as Record<string, unknown>;
+    if (data['type'] === 'content_block_delta') {
+      const delta = data['delta'] as Record<string, unknown> | undefined;
+      if (delta && typeof delta['text'] === 'string') {
+        return delta['text'];
       }
-      // Also handle non-streaming JSON response (fallback from non-Anthropic providers)
-      if (data['success'] === true) {
-        const d = data['data'] as Record<string, unknown> | undefined;
-        if (d && typeof d['content'] === 'string') {
-          text += d['content'];
-        }
-      }
-    } catch {
-      // skip malformed JSON
     }
+    // Also handle non-streaming JSON response (fallback from non-Anthropic providers)
+    if (data['success'] === true) {
+      const d = data['data'] as Record<string, unknown> | undefined;
+      if (d && typeof d['content'] === 'string') {
+        return d['content'];
+      }
+    }
+  } catch {
+    // skip malformed JSON
   }
-  return text;
+  return '';
+}
+
+/**
+ * SSE line buffer — accumulates raw text across ReadableStream chunks,
+ * splits on newlines, and only emits complete lines.
+ * Keeps an incomplete trailing fragment for the next chunk.
+ */
+function createSSEParser() {
+  let buffer = '';
+
+  return {
+    /** Feed a decoded text chunk; returns extracted text from all complete SSE data lines. */
+    push(chunk: string): string {
+      buffer += chunk;
+      let text = '';
+      // Process all complete lines (terminated by \n)
+      let nlIdx: number;
+      while ((nlIdx = buffer.indexOf('\n')) !== -1) {
+        const line = buffer.slice(0, nlIdx).trim();
+        buffer = buffer.slice(nlIdx + 1);
+
+        if (line.startsWith('data: ')) {
+          text += parseSSEDataLine(line.slice(6));
+        }
+      }
+      return text;
+    },
+    /** Flush any remaining buffer (call when stream ends). */
+    flush(): string {
+      const remaining = buffer.trim();
+      buffer = '';
+      if (remaining.startsWith('data: ')) {
+        return parseSSEDataLine(remaining.slice(6));
+      }
+      return '';
+    },
+  };
 }
 
 export function useChatStream(opts: UseChatStreamOptions): UseChatStreamReturn {
@@ -110,6 +140,7 @@ export function useChatStream(opts: UseChatStreamOptions): UseChatStreamReturn {
 
           const reader = response.body.getReader();
           const decoder = new TextDecoder();
+          const sseParser = createSSEParser();
           let assistantText = '';
 
           // Add placeholder assistant message
@@ -120,7 +151,7 @@ export function useChatStream(opts: UseChatStreamOptions): UseChatStreamReturn {
             if (done || controller.signal.aborted) break;
 
             const chunk = decoder.decode(value, { stream: true });
-            const newText = parseSSEChunk(chunk);
+            const newText = sseParser.push(chunk);
             if (newText) {
               assistantText += newText;
               setMessages(p => {
@@ -132,6 +163,20 @@ export function useChatStream(opts: UseChatStreamOptions): UseChatStreamReturn {
                 return copy;
               });
             }
+          }
+
+          // Flush any remaining buffered data
+          const remaining = sseParser.flush();
+          if (remaining) {
+            assistantText += remaining;
+            setMessages(p => {
+              const copy = [...p];
+              const last = copy[copy.length - 1];
+              if (last && last.role === 'assistant') {
+                copy[copy.length - 1] = { role: 'assistant', content: assistantText };
+              }
+              return copy;
+            });
           }
 
           // If no text was received (e.g., stream ended immediately)

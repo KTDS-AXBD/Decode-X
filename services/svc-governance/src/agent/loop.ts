@@ -40,9 +40,9 @@ type LlmCaller = (
 
 function isRetryableError(e: unknown): boolean {
   const msg = String(e);
-  // 402 = credit exhausted, 429 = rate limit, 529 = overloaded, 500/503 = server error
-  return msg.includes("402") || msg.includes("429") || msg.includes("529")
-    || msg.includes("500") || msg.includes("503");
+  // 401 = invalid key, 402 = credit exhausted, 429 = rate limit, 529 = overloaded, 500/503 = server error
+  return msg.includes("401") || msg.includes("402") || msg.includes("429")
+    || msg.includes("529") || msg.includes("500") || msg.includes("503");
 }
 
 async function executeLoop(
@@ -112,13 +112,15 @@ export async function runAgentLoop(
     { role: "user" as const, content: userMessage },
   ];
 
-  // Build provider chain: Anthropic → OpenAI → Google → Workers AI
-  const providers: Array<{ name: ProviderName; caller: LlmCaller }> = [
-    {
+  // Build provider chain: Anthropic → OpenAI → Google → Workers AI (only if key exists)
+  const providers: Array<{ name: ProviderName; caller: LlmCaller }> = [];
+
+  if (env.ANTHROPIC_API_KEY) {
+    providers.push({
       name: "anthropic",
       caller: (sys, msgs, tools) => callAnthropic(env.ANTHROPIC_API_KEY, sys, msgs, tools),
-    },
-  ];
+    });
+  }
 
   if (env.OPENAI_API_KEY) {
     providers.push({

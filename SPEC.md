@@ -11,7 +11,7 @@
 - **Repo**: `AX-BD-Team/res-ai-foundry`
 - **Goal**: SI 산출물에서 암묵지를 추출해 재사용 가능한 Skill 자산으로 패키징
 - **Domain Pilot**: 퇴직연금
-- **Current Phase**: Phase 2-D 진행중 (퇴직연금 실문서 파일럿)
+- **Current Phase**: Phase 4 Sprint 2 완료 (퇴직연금 실문서 파일럿)
 
 ---
 
@@ -32,7 +32,7 @@
 
 ## 3) Architecture Baseline
 
-- 6-Layer System + 5-Stage Pipeline + 10 SVC(Workers)
+- 6-Layer System + 5-Stage Pipeline + 12 Workers (10 SVC + Queue Router + MCP Server)
 - Infra: Cloudflare Workers/Queues/DO/D1/R2/KV + AI Gateway + Neo4j Aura
 - LLM Tiering: Opus / Sonnet-Haiku / Workers AI
 
@@ -52,11 +52,11 @@
 
 ## 5) Current Status
 
-- **Last Updated**: 2026-03-04 (세션 081)
-- **Current Phase**: Phase 4 Sprint 2 진행 — bulk-approve API 완료, LLM 모델 매핑 업그레이드 완료
+- **Last Updated**: 2026-03-04
+- **Current Phase**: Phase 4 Sprint 2 완료 — 전체 파이프라인 완결 (소스 1,034건 → 3,046 policies → 26,825 terms → 3,104 skills)
 - **Production E2E**: ✅ 8/8 PASS (synthetic) + 7/7 PASS (real-doc) + Batch 3: 7/11 parsed (SCDSA002 4건 → encrypted 상태)
 - **Real Document Pilot**: ✅ 20/26 문서 파싱 완료 (Batch 1: 4건, Batch 2: 9/11건, Batch 3: 7/11건)
-- **Production Data**: policies 134+ approved, terms 1,441, skills 171 (org-mirae-pension)
+- **Production Data**: policies 3,046 (3,028 approved + 18 candidate), terms 26,825, skills 3,104 (Rich 597 / Medium 1,954 / Thin 553). Miraeasset org 334건 분석 완료
 - **Batch 3 Extraction**: Gap분석서 28proc/27ent, DDD설계 11proc/9ent, 요구사항정의서 8proc/5ent
 - **Queue Fix**: default env consumer 충돌 해결 (wrangler.toml + DLQ). 수동: `wrangler delete --name svc-queue-router`
 - **Multi-Provider LLM**: ✅ Anthropic→OpenAI→Google→Workers AI 4-provider fallback 구현 + 검증
@@ -304,7 +304,7 @@
 - [x] **I-05** — GitHub Environments 설정 (repo secrets + production deployment_branch_policy)
 - [x] **I-06** — 프로덕션 모니터링 (health-check.sh + GitHub Actions cron 30분)
 
-### 🔄 Phase 2 — Real Document Pilot (진행중)
+### ✅ Phase 2 — Real Document Pilot (완료)
 
 #### ✅ Phase 2-A — Production E2E 검증 (완료)
 - [x] Production 11/11 배포 + 12/12 healthy
@@ -324,7 +324,7 @@
 - [x] org ID 전파 버그 수정 (Stage 3-5 이벤트 스키마 + 7개 서비스)
 - [x] extraction pending 버그 해결 (fetchChunks 파싱 + failed 상태 전환)
 
-#### 🔄 Phase 2-D — 실문서 파일럿 (진행중)
+#### ✅ Phase 2-D — 실문서 파일럿 (완료)
 - [x] 멀티 프로바이더 LLM (Anthropic→OpenAI→Google→Workers AI fallback)
 - [x] HITL 47건+34건 승인 — policies 134+, terms 1,441, skills 171
 - [x] 퇴직연금 대표 문서 11건 업로드 (9/11 parsed, 2건 SCDSA002 비표준)
@@ -333,14 +333,18 @@
 - [ ] 추가 문서 업로드 (764건 XLSX 중 선별)
 - [ ] PDF 대용량 문서 파싱 (Unstructured.io 524 timeout 해결)
 
-### Phase 3 — MCP/OpenAPI 실사용 (Sprint 1 완료)
+### ✅ Phase 3 — MCP/OpenAPI 실사용 (완료)
 - [x] Sprint 1: Skill Evaluate 엔드포인트 (POST /skills/:id/evaluate + GET /evaluations)
 - [x] Sprint 1: Multi-provider benchmark (Anthropic/OpenAI/Google 비교 + consensus)
 - [x] Sprint 1: D1 skill_evaluations 테이블 + 3환경 배포 + E2E 검증
-- [ ] Sprint 2: Skill 검색 API + Marketplace UX + Detail 페이지
-- [ ] Sprint 3: MCP Server Worker + Skill 버전 관리
+- [x] Sprint 2: Skill 검색 API + Marketplace UX + Detail 페이지
+- [x] Sprint 3: MCP Server Worker + Skill 버전 관리
 - [ ] MCP adapter를 실제 MCP 클라이언트(Claude Desktop 등)에서 테스트
 - [ ] OpenAPI adapter 외부 시스템 연동 검증
+
+### ✅ Phase 4 — Real Document Pipeline (완료)
+- [x] Sprint 1: screen-design-parser + Batch 3 (7/11 파싱) + Queue fix + SCDSA002 탐지 + 배치 자동화
+- [x] Sprint 2: bulk-approve 3,046건 + Tier 2+3 87건 업로드 + 파이프라인 완결 (26,825 terms, 3,104 skills)
 
 ---
 

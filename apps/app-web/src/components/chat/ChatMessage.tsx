@@ -1,12 +1,23 @@
 import { useNavigate } from 'react-router-dom';
-import { User, Bot, ArrowRight } from 'lucide-react';
+import { User, Bot, ArrowRight, Wrench } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { MarkdownContent } from '@/components/markdown-content';
 
 interface ChatMessageProps {
   role: 'user' | 'assistant';
   content: string;
+  toolsUsed?: string[] | undefined;
 }
+
+const TOOL_LABELS: Record<string, string> = {
+  get_document_stats: '문서 현황',
+  get_pipeline_kpi: '파이프라인 KPI',
+  get_policy_stats: '정책 통계',
+  get_skill_stats: 'Skill 통계',
+  search_skills: 'Skill 검색',
+  search_terms: '용어 검색',
+  get_analysis_summary: '분석 요약',
+};
 
 /**
  * Parse [ACTION:navigate:/path] markers in assistant messages
@@ -40,7 +51,7 @@ function parseContent(content: string): { text: string; actions: { label: string
   return { text: text.trim(), actions };
 }
 
-export function ChatMessage({ role, content }: ChatMessageProps) {
+export function ChatMessage({ role, content, toolsUsed }: ChatMessageProps) {
   const navigate = useNavigate();
   const isUser = role === 'user';
   const { text, actions } = isUser ? { text: content, actions: [] } : parseContent(content);
@@ -88,6 +99,24 @@ export function ChatMessage({ role, content }: ChatMessageProps) {
                 {action.label}
                 <ArrowRight className="w-3 h-3" />
               </Button>
+            ))}
+          </div>
+        )}
+
+        {toolsUsed && toolsUsed.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1 mt-1">
+            <Wrench className="w-3 h-3" style={{ color: 'var(--text-secondary)' }} />
+            {[...new Set(toolsUsed)].map((tool) => (
+              <span
+                key={tool}
+                className="px-1.5 py-0.5 rounded text-[10px]"
+                style={{
+                  backgroundColor: 'rgba(59, 130, 246, 0.08)',
+                  color: 'var(--text-secondary)',
+                }}
+              >
+                {TOOL_LABELS[tool] ?? tool}
+              </span>
             ))}
           </div>
         )}

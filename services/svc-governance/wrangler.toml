@@ -26,11 +26,42 @@ service = "svc-security"
 binding = "LLM_ROUTER"
 service = "svc-llm-router"
 
+# Service bindings for agent tools (6 services)
+[[services]]
+binding = "SVC_INGESTION"
+service = "svc-ingestion"
+
+[[services]]
+binding = "SVC_EXTRACTION"
+service = "svc-extraction"
+
+[[services]]
+binding = "SVC_POLICY"
+service = "svc-policy"
+
+[[services]]
+binding = "SVC_SKILL"
+service = "svc-skill"
+
+[[services]]
+binding = "SVC_ONTOLOGY"
+service = "svc-ontology"
+
+[[services]]
+binding = "SVC_ANALYTICS"
+service = "svc-analytics"
+
 [vars]
 ENVIRONMENT = "development"
 SERVICE_NAME = "svc-governance"
 # Secrets (set via `wrangler secret put`):
 # INTERNAL_API_SECRET
+# ANTHROPIC_API_KEY
+# OPENAI_API_KEY
+# GOOGLE_API_KEY
+
+[ai]
+binding = "AI"
 
 # ---------------------------------------------------------------------------
 # Staging environment
@@ -55,6 +86,30 @@ service = "svc-security-staging"
 binding = "LLM_ROUTER"
 service = "svc-llm-router-staging"
 
+[[env.staging.services]]
+binding = "SVC_INGESTION"
+service = "svc-ingestion-staging"
+
+[[env.staging.services]]
+binding = "SVC_EXTRACTION"
+service = "svc-extraction-staging"
+
+[[env.staging.services]]
+binding = "SVC_POLICY"
+service = "svc-policy-staging"
+
+[[env.staging.services]]
+binding = "SVC_SKILL"
+service = "svc-skill-staging"
+
+[[env.staging.services]]
+binding = "SVC_ONTOLOGY"
+service = "svc-ontology-staging"
+
+[[env.staging.services]]
+binding = "SVC_ANALYTICS"
+service = "svc-analytics-staging"
+
 # ---------------------------------------------------------------------------
 # Production environment
 # ---------------------------------------------------------------------------
@@ -77,3 +132,27 @@ service = "svc-security"
 [[env.production.services]]
 binding = "LLM_ROUTER"
 service = "svc-llm-router"
+
+[[env.production.services]]
+binding = "SVC_INGESTION"
+service = "svc-ingestion"
+
+[[env.production.services]]
+binding = "SVC_EXTRACTION"
+service = "svc-extraction"
+
+[[env.production.services]]
+binding = "SVC_POLICY"
+service = "svc-policy"
+
+[[env.production.services]]
+binding = "SVC_SKILL"
+service = "svc-skill"
+
+[[env.production.services]]
+binding = "SVC_ONTOLOGY"
+service = "svc-ontology"
+
+[[env.production.services]]
+binding = "SVC_ANALYTICS"
+service = "svc-analytics"

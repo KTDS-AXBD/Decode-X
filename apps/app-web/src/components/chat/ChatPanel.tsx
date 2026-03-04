@@ -116,7 +116,7 @@ export function ChatPanel({ messages, isStreaming, error, onSend, onClear, onClo
         )}
 
         {messages.map((msg, i) => (
-          <ChatMessage key={i} role={msg.role} content={msg.content} />
+          <ChatMessage key={i} role={msg.role} content={msg.content} toolsUsed={msg.toolsUsed} />
         ))}
 
         {isStreaming && messages.length > 0 && (messages[messages.length - 1]?.role === 'user' || messages[messages.length - 1]?.content === '') && (

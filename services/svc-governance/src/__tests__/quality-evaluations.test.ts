@@ -29,6 +29,16 @@ function mockEnv(dbOverrides?: Parameters<typeof mockDb>[0]): Env {
     ENVIRONMENT: "development",
     SERVICE_NAME: "svc-governance",
     INTERNAL_API_SECRET: "test-secret",
+    ANTHROPIC_API_KEY: "test-key",
+    OPENAI_API_KEY: "test-openai-key",
+    GOOGLE_API_KEY: "test-google-key",
+    AI: { run: vi.fn() } as unknown as Ai,
+    SVC_INGESTION: { fetch: vi.fn() } as unknown as Fetcher,
+    SVC_EXTRACTION: { fetch: vi.fn() } as unknown as Fetcher,
+    SVC_POLICY: { fetch: vi.fn() } as unknown as Fetcher,
+    SVC_SKILL: { fetch: vi.fn() } as unknown as Fetcher,
+    SVC_ONTOLOGY: { fetch: vi.fn() } as unknown as Fetcher,
+    SVC_ANALYTICS: { fetch: vi.fn() } as unknown as Fetcher,
   };
 }
 

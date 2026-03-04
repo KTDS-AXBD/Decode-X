@@ -6,4 +6,15 @@ export interface Env {
   ENVIRONMENT: string;
   SERVICE_NAME: string;
   INTERNAL_API_SECRET: string;
+  ANTHROPIC_API_KEY: string;
+  OPENAI_API_KEY: string;
+  GOOGLE_API_KEY: string;
+  AI: Ai;
+  // Service bindings for agent tools
+  SVC_INGESTION: Fetcher;
+  SVC_EXTRACTION: Fetcher;
+  SVC_POLICY: Fetcher;
+  SVC_SKILL: Fetcher;
+  SVC_ONTOLOGY: Fetcher;
+  SVC_ANALYTICS: Fetcher;
 }

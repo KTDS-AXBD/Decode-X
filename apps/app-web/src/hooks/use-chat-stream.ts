@@ -121,12 +121,13 @@ export function useChatStream(opts: UseChatStreamOptions): UseChatStreamReturn {
 
           const contentType = response.headers.get('Content-Type') ?? '';
 
-          // Handle non-streaming JSON response (primary path — avoids AI Gateway SSE UTF-8 corruption)
+          // Handle non-streaming JSON response (primary path — Agent with Tool Use)
           if (contentType.includes('application/json')) {
             const json = await response.json() as Record<string, unknown>;
             const data = json['data'] as Record<string, unknown> | undefined;
             const text = typeof data?.['content'] === 'string' ? data['content'] : '응답을 처리할 수 없습니다.';
-            setMessages(p => [...p, { role: 'assistant', content: text }]);
+            const toolsUsed = Array.isArray(data?.['toolsUsed']) ? data['toolsUsed'] as string[] : undefined;
+            setMessages(p => [...p, { role: 'assistant', content: text, toolsUsed }]);
             setIsStreaming(false);
             return;
           }

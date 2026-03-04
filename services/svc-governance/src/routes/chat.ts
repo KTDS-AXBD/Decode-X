@@ -1,11 +1,12 @@
 /**
- * POST /chat — AI Agent 가이드 어시스턴트
- * Builds a context-aware system prompt and calls svc-llm-router (haiku tier, non-streaming).
- * Non-streaming avoids Cloudflare AI Gateway SSE UTF-8 corruption for Korean text.
+ * POST /chat — AI Agent with Tool Use
+ * Direct Anthropic API call with service binding tools.
+ * Bypasses svc-llm-router / AI Gateway to avoid SSE UTF-8 Korean corruption.
  */
 
 import { badRequest, createLogger, extractRbacContext } from "@ai-foundry/utils";
 import type { Env } from "../env.js";
+import { runAgentLoop } from "../agent/loop.js";
 import { buildSystemPrompt } from "../system-prompt.js";
 
 interface ChatMessage {
@@ -82,62 +83,42 @@ export async function handleChat(
 
   const { message, history = [], page, role } = validation.data;
 
-  // Use RBAC context from headers if role not provided in body
   const rbacCtx = extractRbacContext(request);
   const effectiveRole = role ?? rbacCtx?.role;
 
   const systemPrompt = buildSystemPrompt({ page, role: effectiveRole });
 
-  // Build messages array for LLM
-  const messages: ChatMessage[] = [
-    ...history,
-    { role: "user", content: message },
-  ];
-
-  // Build LLM request for svc-llm-router /execute (non-streaming)
-  // Non-streaming avoids AI Gateway SSE chunk-splitting that corrupts Korean UTF-8
-  const llmBody = {
-    tier: "haiku" as const,
-    messages,
-    system: systemPrompt,
-    maxTokens: 1024,
-    temperature: 0.4,
-    callerService: "svc-governance",
-  };
-
   try {
-    // Call svc-llm-router via service binding (non-streaming /complete)
-    const llmResponse = await env.LLM_ROUTER.fetch(
-      new Request("https://llm-router.internal/complete", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Internal-Secret": env.INTERNAL_API_SECRET,
-        },
-        body: JSON.stringify(llmBody),
-      }),
-    );
+    const result = await runAgentLoop(message, history, systemPrompt, env);
 
-    if (!llmResponse.ok) {
-      const errorText = await llmResponse.text();
-      logger.error("LLM router error", { status: llmResponse.status, error: errorText });
-      return new Response(
-        JSON.stringify({ success: false, error: { code: "LLM_ERROR", message: "AI 응답 생성에 실패했습니다" } }),
-        { status: 502, headers: { "Content-Type": "application/json" } },
-      );
-    }
-
-    // Forward the JSON response from LLM router (contains { success, data: { content, ... } })
-    const llmData = await llmResponse.json() as Record<string, unknown>;
-    return new Response(JSON.stringify(llmData), {
-      status: 200,
-      headers: { "Content-Type": "application/json; charset=utf-8" },
+    logger.info("Agent response", {
+      turns: result.turns,
+      toolsUsed: result.toolsUsed,
+      provider: result.provider,
     });
-  } catch (e) {
-    logger.error("Chat handler error", { error: String(e) });
+
     return new Response(
-      JSON.stringify({ success: false, error: { code: "INTERNAL_ERROR", message: "내부 오류가 발생했습니다" } }),
-      { status: 500, headers: { "Content-Type": "application/json" } },
+      JSON.stringify({
+        success: true,
+        data: {
+          content: result.content,
+          toolsUsed: result.toolsUsed,
+          provider: result.provider,
+        },
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json; charset=utf-8" },
+      },
+    );
+  } catch (e) {
+    logger.error("Chat agent error", { error: String(e) });
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: { code: "AGENT_ERROR", message: "AI 응답 생성에 실패했습니다" },
+      }),
+      { status: 502, headers: { "Content-Type": "application/json" } },
     );
   }
 }

@@ -12,6 +12,12 @@ import {
   Target,
   Zap,
   ArrowRight,
+  Search,
+  Layers,
+  CircleDot,
+  ThumbsUp,
+  ThumbsDown,
+  Minus,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
@@ -310,7 +316,214 @@ export function ProjectStatusTab() {
         </div>
       </section>
 
-      {/* ─── Section B: 품질 평가 ─── */}
+      {/* ─── Section B: 핵심 평가 — Reverse Engineering 가능성 ─── */}
+      <section>
+        <SectionHeader
+          icon={Search}
+          title="핵심 평가 — Reverse Engineering은 가능한가?"
+          subtitle="기존 산출물에서 신규 시스템 개발에 필요한 스펙·정책·암묵지를 추출할 수 있는가"
+        />
+
+        {/* 핵심 질문 프레이밍 */}
+        <div className="p-4 rounded-lg border mb-5" style={{
+          borderColor: "var(--accent)",
+          backgroundColor: "color-mix(in srgb, var(--accent) 6%, transparent)",
+        }}>
+          <p className="text-sm" style={{ color: "var(--text-primary)" }}>
+            <strong>프로젝트 핵심 질문:</strong> 기존 SI 산출물(ERD, 화면설계서, API 스펙, ISP, 요구사항 등)을 AI로 분석하여,
+            <em> 신규 시스템을 설계·개발할 수 있는 수준의 도메인 지식 자산</em>을 구축할 수 있는가?
+            산출물에 명시되지 않은 암묵지를 어디까지 추론·정제할 수 있는가?
+          </p>
+        </div>
+
+        {/* 추출 차원별 평가 */}
+        <h4 className="text-sm font-medium mb-3" style={{ color: "var(--text-primary)" }}>
+          <Layers className="w-4 h-4 inline mr-1" />
+          추출 차원별 평가
+        </h4>
+        <DataTable
+          headers={["추출 차원", "수준", "현재 결과", "시스템 개발 활용도"]}
+          rows={[
+            [
+              "업무 규칙·정책",
+              "★★★★☆",
+              "787건 → 3,046 정책 추출",
+              "높음 — 비즈니스 로직 구현에 직접 활용 가능",
+            ],
+            [
+              "도메인 용어·개념",
+              "★★★★☆",
+              "26,825 용어 자동 수집",
+              "높음 — 데이터 모델링, 필드명, UI 레이블에 활용",
+            ],
+            [
+              "암묵지 추론",
+              "★★★☆☆",
+              "교육자료·FAQ에서 비명시 규범 도출",
+              "보통 — HITL 검증 후 신뢰 가능, 단독 의존 위험",
+            ],
+            [
+              "프로세스 흐름",
+              "★★★☆☆",
+              "화면설계서·API 스펙에서 부분 복원",
+              "보통 — 주요 흐름 파악 가능, 예외 분기 누락",
+            ],
+            [
+              "데이터 모델",
+              "★★☆☆☆",
+              "ERD 파싱 → 엔티티·관계 추출",
+              "제한적 — 구조는 얻으나 제약조건·의미 해석 부족",
+            ],
+            [
+              "화면 흐름·UX",
+              "★★☆☆☆",
+              "화면 목록·필드 추출 수준",
+              "제한적 — 레이아웃·인터랙션 로직은 미추출",
+            ],
+            [
+              "비기능 요구사항",
+              "★☆☆☆☆",
+              "산출물에 거의 미기재",
+              "불가 — 성능·보안·확장성은 별도 정의 필요",
+            ],
+          ]}
+        />
+
+        {/* 종합 판정 */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">
+          {/* 잘 되는 것 */}
+          <div className="p-4 rounded-lg border" style={{ borderColor: "#10b981" }}>
+            <div className="flex items-center gap-2 mb-3">
+              <ThumbsUp className="w-4 h-4" style={{ color: "#10b981" }} />
+              <span className="text-sm font-semibold" style={{ color: "#10b981" }}>
+                생각보다 잘 되는 것
+              </span>
+            </div>
+            <ul className="space-y-2 text-xs" style={{ color: "var(--text-secondary)" }}>
+              <li className="flex items-start gap-1.5">
+                <CircleDot className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: "#10b981" }} />
+                <span><strong style={{ color: "var(--text-primary)" }}>업무 규칙의 자동 추출 품질</strong> — 규정·약관에서 조건-기준-결과 트리플을 99% 자동 승인 수준으로 추출</span>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <CircleDot className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: "#10b981" }} />
+                <span><strong style={{ color: "var(--text-primary)" }}>다중 문서 교차 추론</strong> — 여러 문서의 단편 정보를 조합해 완성된 정책 도출 (CT-361 사례)</span>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <CircleDot className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: "#10b981" }} />
+                <span><strong style={{ color: "var(--text-primary)" }}>비용 효율</strong> — 787건 문서 전체 파이프라인 처리에 ~$25, 문서당 3센트</span>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <CircleDot className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: "#10b981" }} />
+                <span><strong style={{ color: "var(--text-primary)" }}>확장성</strong> — 도메인 변경 시 모델 재학습 없이 동일 파이프라인으로 새 도메인 적용 가능</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* 부족한 것 */}
+          <div className="p-4 rounded-lg border" style={{ borderColor: "#ef4444" }}>
+            <div className="flex items-center gap-2 mb-3">
+              <ThumbsDown className="w-4 h-4" style={{ color: "#ef4444" }} />
+              <span className="text-sm font-semibold" style={{ color: "#ef4444" }}>
+                아직 부족한 것
+              </span>
+            </div>
+            <ul className="space-y-2 text-xs" style={{ color: "var(--text-secondary)" }}>
+              <li className="flex items-start gap-1.5">
+                <CircleDot className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: "#ef4444" }} />
+                <span><strong style={{ color: "var(--text-primary)" }}>프로세스 간 연결 관계</strong> — 개별 정책은 추출하나, 업무 흐름의 선후 관계·의존성 자동 구성은 미완</span>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <CircleDot className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: "#ef4444" }} />
+                <span><strong style={{ color: "var(--text-primary)" }}>예외 처리·경계 조건</strong> — &quot;정상 경로&quot;는 잘 추출하나, 예외 분기·에러 핸들링은 산출물에 부재</span>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <CircleDot className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: "#ef4444" }} />
+                <span><strong style={{ color: "var(--text-primary)" }}>데이터 모델 의미 해석</strong> — ERD 구조는 파싱 가능하나, 컬럼의 비즈니스 의미·제약조건은 추론 한계</span>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <CircleDot className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: "#ef4444" }} />
+                <span><strong style={{ color: "var(--text-primary)" }}>산출물 자체의 불완전성</strong> — 실무에서 산출물이 현행과 불일치하거나 미갱신된 경우 감지 불가</span>
+              </li>
+            </ul>
+          </div>
+
+          {/* 보강 필요 */}
+          <div className="p-4 rounded-lg border" style={{ borderColor: "#f59e0b" }}>
+            <div className="flex items-center gap-2 mb-3">
+              <Minus className="w-4 h-4" style={{ color: "#f59e0b" }} />
+              <span className="text-sm font-semibold" style={{ color: "#f59e0b" }}>
+                보강하면 가능한 것
+              </span>
+            </div>
+            <ul className="space-y-2 text-xs" style={{ color: "var(--text-secondary)" }}>
+              <li className="flex items-start gap-1.5">
+                <CircleDot className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: "#f59e0b" }} />
+                <span><strong style={{ color: "var(--text-primary)" }}>HITL + 도메인 전문가 검증</strong> — AI 추출 → 전문가 보정 루프를 체계화하면 암묵지 품질 대폭 향상</span>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <CircleDot className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: "#f59e0b" }} />
+                <span><strong style={{ color: "var(--text-primary)" }}>프로세스 마이닝 연계</strong> — 실 운영 로그와 결합하면 산출물의 누락·불일치 보완 가능</span>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <CircleDot className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: "#f59e0b" }} />
+                <span><strong style={{ color: "var(--text-primary)" }}>온톨로지 고도화</strong> — 26,825 용어를 타입별 분류·계층화하면 데이터 모델링 자동화에 활용 가능</span>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <CircleDot className="w-3 h-3 mt-0.5 flex-shrink-0" style={{ color: "#f59e0b" }} />
+                <span><strong style={{ color: "var(--text-primary)" }}>멀티모달 확장</strong> — 화면 이미지·ERD 다이어그램 직접 분석으로 UI/데이터 모델 추출 강화</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* 결론: 어디까지 만들 수 있는가 */}
+        <div className="mt-5">
+          <h4 className="text-sm font-medium mb-3" style={{ color: "var(--text-primary)" }}>
+            <Target className="w-4 h-4 inline mr-1" />
+            이 추출 결과로 시스템을 만든다면?
+          </h4>
+          <DataTable
+            headers={["시스템 구성 요소", "AI 자동 생성", "전문가 보완", "종합"]}
+            rows={[
+              ["비즈니스 로직 (업무 규칙)", "70~80%", "20~30%", "✅ 핵심 업무 규칙 구현 가능"],
+              ["데이터 모델 (테이블·관계)", "40~50%", "50~60%", "⚠️ 스키마 초안 수준, 정제 필요"],
+              ["API 인터페이스 (서비스 계약)", "30~40%", "60~70%", "⚠️ 엔드포인트 도출 가능, 상세 설계 필요"],
+              ["화면·UX (인터랙션)", "20~30%", "70~80%", "❌ 필드·목록까지, 레이아웃은 별도"],
+              ["통합·연동 (시스템 간)", "10~20%", "80~90%", "❌ API 목록은 있으나 오케스트레이션 필요"],
+              ["비기능 (성능·보안)", "5~10%", "90~95%", "❌ 별도 아키텍처 설계 필수"],
+            ]}
+          />
+        </div>
+
+        {/* 최종 판정 */}
+        <div className="mt-4 p-4 rounded-lg" style={{
+          backgroundColor: "color-mix(in srgb, var(--accent) 8%, transparent)",
+          border: "1px solid color-mix(in srgb, var(--accent) 25%, transparent)",
+        }}>
+          <p className="text-sm font-medium mb-2" style={{ color: "var(--text-primary)" }}>
+            종합 판정
+          </p>
+          <p className="text-xs leading-relaxed" style={{ color: "var(--text-secondary)" }}>
+            <strong style={{ color: "var(--text-primary)" }}>현재 수준:</strong>{" "}
+            기존 산출물에서 <em>비즈니스 로직의 70~80%</em>를 자동 추출할 수 있으며,
+            이는 신규 시스템의 &quot;업무 규칙 계층&quot;을 AI가 초안 작성하고 전문가가 검증하는 워크플로를 현실화한다.
+            특히 규정·약관 기반 도메인(금융, 보험, 공공)에서 효과가 높다.
+          </p>
+          <p className="text-xs leading-relaxed mt-2" style={{ color: "var(--text-secondary)" }}>
+            <strong style={{ color: "var(--text-primary)" }}>한계:</strong>{" "}
+            데이터 모델·화면·통합 설계는 산출물만으로 50% 이하 수준이며, &quot;산출물에 적히지 않은 것&quot;(예외 처리, 운영 노하우, 비기능 요구)은
+            AI 단독으로 채울 수 없다. 이 영역은 HITL + 운영 데이터 연계가 필수다.
+          </p>
+          <p className="text-xs leading-relaxed mt-2" style={{ color: "var(--text-secondary)" }}>
+            <strong style={{ color: "var(--text-primary)" }}>결론:</strong>{" "}
+            Reverse Engineering으로 &quot;설계 초안 + 핵심 업무 규칙&quot;까지는 자동화 가능하며,
+            이것만으로도 신규 개발 시 <em>요구사항 분석 기간을 40~60% 단축</em>하는 효과가 기대된다.
+            완전 자동 시스템 생성은 아직 불가하지만, <em>&quot;AI가 초안, 사람이 완성&quot;</em>하는 협업 모델의 실현 가능성은 이번 파일럿으로 입증되었다.
+          </p>
+        </div>
+      </section>
+
+      {/* ─── Section C: 품질 평가 ─── */}
       <section>
         <SectionHeader
           icon={Target}

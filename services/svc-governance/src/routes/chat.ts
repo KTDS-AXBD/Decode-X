@@ -130,9 +130,8 @@ export async function handleChat(
     return new Response(llmResponse.body, {
       status: 200,
       headers: {
-        "Content-Type": llmResponse.headers.get("Content-Type") ?? "text/event-stream",
+        "Content-Type": "text/event-stream; charset=utf-8",
         "Cache-Control": "no-cache",
-        "Transfer-Encoding": "chunked",
       },
     });
   } catch (e) {

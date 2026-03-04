@@ -128,7 +128,7 @@ describe("handleStream", () => {
     const res = await handleStream(req, env, ctx);
 
     expect(res.status).toBe(200);
-    expect(res.headers.get("Content-Type")).toBe("text/event-stream");
+    expect(res.headers.get("Content-Type")).toBe("text/event-stream; charset=utf-8");
     expect(res.headers.get("Cache-Control")).toBe("no-cache");
   });
 

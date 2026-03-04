@@ -74,9 +74,8 @@ export async function gatewayStream(
   return new Response(upstreamResponse.body, {
     status: 200,
     headers: {
-      "Content-Type": "text/event-stream",
+      "Content-Type": "text/event-stream; charset=utf-8",
       "Cache-Control": "no-cache",
-      "Transfer-Encoding": "chunked",
       "X-Request-Id": requestId,
     },
   });

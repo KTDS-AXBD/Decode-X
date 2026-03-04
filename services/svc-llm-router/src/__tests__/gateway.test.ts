@@ -267,7 +267,7 @@ describe("gatewayStream", () => {
 
     expect(result).toBeInstanceOf(Response);
     expect(result.status).toBe(200);
-    expect(result.headers.get("Content-Type")).toBe("text/event-stream");
+    expect(result.headers.get("Content-Type")).toBe("text/event-stream; charset=utf-8");
     expect(result.headers.get("Cache-Control")).toBe("no-cache");
     expect(result.headers.get("X-Request-Id")).toBe("req-stream-3");
   });

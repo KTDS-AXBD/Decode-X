@@ -2,6 +2,18 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 104 — 2026-03-06
+**v0.7.4 Pivot — Phase 2-A Source Code Parsing 구현**:
+- ✅ PRD v0.7.4 분석 (Skill 추출 → Source↔Document Fact Check 방향 전환)
+- ✅ 전체 로드맵 Plan: `docs/01-plan/features/v074-pivot.plan.md` (Phase 2-A~2-F)
+- ✅ Phase 2-A Design: `docs/02-design/features/v074-pivot-phase2a.design.md` (LPON 소스 분석 기반 4건 보정)
+- ✅ `packages/types/src/spec.ts` — 10 Zod schemas (CodeController, CodeDataModel, CodeTransaction, CodeDdl 등)
+- ✅ 6 Regex 파서: java-controller, java-datamodel, java-service, ddl, zip-extractor, code-classifier
+- ✅ svc-ingestion 통합: upload.ts +6 MIME, queue.ts isSourceCode 분기, classifier +6 source_* 카테고리
+- ✅ 34 new tests (controller 6 + datamodel 8 + service 3 + ddl 6 + classifier 11)
+
+**검증**: typecheck 17/17 ✅ | lint 14/14 ✅ | tests 257/257 ✅ (기존 223 + 신규 34)
+
 ## 세션 103 — 2026-03-05
 **LPON 온보딩 Wave 1 — 업로드 + 파이프라인 실행**:
 - ✅ Ralph P1~P5: Org(헤더 기반 skip) + SCDSA002 검사(2건 암호화) + 매니페스트(84→63 dedup) + 배치 스크립트

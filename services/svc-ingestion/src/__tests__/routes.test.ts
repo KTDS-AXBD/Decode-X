@@ -140,7 +140,7 @@ describe("handleUpload", () => {
   });
 
   it("returns 400 for unsupported file type", async () => {
-    const file = new File(["test"], "bad.zip", { type: "application/zip" });
+    const file = new File(["test"], "bad.exe", { type: "application/octet-stream" });
     const req = createMultipartRequest(file);
     const res = await handleUpload(req, env, ctx);
     expect(res.status).toBe(400);

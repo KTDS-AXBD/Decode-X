@@ -2,6 +2,19 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 115 — 2026-03-06
+**v0.7.4 Phase 2-B Session 5 — LLM Semantic Match E2E + Gap Resolution**:
+- Batch LLM match: `batchSize`/`offset` 파라미터 추가 (Worker CPU timeout 방지, default 10, max 50)
+- Gap auto-resolve: LLM 매치 시 D1 gap `auto_resolved=1` + `review_status=dismissed` (LIKE 패턴 fix)
+- Dedup endpoint: `POST /factcheck/results/:resultId/dedup-gaps` (Queue 중복 삽입 576건 제거)
+- KPI endpoint: `GET /factcheck/kpi` (PRD SS8.2 — API/Table Coverage + Gap Precision)
+- LLM Semantic Match 전체 실행: 424 items 처리 (42 batches × 10건, Sonnet tier)
+  - 55건 매치 (12.9% coverage), 327건 confirmed MID gap
+  - 주요 패턴: `/onnuripay/v1.0/*` ↔ `/onnuripay/1.0/*` (37건), 기능 매칭 (6건), 테이블 매칭 (8건)
+- D1 보정: dedup 576건 제거 (490→490 unique) + 54건 auto_resolved + gaps_by_type/severity 갱신
+
+**검증**: typecheck 0 errors | lint 0 errors | 319 tests PASS | E2E coverage 0.2% → 12.9%
+
 ## 세션 114 — 2026-03-06
 **v0.7.4 Phase 2-C + 2-D — Spec Export backend + Pilot Core UI 5 pages**:
 

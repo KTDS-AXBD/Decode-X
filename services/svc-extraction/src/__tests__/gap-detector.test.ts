@@ -538,6 +538,125 @@ describe("detectGaps", () => {
 
       expect(result.gaps).toHaveLength(0);
     });
+
+    it("Auth 헤더 파라미터 → PM gap 제외", () => {
+      const srcApi = makeSourceApi({
+        path: "/api/v1/account/list",
+        parameters: [
+          { name: "Auth", type: "String", required: true },
+          { name: "accountVO", type: "AccountVO", required: true, annotation: "@RequestBody" },
+        ],
+      });
+      const docApi = makeDocApi({
+        path: "/api/v1/account/list",
+        parameters: [],
+      });
+
+      const mr: MatchResult = {
+        matchedItems: [{
+          sourceRef: { name: "/api/v1/account/list", type: "api", documentId: "src-doc-1", location: "AccountController.list" },
+          docRef: { name: "/api/v1/account/list", type: "api", documentId: "doc-doc-1", location: "인터페이스설계서.xlsx" },
+          matchScore: 1.0,
+          matchMethod: "exact",
+        }],
+        unmatchedSourceApis: [],
+        unmatchedDocApis: [],
+        unmatchedSourceTables: [],
+        unmatchedDocTables: [],
+      };
+
+      const result = detectGaps(
+        mr,
+        makeSourceSpec([srcApi]),
+        makeDocSpec([docApi]),
+        RESULT_ID,
+        ORG_ID,
+      );
+
+      const pmGaps = result.gaps.filter((g) => g.gapType === "PM");
+      // Auth is filtered out, only accountVO remains
+      expect(pmGaps).toHaveLength(1);
+      expect(pmGaps[0]!.description).toContain("accountVO");
+    });
+
+    it("@RequestHeader annotation → PM gap 제외", () => {
+      const srcApi = makeSourceApi({
+        path: "/api/v1/user/info",
+        parameters: [
+          { name: "Authorization", type: "String", required: true, annotation: "@RequestHeader" },
+          { name: "userId", type: "Long", required: true, annotation: "@RequestParam" },
+        ],
+      });
+      const docApi = makeDocApi({
+        path: "/api/v1/user/info",
+        parameters: [],
+      });
+
+      const mr: MatchResult = {
+        matchedItems: [{
+          sourceRef: { name: "/api/v1/user/info", type: "api", documentId: "src-doc-1", location: "UserController.info" },
+          docRef: { name: "/api/v1/user/info", type: "api", documentId: "doc-doc-1", location: "인터페이스설계서.xlsx" },
+          matchScore: 1.0,
+          matchMethod: "exact",
+        }],
+        unmatchedSourceApis: [],
+        unmatchedDocApis: [],
+        unmatchedSourceTables: [],
+        unmatchedDocTables: [],
+      };
+
+      const result = detectGaps(
+        mr,
+        makeSourceSpec([srcApi]),
+        makeDocSpec([docApi]),
+        RESULT_ID,
+        ORG_ID,
+      );
+
+      const pmGaps = result.gaps.filter((g) => g.gapType === "PM");
+      // Authorization is filtered by @RequestHeader, only userId remains
+      expect(pmGaps).toHaveLength(1);
+      expect(pmGaps[0]!.description).toContain("userId");
+    });
+
+    it("@PathVariable 또는 URL {param} → PM gap 제외", () => {
+      const srcApi = makeSourceApi({
+        path: "/api/v1/error/{flag}",
+        parameters: [
+          { name: "flag", type: "String", required: true },
+          { name: "detail", type: "Boolean", required: false, annotation: "@PathVariable" },
+        ],
+      });
+      const docApi = makeDocApi({
+        path: "/api/v1/error/{flag}",
+        parameters: [],
+      });
+
+      const mr: MatchResult = {
+        matchedItems: [{
+          sourceRef: { name: "/api/v1/error/{flag}", type: "api", documentId: "src-doc-1", location: "ErrorController.error" },
+          docRef: { name: "/api/v1/error/{flag}", type: "api", documentId: "doc-doc-1", location: "인터페이스설계서.xlsx" },
+          matchScore: 1.0,
+          matchMethod: "exact",
+        }],
+        unmatchedSourceApis: [],
+        unmatchedDocApis: [],
+        unmatchedSourceTables: [],
+        unmatchedDocTables: [],
+      };
+
+      const result = detectGaps(
+        mr,
+        makeSourceSpec([srcApi]),
+        makeDocSpec([docApi]),
+        RESULT_ID,
+        ORG_ID,
+      );
+
+      const pmGaps = result.gaps.filter((g) => g.gapType === "PM");
+      // flag is filtered by URL {flag}, detail is filtered by @PathVariable
+      expect(pmGaps).toHaveLength(0);
+    });
   });
 
   // ── Stats ─────────────────────────────────────────────────────

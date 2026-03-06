@@ -14,6 +14,7 @@ import type {
   SourceSpec,
   DocSpec,
   SourceApi,
+  SourceApiParam,
   SourceTable,
   DocApi,
   DocTable,
@@ -242,6 +243,27 @@ function detectColumnGaps(
 
 // ── Parameter Gap Detection ─────────────────────────────────────
 
+/**
+ * Check if a source parameter should be excluded from PM gap detection.
+ * - Auth headers (@RequestHeader or name="Auth" + type="String")
+ * - PathVariable params already encoded in URL path
+ */
+function shouldSkipSourceParam(param: SourceApiParam, apiPath: string): boolean {
+  // Skip @RequestHeader params (auth tokens, etc.)
+  if (param.annotation?.toLowerCase().includes("requestheader")) return true;
+
+  // Skip Auth header even without annotation (LPON pattern: no annotation captured)
+  if (param.name === "Auth" && param.type === "String") return true;
+
+  // Skip @PathVariable params — already represented in URL path
+  if (param.annotation?.toLowerCase().includes("pathvariable")) return true;
+
+  // Skip params whose name appears as {paramName} in the URL
+  if (apiPath.includes(`{${param.name}}`)) return true;
+
+  return false;
+}
+
 function detectParamGaps(
   srcApi: SourceApi,
   docApi: DocApi,
@@ -253,6 +275,8 @@ function detectParamGaps(
 
   // Check for missing required source params in doc
   for (const srcParam of srcApi.parameters) {
+    if (shouldSkipSourceParam(srcParam, srcApi.path)) continue;
+
     const docMatch = docParams.find(
       (dp) => dp.name.toLowerCase() === srcParam.name.toLowerCase(),
     );

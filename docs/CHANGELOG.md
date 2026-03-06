@@ -2,6 +2,31 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 114 — 2026-03-06
+**v0.7.4 Phase 2-C + 2-D — Spec Export backend + Pilot Core UI 5 pages**:
+
+Phase 2-C Backend (svc-extraction):
+- `export/relevance-scorer.ts` — 3-criteria classification (external API, core entity, transaction core)
+- `export/spec-api.ts` — API Spec JSON generator with OpenAPI 3.0 wrapper
+- `export/spec-table.ts` — Table Spec JSON generator with column details
+- `export/spec-summary.ts` — CSV summary with UTF-8 BOM for Excel
+- `export/packager.ts` — R2 storage + D1 manifest (assembleAndStore)
+- `routes/export.ts` — 7 endpoints (POST spec-package, GET packages/manifest/api-spec/table-spec/report/summary)
+- `routes/spec.ts` — 2 endpoints (POST classify, GET classified)
+- `routes/factcheck.ts` — KPI endpoint (`/factcheck/kpi`)
+- `packages/types/src/spec.ts` — 8 Zod schemas + 7 type aliases
+- `0006_spec_packages.sql` — D1 migration (spec_packages + spec_classifications, 4 indexes)
+- 45 new tests (relevance-scorer 20, spec-api 6, spec-table 7, spec-summary 7, packager 5)
+
+Phase 2-D Frontend (app-web):
+- 5 new pages: source-upload, fact-check, spec-catalog, spec-detail, export-center
+- 9 components: CoverageCard, GapList, GapDetail, SpecCard, ApiSpecView, TableSpecView, ExportForm, PackageList, ApprovalGate
+- 3 API clients: factcheck (9 fn), spec (2 fn), export (7 fn)
+- PM approval gate (localStorage-based)
+- Sidebar: 4 new menu items + LPON organization
+
+**검증**: typecheck 0 errors | lint 0 errors | 312 tests PASS (45 new) | 43 files changed (+5,487)
+
 ## 세션 113 — 2026-03-06
 **v0.7.4 Phase 2-B Session 4 — LLM Semantic Matcher + Deploy + Fact Check E2E**:
 - ✅ `factcheck/llm-matcher.ts` — LLM semantic matching (per-item Sonnet, JSON verdict, naming diff/gap 분류)

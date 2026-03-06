@@ -2,6 +2,18 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 117 — 2026-03-06
+**Phase 2-C/2-D 배포 검증 + Gap Analysis 97%**:
+- 배포 검증: CI/CD 자동 배포 확인, 12/12 Workers healthy, D1 migration 0006 적용 확인
+- Pages 검증: 4개 새 라우트 (fact-check, source-upload, spec-catalog, export-center) 200 OK
+- Gap Analysis: Phase 2-C Design vs 구현 — 97% Match Rate (77/79 items)
+  - Phase 2-C Backend 58/59, Phase 2-D Frontend 19/19
+  - LOW gaps 2건: KPI API/Table Coverage 미분리, E2E route tests 부재
+  - Enhancements 6건: PM Approval Gate localStorage workflow 등
+- `gap-detector.ts`: shouldSkipSourceParam() — Auth 헤더 + @PathVariable PM gap 필터
+- `gap-detector.test.ts`: +5 tests (Auth/RequestHeader/PathVariable 필터)
+- 325 tests PASS, typecheck+lint 0 errors
+
 ## 세션 116 — 2026-03-06
 **v0.7.4 Fact Check Coverage 0.2% → 30.1% (150x 개선)**:
 - `matcher.ts`: normalizePath에 URL hostname 제거 + v1.0→1.0 정규화 추가

@@ -2,6 +2,15 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 112 — 2026-03-06
+**v0.7.4 PRD-구현 Gap Analysis + Phase 2-C 설계**:
+- PRD v0.7.4 전문 vs 구현 현황 비교 분석 (8건 Finding)
+- Plan 업데이트: MyBatis Core 격상(F-1), MID Gap type 5종(F-2), Option C → 2-C 편입(F-6)
+- Phase 2-C 설계 문서 작성: Spec Export + Option C 선별 + KPI endpoint (15 files, 2 sessions)
+- Gap Analysis 리포트: `docs/03-analysis/v074-pivot-prd-impl-gap.analysis.md`
+
+**검증**: 코드 변경 없음 (문서 only)
+
 ## 세션 111 — 2026-03-06
 **v0.7.4 Phase 2-B Session 3 — Gap Detection + API + D1 Migration**:
 - gap-detector.ts — 5종 Gap 분류 (SM/MC/PM/TM/MID), 컬럼·파라미터 비교

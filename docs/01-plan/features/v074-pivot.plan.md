@@ -129,6 +129,10 @@ LLM을 사용하지 않는 정적 분석 단계 (PRD §7.4 1단계).
 | `@Entity` / `@Table` / `@Column` | Regex 패턴 매칭 | `CodeEntity` (테이블명, 컬럼 목록, 타입, PK/FK) |
 | DDL (schema.sql, Flyway) | SQL 파서 (regex) | `CodeDDL` (CREATE TABLE, 컬럼, 제약조건) |
 | `@Transactional` 서비스 메서드 | Regex 패턴 매칭 | `CodeTransaction` (메서드명, DB write 대상) |
+| MyBatis XML mapper (v0.7.4 Core 격상) | XML Regex 파싱 | `CodeMapper` (namespace, resultMap, queries, tables) |
+
+> **DD-POST-1**: PRD SS7.3은 MyBatis를 Pilot Plus로 분류했으나, LPON 소스에 .sql 파일이 0개이고
+> MyBatis XML mapper가 유일한 테이블 정보 소스이므로 Pilot Core로 격상 결정. Phase 2-B DD-1 참조.
 
 ### 4.3 기술 설계
 
@@ -190,6 +194,10 @@ PRD §4.3 기준: 4종 Gap 유형 + 3단계 Severity.
 | Missing Column (MC) | 소스에 있으나 문서에 없는 컬럼 | Entity vs 테이블정의서 | >= 80% |
 | Parameter Mismatch (PM) | API 파라미터 불일치 | Controller vs API정의서 | >= 75% |
 | Type Mismatch (TM) | 데이터 타입 불일치 | Entity vs 테이블정의서 | >= 80% |
+| Missing in Document (MID) | 소스에 존재하나 문서에 미기재된 API/테이블 | Controller/Mapper vs 문서 전체 | >= 75% |
+
+> **DD-POST-2**: PRD SS4.3의 4종(SM/MC/PM/TM)에 MID 추가 — 총 5종. MC는 컬럼 레벨 누락,
+> MID는 API 엔드포인트/테이블 엔트리 레벨 누락으로 구분. Phase 2-B DD-2 참조.
 
 ### 5.3 Gap Severity (PRD §4.3 v0.7.4 신규)
 
@@ -315,6 +323,7 @@ CREATE INDEX idx_fc_gaps_review ON fact_check_gaps(review_status);
 
 ### 6.1 목표
 팩트 체크 결과를 기반으로 §5.3 샘플 형식의 Spec 패키지를 생성한다.
+핵심/비핵심 Spec 선별(PRD SS4.2 Option C)도 이 Phase에서 구현한다.
 
 ### 6.2 타입 정의 (`packages/types/src/spec.ts`)
 

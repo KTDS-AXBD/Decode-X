@@ -2,6 +2,18 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 122 — 2026-03-06
+**KPI Coverage 분리 + LLM Match 재실행**:
+- **GAP-1 해소**: KPI API/Table Coverage 분리 구현 (D1 스키마 변경 없이 `match_result_json` 파싱)
+  - `parseMatchResultForKpi()` — `matchedItems[].sourceRef.type`으로 API/Table 구분
+  - D1 `matched_items` vs JSON sum delta 보정 로직 (LLM match 비동기 적용 대응)
+- **KPI 응답 포맷 flat화**: nested `{ value, target, pass, detail }` → flat `{ apiCoverage, apiCoverageTarget, apiCoveragePass }` (프론트엔드 `FactCheckKpi` 인터페이스 정합)
+- **LLM match_result_json 동기화**: LLM 매칭 시 `match_result_json`에도 신규 매칭 반영 + unmatched count 차감
+- **LLM Semantic Match 재실행**: 284 MID items → **17건 매칭** (6.0%), 0 errors
+- **최종 KPI**: API Coverage **45.2%** (104/230), Table Coverage **7.2%** (11/152), Gap Precision 0%
+- **Overall Coverage**: 30.1% (115/382, structural 98 + LLM 17)
+- 331 tests PASS (+5 KPI tests), typecheck+lint 0 errors, CI/CD 3회 배포 성공
+
 ## 세션 121 — 2026-03-06
 **LLM Semantic Match 재실행 (9f8f68fc) — PM VO fix 이후 최신 결과**:
 - PM VO severity fix 영향 분석: PM gaps 164→87 (-77건, 47% 감소), 총 gaps 459→382

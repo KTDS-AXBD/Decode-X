@@ -606,16 +606,44 @@ async function handleLlmMatch(
       ? (newMatchedCount / totalSourceItems) * 100
       : 0;
 
+    // Update match_result_json to include LLM matches (for KPI API/Table split)
+    let updatedMatchJson = resultRow.match_result_json;
+    if (resultRow.match_result_json) {
+      try {
+        const cached = JSON.parse(resultRow.match_result_json) as {
+          matchedItems: unknown[];
+          unmatchedSourceApis: number;
+          unmatchedDocApis: number;
+          unmatchedSourceTables: number;
+          unmatchedDocTables: number;
+        };
+        // Add LLM matches and decrement unmatched counts
+        cached.matchedItems = [...cached.matchedItems, ...llmResult.newMatches];
+        let apiDelta = 0;
+        let tableDelta = 0;
+        for (const m of llmResult.newMatches) {
+          if (m.sourceRef.type === "table") tableDelta++;
+          else apiDelta++;
+        }
+        cached.unmatchedSourceApis = Math.max(0, cached.unmatchedSourceApis - apiDelta);
+        cached.unmatchedSourceTables = Math.max(0, cached.unmatchedSourceTables - tableDelta);
+        updatedMatchJson = JSON.stringify(cached);
+      } catch {
+        // Keep original if parse fails
+      }
+    }
+
     await env.DB_EXTRACTION.prepare(
       `UPDATE fact_check_results
        SET matched_items = ?, coverage_pct = ?, gap_count = ?,
-           updated_at = ?
+           match_result_json = ?, updated_at = ?
        WHERE result_id = ?`,
     )
       .bind(
         newMatchedCount,
         Math.round(newCoverage * 10) / 10,
         statsRow?.active_gaps ?? resultRow.gap_count,
+        updatedMatchJson,
         now,
         resultId,
       )

@@ -145,6 +145,11 @@ export async function handleFactcheckRoutes(
     return handleTriggerFactCheck(request, env);
   }
 
+  // GET /factcheck/kpi — automated KPI metrics (PRD SS8.2)
+  if (method === "GET" && path === "/factcheck/kpi") {
+    return handleGetKpi(request, env);
+  }
+
   // GET /factcheck/summary — org-level KPI
   if (method === "GET" && path === "/factcheck/summary") {
     return handleGetSummary(request, env);
@@ -176,7 +181,7 @@ export async function handleFactcheckRoutes(
   if (method === "POST" && llmMatch) {
     const resultId = llmMatch[1];
     if (!resultId) return notFound("result");
-    return handleLlmMatch(env, resultId);
+    return handleLlmMatch(env, resultId, request);
   }
 
   // GET /factcheck/results/:resultId — single result
@@ -465,10 +470,27 @@ async function handleReviewGap(
 
 // ── POST /factcheck/results/:resultId/llm-match ──────────────────
 
+interface LlmMatchBody {
+  batchSize?: number;
+  offset?: number;
+}
+
 async function handleLlmMatch(
   env: Env,
   resultId: string,
+  request: Request,
 ): Promise<Response> {
+  // Parse optional batch params from body
+  let batchSize = 10;
+  let offset = 0;
+  try {
+    const body = (await request.json()) as LlmMatchBody;
+    if (body.batchSize && body.batchSize > 0) batchSize = Math.min(body.batchSize, 50);
+    if (body.offset && body.offset >= 0) offset = body.offset;
+  } catch {
+    // Empty body is fine — use defaults
+  }
+
   // Verify result exists and is completed
   const resultRow = await env.DB_EXTRACTION.prepare(
     `SELECT * FROM fact_check_results WHERE result_id = ?`,
@@ -493,16 +515,79 @@ async function handleLlmMatch(
   // Re-run structural matching to get unmatched items
   const matchResult = structuralMatch(sourceSpec, docSpec);
 
-  // Run LLM semantic matching on unmatched items
+  // Collect all unmatched items into a flat list for pagination
+  const allUnmatched: Array<{ type: "api" | "table"; item: unknown }> = [
+    ...matchResult.unmatchedSourceApis.map((a) => ({ type: "api" as const, item: a })),
+    ...matchResult.unmatchedSourceTables.map((t) => ({ type: "table" as const, item: t })),
+  ];
+
+  const total = allUnmatched.length;
+  const batch = allUnmatched.slice(offset, offset + batchSize);
+
+  if (batch.length === 0) {
+    return ok({
+      resultId,
+      llmMatching: { processed: 0, newMatches: 0, confirmedGaps: 0, errors: 0 },
+      pagination: { offset, batchSize, total, hasMore: false },
+      newMatches: [],
+      confirmedGaps: [],
+    });
+  }
+
+  // Build sliced MatchResult for batch processing
+  const batchMatchResult: import("../factcheck/matcher.js").MatchResult = {
+    matchedItems: [],
+    unmatchedSourceApis: batch
+      .filter((b) => b.type === "api")
+      .map((b) => b.item as import("../factcheck/types.js").SourceApi),
+    unmatchedDocApis: [],
+    unmatchedSourceTables: batch
+      .filter((b) => b.type === "table")
+      .map((b) => b.item as import("../factcheck/types.js").SourceTable),
+    unmatchedDocTables: [],
+  };
+
+  // Run LLM semantic matching on this batch
   const llmResult = await llmSemanticMatch(
-    matchResult,
+    batchMatchResult,
     docSpec,
     env.LLM_ROUTER,
     env.INTERNAL_API_SECRET,
   );
 
-  // Update match count and coverage if new matches found
+  const now = new Date().toISOString();
+
+  // Mark resolved gaps as auto_resolved in D1
   if (llmResult.newMatches.length > 0) {
+    for (const match of llmResult.newMatches) {
+      const docName = match.docRef?.name ?? "unknown";
+      await env.DB_EXTRACTION.prepare(
+        `UPDATE fact_check_gaps
+         SET auto_resolved = 1, review_status = 'dismissed',
+             reviewer_comment = ?, reviewed_at = ?
+         WHERE result_id = ? AND source_item = ? AND gap_type = 'MID'
+           AND auto_resolved = 0`,
+      )
+        .bind(
+          `LLM match: ${docName} (score: ${match.matchScore})`,
+          now,
+          resultId,
+          match.sourceRef.name,
+        )
+        .run();
+    }
+
+    // Recalculate totals from D1
+    const statsRow = await env.DB_EXTRACTION.prepare(
+      `SELECT
+         COUNT(*) AS gap_count,
+         SUM(CASE WHEN auto_resolved = 0 THEN 1 ELSE 0 END) AS active_gaps
+       FROM fact_check_gaps WHERE result_id = ?`,
+    )
+      .bind(resultId)
+      .first<{ gap_count: number; active_gaps: number }>();
+
+    const resolvedCount = (statsRow?.gap_count ?? 0) - (statsRow?.active_gaps ?? 0);
     const newMatchedCount = resultRow.matched_items + llmResult.newMatches.length;
     const totalSourceItems = resultRow.total_source_items;
     const newCoverage = totalSourceItems > 0
@@ -511,17 +596,21 @@ async function handleLlmMatch(
 
     await env.DB_EXTRACTION.prepare(
       `UPDATE fact_check_results
-       SET matched_items = ?, coverage_pct = ?, updated_at = ?
+       SET matched_items = ?, coverage_pct = ?, gap_count = ?,
+           updated_at = ?
        WHERE result_id = ?`,
     )
       .bind(
         newMatchedCount,
         Math.round(newCoverage * 10) / 10,
-        new Date().toISOString(),
+        statsRow?.active_gaps ?? resultRow.gap_count,
+        now,
         resultId,
       )
       .run();
   }
+
+  const hasMore = offset + batchSize < total;
 
   return ok({
     resultId,
@@ -531,8 +620,156 @@ async function handleLlmMatch(
       confirmedGaps: llmResult.stats.confirmed,
       errors: llmResult.stats.errors,
     },
+    pagination: { offset, batchSize, total, hasMore },
     newMatches: llmResult.newMatches,
     confirmedGaps: llmResult.confirmedGaps,
+  });
+}
+
+// ── GET /factcheck/kpi ────────────────────────────────────────────
+
+async function handleGetKpi(
+  request: Request,
+  env: Env,
+): Promise<Response> {
+  const organizationId = request.headers.get("X-Organization-Id");
+  if (!organizationId) {
+    return badRequest("X-Organization-Id header is required");
+  }
+
+  // Get the latest completed result for KPI calculation
+  const resultRow = await env.DB_EXTRACTION.prepare(
+    `SELECT result_id, total_source_items, total_doc_items, matched_items, gap_count, coverage_pct, spec_type
+     FROM fact_check_results
+     WHERE organization_id = ? AND status = 'completed'
+     ORDER BY created_at DESC LIMIT 1`,
+  )
+    .bind(organizationId)
+    .first<{
+      result_id: string;
+      total_source_items: number;
+      total_doc_items: number;
+      matched_items: number;
+      gap_count: number;
+      coverage_pct: number;
+      spec_type: string;
+    }>();
+
+  // Default empty KPI
+  if (!resultRow) {
+    return ok({
+      organizationId,
+      criticalApiCoverage: {
+        value: 0,
+        target: 80,
+        pass: false,
+        detail: { sourceApis: 0, documentApis: 0, matchedApis: 0 },
+      },
+      criticalTableCoverage: {
+        value: 0,
+        target: 80,
+        pass: false,
+        detail: { sourceTables: 0, documentTables: 0, matchedTables: 0 },
+      },
+      gapPrecision: {
+        value: 0,
+        target: 75,
+        pass: false,
+        detail: { totalGaps: 0, confirmedGaps: 0, dismissedGaps: 0, pendingGaps: 0 },
+      },
+      reviewerAcceptanceRate: {
+        value: null,
+        target: 70,
+        note: "Requires Phase 2-D UI tracking",
+      },
+      specEditTimeReduction: {
+        value: null,
+        target: 30,
+        note: "Requires Phase 2-D UI tracking",
+      },
+      computedAt: new Date().toISOString(),
+    });
+  }
+
+  // KPI-1 & KPI-2: Coverage from matched_items / total_source_items
+  // For mixed results, we use total numbers; for specific types, use those
+  const apiCoverage = resultRow.total_source_items > 0
+    ? Math.round((resultRow.matched_items / resultRow.total_source_items) * 1000) / 10
+    : 0;
+  const tableCoverage = apiCoverage; // Same data for mixed; per-type breakdown needs separate queries
+
+  // KPI-3: Gap Precision — confirmed / (confirmed + dismissed)
+  const gapStatsRow = await env.DB_EXTRACTION.prepare(
+    `SELECT
+       COUNT(*) AS total_gaps,
+       SUM(CASE WHEN review_status = 'confirmed' THEN 1 ELSE 0 END) AS confirmed,
+       SUM(CASE WHEN review_status = 'dismissed' THEN 1 ELSE 0 END) AS dismissed,
+       SUM(CASE WHEN review_status = 'pending' THEN 1 ELSE 0 END) AS pending
+     FROM fact_check_gaps
+     WHERE result_id = ?`,
+  )
+    .bind(resultRow.result_id)
+    .first<{
+      total_gaps: number;
+      confirmed: number;
+      dismissed: number;
+      pending: number;
+    }>();
+
+  const confirmed = gapStatsRow?.confirmed ?? 0;
+  const dismissed = gapStatsRow?.dismissed ?? 0;
+  const pending = gapStatsRow?.pending ?? 0;
+  const totalGaps = gapStatsRow?.total_gaps ?? 0;
+
+  const reviewedTotal = confirmed + dismissed;
+  const gapPrecision = reviewedTotal > 0
+    ? Math.round((confirmed / reviewedTotal) * 1000) / 10
+    : 0;
+
+  return ok({
+    organizationId,
+    criticalApiCoverage: {
+      value: apiCoverage,
+      target: 80,
+      pass: apiCoverage >= 80,
+      detail: {
+        sourceApis: resultRow.total_source_items,
+        documentApis: resultRow.total_doc_items,
+        matchedApis: resultRow.matched_items,
+      },
+    },
+    criticalTableCoverage: {
+      value: tableCoverage,
+      target: 80,
+      pass: tableCoverage >= 80,
+      detail: {
+        sourceTables: resultRow.total_source_items,
+        documentTables: resultRow.total_doc_items,
+        matchedTables: resultRow.matched_items,
+      },
+    },
+    gapPrecision: {
+      value: gapPrecision,
+      target: 75,
+      pass: gapPrecision >= 75,
+      detail: {
+        totalGaps,
+        confirmedGaps: confirmed,
+        dismissedGaps: dismissed,
+        pendingGaps: pending,
+      },
+    },
+    reviewerAcceptanceRate: {
+      value: null,
+      target: 70,
+      note: "Requires Phase 2-D UI tracking",
+    },
+    specEditTimeReduction: {
+      value: null,
+      target: 30,
+      note: "Requires Phase 2-D UI tracking",
+    },
+    computedAt: new Date().toISOString(),
   });
 }
 

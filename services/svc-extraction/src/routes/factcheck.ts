@@ -202,6 +202,14 @@ export async function handleFactcheckRoutes(
     return handleReviewGap(request, env, gapId);
   }
 
+  // POST /factcheck/results/:resultId/dedup-gaps — remove duplicate gaps
+  const dedupMatch = path.match(/^\/factcheck\/results\/([^/]+)\/dedup-gaps$/);
+  if (method === "POST" && dedupMatch) {
+    const resultId = dedupMatch[1];
+    if (!resultId) return notFound("result");
+    return handleDedupGaps(env, resultId);
+  }
+
   // No matching factcheck route
   return null;
 }
@@ -560,21 +568,24 @@ async function handleLlmMatch(
   const now = new Date().toISOString();
 
   // Mark resolved gaps as auto_resolved in D1
+  // source_item is stored as JSON (e.g. {"path":"/foo","method":["POST"],...})
+  // so we match using LIKE on the path value
   if (llmResult.newMatches.length > 0) {
     for (const match of llmResult.newMatches) {
       const docName = match.docRef?.name ?? "unknown";
+      const pathPattern = `%"path":"${match.sourceRef.name}"%`;
       await env.DB_EXTRACTION.prepare(
         `UPDATE fact_check_gaps
          SET auto_resolved = 1, review_status = 'dismissed',
              reviewer_comment = ?, reviewed_at = ?
-         WHERE result_id = ? AND source_item = ? AND gap_type = 'MID'
+         WHERE result_id = ? AND source_item LIKE ? AND gap_type = 'MID'
            AND auto_resolved = 0`,
       )
         .bind(
           `LLM match: ${docName} (score: ${match.matchScore})`,
           now,
           resultId,
-          match.sourceRef.name,
+          pathPattern,
         )
         .run();
     }
@@ -624,6 +635,57 @@ async function handleLlmMatch(
     pagination: { offset, batchSize, total, hasMore },
     newMatches: llmResult.newMatches,
     confirmedGaps: llmResult.confirmedGaps,
+  });
+}
+
+// ── POST /factcheck/results/:resultId/dedup-gaps ──────────────────
+
+async function handleDedupGaps(
+  env: Env,
+  resultId: string,
+): Promise<Response> {
+  // Count before
+  const beforeRow = await env.DB_EXTRACTION.prepare(
+    `SELECT COUNT(*) AS cnt FROM fact_check_gaps WHERE result_id = ?`,
+  )
+    .bind(resultId)
+    .first<{ cnt: number }>();
+
+  const before = beforeRow?.cnt ?? 0;
+
+  // Delete duplicate gaps keeping only the earliest per (result_id, gap_type, source_item)
+  await env.DB_EXTRACTION.prepare(
+    `DELETE FROM fact_check_gaps
+     WHERE rowid NOT IN (
+       SELECT MIN(rowid) FROM fact_check_gaps
+       WHERE result_id = ?
+       GROUP BY result_id, gap_type, source_item, document_item
+     ) AND result_id = ?`,
+  )
+    .bind(resultId, resultId)
+    .run();
+
+  // Count after
+  const afterRow = await env.DB_EXTRACTION.prepare(
+    `SELECT COUNT(*) AS cnt FROM fact_check_gaps WHERE result_id = ?`,
+  )
+    .bind(resultId)
+    .first<{ cnt: number }>();
+
+  const after = afterRow?.cnt ?? 0;
+
+  // Update result gap_count
+  await env.DB_EXTRACTION.prepare(
+    `UPDATE fact_check_results SET gap_count = ?, updated_at = ? WHERE result_id = ?`,
+  )
+    .bind(after, new Date().toISOString(), resultId)
+    .run();
+
+  return ok({
+    resultId,
+    before,
+    after,
+    removed: before - after,
   });
 }
 

@@ -377,11 +377,30 @@
 
 ---
 
-## 8) Risks & Assumptions
+## 8) Risks & Constraints
 
-- PRD가 docx 단일 문서이므로 초기에 구조화 전환 필요
-- Neo4j/Cloudflare/Anthropic 연동의 초기 비용/제약 확인 필요
-- HITL UX 범위가 넓어 MVP 범위 고정 필요
+> GOV-005 리스크 관리 표준 적용. 유형: Blocker / Dependency / Tech Debt / Constraint
+
+### 기술 제약 (Constraint)
+
+| ID | 제약 | 영향 | 대응 |
+|----|------|------|------|
+| C-01 | Cloudflare Workers 30초 CPU 타임아웃 | 대용량 PDF 파싱 시 524 에러 | AIF-REQ-004로 등록, 청크 분할 검토 |
+| C-02 | D1 SQLite 단일 DB 용량 제한 (500MB Free) | 대규모 데이터 시 스케일링 | 서비스별 DB 분리로 완화 (현재 10 DB) |
+| C-03 | Neo4j Aura Free 제한 (200K nodes, 400K rels) | 온톨로지 확장 시 Pro 필요 | 파일럿 규모에서는 충분 |
+| C-04 | Anthropic API 크레딧 기반 과금 | 크레딧 소진 시 Tier 1/2 중단 | 멀티 프로바이더 fallback 구현 완료 |
+| C-05 | PRD가 docx 단일 문서 | 구조적 참조 어려움 | SPEC.md + CLAUDE.md로 구조화 보완 |
+
+### 기술부채 (Tech Debt)
+
+| ID | 위치 | 내용 | 영향 | 등록일 |
+|----|------|------|------|--------|
+| TD-01 | `svc-governance/src/routes/cost.ts` | cost 집계 미구현 (TODO) | 비용 대시보드 부정확 | 2026-03-08 |
+
+### 가정 (Assumptions)
+
+- HITL UX 범위를 MVP로 고정 (Reviewer 1인 승인 워크플로우)
+- 퇴직연금 도메인 파일럿이 성공하면 다른 도메인으로 확장
 
 ---
 

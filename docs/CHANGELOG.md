@@ -2,6 +2,13 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 142 — 2026-03-08
+**0003 마이그레이션 재검증 + typecheck/lint 확인**:
+- ✅ `db-analytics` 0003_report_system.sql 3환경 적용 확인 (staging 신규 생성, production 기존 존재)
+- ✅ typecheck 17/17, lint 14/14 (FULL TURBO cache hit)
+
+**참고**: `--file` 옵션은 OAuth 토큰으로 D1 Import API 인증 에러 발생 → `--command` 인라인 방식 사용
+
 ## 세션 141 — 2026-03-08
 **AIF-REQ-011: 분석 보고서 동적화 — 하드코딩→API/DB + 버전 스냅샷 + 마크다운 내보내기**:
 - ✅ `svc-analytics` 보고서 API 8개 엔드포인트 (sections CRUD, seed, snapshots, markdown export)

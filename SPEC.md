@@ -52,7 +52,7 @@
 
 ## 5) Current Status
 
-- **Last Updated**: 2026-03-06
+- **Last Updated**: 2026-03-08
 - **Current Phase**: v0.7.4 Pivot Phase 2-E 완료 — Pilot Core 8/8 기능 구현 (97%), KPI 공식 PRD 정렬 완료 (API 95.4%, Table 100%)
 - **Production E2E**: ✅ 8/8 PASS (synthetic) + 7/7 PASS (real-doc) + Batch 3: 7/11 parsed (SCDSA002 4건 → encrypted 상태)
 - **Real Document Pilot**: ✅ 20/26 문서 파싱 완료 (Batch 1: 4건, Batch 2: 9/11건, Batch 3: 7/11건)
@@ -67,6 +67,20 @@
 - **Phase 3 Prep**: ✅ MCP 2024-11-05 protocol + OpenAPI 3.0 adapter (Staging 배포 완료)
 - **Quality Infra**: ✅ DB 마이그레이션 + API + 대시보드 배포 완료 (org별 메트릭 기록)
 - **Frontend API**: ✅ 11/11 페이지 API 연동 완료 (Skill Detail 추가, Settings Health 모니터링 + 알림 연동 포함)
+- **LPON 온누리상품권 파일럿**: 🔧 Wave 1 업로드 완료 (60/63건, 95.2%), 파이프라인 검증 대기
+  - 매니페스트: 84건 → 63건 (dedup 21건 제거, SCDSA002 2건 제외)
+  - 업로드: Group A(7) + B(10) + C(20) + D(2) + E(18) + F(3) = 60건 OK, 1건 FAIL (HTTP 000, Tier 3 임시문서)
+  - 핵심 문서: D106 정책정의서 + D221 요구사항 → Stage 3 Policy Inference 주 입력
+  - 파이프라인: Stage 1 투입 완료 / Stage 2~5 triage 미확인
+  - Wave 2 (Archive 127건): 미착수 (별도 세션)
+- **LPON FactCheck**: 🔧 소스코드↔문서 API 커버리지 분석 진행
+  - FactCheck 실행: resultId 3건 (v1/v2/v3), 총 1,128건 처리
+  - LLM Match: 98건 매칭, 1,030건 갭 확인 (소스 API 대비 문서 커버리지 ~8.7%)
+  - Gap 패턴: /gift/*, /manual/*, /chargeDealing/*, /v2/messages/* 다수 미문서화
+- **Multi-Org 코드 점검**: 🔧 12개 이슈 발견 (HIGH 4, MEDIUM 5, LOW 3)
+  - HIGH: skills 테이블 org_id 누락, HITL 통계/품질트렌드/Trust 쿼리 org 필터 누락
+  - MEDIUM: Neo4j org 격리 미흡, governance agent Miraeasset 하드코딩, 용어/비용 통계 org 필터 누락
+  - 상세: SPEC.md §8 Tech Debt 참조
 - **Cross-Org Comparison UI**: ✅ analysis-report 4번째 탭 구현 (조직 선택 → 비교 → 4-Group 대시보드)
 - **Repo Bootstrap**: ✅
 - **PRD Seed Document**: ✅ (`docs/AI_Foundry_PRD_TDS_v0.6.docx`)
@@ -373,7 +387,7 @@
 
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
-| AIF-REQ-007 | Feature | Pipeline | P0 | IN_PROGRESS | 온누리상품권 문서 인제스트 + 구조 추출 (Stage 1-2, 핵심 5종 + LLM 매칭 284 API 통합) |
+| AIF-REQ-007 | Feature | Pipeline | P0 | IN_PROGRESS | 온누리상품권 문서 인제스트 + 구조 추출 (Stage 1-2, Wave 1 60/63건 업로드 완료, triage 검증 대기) |
 | AIF-REQ-008 | Feature | Pipeline | P0 | IN_PROGRESS | 온누리상품권 정책 추론 + 온톨로지 구축 (Stage 3-4, D1 정책 DB + Neo4j 그래프) |
 | AIF-REQ-009 | Feature | Pipeline | P1 | PLANNED | 온누리상품권 Skill 패키징 + MCP 어댑터 (Stage 5, .skill.json + Claude Desktop E2E) |
 | AIF-REQ-010 | Feature | Data | P1 | PLANNED | SI 산출물 재구성 + As-Is/To-Be Gap 분석 (프로세스/아키텍처/API/테이블 정의서) |
@@ -400,6 +414,13 @@
 | ID | 위치 | 내용 | 영향 | 등록일 |
 |----|------|------|------|--------|
 | TD-01 | `svc-governance/src/routes/cost.ts` | cost 집계 미구현 (TODO) | 비용 대시보드 부정확 | 2026-03-08 |
+| TD-02 | `infra/migrations/db-skill/0001_init.sql` | skills 테이블 organization_id 컬럼 없음 | 멀티 org 시 Skill 데이터 격리 불가 | 2026-03-08 |
+| TD-03 | `svc-policy/src/routes/stats.ts` | HITL 통계 3개 쿼리 org 필터 누락 | 전체 org 데이터 혼재 | 2026-03-08 |
+| TD-04 | `svc-policy/src/routes/quality-trend.ts` | 정책 품질 트렌드 쿼리 org 필터 누락 | 전체 org 데이터 혼재 | 2026-03-08 |
+| TD-05 | `svc-governance/src/routes/trust.ts` | Trust 평가 집계 org 필터 누락 | 전체 org 데이터 혼재 | 2026-03-08 |
+| TD-06 | `svc-skill/src/routes/skills.ts:301-348` | 4개 통계 쿼리 org 필터 누락 (TD-02 선행) | 전체 org 데이터 혼재 | 2026-03-08 |
+| TD-07 | `svc-ontology/src/neo4j/client.ts` | Neo4j 노드에 organizationId 프로퍼티 미저장 | 그래프 레벨 org 격리 불가 | 2026-03-08 |
+| TD-08 | `svc-governance/src/agent/tools.ts:107` | "Miraeasset" org 하드코딩 | Agent 도구 LPON 미지원 | 2026-03-08 |
 
 ### 가정 (Assumptions)
 

@@ -2,6 +2,21 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 129 — 2026-03-08
+**LPON org 전환 후 Spec/FactCheck 점검 — Agent Team 병렬 분석**:
+- Agent Team (2 workers): W1 코드+FactCheck 점검, W2 문서분석+현황 정리
+- Multi-org 코드 점검: 12개 이슈 발견 (HIGH 4, MEDIUM 5, LOW 3)
+  - HIGH: skills 테이블 org_id 누락, HITL통계/품질트렌드/Trust 쿼리 org 필터 누락
+  - MEDIUM: Neo4j org 격리, governance agent 하드코딩, 용어/비용 통계 org 필터
+- FactCheck 점검: 도메인 무관(domain-agnostic) 확인 → LPON 그대로 동작
+- LPON 업로드 현황: Wave 1 60/63건 OK (95.2%), FAIL 1건 (HTTP 000, Tier 3)
+- LLM Match: 3회 실행 (v1/v2/v3), 1,128건 처리, 98건 매칭, 1,030건 갭
+- SPEC.md §5 LPON 현황 추가, §8 Tech Debt TD-02~08 등록
+- feat(svc-ingestion): 정책정의서 파서 추가 (LPON D106 파싱)
+
+**검증 결과**:
+- ✅ typecheck (17/17) / lint (14/14) 전체 통과
+
 ## 세션 128 — 2026-03-08
 **Production UI/UX 전체 점검 + 이슈 수정 (Playwright MCP)**:
 - Playwright MCP로 19개 페이지 자동 점검: PASS 12, WARN 5, FAIL 1

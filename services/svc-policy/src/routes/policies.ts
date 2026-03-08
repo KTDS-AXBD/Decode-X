@@ -203,6 +203,7 @@ export async function handleListPolicies(
   env: Env,
 ): Promise<Response> {
   const url = new URL(request.url);
+  const organizationId = request.headers.get("X-Organization-Id");
   const extractionId = url.searchParams.get("extractionId");
   const status = url.searchParams.get("status");
   const limit = Math.min(Number(url.searchParams.get("limit") ?? "50"), 100);
@@ -211,6 +212,10 @@ export async function handleListPolicies(
   let query = "SELECT * FROM policies WHERE 1=1";
   const binds: (string | number)[] = [];
 
+  if (organizationId) {
+    query += " AND organization_id = ?";
+    binds.push(organizationId);
+  }
   if (extractionId) {
     query += " AND extraction_id = ?";
     binds.push(extractionId);

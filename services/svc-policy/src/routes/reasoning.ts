@@ -36,19 +36,26 @@ interface SimilarGroup {
 }
 
 export async function handleGetReasoningAnalysis(
-  _request: Request,
+  request: Request,
   env: Env,
 ): Promise<Response> {
   try {
     const db = env.DB_POLICY;
+    const organizationId = request.headers.get("X-Organization-Id");
 
-    const allPolicies = await db.prepare(`
+    let sql = `
       SELECT policy_id, policy_code, title, condition, outcome,
              status, organization_id
-      FROM policies
-      ORDER BY created_at DESC
-      LIMIT 200
-    `).all<PolicyRow>();
+      FROM policies`;
+    const binds: string[] = [];
+
+    if (organizationId) {
+      sql += " WHERE organization_id = ?";
+      binds.push(organizationId);
+    }
+    sql += " ORDER BY created_at DESC LIMIT 200";
+
+    const allPolicies = await db.prepare(sql).bind(...binds).all<PolicyRow>();
 
     const policies = allPolicies.results ?? [];
 

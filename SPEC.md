@@ -362,18 +362,22 @@
 
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
-| AIF-REQ-001 | Improvement | Pipeline | P2 | TRIAGED | SCDSA002 비표준 XLSX 파싱 조사 (메뉴구조도, 테이블정의서) |
+| ~~AIF-REQ-001~~ | ~~Improvement~~ | ~~Pipeline~~ | ~~P2~~ | REJECTED | ~~SCDSA002 비표준 XLSX 파싱 조사~~ — 거부: DRM 암호화 파일 파싱 제외 |
 | AIF-REQ-002 | Improvement | Pipeline | P3 | TRIAGED | Anthropic vs OpenAI extraction 품질 비교 (크레딧 충전 후) |
 | AIF-REQ-003 | Feature | Data | P2 | TRIAGED | 추가 문서 업로드 (764건 XLSX 중 선별) |
 | AIF-REQ-004 | Bug | Pipeline | P2 | TRIAGED | PDF 대용량 문서 파싱 Unstructured.io 524 timeout 해결 |
 | AIF-REQ-005 | Feature | Integration | P1 | DONE | MCP adapter 실제 클라이언트(Claude Desktop) E2E 테스트 |
 | AIF-REQ-006 | Feature | Integration | P2 | TRIAGED | OpenAPI adapter 외부 시스템 연동 검증 |
 
-### 백로그 (신규 등록)
+### 온누리상품권 도메인 파일럿 (신규 등록)
 
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
-| — | — | — | — | — | (등록 대기) |
+| AIF-REQ-007 | Feature | Pipeline | P0 | IN_PROGRESS | 온누리상품권 문서 인제스트 + 구조 추출 (Stage 1-2, 핵심 5종 + LLM 매칭 284 API 통합) |
+| AIF-REQ-008 | Feature | Pipeline | P0 | IN_PROGRESS | 온누리상품권 정책 추론 + 온톨로지 구축 (Stage 3-4, D1 정책 DB + Neo4j 그래프) |
+| AIF-REQ-009 | Feature | Pipeline | P1 | PLANNED | 온누리상품권 Skill 패키징 + MCP 어댑터 (Stage 5, .skill.json + Claude Desktop E2E) |
+| AIF-REQ-010 | Feature | Data | P1 | PLANNED | SI 산출물 재구성 + As-Is/To-Be Gap 분석 (프로세스/아키텍처/API/테이블 정의서) |
+| AIF-REQ-011 | Feature | Integration | P1 | PLANNED | 온누리상품권 분석 보고서 (내부 기술 보고서 + 고객 발표용 PPT + 벤치마크 비교) |
 
 ---
 

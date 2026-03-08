@@ -53,7 +53,7 @@
 | AIF-ANLS-013 | v0.7.4 Phase 2-E Full Gap Analysis | 1.0 | Active | `03-analysis/v074-pivot-phase2e-full.analysis.md` |
 | AIF-ANLS-014 | v0.7.4 PRD vs Implementation Gap Analysis v2.0 | 1.0 | Active | `03-analysis/v074-pivot-prd-impl-gap.analysis.md` |
 
-## RPRT (8)
+## RPRT (9)
 
 | 코드 | 제목 | 버전 | 상태 | 파일 |
 |------|------|:----:|:----:|------|
@@ -65,6 +65,7 @@
 | AIF-RPRT-006 | User Onboarding System 보고서 | 1.0 | Active | `04-report/features/user-onboarding.report.md` |
 | AIF-RPRT-007 | v0.7.4 데모 시나리오 | 1.0 | Active | `04-report/features/v074-demo-scenario.md` |
 | AIF-RPRT-008 | Process-Diagnosis Executive Summary | 1.0 | Active | `04-report/EXECUTIVE_SUMMARY.md` |
+| AIF-RPRT-009 | Production UI/UX 전체 점검 리포트 | 1.0 | Active | `04-report/features/production-ui-test.report.md` |
 
 ## GUID (1)
 
@@ -78,4 +79,4 @@
 
 ---
 
-**통계**: 활성 문서 40개 (SPEC 2 + PLAN 9 + DSGN 6 + ANLS 14 + RPRT 8 + GUID 1), 아카이브 12개
+**통계**: 활성 문서 41개 (SPEC 2 + PLAN 9 + DSGN 6 + ANLS 14 + RPRT 9 + GUID 1), 아카이브 12개

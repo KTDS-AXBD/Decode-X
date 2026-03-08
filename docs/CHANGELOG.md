@@ -2,6 +2,19 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 128 — 2026-03-08
+**Production UI/UX 전체 점검 + 이슈 수정 (Playwright MCP)**:
+- Playwright MCP로 19개 페이지 자동 점검: PASS 12, WARN 5, FAIL 1
+- ISS-001 (P0): API Console `/api/skills/:id/mcp` 403 수정 — Executive 역할에 `skill: ["read", "download"]` 추가
+- ISS-002 (P1): source-upload, fact-check, spec-catalog, export-center 4개 페이지 한영 병기 통일
+- ISS-005 (P1): 사이드바 아코디언 그룹 라벨 한영 접근성 공백 추가
+- ISS-003 (P2): upload-tmp-* 임시파일명 조사 → 배치 업로드 데이터 문제 (코드 수정 불필요)
+- 리포트: `docs/04-report/features/production-ui-test.report.md` (AIF-RPRT-009)
+- Agent Teams 병렬 수정 (2 workers: backend RBAC + frontend 4 pages)
+
+**검증 결과**:
+- ✅ typecheck (17/17) / lint (14/14) / test (15/15, 1,072+ tests) 전체 통과
+
 ## 세션 127 — 2026-03-08
 **사이드바 메뉴 IA 개편 — 16 flat → 5 accordion groups**:
 - 인터뷰 기반 방향 설정: BD팀 실무자 / 목표(Goal) 중심 / 아코디언 그룹핑

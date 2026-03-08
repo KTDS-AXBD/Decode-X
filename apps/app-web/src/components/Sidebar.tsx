@@ -27,6 +27,7 @@ import {
   BadgeCheck,
   Rocket,
   Wrench,
+  ScanSearch,
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -81,6 +82,7 @@ const menuGroups: MenuGroup[] = [
     items: [
       { icon: <CheckSquare className="w-4 h-4" />, label: 'HITL 검토', labelEn: 'HITL Review', path: '/hitl' },
       { icon: <GitCompareArrows className="w-4 h-4" />, label: '팩트 체크', labelEn: 'Fact Check', path: '/fact-check' },
+      { icon: <ScanSearch className="w-4 h-4" />, label: 'Gap 분석', labelEn: 'Gap Analysis', path: '/gap-analysis' },
       { icon: <ShieldCheck className="w-4 h-4" />, label: '신뢰도 대시보드', labelEn: 'Trust', path: '/trust' },
     ],
   },

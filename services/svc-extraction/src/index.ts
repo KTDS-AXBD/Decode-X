@@ -17,6 +17,7 @@ import { handleCompareRoutes } from "./routes/compare.js";
 import { handleFactcheckRoutes } from "./routes/factcheck.js";
 import { handleExportRoutes } from "./routes/export.js";
 import { handleSpecRoutes } from "./routes/spec.js";
+import { handleGapAnalysisRoutes } from "./routes/gap-analysis.js";
 import { processQueueEvent } from "./queue/handler.js";
 
 export default {
@@ -186,6 +187,17 @@ export default {
           if (denied) return denied;
         }
         const resp = await handleExportRoutes(request, env, ctx, path, method, url);
+        if (resp) return resp;
+      }
+
+      // /gap-analysis/* routes
+      if (path.startsWith("/gap-analysis")) {
+        const rbacCtx = extractRbacContext(request);
+        if (rbacCtx) {
+          const denied = await checkPermission(env, rbacCtx.role, "extraction", "read");
+          if (denied) return denied;
+        }
+        const resp = await handleGapAnalysisRoutes(request, env, ctx, path, method);
         if (resp) return resp;
       }
 

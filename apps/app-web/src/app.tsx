@@ -26,6 +26,7 @@ const FactCheckPage = lazy(() => import("./pages/fact-check"));
 const SpecCatalogPage = lazy(() => import("./pages/spec-catalog"));
 const SpecDetailPage = lazy(() => import("./pages/spec-detail"));
 const ExportCenterPage = lazy(() => import("./pages/export-center"));
+const GapAnalysisPage = lazy(() => import("./pages/gap-analysis"));
 const NotFoundPage = lazy(() => import("./pages/not-found"));
 
 function LoadingFallback() {
@@ -71,6 +72,7 @@ export function App() {
             <Route path="/guide" element={<ProtectedRoute><Layout><GuidePage /></Layout></ProtectedRoute>} />
             <Route path="/source-upload" element={<ProtectedRoute><Layout><SourceUploadPage /></Layout></ProtectedRoute>} />
             <Route path="/fact-check" element={<ProtectedRoute><Layout><FactCheckPage /></Layout></ProtectedRoute>} />
+            <Route path="/gap-analysis" element={<ProtectedRoute><Layout><GapAnalysisPage /></Layout></ProtectedRoute>} />
             <Route path="/specs" element={<ProtectedRoute><Layout><SpecCatalogPage /></Layout></ProtectedRoute>} />
             <Route path="/specs/:id" element={<ProtectedRoute><Layout><SpecDetailPage /></Layout></ProtectedRoute>} />
             <Route path="/export" element={<ProtectedRoute><Layout><ExportCenterPage /></Layout></ProtectedRoute>} />

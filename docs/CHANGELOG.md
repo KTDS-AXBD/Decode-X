@@ -2,6 +2,23 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 141 — 2026-03-08
+**AIF-REQ-011: 분석 보고서 동적화 — 하드코딩→API/DB + 버전 스냅샷 + 마크다운 내보내기**:
+- ✅ `svc-analytics` 보고서 API 8개 엔드포인트 (sections CRUD, seed, snapshots, markdown export)
+- ✅ `db-analytics` 0003 마이그레이션 (report_sections + report_snapshots) — 3환경 적용
+- ✅ `app-web` DynamicStatusReport 컴포넌트 — contentType 기반 9종 동적 렌더러
+- ✅ LPON 10개 + Miraeasset 14개 섹션 seed 데이터 투입 (production DB)
+- ✅ v0.6.0 스냅샷 생성 (LPON + Miraeasset)
+- ✅ 마크다운 보고서 자동 생성 (docs/04-report/)
+- ✅ `svc-policy` 도메인 코드 동적화 — POL-PENSION-* 하드코딩 → POL-{DOMAIN}-{TYPE}-{SEQ}
+- ✅ API 프록시 라우팅 추가 (/api/reports/* → svc-analytics)
+- ✅ 3개 Agent 병렬 실행 (LPON seed, Miraeasset seed, Frontend 컴포넌트)
+- ✅ Playwright E2E 검증: LPON + Miraeasset 보고서 렌더링 확인
+
+**검증 결과**:
+- ✅ typecheck 17/17, lint 14/14, test 53 pass (svc-analytics)
+- ✅ svc-analytics 3환경 배포, Pages 배포, seed 투입 완료
+
 ## 세션 136b — 2026-03-08
 **Neo4j backfill 실행 + Gap Analysis 캐시 검증**:
 - ✅ Neo4j backfill 완료: 3,752건 → 0건 NULL (100% synced, 3,880건 전량)

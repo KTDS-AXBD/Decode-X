@@ -2,6 +2,20 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 137 — 2026-03-08
+**온누리상품권 분석 보고서 작성 — org별 리포트 분리 + LPON 현황 신규**:
+- ✅ `ProjectStatusTab.tsx` org-aware 리팩토링 (759줄 → 159줄)
+- ✅ `StatusReportWidgets.tsx` 공용 UI 위젯 6개 분리 (SectionHeader, DataTable, TaskCard 등)
+- ✅ `MiraeassetStatusReport.tsx` 기존 퇴직연금 보고서 분리 보관
+- ✅ `LponStatusReport.tsx` 온누리상품권 분석 현황 신규 작성
+  - FactCheck 분석 (소스코드 ↔ 문서 API 커버리지 8.7%)
+  - 퇴직연금 vs 온누리상품권 비교표
+  - 도메인 코드 하드코딩 이슈 안내 (POL-PENSION → POL-LPON)
+- ✅ `svc-ontology` backfill UNWIND 배치 최적화 (N+1 → 2 호출)
+
+**검증 결과**:
+- ✅ typecheck 17/17 통과, lint 14/14 통과
+
 ## 세션 136 — 2026-03-08
 **Neo4j backfill 스크립트 작성 — batch runner + 로컬 테스트 완료**:
 - ✅ `scripts/backfill-neo4j.sh` batch runner 스크립트 추가 (local/staging/production 지원)

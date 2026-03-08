@@ -85,6 +85,7 @@
   - ~~MEDIUM 3건~~: Neo4j org 격리, governance agent 하드코딩 제거 — **모두 해소**
   - 상세: SPEC.md §8 Tech Debt 참조
 - **Cross-Org Comparison UI**: ✅ analysis-report 4번째 탭 구현 (조직 선택 → 비교 → 4-Group 대시보드)
+- **Org-specific Status Report**: ✅ 진행 현황 탭 org-aware 리팩토링 — LPON 온누리상품권 보고서 신규, 퇴직연금 보고서 분리 보관
 - **Repo Bootstrap**: ✅
 - **PRD Seed Document**: ✅ (`docs/AI_Foundry_PRD_TDS_v0.6.docx`)
 - **.claude Skills/Agents Migration**: ✅

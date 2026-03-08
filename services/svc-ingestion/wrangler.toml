@@ -80,4 +80,4 @@ queue = "ai-foundry-pipeline"
 
 [[env.production.services]]
 binding = "SECURITY"
-service = "svc-security"
+service = "svc-security-production"

@@ -58,7 +58,7 @@ vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-notification" }
 
 [[env.production.services]]
 binding = "SECURITY"
-service = "svc-security"
+service = "svc-security-production"
 
 [[env.production.d1_databases]]
 binding = "DB_NOTIFICATION"

@@ -108,24 +108,24 @@ database_id = "e27a4335-7212-4859-8f7e-55cf8d464c8e"
 
 [[env.production.services]]
 binding = "SECURITY"
-service = "svc-security"
+service = "svc-security-production"
 
 [[env.production.services]]
 binding = "LLM_ROUTER"
-service = "svc-llm-router"
+service = "svc-llm-router-production"
 
 [[env.production.services]]
 binding = "NOTIFICATION"
-service = "svc-notification"
+service = "svc-notification-production"
 
 [[env.production.services]]
 binding = "SVC_EXTRACTION"
-service = "svc-extraction"
+service = "svc-extraction-production"
 
 [[env.production.durable_objects.bindings]]
 name = "HITL_SESSION"
 class_name = "HitlSession"
-script_name = "svc-policy"
+script_name = "svc-policy-production"
 
 [[env.production.migrations]]
 tag = "v1"

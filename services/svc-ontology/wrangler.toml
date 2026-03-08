@@ -83,15 +83,15 @@ database_id = "88cda338-c89e-4b4e-843a-7489d9b268ee"
 
 [[env.production.services]]
 binding = "SECURITY"
-service = "svc-security"
+service = "svc-security-production"
 
 [[env.production.services]]
 binding = "LLM_ROUTER"
-service = "svc-llm-router"
+service = "svc-llm-router-production"
 
 [[env.production.services]]
 binding = "SVC_POLICY"
-service = "svc-policy"
+service = "svc-policy-production"
 
 [[env.production.queues.producers]]
 binding = "QUEUE_PIPELINE"

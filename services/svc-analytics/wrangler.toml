@@ -51,4 +51,4 @@ database_id = "fe12a186-99bd-418e-9b79-5cfafc8c24c1"
 
 [[env.production.services]]
 binding = "SECURITY"
-service = "svc-security"
+service = "svc-security-production"

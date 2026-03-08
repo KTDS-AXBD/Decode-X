@@ -130,35 +130,35 @@ id = "98ef788593e44f638a94cc7838f9a310"
 
 [[env.production.services]]
 binding = "SECURITY"
-service = "svc-security"
+service = "svc-security-production"
 
 [[env.production.services]]
 binding = "LLM_ROUTER"
-service = "svc-llm-router"
+service = "svc-llm-router-production"
 
 [[env.production.services]]
 binding = "SVC_INGESTION"
-service = "svc-ingestion"
+service = "svc-ingestion-production"
 
 [[env.production.services]]
 binding = "SVC_EXTRACTION"
-service = "svc-extraction"
+service = "svc-extraction-production"
 
 [[env.production.services]]
 binding = "SVC_POLICY"
-service = "svc-policy"
+service = "svc-policy-production"
 
 [[env.production.services]]
 binding = "SVC_SKILL"
-service = "svc-skill"
+service = "svc-skill-production"
 
 [[env.production.services]]
 binding = "SVC_ONTOLOGY"
-service = "svc-ontology"
+service = "svc-ontology-production"
 
 [[env.production.services]]
 binding = "SVC_ANALYTICS"
-service = "svc-analytics"
+service = "svc-analytics-production"
 
 [env.production.ai]
 binding = "AI"

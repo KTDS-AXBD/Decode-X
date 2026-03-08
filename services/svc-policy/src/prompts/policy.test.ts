@@ -58,4 +58,41 @@ describe("buildPolicyInferencePrompt", () => {
     const result = buildPolicyInferencePrompt(["test chunk"]);
     expect(result.userContent).toContain("SEQ 시작 번호: 001");
   });
+
+  it("defaults domain to pension", () => {
+    const result = buildPolicyInferencePrompt(["test"]);
+    expect(result.system).toContain("POL-PENSION-{TYPE}-{SEQ}");
+    expect(result.userContent).toContain("퇴직연금 도메인");
+  });
+
+  it("generates giftvoucher domain prompt", () => {
+    const result = buildPolicyInferencePrompt(["test"], 1, "giftvoucher");
+    expect(result.system).toContain("POL-GIFTVOUCHER-{TYPE}-{SEQ}");
+    expect(result.system).toContain("gift voucher");
+    expect(result.userContent).toContain("온누리상품권 도메인");
+    // giftvoucher-specific TYPE codes
+    const types = ["IS", "DT", "US", "ST", "RF", "VL"];
+    for (const t of types) {
+      expect(result.system).toContain(t);
+    }
+    // pension-specific TYPE codes should NOT appear
+    expect(result.system).not.toContain("WD:");
+    expect(result.system).not.toContain("EN:");
+    expect(result.system).not.toContain("CT:");
+    expect(result.system).not.toContain("BN:");
+    expect(result.system).not.toContain("CL:");
+  });
+
+  it("generates general domain prompt", () => {
+    const result = buildPolicyInferencePrompt(["test"], 1, "general");
+    expect(result.system).toContain("POL-GENERAL-{TYPE}-{SEQ}");
+    expect(result.userContent).toContain("일반 도메인");
+    expect(result.system).toContain("OP:");
+  });
+
+  it("falls back to general for unknown domain", () => {
+    const result = buildPolicyInferencePrompt(["test"], 1, "unknown_domain");
+    expect(result.system).toContain("POL-GENERAL-{TYPE}-{SEQ}");
+    expect(result.userContent).toContain("일반 도메인");
+  });
 });

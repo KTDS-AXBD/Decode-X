@@ -25,6 +25,38 @@ import type { Env } from "../env.js";
 
 const logger = createLogger("svc-policy:queue");
 
+/**
+ * Detect domain from extraction rules by finding the most frequent domain keyword.
+ * Falls back to 'general' if no recognizable domain is found.
+ */
+function detectDomain(rules: Array<{ domain: string }>): string {
+  const domainCounts = new Map<string, number>();
+  for (const rule of rules) {
+    const d = rule.domain?.toLowerCase() ?? "general";
+    domainCounts.set(d, (domainCounts.get(d) ?? 0) + 1);
+  }
+
+  if (domainCounts.size === 0) return "general";
+
+  let maxDomain = "general";
+  let maxCount = 0;
+  for (const [d, c] of domainCounts) {
+    if (c > maxCount) {
+      maxDomain = d;
+      maxCount = c;
+    }
+  }
+
+  // Normalize to known domain keys
+  if (maxDomain.includes("pension") || maxDomain.includes("퇴직") || maxDomain.includes("연금")) {
+    return "pension";
+  }
+  if (maxDomain.includes("gift") || maxDomain.includes("상품권") || maxDomain.includes("온누리") || maxDomain.includes("voucher")) {
+    return "giftvoucher";
+  }
+  return "general";
+}
+
 interface ExtractionApiResponse {
   success: boolean;
   data: {
@@ -133,15 +165,19 @@ export async function processQueueEvent(
     );
   }
 
-  // 3. Determine starting SEQ to avoid duplicates
+  // 3. Detect domain from extraction rules
+  const domain = detectDomain(extractionResult.rules);
+
+  // 4. Determine starting SEQ to avoid duplicates
   const maxSeqRow = await env.DB_POLICY.prepare(
     `SELECT MAX(CAST(SUBSTR(policy_code, -3) AS INTEGER)) as max_seq
      FROM policies WHERE organization_id = ?`,
   ).bind(organizationId).first<{ max_seq: number | null }>();
   const startingSeq = (maxSeqRow?.max_seq ?? 0) + 1;
 
-  // 4. Call Opus LLM for policy inference
-  const { system, userContent } = buildPolicyInferencePrompt(chunks, startingSeq);
+  // 5. Call Opus LLM for policy inference
+  const { system, userContent } = buildPolicyInferencePrompt(chunks, startingSeq, domain);
+  logger.info("Domain detected for policy inference", { domain, extractionId });
 
   let rawContent: string;
   try {
@@ -154,7 +190,7 @@ export async function processQueueEvent(
     );
   }
 
-  // 4. Parse JSON response into PolicyCandidate[]
+  // 6. Parse JSON response into PolicyCandidate[]
   const cleaned = extractJsonArray(rawContent);
   let candidates: PolicyCandidate[];
   try {
@@ -193,7 +229,7 @@ export async function processQueueEvent(
     );
   }
 
-  // 5. Insert each candidate into D1 + create HITL sessions
+  // 7. Insert each candidate into D1 + create HITL sessions
   const now = new Date().toISOString();
   const policyIds: string[] = [];
   const sessionIds: string[] = [];
@@ -255,7 +291,7 @@ export async function processQueueEvent(
     );
   }
 
-  // 6. Emit PolicyCandidateReadyEvent to QUEUE_PIPELINE
+  // 8. Emit PolicyCandidateReadyEvent to QUEUE_PIPELINE
   for (let i = 0; i < policyIds.length; i++) {
     const pid = policyIds[i];
     const sid = sessionIds[i];

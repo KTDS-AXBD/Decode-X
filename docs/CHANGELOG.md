@@ -2,6 +2,18 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 127 — 2026-03-08
+**사이드바 메뉴 IA 개편 — 16 flat → 5 accordion groups**:
+- 인터뷰 기반 방향 설정: BD팀 실무자 / 목표(Goal) 중심 / 아코디언 그룹핑
+- 가치 사슬 그룹: 지식 추출(Extract) → 품질 보증(Verify) → 활용(Deliver) → 관리(Admin)
+- 관리 그룹 기본 접힘, 활성 라우트 그룹 자동 펼침, amber dot 표시
+- 태그라인 "Enterprise Platform" → "Knowledge Reverse Engineering"
+- /frontend-design 스킬 점검: 현행 디자인 시스템(Navy+Amber, Inter+IBM Plex) 유지, 구조만 개선
+- Cloudflare Pages 배포 완료 (https://ai-foundry.minu.best/)
+
+**검증 결과**:
+- ✅ typecheck (17/17 FULL TURBO) / build OK / 프로덕션 배포 확인
+
 ## 세션 126 — 2026-03-08
 **AIF-REQ-005 MCP E2E 테스트 — Claude Desktop 실클라이언트 검증 완료**:
 - ✅ Claude Desktop (Windows) → mcp-remote → svc-mcp-server (Staging) 전체 파이프라인 검증

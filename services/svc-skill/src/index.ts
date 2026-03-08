@@ -30,6 +30,8 @@ import {
   handleDownloadSkill,
   handleSearchTags,
   handleGetSkillStats,
+  handleUpdateSkillStatus,
+  handleBulkPublish,
 } from "./routes/skills.js";
 import { handleGetMcpAdapter } from "./routes/mcp.js";
 import { handleGetOpenApiAdapter } from "./routes/openapi.js";
@@ -73,6 +75,11 @@ export default {
       // POST /admin/backfill-trust — compute trust_score from trust_level + content_depth
       if (method === "POST" && path === "/admin/backfill-trust") {
         return await handleBackfillTrust(request, env);
+      }
+
+      // POST /admin/bulk-publish — batch status update for skills
+      if (method === "POST" && path === "/admin/bulk-publish") {
+        return await handleBulkPublish(request, env);
       }
 
       // POST /skills — package a new Skill from confirmed policies
@@ -198,6 +205,25 @@ export default {
             );
           }
           return await handleGetMcpAdapter(request, env, skillId, ctx);
+        }
+
+        // PATCH /skills/:id/status — update skill status
+        if (method === "PATCH" && subpath === "status") {
+          const rbacCtx = extractRbacContext(request);
+          if (rbacCtx) {
+            const denied = await checkPermission(env, rbacCtx.role, "skill", "create");
+            if (denied) return denied;
+            ctx.waitUntil(
+              logAudit(env, {
+                userId: rbacCtx.userId,
+                organizationId: rbacCtx.organizationId,
+                action: "update_status",
+                resource: "skill",
+                resourceId: skillId,
+              }),
+            );
+          }
+          return await handleUpdateSkillStatus(request, env, skillId);
         }
 
         // GET /skills/:id/openapi — OpenAPI 3.0 adapter projection

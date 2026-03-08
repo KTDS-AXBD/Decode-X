@@ -153,7 +153,7 @@
       "dependencies": {
         "@ai-foundry/types": "workspace:*",
         "@ai-foundry/utils": "workspace:*",
-        "@modelcontextprotocol/sdk": "^1.12.1",
+        "@modelcontextprotocol/sdk": "^1.27.1",
         "zod": "^3.24.1",
       },
       "devDependencies": {

@@ -86,6 +86,10 @@ function mockEnv(): Env {
         new Response(JSON.stringify(MOCK_TERMS_RESPONSE), { status: 200 }),
       ),
     } as unknown as Fetcher,
+    KV_SKILL_CACHE: {
+      get: vi.fn().mockResolvedValue(null),
+      put: vi.fn().mockResolvedValue(undefined),
+    } as unknown as KVNamespace,
     ENVIRONMENT: "development",
     SERVICE_NAME: "svc-skill",
     INTERNAL_API_SECRET: "test-secret",

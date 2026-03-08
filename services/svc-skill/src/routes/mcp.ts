@@ -68,6 +68,28 @@ export async function handleGetMcpAdapter(
   skillId: string,
   ctx: ExecutionContext,
 ): Promise<Response> {
+  // Check KV cache first
+  const cacheKey = `mcp-adapter:${skillId}`;
+  const cached = await env.KV_SKILL_CACHE.get(cacheKey, "text");
+  if (cached) {
+    // Record download asynchronously even for cached hits
+    const rbacCtx = extractRbacContext(request);
+    const downloadedBy = rbacCtx?.userId ?? "anonymous";
+    const downloadId = crypto.randomUUID();
+    const now = new Date().toISOString();
+    ctx.waitUntil(
+      env.DB_SKILL.prepare(
+        `INSERT INTO skill_downloads (download_id, skill_id, downloaded_by, adapter_type, downloaded_at)
+         VALUES (?, ?, ?, 'mcp', ?)`,
+      ).bind(downloadId, skillId, downloadedBy, now).run(),
+    );
+
+    return new Response(cached, {
+      status: 200,
+      headers: { "Content-Type": "application/json", "X-Cache": "HIT" },
+    });
+  }
+
   const row = await env.DB_SKILL.prepare(
     "SELECT r2_key FROM skills WHERE skill_id = ?",
   )
@@ -96,6 +118,12 @@ export async function handleGetMcpAdapter(
 
   // Transform to MCP adapter format
   const adapter = toMcpAdapter(skillPackage);
+  const adapterJson = JSON.stringify(adapter, null, 2);
+
+  // Cache in KV (TTL: 1 hour)
+  ctx.waitUntil(
+    env.KV_SKILL_CACHE.put(cacheKey, adapterJson, { expirationTtl: 3600 }),
+  );
 
   // Record download asynchronously
   const rbacCtx = extractRbacContext(request);
@@ -112,9 +140,9 @@ export async function handleGetMcpAdapter(
       .run(),
   );
 
-  return new Response(JSON.stringify(adapter, null, 2), {
+  return new Response(adapterJson, {
     status: 200,
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", "X-Cache": "MISS" },
   });
 }
 

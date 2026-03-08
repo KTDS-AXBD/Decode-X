@@ -122,6 +122,10 @@ function makeEnv(overrides?: Partial<Env>): Env {
     SECURITY: { fetch: vi.fn() } as unknown as Fetcher,
     SVC_POLICY: { fetch: vi.fn() } as unknown as Fetcher,
     SVC_ONTOLOGY: { fetch: vi.fn() } as unknown as Fetcher,
+    KV_SKILL_CACHE: {
+      get: vi.fn().mockResolvedValue(null),
+      put: vi.fn().mockResolvedValue(undefined),
+    } as unknown as KVNamespace,
     QUEUE_PIPELINE: {} as unknown as Queue,
     ENVIRONMENT: "test",
     SERVICE_NAME: "svc-skill",

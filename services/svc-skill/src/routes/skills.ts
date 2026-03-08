@@ -492,6 +492,87 @@ export function rowToSummary(row: SkillRow): SkillSummary & { status: string; co
   };
 }
 
+// ── PATCH /skills/:id/status ──────────────────────────────────────────
+
+const UpdateStatusSchema = z.object({
+  status: z.enum(["draft", "published", "archived"]),
+});
+
+export async function handleUpdateSkillStatus(
+  request: Request,
+  env: Env,
+  skillId: string,
+): Promise<Response> {
+  let raw: unknown;
+  try {
+    raw = await request.json();
+  } catch {
+    return badRequest("Request body must be valid JSON");
+  }
+
+  const parsed = UpdateStatusSchema.safeParse(raw);
+  if (!parsed.success) {
+    return badRequest("Invalid status. Must be: draft, published, archived", parsed.error.flatten());
+  }
+
+  const { status } = parsed.data;
+  const now = new Date().toISOString();
+
+  const result = await env.DB_SKILL.prepare(
+    "UPDATE skills SET status = ?, updated_at = ? WHERE skill_id = ?",
+  ).bind(status, now, skillId).run();
+
+  if (!result.meta.changes || result.meta.changes === 0) {
+    return notFound("Skill", skillId);
+  }
+
+  logger.info("Skill status updated", { skillId, status });
+  return ok({ skillId, status, updatedAt: now });
+}
+
+// ── POST /admin/bulk-publish ────────────────────────────────────────
+
+const BulkPublishSchema = z.object({
+  skillIds: z.array(z.string().min(1)).min(1).max(500),
+  status: z.enum(["draft", "published", "archived"]).default("published"),
+});
+
+export async function handleBulkPublish(
+  request: Request,
+  env: Env,
+): Promise<Response> {
+  let raw: unknown;
+  try {
+    raw = await request.json();
+  } catch {
+    return badRequest("Request body must be valid JSON");
+  }
+
+  const parsed = BulkPublishSchema.safeParse(raw);
+  if (!parsed.success) {
+    return badRequest("Invalid bulk publish request", parsed.error.flatten());
+  }
+
+  const { skillIds, status } = parsed.data;
+  const now = new Date().toISOString();
+
+  // Process in batches of 50 (D1 batch limit)
+  const BATCH_SIZE = 50;
+  let totalUpdated = 0;
+
+  for (let i = 0; i < skillIds.length; i += BATCH_SIZE) {
+    const batch = skillIds.slice(i, i + BATCH_SIZE);
+    const placeholders = batch.map(() => "?").join(",");
+    const result = await env.DB_SKILL.prepare(
+      `UPDATE skills SET status = ?, updated_at = ? WHERE skill_id IN (${placeholders})`,
+    ).bind(status, now, ...batch).run();
+    totalUpdated += result.meta.changes ?? 0;
+  }
+
+  logger.info("Bulk publish completed", { requested: skillIds.length, updated: totalUpdated, status });
+  return ok({ requested: skillIds.length, updated: totalUpdated, status });
+}
+
 export function rowToDetail(row: SkillRow) {
   return {
     ...rowToSummary(row),

@@ -185,26 +185,13 @@ export async function handleEvaluateSkill(
   const { system, user } = buildEvaluatePrompt(policy, domain, context, parameters);
   const inputParams = parameters ? JSON.stringify(parameters) : null;
 
-  // Benchmark mode: call all 3 providers
+  // Benchmark mode: call all 3 providers in parallel
   if (benchmark) {
-    const results = [];
-    for (const p of BENCHMARK_PROVIDERS) {
+    const benchmarkPromises = BENCHMARK_PROVIDERS.map(async (p) => {
       try {
         const llm = await callLlmWithProvider(env, system, user, p);
         const evalResult = parseEvaluateResponse(llm.content);
         const evaluationId = generateId();
-
-        results.push({
-          evaluationId,
-          skillId,
-          policyCode,
-          provider: llm.provider,
-          model: llm.model,
-          result: evalResult.result,
-          confidence: evalResult.confidence,
-          reasoning: evalResult.reasoning,
-          latencyMs: llm.latencyMs,
-        });
 
         void recordEvaluation(env, ctx, {
           evaluationId,
@@ -220,9 +207,21 @@ export async function handleEvaluateSkill(
           latencyMs: llm.latencyMs,
           evaluatedBy,
         });
+
+        return {
+          evaluationId,
+          skillId,
+          policyCode,
+          provider: llm.provider,
+          model: llm.model,
+          result: evalResult.result,
+          confidence: evalResult.confidence,
+          reasoning: evalResult.reasoning,
+          latencyMs: llm.latencyMs,
+        };
       } catch (e) {
         logger.warn(`Benchmark: ${p} failed`, { error: String(e) });
-        results.push({
+        return {
           evaluationId: generateId(),
           skillId,
           policyCode,
@@ -232,9 +231,11 @@ export async function handleEvaluateSkill(
           confidence: 0,
           reasoning: `Provider ${p} call failed`,
           latencyMs: 0,
-        });
+        };
       }
-    }
+    });
+
+    const results = await Promise.all(benchmarkPromises);
 
     // Compute consensus
     const successResults = results.filter((r) => r.model !== "error");

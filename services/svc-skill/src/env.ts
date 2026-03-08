@@ -5,6 +5,9 @@ export interface Env {
   // R2 bucket for .skill.json package storage
   R2_SKILL_PACKAGES: R2Bucket;
 
+  // KV for caching MCP adapter projections
+  KV_SKILL_CACHE: KVNamespace;
+
   // Queue producer for pipeline events
   QUEUE_PIPELINE: Queue;
 

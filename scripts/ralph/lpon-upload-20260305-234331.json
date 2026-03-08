@@ -1,0 +1,10 @@
+[
+{"path":"docs/LPON 전자식 온누리상품권 플랫폼/200 프로젝트실행/270 이행/275 배포작업계획/LPON-S275_온누리상품권_배포작업계획서_v1.2_20240326.xlsx","status":"OK","documentId":"1487d6a9-076b-4b7b-bd5e-5c41397be14f","error":"","timestamp":"2026-03-05T14:43:34Z"}
+,{"path":"docs/LPON 전자식 온누리상품권 플랫폼/200 프로젝트실행/270 이행/275 배포작업계획/작업계획서_전자식온누리상품권_CRM번호_V.1.1(20240326).xlsx","status":"OK","documentId":"53569720-084e-45cf-9c04-b09b0a9f2db0","error":"","timestamp":"2026-03-05T14:43:41Z"}
+,{"path":"docs/LPON 전자식 온누리상품권 플랫폼/000 표준문서서식/KTSSP-P000-SW개발표준 개요-v4.0.docx","status":"OK","documentId":"7486818f-eb22-4518-a707-9dad2ac90d6f","error":"","timestamp":"2026-03-05T14:43:45Z"}
+,{"path":"docs/LPON 전자식 온누리상품권 플랫폼/999 임시작성문서/24년 플랫폼사업본부 배치Job 현황 점검(지역화폐,온누리추가)_v1.0_온누리_임시.xlsx","status":"FAIL","documentId":"","error":"HTTP 000
+000","timestamp":"2026-03-05T14:43:47Z"}
+,{"path":"docs/LPON 전자식 온누리상품권 플랫폼/999 임시작성문서/앱서비스 품질 점검(2023.06.05-김동욱 개인의견 정리).xlsx","status":"OK","documentId":"253fb592-a480-4454-aaac-e31a096e79c9","error":"","timestamp":"2026-03-05T14:43:51Z"}
+,{"path":"docs/LPON 전자식 온누리상품권 플랫폼/999 임시작성문서/온누리상품권 TOP3 VOC 원인분석.pptx","status":"OK","documentId":"a23caa41-769a-4432-b087-5ac3bb020775","error":"","timestamp":"2026-03-05T14:43:57Z"}
+
+]

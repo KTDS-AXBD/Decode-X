@@ -1,0 +1,20 @@
+[
+{"path":"docs/LPON 전자식 온누리상품권 플랫폼/LPON-D102_프로젝트 계획서_과업 목록.xlsx","status":"OK","documentId":"e214c67e-a6a0-4604-befd-29492d9d4cc0","error":"","timestamp":"2026-03-05T14:37:03Z"}
+,{"path":"docs/LPON 전자식 온누리상품권 플랫폼/LPON-D103_WBS_2023.xlsx","status":"OK","documentId":"4bfedee2-9888-4610-9de6-f33bb18fa037","error":"","timestamp":"2026-03-05T14:37:09Z"}
+,{"path":"docs/LPON 전자식 온누리상품권 플랫폼/LPON-D106_온누리상품권_정책정의서.xlsx","status":"OK","documentId":"6d1de609-d1e9-4b97-beba-be7e038642d3","error":"","timestamp":"2026-03-05T14:37:14Z"}
+,{"path":"docs/LPON 전자식 온누리상품권 플랫폼/LPON-D221_요구사항 정의서.xlsx","status":"OK","documentId":"f0c026ba-0159-4d1d-a2a0-3b78d71cc9ed","error":"","timestamp":"2026-03-05T14:37:22Z"}
+,{"path":"docs/LPON 전자식 온누리상품권 플랫폼/LPON-S421_문서관리(온누리상품권).xlsx","status":"OK","documentId":"8a8dd368-f3c3-45f8-812f-d84e3e2b74df","error":"","timestamp":"2026-03-05T14:37:28Z"}
+,{"path":"docs/LPON 전자식 온누리상품권 플랫폼/LPON-S422_인력관리(온누리상품권).xlsx","status":"OK","documentId":"2dd3e3d5-c219-43ec-b746-48dc8cf89788","error":"","timestamp":"2026-03-05T14:37:33Z"}
+,{"path":"docs/LPON 전자식 온누리상품권 플랫폼/LPON-S424_비상연락망(온누리상품권).xlsx","status":"OK","documentId":"bd32b860-0aa0-4883-a1b6-ab6f08b80247","error":"","timestamp":"2026-03-05T14:37:38Z"}
+,{"path":"docs/LPON 전자식 온누리상품권 플랫폼/200 프로젝트실행/240 설계/243 시스템 인터페이스 정의서/(헥토파이낸셜)간편현금결제_표준_WEB_API_연동규격서_v3.5.pdf.pdf","status":"OK","documentId":"ae28e975-abbf-4d52-9f2b-b1d2fd2ecc17","error":"","timestamp":"2026-03-05T14:37:47Z"}
+,{"path":"docs/LPON 전자식 온누리상품권 플랫폼/200 프로젝트실행/240 설계/243 시스템 인터페이스 정의서/20 수신 자료/KMC/[KMC]본인확인서비스_개발가이드(범용)_v2.3.pdf","status":"OK","documentId":"2a3412e0-38b3-4670-a92c-a506fe33c21b","error":"","timestamp":"2026-03-05T14:37:55Z"}
+,{"path":"docs/LPON 전자식 온누리상품권 플랫폼/200 프로젝트실행/240 설계/243 시스템 인터페이스 정의서/20 수신 자료/KMC/본인확인서비스_개발가이드(WEB통신)_v1.6.pdf","status":"OK","documentId":"dced7f05-8ed2-45b7-8da1-891a8b945765","error":"","timestamp":"2026-03-05T14:38:05Z"}
+,{"path":"docs/LPON 전자식 온누리상품권 플랫폼/200 프로젝트실행/240 설계/243 시스템 인터페이스 정의서/20 수신 자료/KMC/본인확인서비스_개발가이드(WEB통신)_v1.7(보안문자 안내 추가).pdf","status":"OK","documentId":"9067e2de-f626-4311-86b0-8f852db3358e","error":"","timestamp":"2026-03-05T14:38:11Z"}
+,{"path":"docs/LPON 전자식 온누리상품권 플랫폼/200 프로젝트실행/240 설계/243 시스템 인터페이스 정의서/20 수신 자료/헥토파이낸셜/간편현금결제_표준_WEB_API_연동규격서_2.9.pdf","status":"OK","documentId":"f1fbcfde-e6ff-47db-98d6-0dc165cb8109","error":"","timestamp":"2026-03-05T14:38:21Z"}
+,{"path":"docs/LPON 전자식 온누리상품권 플랫폼/200 프로젝트실행/240 설계/243 시스템 인터페이스 정의서/31 방화벽 - 카드사/대외거래협의서_KT온누리_KB회신_20220720.xlsx","status":"OK","documentId":"3188d1f5-10d1-4176-bb8d-2186ae2e33a1","error":"","timestamp":"2026-03-05T14:38:26Z"}
+,{"path":"docs/LPON 전자식 온누리상품권 플랫폼/200 프로젝트실행/240 설계/243 시스템 인터페이스 정의서/LPON-D243_시스템 인터페이스 정의서_02_App 연동.xlsx","status":"OK","documentId":"fac78c43-87c0-43a2-8940-963ea273eff7","error":"","timestamp":"2026-03-05T14:38:40Z"}
+,{"path":"docs/LPON 전자식 온누리상품권 플랫폼/200 프로젝트실행/240 설계/243 시스템 인터페이스 정의서/LPON-D243_시스템 인터페이스 정의서_42_KMC 연동_v0.1.0_20220727.xlsx","status":"OK","documentId":"90eba2f8-29ed-47c9-9082-97a6d4107003","error":"","timestamp":"2026-03-05T14:38:47Z"}
+,{"path":"docs/LPON 전자식 온누리상품권 플랫폼/200 프로젝트실행/240 설계/244 UI 정의서/LPON-D244_UI 정의서_01_App(사용자) 화면 설계서_v2.4.1.pptx","status":"OK","documentId":"a0ce0794-3fa7-4296-a2f8-312261db170a","error":"","timestamp":"2026-03-05T14:38:55Z"}
+,{"path":"docs/LPON 전자식 온누리상품권 플랫폼/200 프로젝트실행/240 설계/244 UI 정의서/LPON-D244_UI 정의서_11_BO 화면 설계서_v1.4.0_20230307_.pptx","status":"OK","documentId":"0ef7989d-0edd-4f6f-a252-6365da0ac30a","error":"","timestamp":"2026-03-05T14:39:12Z"}
+
+]

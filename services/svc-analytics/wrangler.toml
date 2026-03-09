@@ -17,6 +17,19 @@ database_id = "fe12a186-99bd-418e-9b79-5cfafc8c24c1"
 binding = "SECURITY"
 service = "svc-security"
 
+# Service bindings for deliverable export (AIF-REQ-017)
+[[services]]
+binding = "SVC_POLICY"
+service = "svc-policy"
+
+[[services]]
+binding = "SVC_ONTOLOGY"
+service = "svc-ontology"
+
+[[services]]
+binding = "SVC_EXTRACTION"
+service = "svc-extraction"
+
 [vars]
 ENVIRONMENT = "development"
 SERVICE_NAME = "svc-analytics"
@@ -38,6 +51,18 @@ database_id = "1a2f1511-e842-4bec-a213-f2e429d47b08"
 binding = "SECURITY"
 service = "svc-security-staging"
 
+[[env.staging.services]]
+binding = "SVC_POLICY"
+service = "svc-policy"
+
+[[env.staging.services]]
+binding = "SVC_ONTOLOGY"
+service = "svc-ontology"
+
+[[env.staging.services]]
+binding = "SVC_EXTRACTION"
+service = "svc-extraction"
+
 # ---------------------------------------------------------------------------
 # Production environment
 # ---------------------------------------------------------------------------
@@ -52,3 +77,15 @@ database_id = "fe12a186-99bd-418e-9b79-5cfafc8c24c1"
 [[env.production.services]]
 binding = "SECURITY"
 service = "svc-security-production"
+
+[[env.production.services]]
+binding = "SVC_POLICY"
+service = "svc-policy-production"
+
+[[env.production.services]]
+binding = "SVC_ONTOLOGY"
+service = "svc-ontology-production"
+
+[[env.production.services]]
+binding = "SVC_EXTRACTION"
+service = "svc-extraction-production"

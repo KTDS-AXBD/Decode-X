@@ -37,6 +37,9 @@ function mockEnv(dbOverrides?: Parameters<typeof mockDb>[0]): Env {
     ENVIRONMENT: "development",
     SERVICE_NAME: "svc-analytics",
     INTERNAL_API_SECRET: "test",
+    SVC_POLICY: { fetch: vi.fn() } as unknown as Fetcher,
+    SVC_ONTOLOGY: { fetch: vi.fn() } as unknown as Fetcher,
+    SVC_EXTRACTION: { fetch: vi.fn() } as unknown as Fetcher,
   };
 }
 

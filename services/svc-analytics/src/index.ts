@@ -17,6 +17,12 @@
  *   GET  /reports/snapshots/:version  — get specific snapshot
  *   GET  /reports/export/markdown     — export as markdown document
  *   GET  /reports/benchmark          — cross-org benchmark comparison
+ *   GET  /deliverables/export/interface-spec  — D1 인터페이스 명세서 export
+ *   GET  /deliverables/export/business-rules  — D2 업무규칙 정의서 export
+ *   GET  /deliverables/export/glossary        — D3 용어사전 export
+ *   GET  /deliverables/export/gap-report      — D4 Gap 분석 보고서 export
+ *   GET  /deliverables/export/comparison      — D5 As-Is vs To-Be 비교 export
+ *   GET  /deliverables/export/all             — D1~D5 통합 export
  */
 
 import { createLogger, unauthorized, verifyInternalSecret, errFromUnknown, notFound, extractRbacContext, checkPermission, logAudit } from "@ai-foundry/utils";
@@ -29,6 +35,10 @@ import {
   handleExportMarkdown,
 } from "./routes/reports.js";
 import { handleGetBenchmark } from "./routes/benchmark.js";
+import {
+  handleExportInterfaceSpec, handleExportBusinessRules, handleExportGlossary,
+  handleExportGapReport, handleExportComparison, handleExportAll,
+} from "./routes/deliverables.js";
 import type { Env } from "./env.js";
 
 export default {
@@ -156,6 +166,35 @@ export default {
         // GET /reports/benchmark
         if (method === "GET" && path === "/reports/benchmark") {
           return handleGetBenchmark(request, env);
+        }
+      }
+
+      // ─── Deliverable Export (AIF-REQ-017) ───
+      const deliverableMatch = path.match(/^\/deliverables\//);
+      if (deliverableMatch) {
+        const rbacCtx = extractRbacContext(request);
+        if (rbacCtx) {
+          const denied = await checkPermission(env, rbacCtx.role, "analytics", "read");
+          if (denied) return denied;
+        }
+
+        if (method === "GET" && path === "/deliverables/export/interface-spec") {
+          return handleExportInterfaceSpec(request, env);
+        }
+        if (method === "GET" && path === "/deliverables/export/business-rules") {
+          return handleExportBusinessRules(request, env);
+        }
+        if (method === "GET" && path === "/deliverables/export/glossary") {
+          return handleExportGlossary(request, env);
+        }
+        if (method === "GET" && path === "/deliverables/export/gap-report") {
+          return handleExportGapReport(request, env);
+        }
+        if (method === "GET" && path === "/deliverables/export/comparison") {
+          return handleExportComparison(request, env);
+        }
+        if (method === "GET" && path === "/deliverables/export/all") {
+          return handleExportAll(request, env);
         }
       }
 

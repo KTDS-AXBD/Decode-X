@@ -243,7 +243,7 @@
   - svc-ontology: 100 tests (100% stmts)
   - svc-security: 153 tests (97.14% stmts)
   - svc-queue-router: 43 tests (100% stmts)
-- **Test Coverage**: 1,697 tests, 12 services + utils (vitest, 97 test files) — svc-extraction 415, svc-ingestion 306, svc-skill 173, svc-security 153, svc-llm-router 134, svc-ontology 110, svc-policy 109, svc-governance 83, svc-analytics 73, svc-queue-router 43, svc-mcp-server 35, svc-notification 28, packages/utils 35
+- **Test Coverage**: 1,731 tests, 12 services + utils (vitest, 98 test files) — svc-extraction 415, svc-ingestion 340, svc-skill 173, svc-security 153, svc-llm-router 134, svc-ontology 110, svc-policy 109, svc-governance 83, svc-analytics 73, svc-queue-router 43, svc-mcp-server 35, svc-notification 28, packages/utils 35
 - **Batch Scripts**: `scripts/batch-upload.sh` (bulk upload + resume + dry-run), `scripts/batch-status.sh` (status query + CSV export + polling)
 - **Frontend**: https://ai-foundry-web.pages.dev (Cloudflare Pages) + https://ai-foundry.minu.best (커스텀 도메인)
   - 10/10 pages real API 연동 완료 (upload, analysis, hitl, audit, skill-catalog, dashboard, ontology, api-console, trust, settings)
@@ -364,7 +364,7 @@
 - [x] ~~SCDSA002 비표준 XLSX 조사~~ (AIF-REQ-001 REJECTED: DRM 암호화 파일 파싱 제외)
 - [ ] Anthropic 크레딧 충전 후 품질 비교 (AIF-REQ-002 TRIAGED)
 - [ ] 추가 문서 업로드 764건 XLSX 중 선별 (AIF-REQ-003 TRIAGED)
-- [ ] PDF 대용량 문서 파싱 Unstructured.io 524 timeout 해결 (AIF-REQ-004 TRIAGED)
+- [ ] PDF 대용량 문서 파싱 Unstructured.io 524 timeout 해결 (AIF-REQ-004 IN_PROGRESS)
 
 ### ✅ Phase 3 — MCP/OpenAPI 실사용 (완료)
 - [x] Sprint 1: Skill Evaluate 엔드포인트 (POST /skills/:id/evaluate + GET /evaluations)
@@ -398,7 +398,7 @@
 | ~~AIF-REQ-001~~ | ~~Improvement~~ | ~~Pipeline~~ | ~~P2~~ | REJECTED | ~~SCDSA002 비표준 XLSX 파싱 조사~~ — 거부: DRM 암호화 파일 파싱 제외 |
 | AIF-REQ-002 | Improvement | Pipeline | P3 | TRIAGED | Anthropic vs OpenAI extraction 품질 비교 (크레딧 충전 후) |
 | AIF-REQ-003 | Feature | Data | P2 | TRIAGED | 추가 문서 업로드 (764건 XLSX 중 선별) |
-| AIF-REQ-004 | Bug | Pipeline | P2 | TRIAGED | PDF 대용량 문서 파싱 Unstructured.io 524 timeout 해결 |
+| AIF-REQ-004 | Bug | Pipeline | P2 | IN_PROGRESS | PDF 대용량 문서 파싱 Unstructured.io 524 timeout 해결 |
 | AIF-REQ-005 | Feature | Integration | P1 | DONE | MCP adapter 실제 클라이언트(Claude Desktop) E2E 테스트 |
 | AIF-REQ-006 | Feature | Integration | P2 | DONE | OpenAPI adapter 외부 시스템 연동 검증 — servers/examples/externalDocs 추가, swagger-parser+validator 검증, staging+production 배포 (세션 157) |
 
@@ -426,7 +426,7 @@
 
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
-| AIF-REQ-017 | Feature | Data | P0 | IN_PROGRESS | 온누리상품권 분석 산출물 검증 및 문서화 — 역공학 분석 결과 평가·조정, 인터뷰 기반 해석 프로세스, SI 산출물 형태 문서 생성, As-Is vs To-Be 비교, 실효성 검증 |
+| AIF-REQ-017 | Feature | Data | P0 | DONE | 온누리상품권 분석 산출물 Export API 완료 — `/deliverables/export/*` 6종 API, 마크다운 렌더러 5종(인터페이스설계서/업무규칙/용어사전/Gap보고서/비교표), Service Binding 3개×3환경, 1,869줄 신규, 20 tests, PDCA Full Cycle Match Rate 90.6% (세션 159) |
 
 ---
 

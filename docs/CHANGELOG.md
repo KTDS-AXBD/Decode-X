@@ -2,6 +2,24 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 160 — 2026-03-09
+**AIF-REQ-004 구현 — PDF/PPTX 대형 문서 524 timeout 해결 (분할 파싱 + 전략 fallback)**:
+- ✅ pdf-lib 기반 PDF 페이지 분할 (5MB/20페이지 초과 → 10페이지씩 분할)
+- ✅ fflate 기반 PPTX 슬라이드 분할 (5MB/15슬라이드 초과 → 8슬라이드씩 분할)
+- ✅ 적응형 재분할: timeout 시 절반 크기로 재시도 (최소 3페이지/슬라이드)
+- ✅ Unstructured.io 전략 fallback: auto 전략 3회 실패 → fast 전략 1회 재시도
+- ✅ Graceful fallback: pdf-lib/fflate 파싱 실패 시 원본 통째로 Unstructured.io 전송
+- ✅ 1,731 tests (98 files), svc-ingestion 340 tests (+34 신규)
+- 신규 파일 4개: pdf-splitter.ts, pptx-splitter.ts, pdf-splitter.test.ts, pptx-splitter.test.ts
+- AIF-REQ-004 상태: TRIAGED → IN_PROGRESS (배포 후 실문서 검증 필요)
+
+**검증 결과**:
+- ✅ typecheck 17/17 PASS
+- ✅ svc-ingestion 340/340 tests PASS
+- ✅ lint clean (svc-ingestion)
+
+---
+
 ## 세션 159 — 2026-03-09
 **AIF-REQ-017 구현 완료 — 온누리상품권 분석 산출물 Export API (PDCA Full Cycle)**:
 - ✅ `/ax-10-req new` → AIF-REQ-017 등록 (P0, Feature/Data)

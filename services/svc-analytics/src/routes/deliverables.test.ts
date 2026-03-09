@@ -118,6 +118,15 @@ function mockFailingFetcher(): Fetcher {
   } as unknown as Fetcher;
 }
 
+/** SVC_ONTOLOGY receives 2 calls: 1st /terms/stats → TermStats, 2nd /terms → {terms,total} */
+function mockOntologyFetcher(): Fetcher {
+  return {
+    fetch: vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify(mockTermStats()), { status: 200, headers: { "Content-Type": "application/json" } }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ terms: mockTerms(), total: 3 }), { status: 200, headers: { "Content-Type": "application/json" } })),
+  } as unknown as Fetcher;
+}
+
 function mockEnv(overrides?: Partial<Pick<Env, "SVC_POLICY" | "SVC_ONTOLOGY" | "SVC_EXTRACTION">>): Env {
   return {
     DB_ANALYTICS: {} as D1Database,
@@ -126,7 +135,7 @@ function mockEnv(overrides?: Partial<Pick<Env, "SVC_POLICY" | "SVC_ONTOLOGY" | "
     SERVICE_NAME: "svc-analytics",
     INTERNAL_API_SECRET: "test-secret",
     SVC_POLICY: overrides?.SVC_POLICY ?? mockSvcFetcher({ policies: mockPolicies(), total: 2 }),
-    SVC_ONTOLOGY: overrides?.SVC_ONTOLOGY ?? mockSvcFetcher({ terms: mockTerms(), total: 3 }),
+    SVC_ONTOLOGY: overrides?.SVC_ONTOLOGY ?? mockOntologyFetcher(),
     SVC_EXTRACTION: overrides?.SVC_EXTRACTION ?? mockSvcFetcher(mockOverview()),
   };
 }
@@ -261,14 +270,8 @@ describe("handleExportBusinessRules", () => {
 
 describe("handleExportGlossary", () => {
   it("returns markdown with terms", async () => {
-    // Mock needs to return stats too on second call
-    const termsFetcher = {
-      fetch: vi.fn()
-        .mockResolvedValueOnce(new Response(JSON.stringify({ terms: mockTerms(), total: 3 }), { status: 200, headers: { "Content-Type": "application/json" } }))
-        .mockResolvedValueOnce(new Response(JSON.stringify(mockTermStats()), { status: 200, headers: { "Content-Type": "application/json" } })),
-    } as unknown as Fetcher;
-
-    const env = mockEnv({ SVC_ONTOLOGY: termsFetcher });
+    // collectTerms calls: 1st /terms/stats → TermStats, 2nd /terms → {terms, total}
+    const env = mockEnv();
     const res = await handleExportGlossary(new Request("https://test/deliverables/export/glossary?organizationId=org-lpon"), env);
     expect(res.status).toBe(200);
     const body = await res.text();

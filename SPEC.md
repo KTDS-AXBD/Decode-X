@@ -364,7 +364,7 @@
 - [x] ~~SCDSA002 비표준 XLSX 조사~~ (AIF-REQ-001 REJECTED: DRM 암호화 파일 파싱 제외)
 - [ ] Anthropic 크레딧 충전 후 품질 비교 (AIF-REQ-002 TRIAGED)
 - [ ] 추가 문서 업로드 764건 XLSX 중 선별 (AIF-REQ-003 TRIAGED)
-- [ ] PDF 대용량 문서 파싱 Unstructured.io 524 timeout 해결 (AIF-REQ-004 IN_PROGRESS)
+- [x] PDF/PPTX 대용량 문서 524 timeout 해결 (AIF-REQ-004 DONE)
 
 ### ✅ Phase 3 — MCP/OpenAPI 실사용 (완료)
 - [x] Sprint 1: Skill Evaluate 엔드포인트 (POST /skills/:id/evaluate + GET /evaluations)
@@ -398,7 +398,7 @@
 | ~~AIF-REQ-001~~ | ~~Improvement~~ | ~~Pipeline~~ | ~~P2~~ | REJECTED | ~~SCDSA002 비표준 XLSX 파싱 조사~~ — 거부: DRM 암호화 파일 파싱 제외 |
 | AIF-REQ-002 | Improvement | Pipeline | P3 | TRIAGED | Anthropic vs OpenAI extraction 품질 비교 (크레딧 충전 후) |
 | AIF-REQ-003 | Feature | Data | P2 | TRIAGED | 추가 문서 업로드 (764건 XLSX 중 선별) |
-| AIF-REQ-004 | Bug | Pipeline | P2 | IN_PROGRESS | PDF 대용량 문서 파싱 Unstructured.io 524 timeout 해결 |
+| AIF-REQ-004 | Bug | Pipeline | P2 | DONE | PDF/PPTX 대용량 문서 524 timeout 해결 — pdf-lib 페이지 분할 + fflate 슬라이드 분할 + auto→fast 전략 fallback + 적응형 재분할. 실문서 검증 3/3 PASS (PDF 2.3MB→200chunks, PPTX 5.3MB→191, 5.4MB→193) (세션 160) |
 | AIF-REQ-005 | Feature | Integration | P1 | DONE | MCP adapter 실제 클라이언트(Claude Desktop) E2E 테스트 |
 | AIF-REQ-006 | Feature | Integration | P2 | DONE | OpenAPI adapter 외부 시스템 연동 검증 — servers/examples/externalDocs 추가, swagger-parser+validator 검증, staging+production 배포 (세션 157) |
 
@@ -438,7 +438,7 @@
 
 | ID | 제약 | 영향 | 대응 |
 |----|------|------|------|
-| C-01 | Cloudflare Workers 30초 CPU 타임아웃 | 대용량 PDF 파싱 시 524 에러 | AIF-REQ-004로 등록, 청크 분할 검토 |
+| C-01 | Cloudflare Workers 30초 CPU 타임아웃 | 대용량 PDF 파싱 시 524 에러 | ✅ AIF-REQ-004 해결 — PDF 페이지/PPTX 슬라이드 분할 + 전략 fallback |
 | C-02 | D1 SQLite 단일 DB 용량 제한 (500MB Free) | 대규모 데이터 시 스케일링 | 서비스별 DB 분리로 완화 (현재 10 DB) |
 | C-03 | Neo4j Aura Free 제한 (200K nodes, 400K rels) | 온톨로지 확장 시 Pro 필요 | 파일럿 규모에서는 충분 |
 | C-04 | Anthropic API 크레딧 기반 과금 | 크레딧 소진 시 Tier 1/2 중단 | 멀티 프로바이더 fallback 구현 완료 |

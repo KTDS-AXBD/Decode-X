@@ -11,14 +11,17 @@
 - ✅ Graceful fallback: pdf-lib/fflate 파싱 실패 시 원본 통째로 Unstructured.io 전송
 - ✅ 1,731 tests (98 files), svc-ingestion 340 tests (+34 신규)
 - 신규 파일 4개: pdf-splitter.ts, pptx-splitter.ts, pdf-splitter.test.ts, pptx-splitter.test.ts
-- AIF-REQ-004 상태: TRIAGED → IN_PROGRESS (배포 후 실문서 검증 필요)
 - AIF-REQ-017 상태: IN_PROGRESS → DONE (산출물 Export API 6종 완료, PDCA Match Rate 90.6%)
+- AIF-REQ-004 상태: TRIAGED → IN_PROGRESS → **DONE** (staging 배포 + 실문서 검증 3/3 PASS)
+- Staging 실문서 검증: PDF 2.3MB→200chunks, PPTX 5.3MB→191chunks, PPTX 5.4MB→193chunks
+- C-01 제약(30s timeout) 해소 확인
 
 **검증 결과**:
 - ✅ typecheck 17/17 PASS
 - ✅ svc-ingestion 340/340 tests PASS
 - ✅ svc-analytics 73/73 tests PASS (deliverables mock order fix)
 - ✅ lint clean
+- ✅ staging 실문서 검증 3/3 PASS (기존 524/AbortError 문서)
 
 ---
 

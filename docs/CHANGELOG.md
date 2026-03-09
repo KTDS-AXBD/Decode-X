@@ -2,6 +2,22 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 161 — 2026-03-10
+**온누리상품권 분석 리포트 진행 현황 현행화 — Executive Summary 추가 + 해소 항목 반영**:
+- ✅ Executive Summary "So What?" 섹션 신규 추가 — 즉시활용/보완후활용/AI한계 3단계 결론
+- ✅ FactCheck 수치 현행화: 8.7%→31.2%, 98→119건, 외부API 83.7%, 역방향 90.4% 추가
+- ✅ 해소 항목 4건 반영: 도메인코드 자동감지, Neo4j Backfill, PPTX 대용량, MCP 어댑터
+- ✅ 종합 판정·품질 평가·향후 과제·정책 예시 전 섹션 현행화 (8개 섹션 PUT API)
+- ✅ RBAC 수정: Admin에 analytics create/update/delete 권한 추가 → svc-security production 배포
+- ✅ 중복 section_key(roadmap vs next_steps) 정리 — 기존 roadmap 삭제
+- 정책 코드 POL-PENSION-* → POL-GIFTVOUCHER-* 전환 완료 반영
+
+**검증 결과**:
+- ✅ typecheck 17/17 PASS
+- ✅ Production 보고서 페이지 Playwright 검증 완료
+
+---
+
 ## 세션 160 — 2026-03-09
 **AIF-REQ-004 구현 — PDF/PPTX 대형 문서 524 timeout 해결 (분할 파싱 + 전략 fallback)**:
 - ✅ pdf-lib 기반 PDF 페이지 분할 (5MB/20페이지 초과 → 10페이지씩 분할)

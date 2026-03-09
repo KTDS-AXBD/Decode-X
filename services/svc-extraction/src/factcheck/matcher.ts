@@ -42,60 +42,63 @@ export function structuralMatch(
 
   // ── API Matching ────────────────────────────────────────────────
 
-  // Step 1: Exact match on normalized paths
+  // Step 1: Exact match on normalized paths (primary + alternatives)
   for (let si = 0; si < sourceSpec.apis.length; si++) {
     const srcApi = sourceSpec.apis[si];
     if (!srcApi || matchedSourceApiIdx.has(si)) continue;
 
-    const srcNorm = normalizePath(srcApi.path);
+    // Build all normalized path candidates: primary + alternativePaths
+    const candidates: Array<{ norm: string; score: number }> = [
+      { norm: normalizePath(srcApi.path), score: 1.0 },
+    ];
+    if (srcApi.alternativePaths) {
+      for (const alt of srcApi.alternativePaths) {
+        const n = normalizePath(alt);
+        if (!candidates.some((c) => c.norm === n)) {
+          candidates.push({ norm: n, score: 0.9 });
+        }
+      }
+    }
+    // Legacy Step 1.5 fallback: path + methodName (in case alternativePaths not set)
+    if (!srcApi.alternativePaths) {
+      const augmented = normalizePath(srcApi.path + "/" + srcApi.methodName);
+      if (!candidates.some((c) => c.norm === augmented)) {
+        candidates.push({ norm: augmented, score: 0.9 });
+      }
+    }
 
-    for (let di = 0; di < docSpec.apis.length; di++) {
-      const docApi = docSpec.apis[di];
-      if (!docApi || matchedDocApiIdx.has(di)) continue;
+    let matched = false;
+    for (const cand of candidates) {
+      if (matched) break;
+      for (let di = 0; di < docSpec.apis.length; di++) {
+        const docApi = docSpec.apis[di];
+        if (!docApi || matchedDocApiIdx.has(di)) continue;
 
-      const docNorm = normalizePath(docApi.path);
-
-      if (srcNorm === docNorm) {
-        matchedItems.push(buildApiMatch(srcApi, docApi, 1.0, "exact"));
-        matchedSourceApiIdx.add(si);
-        matchedDocApiIdx.add(di);
-        break;
+        const docNorm = normalizePath(docApi.path);
+        if (cand.norm === docNorm) {
+          matchedItems.push(buildApiMatch(srcApi, docApi, cand.score, "exact"));
+          matchedSourceApiIdx.add(si);
+          matchedDocApiIdx.add(di);
+          matched = true;
+          break;
+        }
       }
     }
   }
 
-  // Step 1.5: Method-augmented exact match (path + methodName)
-  // Catches LPON pattern: source basePath="/onnuripay/v1.0/account" + methodName="accountList"
-  // → doc path="/onnuripay/1.0/account/accountList"
+  // Step 2: Fuzzy match on unmatched APIs (primary + alternative paths)
   for (let si = 0; si < sourceSpec.apis.length; si++) {
     const srcApi = sourceSpec.apis[si];
     if (!srcApi || matchedSourceApiIdx.has(si)) continue;
 
-    const augmentedNorm = normalizePath(srcApi.path + "/" + srcApi.methodName);
-    const originalNorm = normalizePath(srcApi.path);
-    // Skip if methodName doesn't add a new segment
-    if (augmentedNorm === originalNorm) continue;
-
-    for (let di = 0; di < docSpec.apis.length; di++) {
-      const docApi = docSpec.apis[di];
-      if (!docApi || matchedDocApiIdx.has(di)) continue;
-
-      const docNorm = normalizePath(docApi.path);
-      if (augmentedNorm === docNorm) {
-        matchedItems.push(buildApiMatch(srcApi, docApi, 0.9, "exact"));
-        matchedSourceApiIdx.add(si);
-        matchedDocApiIdx.add(di);
-        break;
+    // Build token sets for all path variants
+    const srcTokenSets = [tokenizePath(srcApi.path)];
+    if (srcApi.alternativePaths) {
+      for (const alt of srcApi.alternativePaths) {
+        srcTokenSets.push(tokenizePath(alt));
       }
     }
-  }
 
-  // Step 2: Fuzzy match on unmatched APIs
-  for (let si = 0; si < sourceSpec.apis.length; si++) {
-    const srcApi = sourceSpec.apis[si];
-    if (!srcApi || matchedSourceApiIdx.has(si)) continue;
-
-    const srcTokens = tokenizePath(srcApi.path);
     let bestScore = 0;
     let bestDocIdx = -1;
 
@@ -104,10 +107,13 @@ export function structuralMatch(
       if (!docApi || matchedDocApiIdx.has(di)) continue;
 
       const docTokens = tokenizePath(docApi.path);
-      const score = jaccardSimilarity(srcTokens, docTokens);
-      if (score > bestScore) {
-        bestScore = score;
-        bestDocIdx = di;
+      // Try all source path variants, pick the best Jaccard score
+      for (const srcTokens of srcTokenSets) {
+        const score = jaccardSimilarity(srcTokens, docTokens);
+        if (score > bestScore) {
+          bestScore = score;
+          bestDocIdx = di;
+        }
       }
     }
 
@@ -212,13 +218,26 @@ export function normalizePath(path: string): string {
 
 /**
  * Tokenize a path into meaningful segments for fuzzy comparison.
+ * Filters noise tokens: API prefixes, version numbers, app names.
  */
 export function tokenizePath(path: string): string[] {
   return path
     .split(/[/\-_.]/)
     .filter(Boolean)
     .map((t) => t.toLowerCase())
-    .filter((t) => t !== "api" && t !== "v1" && t !== "v2" && t !== "v3");
+    .filter((t) => !NOISE_TOKENS.has(t) && !isVersionToken(t));
+}
+
+/** Common noise tokens that dilute Jaccard similarity */
+const NOISE_TOKENS = new Set([
+  "api", "v1", "v2", "v3", "v4",
+  "rest", "internal", "external",
+  "param", // from :param normalization
+]);
+
+/** Detect version-like tokens: "1.0", "2.0", "10" */
+function isVersionToken(t: string): boolean {
+  return /^\d+(\.\d+)?$/.test(t);
 }
 
 // ── Table Name Normalization ─────────────────────────────────────

@@ -187,3 +187,79 @@ export async function fetchKpi(
   });
   return res.json() as Promise<ApiResponse<FactCheckKpi>>;
 }
+
+// --- Domain Summary ---
+
+export interface DomainGapSummary {
+  domain: string;
+  label: string;
+  totalGaps: number;
+  highGaps: number;
+  mediumGaps: number;
+  lowGaps: number;
+  noiseGaps: number;
+  gapTypes: Record<string, number>;
+  sampleDescriptions: string[];
+}
+
+export interface DomainSummaryResponse {
+  resultId: string | null;
+  matchedItems: number;
+  totalSourceItems: number;
+  coveragePct: number;
+  domains: DomainGapSummary[];
+}
+
+export async function fetchDomainSummary(
+  organizationId: string,
+): Promise<ApiResponse<DomainSummaryResponse>> {
+  const res = await fetch(`${FACTCHECK_API_BASE}/factcheck/domain-summary`, {
+    headers: headersNoContentType(organizationId),
+  });
+  return res.json() as Promise<ApiResponse<DomainSummaryResponse>>;
+}
+
+// --- Coverage Trend ---
+
+export interface TrendPoint {
+  resultId: string;
+  run: number;
+  totalSourceItems: number;
+  totalDocItems: number;
+  matchedItems: number;
+  gapCount: number;
+  coveragePct: number;
+  specType: string;
+  createdAt: string;
+}
+
+export async function fetchTrend(
+  organizationId: string,
+): Promise<ApiResponse<{ trend: TrendPoint[] }>> {
+  const res = await fetch(`${FACTCHECK_API_BASE}/factcheck/trend`, {
+    headers: headersNoContentType(organizationId),
+  });
+  return res.json() as Promise<ApiResponse<{ trend: TrendPoint[] }>>;
+}
+
+// --- Document Suggestions ---
+
+export interface DocumentSuggestion {
+  domain: string;
+  domainLabel: string;
+  priority: "HIGH" | "MEDIUM" | "LOW";
+  gapCount: number;
+  highGaps: number;
+  sampleApis: string[];
+  sampleTables: string[];
+  suggestedDocType: string;
+}
+
+export async function fetchDocumentSuggestions(
+  organizationId: string,
+): Promise<ApiResponse<{ resultId: string; suggestions: DocumentSuggestion[] }>> {
+  const res = await fetch(`${FACTCHECK_API_BASE}/factcheck/document-suggestions`, {
+    headers: headersNoContentType(organizationId),
+  });
+  return res.json() as Promise<ApiResponse<{ resultId: string; suggestions: DocumentSuggestion[] }>>;
+}

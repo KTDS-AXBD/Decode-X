@@ -434,4 +434,102 @@ describe("structuralMatch", () => {
     expect(result.matchedItems).toHaveLength(1);
     expect(result.unmatchedSourceApis).toHaveLength(1);
   });
+
+  it("alternativePaths — 앱 프리픽스 제거 후 exact match", () => {
+    const src = makeSourceSpec([
+      makeSourceApi({
+        path: "/onnuripay/v1.0/gift/sendGift",
+        methodName: "sendGift",
+        alternativePaths: [
+          "/onnuripay/v1.0/gift/sendGift/sendGift",
+          "/gift/sendGift",
+        ],
+      }),
+    ]);
+    const doc = makeDocSpec([
+      makeDocApi({ path: "/gift/sendGift" }),
+    ]);
+    const result = structuralMatch(src, doc);
+
+    expect(result.matchedItems).toHaveLength(1);
+    expect(result.matchedItems[0]?.matchScore).toBe(0.9); // alternative path
+    expect(result.matchedItems[0]?.matchMethod).toBe("exact");
+  });
+
+  it("alternativePaths — fuzzy matching에서도 대안 경로 활용", () => {
+    // source: /onnuripay/v1.0/charge/chargeDealing (앱 프리픽스 포함)
+    // doc: /charge/dealingCancel (프리픽스 없음)
+    // 직접 fuzzy: tokens [onnuripay, charge, chargedealing] vs [charge, dealingcancel]
+    //   → Jaccard = 1/4 = 0.25 (miss)
+    // 대안 /charge/chargeDealing fuzzy: tokens [charge, chargedealing] vs [charge, dealingcancel]
+    //   → Jaccard = 1/3 = 0.33 (still miss, but closer)
+    // 하지만 대안 + methodName 경로로 다른 케이스를 캐치
+    const src = makeSourceSpec([
+      makeSourceApi({
+        path: "/onnuripay/v1.0/gift/giftStatus",
+        methodName: "giftStatusList",
+        alternativePaths: [
+          "/gift/giftStatus",
+          "/gift/giftStatus/giftStatusList",
+        ],
+      }),
+    ]);
+    const doc = makeDocSpec([
+      makeDocApi({ path: "/gift/giftStatus" }),
+    ]);
+    const result = structuralMatch(src, doc);
+
+    // 대안 경로 /gift/giftStatus가 exact match (score 0.9)
+    expect(result.matchedItems).toHaveLength(1);
+    expect(result.unmatchedSourceApis).toHaveLength(0);
+  });
+
+  it("alternativePaths — fuzzy match 개선 (노이즈 토큰 제거로 Jaccard 향상)", () => {
+    // 앱 프리픽스가 token에 포함되지 않게 alternativePaths 활용
+    const src = makeSourceSpec([
+      makeSourceApi({
+        path: "/onnuripay/v1.0/member/joinMember",
+        methodName: "joinMember",
+        alternativePaths: ["/member/joinMember"],
+      }),
+    ]);
+    const doc = makeDocSpec([
+      makeDocApi({ path: "/member/joinUser" }),
+    ]);
+    const result = structuralMatch(src, doc);
+
+    // 대안 tokens: [member, joinmember] vs [member, joinuser]
+    // intersection=1(member), union=3 → 0.33 (아직 threshold 미달)
+    // 하지만 원본보다 나은 점수
+    expect(result.unmatchedSourceApis).toHaveLength(1);
+    expect(result.unmatchedDocApis).toHaveLength(1);
+  });
+});
+
+// ── tokenizePath noise filtering ────────────────────────────────
+
+describe("tokenizePath — noise filtering", () => {
+  it("버전 토큰 필터링 (1.0, 2.0 등)", () => {
+    const tokens = tokenizePath("/onnuripay/v1.0/auth/login");
+    expect(tokens).not.toContain("1");
+    // "1.0" splits into "1" and "0" by the split regex
+    expect(tokens).toContain("onnuripay");
+    expect(tokens).toContain("auth");
+    expect(tokens).toContain("login");
+  });
+
+  it("param 토큰 필터링", () => {
+    const tokens = tokenizePath("/api/users/:param/orders");
+    expect(tokens).not.toContain("param");
+    expect(tokens).toContain("users");
+    expect(tokens).toContain("orders");
+  });
+
+  it("rest, internal, external 노이즈 토큰 필터링", () => {
+    const tokens = tokenizePath("/rest/internal/users/list");
+    expect(tokens).not.toContain("rest");
+    expect(tokens).not.toContain("internal");
+    expect(tokens).toContain("users");
+    expect(tokens).toContain("list");
+  });
 });

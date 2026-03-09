@@ -24,6 +24,9 @@ export interface SourceApi {
   swaggerSummary?: string;
   documentId: string;
   sourceFile: string;
+  /** Alternative path representations for improved matching.
+   *  e.g., path+methodName, app-prefix-stripped path */
+  alternativePaths?: string[];
 }
 
 export interface SourceTableColumn {

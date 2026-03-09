@@ -111,6 +111,11 @@ export async function aggregateSourceSpec(
           controllerCount++;
           for (const ep of ctrl.endpoints) {
             const fullPath = combinePath(ctrl.basePath, ep.path);
+            const altPaths = buildAlternativePaths(
+              fullPath,
+              ep.methodName,
+              ctrl.basePath,
+            );
             const api: SourceApi = {
               path: fullPath,
               httpMethods: ep.httpMethod,
@@ -130,6 +135,7 @@ export async function aggregateSourceSpec(
               sourceFile: ctrl.sourceFile,
             };
             if (ep.swaggerSummary !== undefined) api.swaggerSummary = ep.swaggerSummary;
+            if (altPaths.length > 0) api.alternativePaths = altPaths;
             allApis.push(api);
           }
           break;
@@ -451,6 +457,86 @@ function collectQueryColumns(
     }
   }
   return [...columns];
+}
+
+/**
+ * Build alternative path representations for improved matching.
+ *
+ * Generates:
+ * 1. path + "/" + methodName (when methodName adds a new segment)
+ * 2. App-prefix-stripped path (e.g., /onnuripay/v1.0/charge/... → /charge/...)
+ * 3. Stripped path + methodName combination
+ */
+export function buildAlternativePaths(
+  fullPath: string,
+  methodName: string,
+  basePath: string,
+): string[] {
+  const alts: string[] = [];
+  const seen = new Set<string>();
+  seen.add(normForDedup(fullPath));
+
+  // Alt 1: path + methodName
+  const augmented = combinePath(fullPath, methodName);
+  if (!seen.has(normForDedup(augmented))) {
+    alts.push(augmented);
+    seen.add(normForDedup(augmented));
+  }
+
+  // Alt 2: strip app prefix (e.g., /onnuripay/v1.0/charge → /charge)
+  const stripped = stripAppPrefix(fullPath);
+  if (!seen.has(normForDedup(stripped))) {
+    alts.push(stripped);
+    seen.add(normForDedup(stripped));
+  }
+
+  // Alt 3: stripped + methodName
+  if (stripped !== fullPath) {
+    const strippedAug = combinePath(stripped, methodName);
+    if (!seen.has(normForDedup(strippedAug))) {
+      alts.push(strippedAug);
+      seen.add(normForDedup(strippedAug));
+    }
+  }
+
+  // Alt 4: basePath-relative (just endpoint portion from basePath onward)
+  const baseNorm = basePath.replace(/^\/+|\/+$/g, "");
+  const segments = baseNorm.split("/").filter(Boolean);
+  // Use last segment of basePath as domain root (e.g., "charge" from "/onnuripay/v1.0/charge")
+  const lastBaseSegment = segments[segments.length - 1];
+  if (lastBaseSegment && segments.length > 1) {
+    const domainPath = fullPath.slice(
+      fullPath.toLowerCase().indexOf(lastBaseSegment.toLowerCase()),
+    );
+    if (domainPath && domainPath !== fullPath) {
+      const domainPathNorm = domainPath.startsWith("/") ? domainPath : `/${domainPath}`;
+      if (!seen.has(normForDedup(domainPathNorm))) {
+        alts.push(domainPathNorm);
+        seen.add(normForDedup(domainPathNorm));
+      }
+    }
+  }
+
+  return alts;
+}
+
+/**
+ * Strip common app-name + version prefix from a path.
+ * Pattern: /appName/vX.Y/rest... → /rest...
+ * Also handles: /appName/X.Y/rest...
+ */
+export function stripAppPrefix(path: string): string {
+  // Match /word/vX.Y/ or /word/X.Y/ at the start
+  const match = path.match(/^\/[a-z][a-z0-9]*\/(?:v?\d+\.\d+)\/(.*)/i);
+  if (match?.[1]) {
+    return `/${match[1]}`;
+  }
+  return path;
+}
+
+/** Lowercase + trim for dedup comparison */
+function normForDedup(p: string): string {
+  return p.toLowerCase().replace(/^\/+|\/+$/g, "");
 }
 
 /**

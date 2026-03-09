@@ -23,6 +23,9 @@ import { structuralMatch } from "../factcheck/matcher.js";
 import type { MatchResult } from "../factcheck/matcher.js";
 import type { SourceApi, SourceTable } from "../factcheck/types.js";
 import type { FactCheckGap } from "@ai-foundry/types";
+import { buildDomainSummary, categorizeGapDomain, type GapDomain } from "../factcheck/gap-categorizer.js";
+import type { NoiseStats } from "../factcheck/gap-detector.js";
+import type { ReportInput } from "../factcheck/report.js";
 
 // ── D1 row types ──────────────────────────────────────────────────
 
@@ -155,6 +158,21 @@ export async function handleFactcheckRoutes(
   // GET /factcheck/summary — org-level KPI
   if (method === "GET" && path === "/factcheck/summary") {
     return handleGetSummary(request, env);
+  }
+
+  // GET /factcheck/domain-summary — domain-level gap breakdown
+  if (method === "GET" && path === "/factcheck/domain-summary") {
+    return handleGetDomainSummary(request, env);
+  }
+
+  // GET /factcheck/trend — coverage trend over time
+  if (method === "GET" && path === "/factcheck/trend") {
+    return handleGetTrend(request, env);
+  }
+
+  // GET /factcheck/document-suggestions — prioritized document suggestions
+  if (method === "GET" && path === "/factcheck/document-suggestions") {
+    return handleGetDocumentSuggestions(request, env);
   }
 
   // GET /factcheck/results — list results
@@ -414,15 +432,15 @@ async function handleGetReport(
   const gaps: FactCheckGap[] = gapRows.map(gapRowToApi);
 
   // Extract noiseStats from match_result_json if available
-  let noiseStats: import("../factcheck/gap-detector.js").NoiseStats | undefined;
+  let noiseStats: NoiseStats | undefined;
   try {
     const matchData = JSON.parse(resultRow.match_result_json ?? "{}") as Record<string, unknown>;
     if (matchData["noiseStats"]) {
-      noiseStats = matchData["noiseStats"] as import("../factcheck/gap-detector.js").NoiseStats;
+      noiseStats = matchData["noiseStats"] as NoiseStats;
     }
   } catch { /* ignore parse errors */ }
 
-  const reportInput: import("../factcheck/report.js").ReportInput = {
+  const reportInput: ReportInput = {
     resultId,
     organizationId: resultRow.organization_id,
     totalSourceItems: resultRow.total_source_items,
@@ -959,6 +977,234 @@ async function handleGetKpi(
     },
     computedAt: new Date().toISOString(),
   });
+}
+
+// ── GET /factcheck/domain-summary ─────────────────────────────────
+
+async function handleGetDomainSummary(
+  request: Request,
+  env: Env,
+): Promise<Response> {
+  const organizationId = request.headers.get("X-Organization-Id");
+  if (!organizationId) {
+    return badRequest("X-Organization-Id header is required");
+  }
+
+  // Get the latest completed result
+  const resultRow = await env.DB_EXTRACTION.prepare(
+    `SELECT result_id, matched_items, total_source_items, coverage_pct
+     FROM fact_check_results
+     WHERE organization_id = ? AND status = 'completed'
+     ORDER BY created_at DESC LIMIT 1`,
+  )
+    .bind(organizationId)
+    .first<{
+      result_id: string;
+      matched_items: number;
+      total_source_items: number;
+      coverage_pct: number;
+    }>();
+
+  if (!resultRow) {
+    return ok({ domains: [], resultId: null, coveragePct: 0 });
+  }
+
+  // Fetch all gaps for this result
+  const { results: gapRows } = await env.DB_EXTRACTION.prepare(
+    `SELECT * FROM fact_check_gaps WHERE result_id = ?
+     ORDER BY CASE severity WHEN 'HIGH' THEN 0 WHEN 'MEDIUM' THEN 1 ELSE 2 END`,
+  )
+    .bind(resultRow.result_id)
+    .all<GapRow>();
+
+  const gaps: FactCheckGap[] = gapRows.map(gapRowToApi);
+
+  // Identify noise gap IDs (auto-resolved)
+  const noiseGapIds = new Set<string>();
+  for (const gap of gaps) {
+    if (gap.autoResolved) noiseGapIds.add(gap.gapId);
+  }
+
+  const domains = buildDomainSummary(gaps, noiseGapIds);
+
+  return ok({
+    resultId: resultRow.result_id,
+    matchedItems: resultRow.matched_items,
+    totalSourceItems: resultRow.total_source_items,
+    coveragePct: resultRow.coverage_pct,
+    domains,
+  });
+}
+
+// ── GET /factcheck/trend ─────────────────────────────────────────
+
+async function handleGetTrend(
+  request: Request,
+  env: Env,
+): Promise<Response> {
+  const organizationId = request.headers.get("X-Organization-Id");
+  if (!organizationId) {
+    return badRequest("X-Organization-Id header is required");
+  }
+
+  const { results } = await env.DB_EXTRACTION.prepare(
+    `SELECT result_id, total_source_items, total_doc_items, matched_items,
+            gap_count, coverage_pct, spec_type, created_at
+     FROM fact_check_results
+     WHERE organization_id = ? AND status = 'completed'
+     ORDER BY created_at ASC`,
+  )
+    .bind(organizationId)
+    .all<{
+      result_id: string;
+      total_source_items: number;
+      total_doc_items: number;
+      matched_items: number;
+      gap_count: number;
+      coverage_pct: number;
+      spec_type: string;
+      created_at: string;
+    }>();
+
+  const trend = results.map((r, idx) => ({
+    resultId: r.result_id,
+    run: idx + 1,
+    totalSourceItems: r.total_source_items,
+    totalDocItems: r.total_doc_items,
+    matchedItems: r.matched_items,
+    gapCount: r.gap_count,
+    coveragePct: r.coverage_pct,
+    specType: r.spec_type,
+    createdAt: r.created_at,
+  }));
+
+  return ok({ trend });
+}
+
+// ── GET /factcheck/document-suggestions ──────────────────────────
+
+interface DocumentSuggestion {
+  domain: GapDomain;
+  domainLabel: string;
+  priority: "HIGH" | "MEDIUM" | "LOW";
+  gapCount: number;
+  highGaps: number;
+  sampleApis: string[];
+  sampleTables: string[];
+  suggestedDocType: string;
+}
+
+async function handleGetDocumentSuggestions(
+  request: Request,
+  env: Env,
+): Promise<Response> {
+  const organizationId = request.headers.get("X-Organization-Id");
+  if (!organizationId) {
+    return badRequest("X-Organization-Id header is required");
+  }
+
+  // Get latest completed result
+  const resultRow = await env.DB_EXTRACTION.prepare(
+    `SELECT result_id FROM fact_check_results
+     WHERE organization_id = ? AND status = 'completed'
+     ORDER BY created_at DESC LIMIT 1`,
+  )
+    .bind(organizationId)
+    .first<{ result_id: string }>();
+
+  if (!resultRow) {
+    return ok({ suggestions: [] });
+  }
+
+  // Fetch unresolved gaps (non-noise, pending review)
+  const { results: gapRows } = await env.DB_EXTRACTION.prepare(
+    `SELECT * FROM fact_check_gaps
+     WHERE result_id = ? AND auto_resolved = 0 AND review_status = 'pending'
+     ORDER BY CASE severity WHEN 'HIGH' THEN 0 WHEN 'MEDIUM' THEN 1 ELSE 2 END`,
+  )
+    .bind(resultRow.result_id)
+    .all<GapRow>();
+
+  const gaps: FactCheckGap[] = gapRows.map(gapRowToApi);
+
+  // Group by domain
+  const domainMap = new Map<GapDomain, FactCheckGap[]>();
+  for (const gap of gaps) {
+    const domain = categorizeGapDomain(gap);
+    const existing = domainMap.get(domain) ?? [];
+    existing.push(gap);
+    domainMap.set(domain, existing);
+  }
+
+  const DOMAIN_LABELS: Record<GapDomain, string> = {
+    charge: "충전/결제", gift: "선물/쿠폰", payment: "결제 처리",
+    member: "회원 관리", auth: "인증/로그인", wallet: "지갑/잔액",
+    store: "가맹점", settlement: "정산/뱅킹", message: "메시지/알림",
+    batch: "배치/스케줄", admin: "관리/수동 조작", openbank: "오픈뱅킹",
+    point: "포인트", common: "공통/유틸", deal: "거래 내역",
+    data: "데이터 모델", unknown: "미분류",
+  };
+
+  const DOC_TYPE_HINT: Record<GapDomain, string> = {
+    charge: "충전 처리 인터페이스 정의서",
+    gift: "선물/쿠폰 API 명세서",
+    payment: "결제 처리 인터페이스 정의서",
+    member: "회원 관리 기능 명세서",
+    auth: "인증/보안 인터페이스 정의서",
+    wallet: "지갑/잔액 관리 기능 명세서",
+    store: "가맹점 관리 API 명세서",
+    settlement: "정산/뱅킹 인터페이스 정의서",
+    message: "메시지/알림 API 명세서",
+    batch: "배치 처리 운영 매뉴얼",
+    admin: "관리자 기능 명세서",
+    openbank: "오픈뱅킹 연동 인터페이스 정의서",
+    point: "포인트 관리 기능 명세서",
+    common: "공통 유틸 API 명세서",
+    deal: "거래 내역 인터페이스 정의서",
+    data: "테이블 정의서 / ERD 보완",
+    unknown: "기능 명세서",
+  };
+
+  const suggestions: DocumentSuggestion[] = [];
+
+  for (const [domain, domainGaps] of domainMap) {
+    const highGaps = domainGaps.filter((g) => g.severity === "HIGH").length;
+    const priority: "HIGH" | "MEDIUM" | "LOW" = highGaps >= 5 ? "HIGH" : highGaps >= 1 ? "MEDIUM" : "LOW";
+
+    // Extract sample API paths and table names
+    const sampleApis: string[] = [];
+    const sampleTables: string[] = [];
+
+    for (const gap of domainGaps.slice(0, 5)) {
+      try {
+        const parsed = JSON.parse(gap.sourceItem) as Record<string, unknown>;
+        const path = parsed["path"] as string | undefined;
+        const tableName = parsed["tableName"] as string | undefined;
+        if (path && sampleApis.length < 3) sampleApis.push(path);
+        if (tableName && sampleTables.length < 3) sampleTables.push(tableName);
+      } catch { /* skip non-JSON */ }
+    }
+
+    suggestions.push({
+      domain,
+      domainLabel: DOMAIN_LABELS[domain],
+      priority,
+      gapCount: domainGaps.length,
+      highGaps,
+      sampleApis,
+      sampleTables,
+      suggestedDocType: DOC_TYPE_HINT[domain],
+    });
+  }
+
+  // Sort by priority (HIGH first), then gap count
+  const priorityOrder = { HIGH: 0, MEDIUM: 1, LOW: 2 };
+  suggestions.sort((a, b) => {
+    const pDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
+    return pDiff !== 0 ? pDiff : b.gapCount - a.gapCount;
+  });
+
+  return ok({ resultId: resultRow.result_id, suggestions });
 }
 
 // ── GET /factcheck/summary ────────────────────────────────────────

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { aggregateSourceSpec, combinePath, extractShortClassName } from "../factcheck/source-aggregator.js";
+import { aggregateSourceSpec, combinePath, extractShortClassName, buildAlternativePaths, stripAppPrefix } from "../factcheck/source-aggregator.js";
 import type { Env } from "../env.js";
 
 // ── Helpers ──────────────────────────────────────────────────────
@@ -450,5 +450,79 @@ describe("extractShortClassName", () => {
 
   it("중첩 패키지", () => {
     expect(extractShortClassName("a.b.c.d.MyClass")).toBe("MyClass");
+  });
+});
+
+// ── buildAlternativePaths ────────────────────────────────────────
+
+describe("buildAlternativePaths", () => {
+  it("LPON 패턴: basePath + ep.path + methodName 대안 생성", () => {
+    const alts = buildAlternativePaths(
+      "/onnuripay/v1.0/charge/chargeDealing",
+      "insertChargeDeal",
+      "/onnuripay/v1.0/charge",
+    );
+    // Should include: path+methodName, stripped, stripped+methodName, domain-root
+    expect(alts.some((a) => a.includes("insertChargeDeal"))).toBe(true);
+    // Should include stripped app prefix
+    expect(alts.some((a) => a === "/charge/chargeDealing" || a.startsWith("/charge/"))).toBe(true);
+  });
+
+  it("methodName이 이미 path 끝에 있으면 중복 대안 제외", () => {
+    const alts = buildAlternativePaths(
+      "/api/v2/voucher/issue",
+      "issue",
+      "/api/v2/voucher",
+    );
+    // /api/v2/voucher/issue/issue 는 생성되지만, 중복 제거됨
+    const withoutDups = new Set(alts.map((a) => a.toLowerCase()));
+    expect(withoutDups.size).toBe(alts.length);
+  });
+
+  it("앱 프리픽스 없는 짧은 경로 → 대안 최소", () => {
+    const alts = buildAlternativePaths(
+      "/api/users",
+      "listUsers",
+      "/api",
+    );
+    // 대안: /api/users/listUsers, domain 경로 등
+    expect(alts.some((a) => a.includes("listUsers"))).toBe(true);
+  });
+
+  it("빈 methodName → 대안 없거나 최소", () => {
+    const alts = buildAlternativePaths(
+      "/api/v2/health",
+      "",
+      "/api/v2",
+    );
+    // combinePath("/api/v2/health", "") === "/api/v2/health" → 중복으로 제외
+    expect(alts.every((a) => a !== "/api/v2/health")).toBe(true);
+  });
+});
+
+// ── stripAppPrefix ──────────────────────────────────────────────
+
+describe("stripAppPrefix", () => {
+  it("LPON 패턴: /onnuripay/v1.0/... → /...", () => {
+    expect(stripAppPrefix("/onnuripay/v1.0/charge/chargeDealing"))
+      .toBe("/charge/chargeDealing");
+  });
+
+  it("버전 없는 v 접두사: /onnuripay/1.0/... → /...", () => {
+    expect(stripAppPrefix("/onnuripay/1.0/auth/login"))
+      .toBe("/auth/login");
+  });
+
+  it("앱 프리픽스 없는 경로 → 원본 반환", () => {
+    expect(stripAppPrefix("/api/v2/voucher/issue"))
+      .toBe("/api/v2/voucher/issue");
+  });
+
+  it("짧은 경로 → 원본 반환", () => {
+    expect(stripAppPrefix("/health")).toBe("/health");
+  });
+
+  it("루트 경로 → 원본 반환", () => {
+    expect(stripAppPrefix("/")).toBe("/");
   });
 });

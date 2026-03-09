@@ -84,7 +84,7 @@ export const PolicyQualityChart: React.FC<Props> = ({ data }) => {
               border: '1px solid var(--border)',
               borderRadius: 'var(--radius)',
             }}
-            formatter={(value: number) => value.toFixed(3)}
+            formatter={(value: unknown) => typeof value === "number" ? value.toFixed(3) : String(value ?? "")}
           />
           <Legend
             wrapperStyle={{ paddingTop: '20px' }}

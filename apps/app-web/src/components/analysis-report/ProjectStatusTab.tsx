@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { MetricCard } from "./MetricCard";
 import { SectionHeader, SourceFileInfo } from "./StatusReportWidgets";
 import { DynamicStatusReport } from "./DynamicStatusReport";
+import { FactCheckAnalysisSection } from "./FactCheckAnalysisSection";
 import { fetchDocuments } from "@/api/ingestion";
 import { fetchPolicies } from "@/api/policy";
 import { fetchSkills } from "@/api/skill";
@@ -187,6 +188,9 @@ export function ProjectStatusTab() {
           )}
         </div>
       </section>
+
+      {/* ─── Section B: FactCheck 커버리지 분석 ─── */}
+      <FactCheckAnalysisSection organizationId={organizationId} />
 
       {/* ─── 조직별 보고서 콘텐츠 (API/DB 동적) ─── */}
       <DynamicStatusReport organizationId={organizationId} />

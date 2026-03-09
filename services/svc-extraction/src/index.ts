@@ -14,6 +14,7 @@ import type { Env } from "./env.js";
 import { handleExtract } from "./routes/extract.js";
 import { handleAnalysisRoutes } from "./routes/analysis.js";
 import { handleCompareRoutes } from "./routes/compare.js";
+import { handleLlmCompareRoutes } from "./routes/llm-compare.js";
 import { handleFactcheckRoutes } from "./routes/factcheck.js";
 import { handleExportRoutes } from "./routes/export.js";
 import { handleSpecRoutes } from "./routes/spec.js";
@@ -60,6 +61,17 @@ export default {
           return await handleCompareRoutes(request, env, ctx);
         }
         return await handleAnalysisRoutes(request, env, ctx);
+      }
+
+      // /llm-compare — Anthropic vs OpenAI extraction quality comparison (AIF-REQ-002)
+      if (path.startsWith("/llm-compare")) {
+        const rbacCtx = extractRbacContext(request);
+        if (rbacCtx) {
+          const action = method === "GET" ? "read" : "execute";
+          const denied = await checkPermission(env, rbacCtx.role, "extraction", action);
+          if (denied) return denied;
+        }
+        return await handleLlmCompareRoutes(request, env);
       }
 
       // POST /internal/queue-event — invoked by svc-queue-router via service binding

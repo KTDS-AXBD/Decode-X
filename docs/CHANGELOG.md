@@ -17,7 +17,8 @@
 **검증 결과**:
 - ✅ typecheck 17/17 PASS
 - ✅ svc-ingestion 340/340 tests PASS
-- ✅ lint clean (svc-ingestion)
+- ✅ svc-analytics 73/73 tests PASS (deliverables mock order fix)
+- ✅ lint clean
 
 ---
 

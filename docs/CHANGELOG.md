@@ -2,6 +2,23 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 162 — 2026-03-10
+**AIF-REQ-002 — Anthropic vs OpenAI extraction 품질 비교 API 구현**:
+- ✅ `POST /llm-compare` — LLM A/B 비교 엔드포인트 (병렬 호출, Jaccard 유사도)
+- ✅ `GET /llm-compare` / `GET /llm-compare/:id` — 비교 결과 목록/상세 조회
+- ✅ D1 마이그레이션 `0008_extraction_comparisons` — staging 적용 완료
+- ✅ Stack-based `repairTruncatedJson` — Gemini maxTokens 잘림 JSON 복구
+- ✅ staging 실문서 8건 비교 실행 (OpenAI vs Google, Anthropic 크레딧 소진 확인)
+- 주요 발견: Gemini flash-lite 158 entities 추출 (JSON repair로 복구), OpenAI 문서별 편차 큼, 동일 모델 2회 호출도 Jaccard 0 (비결정성)
+- 신규 코드: llm-compare.ts (350줄) + test (150줄) + migration (35줄)
+- AIF-REQ-002 상태: TRIAGED → IN_PROGRESS
+
+**검증 결과**:
+- ✅ typecheck 17/17 PASS
+- ✅ svc-extraction 420/420 tests PASS (21 files, +5 llm-compare tests)
+
+---
+
 ## 세션 161 — 2026-03-10
 **온누리상품권 분석 리포트 진행 현황 현행화 — Executive Summary 추가 + 해소 항목 반영**:
 - ✅ Executive Summary "So What?" 섹션 신규 추가 — 즉시활용/보완후활용/AI한계 3단계 결론

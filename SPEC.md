@@ -396,9 +396,9 @@
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
 | ~~AIF-REQ-001~~ | ~~Improvement~~ | ~~Pipeline~~ | ~~P2~~ | REJECTED | ~~SCDSA002 비표준 XLSX 파싱 조사~~ — 거부: DRM 암호화 파일 파싱 제외 |
-| AIF-REQ-002 | Improvement | Pipeline | P3 | TRIAGED | Anthropic vs OpenAI extraction 품질 비교 (크레딧 충전 후) |
+| AIF-REQ-002 | Improvement | Pipeline | P3 | IN_PROGRESS | Anthropic vs OpenAI extraction 품질 비교 (크레딧 충전 후) |
 | AIF-REQ-003 | Feature | Data | P2 | TRIAGED | 추가 문서 업로드 (764건 XLSX 중 선별) |
-| AIF-REQ-004 | Bug | Pipeline | P2 | DONE | PDF/PPTX 대용량 문서 524 timeout 해결 — pdf-lib 페이지 분할 + fflate 슬라이드 분할 + auto→fast 전략 fallback + 적응형 재분할. 실문서 검증 3/3 PASS (PDF 2.3MB→200chunks, PPTX 5.3MB→191, 5.4MB→193) (세션 160) |
+| AIF-REQ-004 | Bug | Pipeline | P2 | DONE | PDF/PPTX 대용량 문서 524 timeout 해결 — pdf-lib 페이지 분할 + fflate 슬라이드 분할 + auto→fast 전략 fallback + PARSE_TIMEOUT 60s + 적응형 재분할. Production 실문서 6/8 성공 (15.9MB PPTX→200, 7.2MB→390, 5.2MB→386, 5.0MB→382, 2.8MB PDF→200) (세션 160) |
 | AIF-REQ-005 | Feature | Integration | P1 | DONE | MCP adapter 실제 클라이언트(Claude Desktop) E2E 테스트 |
 | AIF-REQ-006 | Feature | Integration | P2 | DONE | OpenAPI adapter 외부 시스템 연동 검증 — servers/examples/externalDocs 추가, swagger-parser+validator 검증, staging+production 배포 (세션 157) |
 

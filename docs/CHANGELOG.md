@@ -2,6 +2,26 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 163 — 2026-03-10
+**AIF-REQ-018 구현 — 진행 현황 리포트 UX 개선 (3단계 구조 + 스코어카드 + accordion)**:
+- ✅ Executive Summary hero: 활용 준비도 게이지(91/100) + 신호등 바 + AI vs AI+전문가 비교 프레임
+- ✅ CollapsibleSection: 파이프라인·FactCheck·상세 보고서 accordion 접기/펼치기
+- ✅ ScoreGauge: SVG 기반 원형 게이지 (score → color → label 자동 산출)
+- ✅ ReadinessBar: ✅50% / ⚠️33% / ❌17% 수평 stacked bar
+- ✅ MetricCard 설명 추가: "이 수치가 의미하는 것" 한 줄 (explanation prop)
+- ✅ FactCheck KpiBox 설명 4건 추가 (보정 커버리지, 매칭 성공, 소스 항목, 미매칭 갭)
+- ✅ DynamicStatusReport: 향후 과제 완료 항목 접기/펼치기 (TaskListWithFold)
+- ✅ FactCheckAnalysisSection: embedded prop (CollapsibleSection 내 SectionHeader 중복 방지)
+- 신규 컴포넌트 3개: CollapsibleSection.tsx, ScoreGauge.tsx, ReadinessBar.tsx
+- Pages production 배포 완료 + Playwright 스크린샷 검증
+
+**검증 결과**:
+- ✅ typecheck PASS (app-web tsc --noEmit)
+- ✅ build 성공 (analysis-report 117.68KB gzip 31.42KB)
+- ✅ Cloudflare Pages 배포 완료
+
+---
+
 ## 세션 162 — 2026-03-10
 **AIF-REQ-002 — Anthropic vs OpenAI extraction 품질 비교 API 구현**:
 - ✅ `POST /llm-compare` — LLM A/B 비교 엔드포인트 (병렬 호출, Jaccard 유사도)

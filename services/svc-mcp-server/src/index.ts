@@ -289,80 +289,114 @@ function createSkillMcpServer(
   return server;
 }
 
-function createOrgMcpServer(
+/**
+ * Handle org-level MCP requests with raw JSON-RPC instead of SDK.
+ * Avoids Worker crash from registering 848+ tools via server.tool().
+ */
+async function handleOrgMcpJsonRpc(
+  request: Request,
   adapter: OrgMcpAdapterResponse,
   orgId: string,
   env: Env,
-): McpServer {
-  const server = new McpServer({
-    name: adapter.serverInfo.name,
-    version: adapter.serverInfo.version,
-  });
+): Promise<Response> {
+  const body = (await request.json()) as { jsonrpc: string; method: string; params?: Record<string, unknown>; id?: unknown };
 
-  for (const tool of adapter.tools) {
-    server.tool(
-      tool.name,
-      tool.description,
-      {
-        context: z.string().min(1).max(10_000).describe("적용 대상의 상황 설명"),
-        parameters: z.string().optional().describe("추가 파라미터 (JSON 문자열)"),
+  if (body.method === "initialize") {
+    return Response.json({
+      jsonrpc: "2.0",
+      result: {
+        protocolVersion: "2024-11-05",
+        capabilities: { tools: { listChanged: false } },
+        serverInfo: adapter.serverInfo,
+        instructions: adapter.instructions,
       },
-      async ({ context, parameters }) => {
-        const policyCode = tool.name.toUpperCase();
-        const skillId = adapter._toolSkillMap[tool.name];
-        if (!skillId) {
-          return {
-            content: [{ type: "text" as const, text: `Error: No skill mapping for tool ${tool.name}` }],
-            isError: true,
-          };
-        }
-
-        let parsedParams: Record<string, unknown> | undefined;
-        if (parameters) {
-          try {
-            parsedParams = JSON.parse(parameters) as Record<string, unknown>;
-          } catch {
-            return {
-              content: [{ type: "text" as const, text: "Error: parameters must be valid JSON" }],
-              isError: true,
-            };
-          }
-        }
-
-        try {
-          const result = await evaluatePolicy(env, skillId, policyCode, context, parsedParams);
-          if (!result.success) {
-            return {
-              content: [{ type: "text" as const, text: `평가 실패: ${result.error?.message ?? "알 수 없는 오류"}` }],
-              isError: true,
-            };
-          }
-          const { data } = result;
-          const text = [
-            "## 정책 평가 결과",
-            "",
-            `**정책**: ${data.policyCode}`,
-            `**판정**: ${data.result}`,
-            `**신뢰도**: ${data.confidence}`,
-            `**모델**: ${data.provider} / ${data.model}`,
-            `**응답시간**: ${data.latencyMs}ms`,
-            "",
-            "### 근거",
-            data.reasoning,
-          ].join("\n");
-          return { content: [{ type: "text" as const, text }] };
-        } catch (e) {
-          logger.error("org tools/call error", { orgId, skillId, policyCode, error: String(e) });
-          return {
-            content: [{ type: "text" as const, text: `평가 중 오류 발생: ${String(e)}` }],
-            isError: true,
-          };
-        }
-      },
-    );
+      id: body.id,
+    }, { headers: { ...corsHeaders(), "Content-Type": "application/json" } });
   }
 
-  return server;
+  if (body.method === "notifications/initialized") {
+    return new Response(null, { status: 202, headers: corsHeaders() });
+  }
+
+  if (body.method === "tools/list") {
+    const mcpTools = adapter.tools.map((t) => ({
+      name: t.name,
+      description: t.description,
+      inputSchema: t.inputSchema,
+      annotations: t.annotations,
+    }));
+    return Response.json({
+      jsonrpc: "2.0",
+      result: { tools: mcpTools },
+      id: body.id,
+    }, { headers: { ...corsHeaders(), "Content-Type": "application/json" } });
+  }
+
+  if (body.method === "tools/call") {
+    const params = body.params as { name: string; arguments?: { context?: string; parameters?: string } } | undefined;
+    const toolName = params?.name ?? "";
+    const context = params?.arguments?.context ?? "";
+    const parametersStr = params?.arguments?.parameters;
+
+    const policyCode = toolName.toUpperCase();
+    const skillId = adapter._toolSkillMap[toolName];
+    if (!skillId) {
+      return Response.json({
+        jsonrpc: "2.0",
+        result: { content: [{ type: "text", text: `Error: Unknown tool ${toolName}` }], isError: true },
+        id: body.id,
+      }, { headers: { ...corsHeaders(), "Content-Type": "application/json" } });
+    }
+
+    let parsedParams: Record<string, unknown> | undefined;
+    if (parametersStr) {
+      try { parsedParams = JSON.parse(parametersStr) as Record<string, unknown>; }
+      catch { return Response.json({
+        jsonrpc: "2.0",
+        result: { content: [{ type: "text", text: "Error: parameters must be valid JSON" }], isError: true },
+        id: body.id,
+      }, { headers: { ...corsHeaders(), "Content-Type": "application/json" } }); }
+    }
+
+    try {
+      const result = await evaluatePolicy(env, skillId, policyCode, context, parsedParams);
+      if (!result.success) {
+        return Response.json({
+          jsonrpc: "2.0",
+          result: { content: [{ type: "text", text: `평가 실패: ${result.error?.message ?? "알 수 없는 오류"}` }], isError: true },
+          id: body.id,
+        }, { headers: { ...corsHeaders(), "Content-Type": "application/json" } });
+      }
+      const { data } = result;
+      const text = [
+        "## 정책 평가 결과", "",
+        `**정책**: ${data.policyCode}`,
+        `**판정**: ${data.result}`,
+        `**신뢰도**: ${data.confidence}`,
+        `**모델**: ${data.provider} / ${data.model}`,
+        `**응답시간**: ${data.latencyMs}ms`,
+        "", "### 근거", data.reasoning,
+      ].join("\n");
+      return Response.json({
+        jsonrpc: "2.0",
+        result: { content: [{ type: "text", text }] },
+        id: body.id,
+      }, { headers: { ...corsHeaders(), "Content-Type": "application/json" } });
+    } catch (e) {
+      logger.error("org tools/call error", { orgId, skillId, policyCode, error: String(e) });
+      return Response.json({
+        jsonrpc: "2.0",
+        result: { content: [{ type: "text", text: `평가 중 오류 발생: ${String(e)}` }], isError: true },
+        id: body.id,
+      }, { headers: { ...corsHeaders(), "Content-Type": "application/json" } });
+    }
+  }
+
+  return Response.json({
+    jsonrpc: "2.0",
+    error: { code: -32601, message: `Method not found: ${body.method}` },
+    id: body.id,
+  }, { status: 400, headers: { ...corsHeaders(), "Content-Type": "application/json" } });
 }
 
 // ── Auth ─────────────────────────────────────────────────────────────
@@ -483,16 +517,7 @@ export default {
         );
       }
 
-      const server = createOrgMcpServer(adapter, orgId, env);
-      const transport = new WebStandardStreamableHTTPServerTransport({ enableJsonResponse: true });
-      await server.connect(transport);
-      const response = await transport.handleRequest(request);
-
-      const finalHeaders = new Headers(response.headers);
-      for (const [key, value] of Object.entries(corsHeaders())) {
-        finalHeaders.set(key, value as string);
-      }
-      return new Response(response.body, { status: response.status, headers: finalHeaders });
+      return handleOrgMcpJsonRpc(request, adapter, orgId, env);
     }
 
     // MCP endpoint: POST /mcp/:skillId

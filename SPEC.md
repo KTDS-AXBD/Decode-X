@@ -55,8 +55,9 @@
 
 ## 5) Current Status
 
-- **Last Updated**: 2026-03-18
+- **Last Updated**: 2026-03-19
 - **Current Phase**: Phase 4 Sprint 2 완료 — 12 Workers + Pages 배포, 2-org 파일럿 (퇴직연금 + 온누리상품권), policies 3,675 / skills 3,924
+- **Foundry-X MCP 통합**: ✅ Phase 1-1 PoC 완료 — 9/9 왕복 검증 + 12/12 bundled skills MCP (848 tools). AIF-REQ-026 IN_PROGRESS
 - **Production E2E**: ✅ 8/8 PASS (synthetic) + 7/7 PASS (real-doc) + Batch 3: 7/11 parsed (SCDSA002 4건 → encrypted 상태)
 - **Real Document Pilot**: ✅ 20/26 문서 파싱 완료 (Batch 1: 4건, Batch 2: 9/11건, Batch 3: 7/11건)
 - **Production Data**: policies 3,675 approved (LPON 848 + Miraeasset 2,827), skills 3,924 (LPON 859 + Miraeasset 3,065). 2-org
@@ -441,7 +442,7 @@
 
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
-| AIF-REQ-019 | Feature | Integration | P0 | IN_PROGRESS | Working Mock-up 사이트 — 추출된 결과물(Skill, 정책, 온톨로지) 기반 핵심 엔진 동작 검증. PDCA 91% (세션 166b). 세션 169: app-web 통합(iframe+사이드바 체험 그룹), 프록시 수정(_routes.json+에셋 리라이트), evaluate 400 수정(policyCode 자동선택), 온톨로지 d3-force 인터랙티브 그래프 |
+| AIF-REQ-019 | Feature | Integration | P0 | DONE | Working Mock-up 사이트 — 추출된 결과물(Skill, 정책, 온톨로지) 기반 핵심 엔진 동작 검증. PDCA 91% (세션 166b). 세션 169: app-web 통합. **세션 174: Export 탭 + AutoEvalPanel + UX 폴리싱(Skeleton/EmptyState/Toast) + 5탭 완성. PDCA 98% → DONE** |
 
 ### 계정/인프라 이전 (신규 등록)
 
@@ -454,7 +455,7 @@
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
 | AIF-REQ-021 | Improvement | Pipeline | P2 | OPEN | Adaptive LLM Router 고도화 — PAL Router 패턴(복잡도 기반 자동 에스컬레이션/다운그레이드), TaskContext 기반 stateless routing, Result Type 에러 핸들링 표준화. 대상: svc-llm-router (SVC-06). 참조: [Q00/ouroboros](https://github.com/Q00/ouroboros) |
-| AIF-REQ-022 | Feature | Pipeline | P1 | OPEN | Pipeline Quality Evaluation System — 3-Stage Evaluation(기계적→의미적→다중모델 합의), Ambiguity Scoring(문서 구조 명확도 게이트), Deliberative Consensus(Advocate+Devil+Judge 정책 리뷰), Brownfield Explorer(기존 온톨로지/정책 자동 감지). 대상: SVC-01/03/08. 참조: [Q00/ouroboros](https://github.com/Q00/ouroboros) |
+| AIF-REQ-022 | Feature | Pipeline | P1 | DONE | Pipeline Quality Evaluation System — 3-Stage auto evaluator(mechanical→semantic→consensus) 구현. svc-governance evaluators/ + pipeline-evaluations API. Queue Router skill.packaged 자동 트리거. 31 tests. **세션 174: PDCA 98% → DONE** |
 | AIF-REQ-023 | Feature | Pipeline | P2 | OPEN | Pipeline Event Sourcing & Observability — 5-Stage 이벤트 리니지(append-only 로그), Drift Detection(목표/제약/온톨로지 드리프트 추적), 감사/재현/롤백 지원. 대상: 전 서비스(SVC-01~05 + Queue Router). 참조: [Q00/ouroboros](https://github.com/Q00/ouroboros) |
 
 ### Generative UI Framework — OpenGenerativeUI 패턴 반영 (신규 등록)
@@ -467,7 +468,7 @@
 
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
-| AIF-REQ-025 | Improvement | Pipeline | P1 | OPEN | Skill 번들링 재설계 — 현재 1 skill = 1 policy (859개)를 LLM 의미 분류로 기능 단위 ~25개 번들로 재패키징. Claude Code 스킬 형태 활용 목적. Stage 5 패키징 로직 변경 + MCP 어댑터 갱신 + trust score 산정 |
+| AIF-REQ-025 | Improvement | Pipeline | P1 | DONE | Skill 번들링 재설계 + CC Export — LLM 의미 분류 번들링 완료 (LPON 848→11, Miraeasset 3065→15). CC Skill ZIP Export API (GET /skills/:id/export-cc). SKILL.md + rules/policies/*.md 구조. 19 tests. **세션 174: CC Export 추가, PDCA 98% → DONE** |
 
 ### Foundry-X 통합 — 제품군 통합 및 포지셔닝 (신규 등록)
 

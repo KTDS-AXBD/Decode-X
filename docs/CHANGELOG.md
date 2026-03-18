@@ -25,6 +25,19 @@
 
 **산출물**: AIF-RPRT-013 (2,500줄 보고서) + 메모리 갱신
 
+**Foundry-X MCP 통합 Phase 1-1 PoC 완료 (AIF-REQ-026)**:
+
+- ✅ MCP 왕복 검증 9/9 PASS (initialize → tools/list → tools/call + Foundry-X 등록/테스트/캐시/삭제)
+- ✅ 공유 타입 생성: `@ai-foundry/types` mcp-shared.ts (4종 Zod 스키마) + `@foundry-x/shared` AIF 타입 3종
+- ✅ Foundry-X HttpTransport Accept 헤더 수정 (MCP Streamable HTTP 호환)
+- ✅ bulk-register 스크립트 구현 (11개 skill 일괄 등록, dry-run 검증)
+- ✅ R2 `--remote` 근본 원인 해소: `--env production` → `--remote` (wrangler r2 로컬/원격 구분 필수)
+- ✅ LPON rebundle 재실행: 848 정책 → 12 번들, R2 remote 업로드 12/12 + MCP adapter 12/12 정상 (848 tools)
+- ✅ 설계 현행화: AIF-ANLS-026 Phase 1 완료 체크 + resources/sampling → Phase 2 이동
+- ✅ Gap Analysis 63% → 80% → 94% → 100% (3회 반복 개선)
+
+**산출물**: AIF-RPRT-028 (보고서) + test-aif-mcp-roundtrip.sh + bulk-register-aif-mcp.sh
+
 ---
 
 ## 세션 172 — 2026-03-18

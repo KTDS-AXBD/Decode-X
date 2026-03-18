@@ -28,6 +28,9 @@ bun run build        # turbo run build
 # Single service dev
 cd services/svc-ingestion && wrangler dev
 
+# Single service test
+cd services/svc-ingestion && bun run test
+
 # Deploy a service
 cd services/svc-ingestion && CLOUDFLARE_API_TOKEN="..." wrangler deploy
 
@@ -78,7 +81,7 @@ Each service has its own `wrangler.toml` and deploys independently.
 | **AI Governing** | LLM policy, prompt versioning, cost/data governance, audit |
 | **Evaluation** | 3-level trust scoring (individual output → Skill package → system) |
 | **DevSecOps** | RBAC, CI/CD, env separation, monitoring, resilience |
-| **AI UX** | 13 screens across 5 personas (Cloudflare Pages SPA) |
+| **AI UX** | 21 screens across 5 personas (Cloudflare Pages SPA) |
 | **Data & Ontology** | D1 (10 DBs), Neo4j Aura (graph), SKOS/JSON-LD (ontology), R2 (objects) |
 
 ### 5-Stage Core Engine Pipeline
@@ -128,7 +131,7 @@ Stage 5: Skill Packaging
 - **Compute**: Workers (12 SVCs) + Durable Objects (HITL session state)
 - **Storage**: D1 (10 separate DBs, one per SVC) + R2 (documents, Skill packages) + KV (cache)
 - **Async**: Cloudflare Queues (pipeline event bus: 6 event types)
-- **Frontend**: Cloudflare Pages (SPA, 13 screens)
+- **Frontend**: Cloudflare Pages (SPA, 21 screens)
 - **LLM gateway**: Cloudflare AI Gateway (logging, caching, rate limiting for all LLM calls — Anthropic/OpenAI/Google)
 - **Auth**: Cloudflare Access (Zero Trust, SSO with KT DS IdP)
 - **Graph DB**: Neo4j Aura (Free → Pro as needed)
@@ -214,6 +217,13 @@ Phase 1 ✅ → 2 ✅ → 3 ✅ → **4 (진행중)**. 각 Phase 상세는 PRD �
 ### Worker Patterns
 - 비동기 D1 쓰기는 `ctx.waitUntil()`로 non-blocking 처리
 - 각 서비스마다 독립 D1 DB (cross-DB 참조는 ID 기반 loose coupling)
+
+### Testing Patterns
+- **Framework**: Vitest (`bun run test` via Turborepo, 단일 서비스: `cd services/svc-xxx && bun run test`)
+- **D1 Mock**: 각 서비스 테스트에서 `createTestD1()` 또는 인메모리 SQLite mock 사용
+- **Error Classes**: `AppError` → `NotFoundError`, `UnauthorizedError`, `ForbiddenError`, `ValidationError`, `ConflictError`, `UpstreamError`, `RateLimitError`
+- **Response Helpers**: `ok()`, `created()`, `noContent()`, `err()`, `notFound()`, `unauthorized()`, `forbidden()`, `badRequest()`
+- **Route Organization**: 각 서비스 `src/routes/` 하위에 핸들러 함수 분리 (e.g., `handleUpload`, `handleGetDocument`)
 
 ---
 

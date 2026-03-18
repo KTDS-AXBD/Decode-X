@@ -362,7 +362,7 @@
 - [x] HITL 47건+34건 승인 — policies 134+, terms 1,441, skills 171
 - [x] 퇴직연금 대표 문서 11건 업로드 (9/11 parsed, 2건 SCDSA002 비표준)
 - [x] ~~SCDSA002 비표준 XLSX 조사~~ (AIF-REQ-001 REJECTED: DRM 암호화 파일 파싱 제외)
-- [ ] Anthropic 크레딧 충전 후 품질 비교 (AIF-REQ-002 TRIAGED)
+- [ ] Anthropic 크레딧 충전 후 품질 비교 (AIF-REQ-002 IN_PROGRESS)
 - [ ] 추가 문서 업로드 764건 XLSX 중 선별 (AIF-REQ-003 TRIAGED)
 - [x] PDF/PPTX 대용량 문서 524 timeout 해결 (AIF-REQ-004 DONE)
 
@@ -433,6 +433,18 @@
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
 | AIF-REQ-018 | Improvement | UX | P1 | IN_PROGRESS | 진행 현황 리포트 UX 개선 — 3단계 구조(Executive Summary + accordion 상세), 중복 섹션 통합(FactCheck·종합판정), 게이지/스코어카드 시각화, 신호등+점수+비교 프레임 결론 강화, 메트릭 카드 설명 추가, 향후과제 접기/펼치기 |
+
+### Working Mock-up 사이트 (신규 등록)
+
+| ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
+|----|------|--------|:--------:|:----:|------|
+| AIF-REQ-019 | Feature | Integration | P0 | PLANNED | Working Mock-up 사이트 — 추출된 결과물(Skill, 정책, 온톨로지) 기반 핵심 엔진 동작 검증. Foundry-X 연동, AXIS Design System 적용, Agent 기반 자동화 구축 |
+
+### 계정/인프라 이전 (신규 등록)
+
+| ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
+|----|------|--------|:--------:|:----:|------|
+| AIF-REQ-020 | Chore | Infra | P0 | PLANNED | 계정/인프라 이전 — GitHub(sinclairseo→ktds.axbd) + Cloudflare(sinclair.seo→ktds.axbd) 리소스 이전. DNS는 개인 계정 유지, Workers/D1/R2/Queue/KV/Pages 전체 이전. CI/CD secrets + wrangler.toml 리소스 ID 갱신 |
 
 ---
 

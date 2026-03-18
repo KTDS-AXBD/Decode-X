@@ -25,6 +25,7 @@
 | AIF-PLAN-017 | FactCheck API 커버리지 개선 로드맵 | 1.0 | Active | `01-plan/features/factcheck-coverage-roadmap.plan.md` |
 | AIF-PLAN-018 | 온누리상품권 분석 산출물 검증 및 문서화 | 0.1 | Draft | `01-plan/features/lpon-deliverable-validation.plan.md` |
 | AIF-PLAN-019 | SI 산출물 Export UI | 0.1 | Draft | `01-plan/features/deliverable-export-ui.plan.md` |
+| AIF-PLAN-020 | 계정/인프라 이전 | 1.0 | Draft | `03-plan/AIF-PLAN-020_account-migration.md` |
 
 ## DSGN (8)
 
@@ -89,4 +90,4 @@
 
 ---
 
-**통계**: 활성 문서 45개 (SPEC 2 + PLAN 10 + DSGN 6 + ANLS 17 + RPRT 9 + GUID 1), 아카이브 12개
+**통계**: 활성 문서 46개 (SPEC 2 + PLAN 11 + DSGN 6 + ANLS 17 + RPRT 9 + GUID 1), 아카이브 12개

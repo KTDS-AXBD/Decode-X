@@ -2,6 +2,18 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 166 — 2026-03-18
+
+**AIF-REQ-020 등록 + 계정/인프라 이전 계획서 + CLAUDE.md 정비**:
+- ✅ CLAUDE.md improver: 테스트 수(1,586→1,737/97), 스크린 수(13→21, 2곳), Testing Patterns 섹션 신설
+- ✅ AIF-REQ-020 등록: Chore/Infra/P0 — GitHub+Cloudflare 회사 계정 이전
+- ✅ AIF-PLAN-020 작성: 6단계 Blue-Green 마이그레이션 계획서 (D1×20, R2×4, KV×6, Queue×4, Workers×12, Pages×1, Secrets×30+)
+- ✅ GitHub Project #5 "AI Foundry" 생성 + 커스텀 필드 3종 (Priority, REQ Code, Work Type)
+- ✅ GitHub Issues 동기화: 4건 생성 (#2~#5) + 기존 #1 포함 5건 Project 등록
+- ✅ REQ-002 Execution Plan drift 보정 (TRIAGED→IN_PROGRESS)
+
+---
+
 ## 세션 165 — 2026-03-18
 
 **ax plugin 자율점검 + CLAUDE.md 정비**:

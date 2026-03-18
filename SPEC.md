@@ -438,7 +438,7 @@
 
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
-| AIF-REQ-019 | Feature | Integration | P0 | IN_PROGRESS | Working Mock-up 사이트 — 추출된 결과물(Skill, 정책, 온톨로지) 기반 핵심 엔진 동작 검증. Foundry-X 연동, AXIS Design System 적용, Agent 기반 자동화 구축. PDCA Full Cycle 91% 완료 (세션 166b), 배포 후속 |
+| AIF-REQ-019 | Feature | Integration | P0 | IN_PROGRESS | Working Mock-up 사이트 — 추출된 결과물(Skill, 정책, 온톨로지) 기반 핵심 엔진 동작 검증. PDCA 91% (세션 166b). 세션 169: app-web 통합(iframe+사이드바 체험 그룹), 프록시 수정(_routes.json+에셋 리라이트), evaluate 400 수정(policyCode 자동선택), 온톨로지 d3-force 인터랙티브 그래프 |
 
 ### 계정/인프라 이전 (신규 등록)
 
@@ -459,6 +459,12 @@
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
 | AIF-REQ-024 | Feature | UX | P1 | OPEN | Generative UI Framework — Sandboxed Widget Renderer(iframe 기반 안전 렌더링), AG-UI Protocol(에이전트↔UI 실시간 통신), HITL Components(에이전트 일시정지→사용자 입력), Decision Matrix(시각화 유형 자동 선택), Theme Injection(디자인 시스템 일관성). app-mockup PoC → app-web 점진적 반영. 참조: [CopilotKit/OpenGenerativeUI](https://github.com/CopilotKit/OpenGenerativeUI) |
+
+### Skill 번들링 — LLM 의미 분류 기반 재패키징 (신규 등록)
+
+| ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
+|----|------|--------|:--------:|:----:|------|
+| AIF-REQ-025 | Improvement | Pipeline | P1 | OPEN | Skill 번들링 재설계 — 현재 1 skill = 1 policy (859개)를 LLM 의미 분류로 기능 단위 ~25개 번들로 재패키징. Claude Code 스킬 형태 활용 목적. Stage 5 패키징 로직 변경 + MCP 어댑터 갱신 + trust score 산정 |
 
 ---
 

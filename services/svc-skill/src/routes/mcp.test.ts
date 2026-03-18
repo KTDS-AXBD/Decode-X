@@ -1,6 +1,7 @@
-import { describe, it, expect } from "vitest";
-import { toMcpAdapter } from "./mcp.js";
+import { describe, it, expect, vi } from "vitest";
+import { toMcpAdapter, handleGetOrgMcpAdapter } from "./mcp.js";
 import type { SkillPackage } from "@ai-foundry/types";
+import type { Env } from "../env.js";
 
 function makeSkillPackage(overrides?: Partial<SkillPackage>): SkillPackage {
   return {
@@ -186,5 +187,153 @@ describe("toMcpAdapter", () => {
     const after = new Date().toISOString();
     expect(adapter.metadata.generatedAt >= before).toBe(true);
     expect(adapter.metadata.generatedAt <= after).toBe(true);
+  });
+});
+
+// ── handleGetOrgMcpAdapter tests ──────────────────────────────────────
+
+function makeSkillPackage2(id: string, domain: string, policyCodes: string[]): SkillPackage {
+  return {
+    $schema: "https://ai-foundry.ktds.com/schemas/skill/v1",
+    skillId: id,
+    metadata: {
+      domain,
+      language: "ko",
+      version: "1.0.0",
+      createdAt: "2026-03-19T00:00:00.000Z",
+      updatedAt: "2026-03-19T00:00:00.000Z",
+      author: "test",
+      tags: [],
+    },
+    policies: policyCodes.map((code) => ({
+      code,
+      title: `${code} title`,
+      condition: `${code} condition`,
+      criteria: `${code} criteria`,
+      outcome: `${code} outcome`,
+      source: { documentId: "doc-1" },
+      trust: { level: "reviewed" as const, score: 0.8 },
+      tags: [],
+    })),
+    trust: { level: "reviewed", score: 0.8 },
+    ontologyRef: { graphId: "g-1", termUris: ["urn:1"] },
+    provenance: {
+      sourceDocumentIds: ["doc-1"],
+      organizationId: "LPON",
+      extractedAt: "2026-03-19T00:00:00.000Z",
+      pipeline: { stages: ["s1"], models: { s1: "claude" } },
+    },
+    adapters: {},
+  };
+}
+
+function makeMockEnv(dbResults: Array<{ skill_id: string; r2_key: string }>, r2Map: Record<string, SkillPackage>, kvCache?: string): Env {
+  const kvStore = new Map<string, string>();
+  if (kvCache) {
+    kvStore.set("mcp-org-adapter:LPON", kvCache);
+  }
+  return {
+    DB_SKILL: {
+      prepare: () => ({
+        bind: () => ({
+          all: async () => ({ results: dbResults }),
+        }),
+      }),
+    },
+    R2_SKILL_PACKAGES: {
+      get: async (key: string) => {
+        const pkg = r2Map[key];
+        if (!pkg) return null;
+        return { text: async () => JSON.stringify(pkg) };
+      },
+    },
+    KV_SKILL_CACHE: {
+      get: async (key: string) => kvStore.get(key) ?? null,
+      put: async (key: string, value: string) => { kvStore.set(key, value); },
+    },
+  } as unknown as Env;
+}
+
+function makeCtx(): ExecutionContext {
+  return { waitUntil: vi.fn(), passThroughOnException: vi.fn() } as unknown as ExecutionContext;
+}
+
+describe("handleGetOrgMcpAdapter", () => {
+  const pkg1 = makeSkillPackage2("sk-1", "온누리상품권", ["POL-LPON-CHARGE-001", "POL-LPON-CHARGE-002"]);
+  const pkg2 = makeSkillPackage2("sk-2", "온누리상품권", ["POL-LPON-GIFT-001"]);
+
+  it("merges tools from multiple bundled skills", async () => {
+    const env = makeMockEnv(
+      [
+        { skill_id: "sk-1", r2_key: "r2/sk-1.json" },
+        { skill_id: "sk-2", r2_key: "r2/sk-2.json" },
+      ],
+      { "r2/sk-1.json": pkg1, "r2/sk-2.json": pkg2 },
+    );
+    const req = new Request("https://example.com/skills/org/LPON/mcp");
+    const res = await handleGetOrgMcpAdapter(req, env, "LPON", makeCtx());
+    const body = await res.json() as { tools: unknown[]; metadata: { skillCount: number; totalTools: number } };
+
+    expect(res.status).toBe(200);
+    expect(body.tools).toHaveLength(3);
+    expect(body.metadata.skillCount).toBe(2);
+    expect(body.metadata.totalTools).toBe(3);
+  });
+
+  it("builds correct _toolSkillMap", async () => {
+    const env = makeMockEnv(
+      [
+        { skill_id: "sk-1", r2_key: "r2/sk-1.json" },
+        { skill_id: "sk-2", r2_key: "r2/sk-2.json" },
+      ],
+      { "r2/sk-1.json": pkg1, "r2/sk-2.json": pkg2 },
+    );
+    const req = new Request("https://example.com/skills/org/LPON/mcp");
+    const res = await handleGetOrgMcpAdapter(req, env, "LPON", makeCtx());
+    const body = await res.json() as { _toolSkillMap: Record<string, string> };
+
+    expect(body._toolSkillMap["pol-lpon-charge-001"]).toBe("sk-1");
+    expect(body._toolSkillMap["pol-lpon-charge-002"]).toBe("sk-1");
+    expect(body._toolSkillMap["pol-lpon-gift-001"]).toBe("sk-2");
+  });
+
+  it("returns cached response with X-Cache: HIT", async () => {
+    const cachedPayload = JSON.stringify({ serverInfo: { name: "cached" }, tools: [] });
+    const env = makeMockEnv([], {}, cachedPayload);
+    const req = new Request("https://example.com/skills/org/LPON/mcp");
+    const res = await handleGetOrgMcpAdapter(req, env, "LPON", makeCtx());
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("X-Cache")).toBe("HIT");
+    const body = await res.json() as { serverInfo: { name: string } };
+    expect(body.serverInfo.name).toBe("cached");
+  });
+
+  it("returns empty tools for org with no bundled skills", async () => {
+    const env = makeMockEnv([], {});
+    const req = new Request("https://example.com/skills/org/EMPTY/mcp");
+    const res = await handleGetOrgMcpAdapter(req, env, "EMPTY", makeCtx());
+    const body = await res.json() as { tools: unknown[]; metadata: { skillCount: number } };
+
+    expect(res.status).toBe(200);
+    expect(body.tools).toHaveLength(0);
+    expect(body.metadata.skillCount).toBe(0);
+  });
+
+  it("has no duplicate tool names across skills", async () => {
+    const env = makeMockEnv(
+      [
+        { skill_id: "sk-1", r2_key: "r2/sk-1.json" },
+        { skill_id: "sk-2", r2_key: "r2/sk-2.json" },
+      ],
+      { "r2/sk-1.json": pkg1, "r2/sk-2.json": pkg2 },
+    );
+    const req = new Request("https://example.com/skills/org/LPON/mcp");
+    const res = await handleGetOrgMcpAdapter(req, env, "LPON", makeCtx());
+    const body = await res.json() as { tools: Array<{ name: string }> };
+
+    const names = body.tools.map((t) => t.name);
+    const unique = new Set(names);
+    expect(names.length).toBe(unique.size);
   });
 });

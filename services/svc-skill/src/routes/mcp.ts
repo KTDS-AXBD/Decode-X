@@ -146,6 +146,123 @@ export async function handleGetMcpAdapter(
   });
 }
 
+// ── Org-level MCP adapter types ─────────────────────────────────────
+
+interface OrgMcpAdapter {
+  serverInfo: { name: string; version: string };
+  instructions: string;
+  tools: McpTool[];
+  metadata: {
+    organizationId: string;
+    skillCount: number;
+    totalTools: number;
+    generatedAt: string;
+  };
+  _toolSkillMap: Record<string, string>;
+}
+
+// ── GET /skills/org/:orgId/mcp ──────────────────────────────────────
+
+export async function handleGetOrgMcpAdapter(
+  _request: Request,
+  env: Env,
+  orgId: string,
+  ctx: ExecutionContext,
+): Promise<Response> {
+  // Check KV cache first
+  const cacheKey = `mcp-org-adapter:${orgId}`;
+  const cached = await env.KV_SKILL_CACHE.get(cacheKey, "text");
+  if (cached) {
+    return new Response(cached, {
+      status: 200,
+      headers: { "Content-Type": "application/json", "X-Cache": "HIT" },
+    });
+  }
+
+  // Query bundled skills for this org
+  const { results } = await env.DB_SKILL.prepare(
+    "SELECT skill_id, r2_key FROM skills WHERE organization_id = ? AND status = 'bundled'",
+  )
+    .bind(orgId)
+    .all<{ skill_id: string; r2_key: string }>();
+
+  const allTools: McpTool[] = [];
+  const toolSkillMap: Record<string, string> = {};
+  const seenToolNames = new Set<string>();
+  let skillCount = 0;
+
+  // Fetch all skill packages from R2 in parallel
+  const fetches = (results ?? []).map(async (row) => {
+    const r2Object = await env.R2_SKILL_PACKAGES.get(row["r2_key"]);
+    if (!r2Object) {
+      logger.warn("R2 object not found for bundled skill", {
+        skillId: row["skill_id"],
+        r2Key: row["r2_key"],
+      });
+      return null;
+    }
+    try {
+      const raw = await r2Object.text();
+      const pkg = JSON.parse(raw) as SkillPackage;
+      return { skillId: row["skill_id"], pkg };
+    } catch (e) {
+      logger.warn("Failed to parse skill package", {
+        skillId: row["skill_id"],
+        error: String(e),
+      });
+      return null;
+    }
+  });
+
+  const resolved = await Promise.all(fetches);
+
+  for (const item of resolved) {
+    if (!item) continue;
+    skillCount++;
+    const adapter = toMcpAdapter(item.pkg);
+    for (const tool of adapter.tools) {
+      if (seenToolNames.has(tool.name)) {
+        logger.warn("Duplicate tool name in org adapter", {
+          orgId,
+          toolName: tool.name,
+          skillId: item.skillId,
+        });
+      }
+      seenToolNames.add(tool.name);
+      allTools.push(tool);
+      toolSkillMap[tool.name] = item.skillId;
+    }
+  }
+
+  const orgAdapter: OrgMcpAdapter = {
+    serverInfo: {
+      name: `ai-foundry-${orgId.toLowerCase()}`,
+      version: "0.6.0",
+    },
+    instructions: `AI Foundry ${orgId} — ${skillCount} skills, ${allTools.length} policy tools`,
+    tools: allTools,
+    metadata: {
+      organizationId: orgId,
+      skillCount,
+      totalTools: allTools.length,
+      generatedAt: new Date().toISOString(),
+    },
+    _toolSkillMap: toolSkillMap,
+  };
+
+  const json = JSON.stringify(orgAdapter, null, 2);
+
+  // Cache in KV (TTL: 1 hour)
+  ctx.waitUntil(
+    env.KV_SKILL_CACHE.put(cacheKey, json, { expirationTtl: 3600 }),
+  );
+
+  return new Response(json, {
+    status: 200,
+    headers: { "Content-Type": "application/json", "X-Cache": "MISS" },
+  });
+}
+
 // ── Transformation ───────────────────────────────────────────────────
 
 export function toMcpAdapter(pkg: SkillPackage): McpAdapter {

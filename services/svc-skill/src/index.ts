@@ -33,7 +33,7 @@ import {
   handleUpdateSkillStatus,
   handleBulkPublish,
 } from "./routes/skills.js";
-import { handleGetMcpAdapter } from "./routes/mcp.js";
+import { handleGetMcpAdapter, handleGetOrgMcpAdapter } from "./routes/mcp.js";
 import { handleExportCc } from "./routes/export-cc.js";
 import { handleGetOpenApiAdapter } from "./routes/openapi.js";
 import { handleEvaluateSkill, handleListEvaluations } from "./routes/evaluate.js";
@@ -86,6 +86,26 @@ export default {
       // POST /admin/rebundle — LLM-based skill bundling
       if (method === "POST" && path === "/admin/rebundle") {
         return await handleRebundle(request, env, ctx);
+      }
+
+      // GET /skills/org/:orgId/mcp — org-level MCP adapter (all bundled skills)
+      const orgMcpMatch = path.match(/^\/skills\/org\/([^/]+)\/mcp$/);
+      if (method === "GET" && orgMcpMatch) {
+        const orgId = orgMcpMatch[1];
+        if (!orgId) return new Response("Not Found", { status: 404 });
+        const rbacCtx = extractRbacContext(request);
+        if (rbacCtx) {
+          const denied = await checkPermission(env, rbacCtx.role, "skill", "download");
+          if (denied) return denied;
+          ctx.waitUntil(logAudit(env, {
+            userId: rbacCtx.userId,
+            organizationId: rbacCtx.organizationId,
+            action: "download",
+            resource: "skill",
+            details: { adapter_type: "mcp-org", orgId },
+          }));
+        }
+        return await handleGetOrgMcpAdapter(request, env, orgId, ctx);
       }
 
       // POST /skills — package a new Skill from confirmed policies

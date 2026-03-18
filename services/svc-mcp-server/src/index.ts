@@ -94,6 +94,19 @@ interface McpAdapterResponse {
   };
 }
 
+interface OrgMcpAdapterResponse {
+  serverInfo: { name: string; version: string };
+  instructions: string;
+  tools: McpAdapterTool[];
+  metadata: {
+    organizationId: string;
+    skillCount: number;
+    totalTools: number;
+    generatedAt: string;
+  };
+  _toolSkillMap: Record<string, string>; // toolName → skillId
+}
+
 interface EvaluateApiResponse {
   success: boolean;
   data: {
@@ -132,6 +145,21 @@ async function fetchMcpAdapter(
   }
 
   return (await res.json()) as McpAdapterResponse;
+}
+
+async function fetchOrgMcpAdapter(
+  env: Env,
+  orgId: string,
+): Promise<OrgMcpAdapterResponse | null> {
+  const res = await env.SVC_SKILL.fetch(
+    `https://svc-skill.internal/skills/org/${orgId}/mcp`,
+    { headers: { "X-Internal-Secret": env.INTERNAL_API_SECRET } },
+  );
+  if (!res.ok) {
+    logger.error("Failed to fetch org MCP adapter", { orgId, status: res.status });
+    return null;
+  }
+  return (await res.json()) as OrgMcpAdapterResponse;
 }
 
 async function evaluatePolicy(
@@ -261,6 +289,82 @@ function createSkillMcpServer(
   return server;
 }
 
+function createOrgMcpServer(
+  adapter: OrgMcpAdapterResponse,
+  orgId: string,
+  env: Env,
+): McpServer {
+  const server = new McpServer({
+    name: adapter.serverInfo.name,
+    version: adapter.serverInfo.version,
+  });
+
+  for (const tool of adapter.tools) {
+    server.tool(
+      tool.name,
+      tool.description,
+      {
+        context: z.string().min(1).max(10_000).describe("적용 대상의 상황 설명"),
+        parameters: z.string().optional().describe("추가 파라미터 (JSON 문자열)"),
+      },
+      async ({ context, parameters }) => {
+        const policyCode = tool.name.toUpperCase();
+        const skillId = adapter._toolSkillMap[tool.name];
+        if (!skillId) {
+          return {
+            content: [{ type: "text" as const, text: `Error: No skill mapping for tool ${tool.name}` }],
+            isError: true,
+          };
+        }
+
+        let parsedParams: Record<string, unknown> | undefined;
+        if (parameters) {
+          try {
+            parsedParams = JSON.parse(parameters) as Record<string, unknown>;
+          } catch {
+            return {
+              content: [{ type: "text" as const, text: "Error: parameters must be valid JSON" }],
+              isError: true,
+            };
+          }
+        }
+
+        try {
+          const result = await evaluatePolicy(env, skillId, policyCode, context, parsedParams);
+          if (!result.success) {
+            return {
+              content: [{ type: "text" as const, text: `평가 실패: ${result.error?.message ?? "알 수 없는 오류"}` }],
+              isError: true,
+            };
+          }
+          const { data } = result;
+          const text = [
+            "## 정책 평가 결과",
+            "",
+            `**정책**: ${data.policyCode}`,
+            `**판정**: ${data.result}`,
+            `**신뢰도**: ${data.confidence}`,
+            `**모델**: ${data.provider} / ${data.model}`,
+            `**응답시간**: ${data.latencyMs}ms`,
+            "",
+            "### 근거",
+            data.reasoning,
+          ].join("\n");
+          return { content: [{ type: "text" as const, text }] };
+        } catch (e) {
+          logger.error("org tools/call error", { orgId, skillId, policyCode, error: String(e) });
+          return {
+            content: [{ type: "text" as const, text: `평가 중 오류 발생: ${String(e)}` }],
+            isError: true,
+          };
+        }
+      },
+    );
+  }
+
+  return server;
+}
+
 // ── Auth ─────────────────────────────────────────────────────────────
 
 function authenticate(request: Request, env: Env): boolean {
@@ -343,6 +447,52 @@ export default {
         );
       }
       return handleAgentResume(request);
+    }
+
+    // Org-level MCP endpoint: POST /mcp/org/:orgId
+    const orgMcpMatch = path.match(/^\/mcp\/org\/([^/]+)$/);
+    if (orgMcpMatch) {
+      const orgId = orgMcpMatch[1];
+      if (!orgId) return new Response("Not Found", { status: 404 });
+
+      if (!authenticate(request, env)) {
+        return Response.json(
+          { jsonrpc: "2.0", error: { code: -32000, message: "Unauthorized" }, id: null },
+          { status: 401, headers: corsHeaders() },
+        );
+      }
+
+      const rateLimitResponse = checkRateLimit(request);
+      if (rateLimitResponse) return rateLimitResponse;
+
+      if (method === "DELETE") {
+        return new Response(null, { status: 202, headers: corsHeaders() });
+      }
+      if (method === "GET") {
+        return new Response("SSE not supported in stateless mode", { status: 405, headers: corsHeaders() });
+      }
+      if (method !== "POST") {
+        return new Response("Method Not Allowed", { status: 405, headers: corsHeaders() });
+      }
+
+      const adapter = await fetchOrgMcpAdapter(env, orgId);
+      if (!adapter) {
+        return Response.json(
+          { jsonrpc: "2.0", error: { code: -32602, message: `Organization not found: ${orgId}` }, id: null },
+          { status: 404, headers: corsHeaders() },
+        );
+      }
+
+      const server = createOrgMcpServer(adapter, orgId, env);
+      const transport = new WebStandardStreamableHTTPServerTransport({ enableJsonResponse: true });
+      await server.connect(transport);
+      const response = await transport.handleRequest(request);
+
+      const finalHeaders = new Headers(response.headers);
+      for (const [key, value] of Object.entries(corsHeaders())) {
+        finalHeaders.set(key, value as string);
+      }
+      return new Response(response.body, { status: response.status, headers: finalHeaders });
     }
 
     // MCP endpoint: POST /mcp/:skillId

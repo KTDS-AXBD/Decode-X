@@ -105,7 +105,7 @@ export function PolicyEngineDemo() {
       {!loading && !error && display.length > 0 && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {display.map((p) => (
-            <PolicyCard key={p.policy_id} policy={p} />
+            <PolicyCard key={p.policyId} policy={p} />
           ))}
         </div>
       )}

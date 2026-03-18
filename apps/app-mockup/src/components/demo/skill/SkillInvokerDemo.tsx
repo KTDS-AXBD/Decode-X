@@ -20,7 +20,7 @@ export function SkillInvokerDemo() {
 
     fetchSkills(domain.organizationId, { status: "published", limit: 20 })
       .then((data) => {
-        if (!cancelled) setSkills(data.skills);
+        if (!cancelled) setSkills(data.skills ?? []);
       })
       .catch((e) => {
         if (!cancelled) setError(e instanceof Error ? e.message : "로딩 실패");
@@ -35,13 +35,13 @@ export function SkillInvokerDemo() {
   const filtered = search.trim()
     ? skills.filter(
         (s) =>
-          s.domain.toLowerCase().includes(search.toLowerCase()) ||
-          (s.subdomain?.toLowerCase().includes(search.toLowerCase()) ?? false) ||
-          s.tags.some((t) => t.toLowerCase().includes(search.toLowerCase())),
+          s.metadata.domain.toLowerCase().includes(search.toLowerCase()) ||
+          (s.metadata.subdomain?.toLowerCase().includes(search.toLowerCase()) ?? false) ||
+          (s.metadata.tags ?? []).some((t) => t.toLowerCase().includes(search.toLowerCase())),
       )
     : skills;
 
-  const selected = skills.find((s) => s.skill_id === selectedId) ?? null;
+  const selected = skills.find((s) => s.skillId === selectedId) ?? null;
 
   return (
     <div className="grid grid-cols-12 gap-4">
@@ -75,10 +75,10 @@ export function SkillInvokerDemo() {
 
           {filtered.map((skill) => (
             <SkillCard
-              key={skill.skill_id}
+              key={skill.skillId}
               skill={skill}
-              selected={skill.skill_id === selectedId}
-              onClick={() => setSelectedId(skill.skill_id)}
+              selected={skill.skillId === selectedId}
+              onClick={() => setSelectedId(skill.skillId)}
             />
           ))}
         </div>

@@ -1,19 +1,19 @@
 import { buildHeaders } from "./headers";
 
 export interface Policy {
-  policy_id: string;
-  policy_code: string;
+  policyId: string;
+  policyCode: string;
   title: string;
   condition: string;
   criteria: string;
   outcome: string;
   status: string;
-  trust_score: number;
-  trust_level: string;
+  trustScore: number;
+  trustLevel: string;
   tags: string[];
-  source_document_id: string;
-  source_excerpt?: string;
-  created_at: string;
+  sourceDocumentId: string;
+  sourceExcerpt?: string;
+  createdAt: string;
 }
 
 export async function fetchPolicies(
@@ -29,7 +29,8 @@ export async function fetchPolicies(
     headers: buildHeaders(orgId),
   });
   if (!res.ok) throw new Error(`Policy fetch failed: ${res.status}`);
-  return res.json() as Promise<{ policies: Policy[]; total: number }>;
+  const json = (await res.json()) as { data: { policies: Policy[]; total: number } };
+  return json.data;
 }
 
 export async function fetchPolicy(
@@ -40,8 +41,8 @@ export async function fetchPolicy(
     headers: buildHeaders(orgId),
   });
   if (!res.ok) throw new Error(`Policy detail failed: ${res.status}`);
-  const data = (await res.json()) as { policy: Policy };
-  return data.policy;
+  const json = (await res.json()) as { data: { policy: Policy } };
+  return json.data.policy;
 }
 
 export interface PolicyStats {

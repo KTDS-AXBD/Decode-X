@@ -1,16 +1,24 @@
 import { buildHeaders } from "./headers";
 
 export interface SkillSummary {
-  skill_id: string;
-  domain: string;
-  subdomain?: string;
-  version: string;
+  skillId: string;
+  metadata: {
+    domain: string;
+    subdomain?: string;
+    language: string;
+    version: string;
+    createdAt: string;
+    updatedAt: string;
+    author: string;
+    tags: string[];
+  };
+  trust: {
+    level: string;
+    score: number;
+  };
+  policyCount: number;
   status: string;
-  trust_score: number;
-  trust_level: string;
-  policy_count: number;
-  tags: string[];
-  created_at: string;
+  r2Key: string;
 }
 
 export interface SkillEvaluation {
@@ -39,7 +47,8 @@ export async function fetchSkills(
     headers: buildHeaders(orgId),
   });
   if (!res.ok) throw new Error(`Skills fetch failed: ${res.status}`);
-  return res.json() as Promise<{ skills: SkillSummary[] }>;
+  const json = (await res.json()) as { data: { skills: SkillSummary[] } };
+  return json.data;
 }
 
 export async function fetchSkillDetail(
@@ -50,7 +59,8 @@ export async function fetchSkillDetail(
     headers: buildHeaders(orgId),
   });
   if (!res.ok) throw new Error(`Skill detail failed: ${res.status}`);
-  return res.json() as Promise<Record<string, unknown>>;
+  const json = (await res.json()) as { data: Record<string, unknown> };
+  return json.data;
 }
 
 export async function evaluateSkill(
@@ -64,7 +74,8 @@ export async function evaluateSkill(
     body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(`Skill evaluate failed: ${res.status}`);
-  return res.json() as Promise<SkillEvaluation>;
+  const json = (await res.json()) as { data: SkillEvaluation };
+  return json.data;
 }
 
 export async function fetchSkillTags(orgId: string): Promise<string[]> {
@@ -72,8 +83,8 @@ export async function fetchSkillTags(orgId: string): Promise<string[]> {
     headers: buildHeaders(orgId),
   });
   if (!res.ok) return [];
-  const data = (await res.json()) as { tags: string[] };
-  return data.tags;
+  const json = (await res.json()) as { data: { tags: string[] } };
+  return json.data.tags;
 }
 
 export interface SkillStats {

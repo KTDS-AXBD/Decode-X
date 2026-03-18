@@ -9,21 +9,22 @@ function trustColor(score: number): string {
 
 function statusColor(status: string): string {
   if (status === "approved") return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
-  if (status === "draft") return "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300";
   return "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300";
 }
 
 export function PolicyCard({ policy }: { policy: Policy }) {
+  const tags = policy.tags ?? [];
+
   return (
     <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 shadow-sm p-4 space-y-3">
       {/* Header: code + trust + status */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <span className="font-mono text-xs px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300">
-          {policy.policy_code}
+          {policy.policyCode}
         </span>
         <div className="flex items-center gap-2">
-          <span className={cn("text-xs px-2 py-0.5 rounded font-medium", trustColor(policy.trust_score))}>
-            신뢰도 {Math.round(policy.trust_score * 100)}%
+          <span className={cn("text-xs px-2 py-0.5 rounded font-medium", trustColor(policy.trustScore))}>
+            신뢰도 {Math.round(policy.trustScore * 100)}%
           </span>
           <span className={cn("text-xs px-2 py-0.5 rounded", statusColor(policy.status))}>
             {policy.status}
@@ -51,9 +52,9 @@ export function PolicyCard({ policy }: { policy: Policy }) {
       </div>
 
       {/* Tags */}
-      {policy.tags.length > 0 && (
+      {tags.length > 0 && (
         <div className="flex flex-wrap gap-1">
-          {policy.tags.map((tag) => (
+          {tags.map((tag) => (
             <span key={tag} className="text-xs px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400">
               {tag}
             </span>

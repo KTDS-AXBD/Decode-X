@@ -115,10 +115,10 @@ export function OntologyExplorerDemo() {
           ) : (
             filtered.map((t) => (
               <TermCard
-                key={t.term_id}
+                key={t.termId}
                 term={t}
-                selected={selectedTermId === t.term_id}
-                onClick={() => setSelectedTermId(t.term_id)}
+                selected={selectedTermId === t.termId}
+                onClick={() => setSelectedTermId(t.termId)}
               />
             ))
           )}

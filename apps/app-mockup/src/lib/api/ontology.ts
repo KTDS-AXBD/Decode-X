@@ -1,14 +1,14 @@
 import { buildHeaders } from "./headers";
 
 export interface Term {
-  term_id: string;
-  ontology_id: string;
+  termId: string;
+  ontologyId: string;
   label: string;
   definition?: string;
-  skos_uri: string;
-  broader_term_id?: string;
-  term_type: string;
-  created_at: string;
+  skosUri: string;
+  broaderTermId?: string;
+  termType: string;
+  createdAt: string;
 }
 
 export interface GraphNode {
@@ -39,7 +39,8 @@ export async function fetchTerms(
     headers: buildHeaders(orgId),
   });
   if (!res.ok) throw new Error(`Terms fetch failed: ${res.status}`);
-  return res.json() as Promise<{ terms: Term[] }>;
+  const json = (await res.json()) as { data: { terms: Term[] } };
+  return json.data;
 }
 
 export async function fetchTermStats(
@@ -54,12 +55,15 @@ export async function fetchTermStats(
     headers: buildHeaders(orgId),
   });
   if (!res.ok) throw new Error(`Term stats failed: ${res.status}`);
-  return res.json() as Promise<{
-    totalTerms: number;
-    distinctLabels: number;
-    ontologyCount: number;
-    byType: Record<string, number>;
-  }>;
+  const json = (await res.json()) as {
+    data: {
+      totalTerms: number;
+      distinctLabels: number;
+      ontologyCount: number;
+      byType: Record<string, number>;
+    };
+  };
+  return json.data;
 }
 
 export async function fetchGraphVisualization(
@@ -74,7 +78,8 @@ export async function fetchGraphVisualization(
     headers: buildHeaders(orgId),
   });
   if (!res.ok) throw new Error(`Graph fetch failed: ${res.status}`);
-  return res.json() as Promise<{ nodes: GraphNode[]; links: GraphLink[] }>;
+  const json = (await res.json()) as { data: { nodes: GraphNode[]; links: GraphLink[] } };
+  return json.data;
 }
 
 export interface CypherResult {

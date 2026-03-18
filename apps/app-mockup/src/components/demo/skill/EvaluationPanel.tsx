@@ -25,12 +25,15 @@ export function EvaluationPanel({ skill }: { skill: SkillSummary | null }) {
     );
   }
 
+  const { metadata, trust } = skill;
+  const tags = metadata.tags ?? [];
+
   async function handleEvaluate() {
     if (!skill || !context.trim()) return;
     setLoading(true);
     setError(null);
     try {
-      const result = await evaluateSkill(domain.organizationId, skill.skill_id, {
+      const result = await evaluateSkill(domain.organizationId, skill.skillId, {
         context: context.trim(),
       });
       setHistory((prev) => [result, ...prev]);
@@ -49,23 +52,23 @@ export function EvaluationPanel({ skill }: { skill: SkillSummary | null }) {
       <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-950 p-4 space-y-3">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs px-2 py-0.5 rounded bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300 font-medium">
-            {skill.domain}
+            {metadata.domain}
           </span>
-          {skill.subdomain && (
-            <span className="text-xs text-gray-500 dark:text-gray-400">{skill.subdomain}</span>
+          {metadata.subdomain && (
+            <span className="text-xs text-gray-500 dark:text-gray-400">{metadata.subdomain}</span>
           )}
-          <span className="font-mono text-xs text-gray-400">v{skill.version}</span>
+          <span className="font-mono text-xs text-gray-400">v{metadata.version}</span>
         </div>
 
         <div className="flex gap-3 text-xs text-gray-500 dark:text-gray-400">
-          <span>{skill.policy_count} policies</span>
-          <span>신뢰도 {Math.round(skill.trust_score * 100)}%</span>
-          <span className="capitalize">{skill.trust_level}</span>
+          <span>{skill.policyCount} policies</span>
+          <span>신뢰도 {Math.round(trust.score * 100)}%</span>
+          <span className="capitalize">{trust.level}</span>
         </div>
 
-        {skill.tags.length > 0 && (
+        {tags.length > 0 && (
           <div className="flex flex-wrap gap-1">
-            {skill.tags.map((tag) => (
+            {tags.map((tag) => (
               <span
                 key={tag}
                 className="text-xs px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"
@@ -121,7 +124,7 @@ export function EvaluationPanel({ skill }: { skill: SkillSummary | null }) {
             평가 결과 ({history.length})
           </h3>
           {history.map((ev, i) => (
-            <EvalResultCard key={`${ev.evaluationId}-${i}`} evaluation={ev} />
+            <EvalResultCard key={`${ev.evaluationId}-${String(i)}`} evaluation={ev} />
           ))}
         </div>
       )}

@@ -32,11 +32,11 @@ export function TermCard({ term, selected, onClick }: TermCardProps) {
         <span
           className={cn(
             "rounded-full px-2 py-0.5 text-[10px] font-medium",
-            TYPE_COLORS[term.term_type] ??
+            TYPE_COLORS[term.termType] ??
               "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
           )}
         >
-          {term.term_type}
+          {term.termType}
         </span>
       </div>
       {truncated && (
@@ -45,7 +45,7 @@ export function TermCard({ term, selected, onClick }: TermCardProps) {
         </p>
       )}
       <p className="text-[10px] text-gray-400 dark:text-gray-500 font-mono truncate">
-        {term.skos_uri}
+        {term.skosUri}
       </p>
     </button>
   );

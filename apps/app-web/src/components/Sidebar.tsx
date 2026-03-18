@@ -28,6 +28,9 @@ import {
   Rocket,
   Wrench,
   ScanSearch,
+  Sparkles,
+  Bot,
+  MonitorPlay,
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -97,6 +100,17 @@ const menuGroups: MenuGroup[] = [
       { icon: <FileJson className="w-4 h-4" />, label: 'Spec 카탈로그', labelEn: 'Spec Catalog', path: '/specs' },
       { icon: <PackageOpen className="w-4 h-4" />, label: 'Export 센터', labelEn: 'Export Center', path: '/export' },
       { icon: <Plug className="w-4 h-4" />, label: 'API 연결', labelEn: 'API Console', path: '/api-console' },
+    ],
+  },
+  {
+    id: 'experience',
+    icon: <Sparkles className="w-4 h-4" />,
+    label: '체험',
+    labelEn: 'Experience',
+    defaultOpen: true,
+    items: [
+      { icon: <Bot className="w-4 h-4" />, label: 'Agent Console', labelEn: 'Generative UI', path: '/agent-console' },
+      { icon: <MonitorPlay className="w-4 h-4" />, label: 'Working Mock-up', labelEn: 'Live Demo', path: '/mockup' },
     ],
   },
   {

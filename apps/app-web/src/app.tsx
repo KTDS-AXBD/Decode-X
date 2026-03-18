@@ -28,6 +28,8 @@ const SpecDetailPage = lazy(() => import("./pages/spec-detail"));
 const ExportCenterPage = lazy(() => import("./pages/export-center"));
 const GapAnalysisPage = lazy(() => import("./pages/gap-analysis"));
 const BenchmarkPage = lazy(() => import("./pages/benchmark"));
+const AgentConsolePage = lazy(() => import("./pages/agent-console"));
+const MockupPage = lazy(() => import("./pages/mockup"));
 const NotFoundPage = lazy(() => import("./pages/not-found"));
 
 function LoadingFallback() {
@@ -78,6 +80,8 @@ export function App() {
             <Route path="/specs/:id" element={<ProtectedRoute><Layout><SpecDetailPage /></Layout></ProtectedRoute>} />
             <Route path="/export" element={<ProtectedRoute><Layout><ExportCenterPage /></Layout></ProtectedRoute>} />
             <Route path="/benchmark" element={<ProtectedRoute><Layout><BenchmarkPage /></Layout></ProtectedRoute>} />
+            <Route path="/agent-console" element={<ProtectedRoute><Layout><AgentConsolePage /></Layout></ProtectedRoute>} />
+            <Route path="/mockup" element={<ProtectedRoute><Layout><MockupPage /></Layout></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>} />
             <Route path="*" element={<ProtectedRoute><Layout><NotFoundPage /></Layout></ProtectedRoute>} />
           </Routes>

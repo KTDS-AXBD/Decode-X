@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { SkillSummary, SkillEvaluation } from "@/lib/api/skill";
-import { evaluateSkill } from "@/lib/api/skill";
+import { evaluateSkill, fetchSkillDetail } from "@/lib/api/skill";
 import { useDomain } from "@/contexts/DomainContext";
 import { cn } from "@/lib/cn";
 import { EvalResultCard } from "./EvalResultCard";
@@ -33,8 +33,18 @@ export function EvaluationPanel({ skill }: { skill: SkillSummary | null }) {
     setLoading(true);
     setError(null);
     try {
+      // Fetch skill detail to get first policyCode (required by evaluate API)
+      const detail = await fetchSkillDetail(domain.organizationId, skill.skillId);
+      const policies = detail["policies"] as Array<{ code: string }> | undefined;
+      const policyCode = policies?.[0]?.code;
+      if (!policyCode) {
+        setError("이 Skill에 정책이 없습니다");
+        return;
+      }
+
       const result = await evaluateSkill(domain.organizationId, skill.skillId, {
         context: context.trim(),
+        policyCode,
       });
       setHistory((prev) => [result, ...prev]);
     } catch (e) {

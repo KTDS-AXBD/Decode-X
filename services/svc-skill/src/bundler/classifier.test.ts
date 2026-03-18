@@ -1,0 +1,145 @@
+import { describe, it, expect, vi } from "vitest";
+import { classifyPolicies } from "./classifier.js";
+import type { PolicyInput } from "./classifier.js";
+import type { Env } from "../env.js";
+
+function makePolicies(count: number): PolicyInput[] {
+  return Array.from({ length: count }, (_, i) => ({
+    policyId: `pol-${i}`,
+    policyCode: `POL-TEST-${i}`,
+    title: `정책 ${i}`,
+    condition: `조건 ${i}`,
+    criteria: `기준 ${i}`,
+  }));
+}
+
+function mockEnv(fetchFn: ReturnType<typeof vi.fn>): Env {
+  return {
+    LLM_ROUTER: { fetch: fetchFn } as unknown as Fetcher,
+    INTERNAL_API_SECRET: "test-secret",
+  } as unknown as Env;
+}
+
+function llmResponse(results: Array<{ policyId: string; category: string; confidence: number }>): Response {
+  return new Response(
+    JSON.stringify({ success: true, data: { content: JSON.stringify(results) } }),
+    { status: 200 },
+  );
+}
+
+describe("classifyPolicies", () => {
+  it("classifies a small batch of policies", async () => {
+    const policies = makePolicies(3);
+    const fetchFn = vi.fn().mockResolvedValue(
+      llmResponse([
+        { policyId: "pol-0", category: "charging", confidence: 0.95 },
+        { policyId: "pol-1", category: "payment", confidence: 0.88 },
+        { policyId: "pol-2", category: "gift", confidence: 0.92 },
+      ]),
+    );
+
+    const results = await classifyPolicies(mockEnv(fetchFn), policies);
+
+    expect(results).toHaveLength(3);
+    expect(results[0]).toEqual({ policyId: "pol-0", category: "charging", confidence: 0.95 });
+    expect(results[1]).toEqual({ policyId: "pol-1", category: "payment", confidence: 0.88 });
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+  });
+
+  it("splits 51 policies into 2 batches", async () => {
+    const policies = makePolicies(51);
+    const fetchFn = vi.fn()
+      .mockResolvedValueOnce(
+        llmResponse(
+          Array.from({ length: 50 }, (_, i) => ({
+            policyId: `pol-${i}`,
+            category: "charging",
+            confidence: 0.9,
+          })),
+        ),
+      )
+      .mockResolvedValueOnce(
+        llmResponse([{ policyId: "pol-50", category: "payment", confidence: 0.85 }]),
+      );
+
+    const results = await classifyPolicies(mockEnv(fetchFn), policies);
+
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+    expect(results).toHaveLength(51);
+    expect(results[50]).toEqual({ policyId: "pol-50", category: "payment", confidence: 0.85 });
+  });
+
+  it("parses response with markdown fence", async () => {
+    const fencedContent = "```json\n" +
+      JSON.stringify([{ policyId: "pol-0", category: "member", confidence: 0.91 }]) +
+      "\n```";
+    const fetchFn = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({ success: true, data: { content: fencedContent } }),
+        { status: 200 },
+      ),
+    );
+
+    const results = await classifyPolicies(mockEnv(fetchFn), makePolicies(1));
+
+    expect(results).toHaveLength(1);
+    expect(results[0]?.category).toBe("member");
+  });
+
+  it("falls back to 'other' for unknown category", async () => {
+    const fetchFn = vi.fn().mockResolvedValue(
+      llmResponse([{ policyId: "pol-0", category: "unknown_cat", confidence: 0.5 }]),
+    );
+
+    const results = await classifyPolicies(mockEnv(fetchFn), makePolicies(1));
+
+    expect(results[0]?.category).toBe("other");
+  });
+
+  it("returns empty array for empty input", async () => {
+    const fetchFn = vi.fn();
+    const results = await classifyPolicies(mockEnv(fetchFn), []);
+
+    expect(results).toEqual([]);
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
+
+  it("sends correct request to LLM Router", async () => {
+    const fetchFn = vi.fn().mockResolvedValue(
+      llmResponse([{ policyId: "pol-0", category: "security", confidence: 0.8 }]),
+    );
+
+    await classifyPolicies(mockEnv(fetchFn), makePolicies(1));
+
+    const [url, opts] = fetchFn.mock.calls[0] as [string, RequestInit];
+    expect(url).toBe("https://svc-llm-router.internal/complete");
+    const body = JSON.parse(opts.body as string) as Record<string, unknown>;
+    expect(body["tier"]).toBe("haiku");
+    expect(body["callerService"]).toBe("svc-skill");
+    expect(body["temperature"]).toBe(0.1);
+
+    const headers = opts.headers as Record<string, string>;
+    expect(headers["X-Internal-Secret"]).toBe("test-secret");
+  });
+
+  it("throws on LLM Router HTTP error", async () => {
+    const fetchFn = vi.fn().mockResolvedValue(new Response("Error", { status: 500 }));
+
+    await expect(
+      classifyPolicies(mockEnv(fetchFn), makePolicies(1)),
+    ).rejects.toThrow("LLM Router error 500");
+  });
+
+  it("throws on LLM API failure response", async () => {
+    const fetchFn = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({ success: false, error: { message: "rate limited" } }),
+        { status: 200 },
+      ),
+    );
+
+    await expect(
+      classifyPolicies(mockEnv(fetchFn), makePolicies(1)),
+    ).rejects.toThrow("rate limited");
+  });
+});

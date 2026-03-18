@@ -36,7 +36,7 @@ import {
 import { handleGetMcpAdapter } from "./routes/mcp.js";
 import { handleGetOpenApiAdapter } from "./routes/openapi.js";
 import { handleEvaluateSkill, handleListEvaluations } from "./routes/evaluate.js";
-import { handleBackfillDepth, handleBackfillTrust } from "./routes/admin.js";
+import { handleBackfillDepth, handleBackfillTrust, handleRebundle } from "./routes/admin.js";
 import { processQueueEvent } from "./queue/handler.js";
 
 export default {
@@ -80,6 +80,11 @@ export default {
       // POST /admin/bulk-publish — batch status update for skills
       if (method === "POST" && path === "/admin/bulk-publish") {
         return await handleBulkPublish(request, env);
+      }
+
+      // POST /admin/rebundle — LLM-based skill bundling
+      if (method === "POST" && path === "/admin/rebundle") {
+        return await handleRebundle(request, env, ctx);
       }
 
       // POST /skills — package a new Skill from confirmed policies

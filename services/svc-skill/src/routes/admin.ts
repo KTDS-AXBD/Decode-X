@@ -2,8 +2,9 @@
  * Admin routes for svc-skill — backfill and maintenance operations.
  */
 
-import { createLogger, ok } from "@ai-foundry/utils";
+import { createLogger, ok, badRequest, errFromUnknown } from "@ai-foundry/utils";
 import type { Env } from "../env.js";
+import { rebundleSkills } from "../bundler/rebundle-orchestrator.js";
 
 const logger = createLogger("svc-skill:admin");
 
@@ -200,4 +201,39 @@ export async function handleBackfillTrust(
     remaining: remaining?.cnt ?? 0,
     distribution,
   });
+}
+
+// ── Rebundle Skills ──────────────────────────────────────────────
+
+/**
+ * POST /admin/rebundle
+ *
+ * Classifies all approved policies for an organization via LLM,
+ * then bundles them into ~10-25 functional skill packages.
+ *
+ * Query params:
+ *   - organizationId (required): target organization
+ *   - domain (required): domain name (e.g., "giftvoucher", "pension")
+ */
+export async function handleRebundle(
+  request: Request,
+  env: Env,
+  ctx: ExecutionContext,
+): Promise<Response> {
+  const url = new URL(request.url);
+  const organizationId = url.searchParams.get("organizationId");
+  const domain = url.searchParams.get("domain");
+
+  if (!organizationId || !domain) {
+    return badRequest("organizationId and domain query params are required");
+  }
+
+  try {
+    const result = await rebundleSkills(env, ctx, organizationId, domain);
+    logger.info("Rebundle completed", { organizationId, bundles: result.bundlesCreated });
+    return ok(result);
+  } catch (e) {
+    logger.error("Rebundle failed", { error: String(e), organizationId, domain });
+    return errFromUnknown(e);
+  }
 }

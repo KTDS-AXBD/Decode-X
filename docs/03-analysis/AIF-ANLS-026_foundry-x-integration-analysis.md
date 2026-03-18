@@ -307,14 +307,18 @@ working-prototype/                # AI Foundry 출력
 - [ ] AI Foundry 프로젝트 정체성 재정의 (PRD 갱신)
 - [ ] Foundry-X PRD에 AI Foundry Engine 섹션 추가
 
-### Phase 1: MCP 연동 (최소 통합)
+### Phase 1: MCP 연동 (최소 통합) — Phase 1-1 PoC 완료
 
-- [ ] AI Foundry MCP 도구를 Foundry-X mcp-registry에 등록
-- [ ] Foundry-X 에이전트가 AI Foundry Skill 도구를 호출할 수 있도록 연동
-- [ ] 공유 타입 패키지 생성 (@foundry-x/shared-types)
+- [x] AI Foundry MCP 도구를 Foundry-X mcp-registry에 등록 (9/9 왕복 검증 PASS)
+- [x] Foundry-X 에이전트가 AI Foundry Skill 도구를 호출할 수 있도록 연동 (HttpTransport Accept 헤더 수정)
+- [x] 공유 타입 정의 (`@ai-foundry/types` mcp-shared.ts — McpTool, McpAdapterResponse, PolicyEvalResult, McpServerRegistration)
+- [ ] Bundled skills R2 업로드 수정 (rebundle 스크립트 `--env production` 추가 완료, 재실행 대기)
+- [ ] 다중 skill 일괄 등록 자동화 (bulk-register 스크립트)
 
-### Phase 2: 반제품 파이프라인 (핵심)
+### Phase 2: MCP 고도화 + 반제품 파이프라인
 
+- [ ] MCP Resources capability — AIF 서버에 Skill 정책을 리소스로 노출
+- [ ] MCP Sampling 통합 검증 — FX sampling ↔ AIF Skill 평가 E2E
 - [ ] AI Foundry Stage 5에 "반제품 생성" 기능 추가
 - [ ] Working Prototype 출력 포맷 정의 및 구현
 - [ ] `foundry-x init --from-foundry <prototype-path>` 커맨드 확장

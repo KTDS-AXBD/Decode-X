@@ -446,6 +446,20 @@
 |----|------|--------|:--------:|:----:|------|
 | AIF-REQ-020 | Chore | Infra | P0 | PLANNED | 계정/인프라 이전 — GitHub(sinclairseo→ktds.axbd) + Cloudflare(sinclair.seo→ktds.axbd) 리소스 이전. DNS는 개인 계정 유지, Workers/D1/R2/Queue/KV/Pages 전체 이전. CI/CD secrets + wrangler.toml 리소스 ID 갱신 |
 
+### 파이프라인 고도화 — Ouroboros 패턴 반영 (신규 등록)
+
+| ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
+|----|------|--------|:--------:|:----:|------|
+| AIF-REQ-021 | Improvement | Pipeline | P2 | OPEN | Adaptive LLM Router 고도화 — PAL Router 패턴(복잡도 기반 자동 에스컬레이션/다운그레이드), TaskContext 기반 stateless routing, Result Type 에러 핸들링 표준화. 대상: svc-llm-router (SVC-06). 참조: [Q00/ouroboros](https://github.com/Q00/ouroboros) |
+| AIF-REQ-022 | Feature | Pipeline | P1 | OPEN | Pipeline Quality Evaluation System — 3-Stage Evaluation(기계적→의미적→다중모델 합의), Ambiguity Scoring(문서 구조 명확도 게이트), Deliberative Consensus(Advocate+Devil+Judge 정책 리뷰), Brownfield Explorer(기존 온톨로지/정책 자동 감지). 대상: SVC-01/03/08. 참조: [Q00/ouroboros](https://github.com/Q00/ouroboros) |
+| AIF-REQ-023 | Feature | Pipeline | P2 | OPEN | Pipeline Event Sourcing & Observability — 5-Stage 이벤트 리니지(append-only 로그), Drift Detection(목표/제약/온톨로지 드리프트 추적), 감사/재현/롤백 지원. 대상: 전 서비스(SVC-01~05 + Queue Router). 참조: [Q00/ouroboros](https://github.com/Q00/ouroboros) |
+
+### Generative UI Framework — OpenGenerativeUI 패턴 반영 (신규 등록)
+
+| ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
+|----|------|--------|:--------:|:----:|------|
+| AIF-REQ-024 | Feature | UX | P1 | OPEN | Generative UI Framework — Sandboxed Widget Renderer(iframe 기반 안전 렌더링), AG-UI Protocol(에이전트↔UI 실시간 통신), HITL Components(에이전트 일시정지→사용자 입력), Decision Matrix(시각화 유형 자동 선택), Theme Injection(디자인 시스템 일관성). app-mockup PoC → app-web 점진적 반영. 참조: [CopilotKit/OpenGenerativeUI](https://github.com/CopilotKit/OpenGenerativeUI) |
+
 ---
 
 ## 8) Risks & Constraints

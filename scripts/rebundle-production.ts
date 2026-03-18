@@ -455,7 +455,7 @@ async function saveResults(
 
     // Upload to R2 via wrangler
     const proc = Bun.spawn(
-      ["npx", "wrangler", "r2", "object", "put", `ai-foundry-skill-packages/${r2Key}`, "--file", tmpPath, "--env", "production"],
+      ["npx", "wrangler", "r2", "object", "put", `ai-foundry-skill-packages/${r2Key}`, "--file", tmpPath, "--remote"],
       {
         cwd: "/home/sinclair/work/axbd/res-ai-foundry/services/svc-skill",
         env: { ...process.env, CLOUDFLARE_API_TOKEN: CF_TOKEN },

@@ -2,6 +2,20 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 169 — 2026-03-18
+
+**Mock-up 사이트 통합 + 사이드바 메뉴 정리 (AIF-REQ-019)**:
+
+- ✅ Mock-up 프록시 수정: `_routes.json`에 `/mockup/*` 누락 → Pages Function 라우팅 활성화
+- ✅ Proxy HTML 에셋 리라이트: `/assets/...` → mockup origin 절대 URL 변환
+- ✅ Mock-up iframe 임베드 페이지 신규 (`/mockup`) + "새 탭에서 열기" 링크
+- ✅ 사이드바 '체험(Experience)' 그룹 신설: Agent Console(Generative UI) + Working Mock-up(Live Demo)
+- ✅ Agent Console 라우트 사이드바 등록 (`/agent-console`)
+
+**검증 결과**:
+- ✅ typecheck + build 통과
+- ✅ Playwright 브라우저 테스트: 사이드바 메뉴 표시 + Mock-up iframe 정상 로드 확인
+
 ## 세션 168 — 2026-03-18
 
 **요구사항 관리 전수 동기화 — SPEC ↔ GitHub Issues ↔ Project 100% 정합 달성**:

@@ -2,6 +2,20 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 180 — 2026-03-19
+
+**온톨로지 org 격리 — svc-ontology + svc-skill 전 GET 엔드포인트에 X-Organization-Id 필터 추가**:
+- ✅ svc-ontology: GET /terms, /terms/:id, /terms/stats, /graph, /graph/visualization에 org 필터 적용
+  - D1 쿼리: terms JOIN ontologies WHERE organization_id = ? (6개 엔드포인트)
+  - Neo4j 쿼리: getOrgOntologyIds()로 org 소속 ontology ID 목록 조회 → UNWIND $ontologyIds로 스코핑
+- ✅ svc-skill: GET /skills/:id, /download, /openapi, /mcp, /evaluate, /export/cc에 organization_id 조건 추가 (5개 파일)
+- ✅ LPON에서 Miraeasset 온톨로지 노출 차단 확인
+
+**검증 결과**:
+- ✅ svc-ontology: 114 tests passed (5 files)
+- ✅ svc-skill: 214 tests passed (17 files)
+- ✅ typecheck 18/18 PASS
+
 ## 세션 179 — 2026-03-19
 
 **Mockup Skill 호출 점검 — sinclair-account→ktds-axbd URL 일괄 교체 + Pages 재생성**:

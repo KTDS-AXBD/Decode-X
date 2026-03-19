@@ -29,6 +29,9 @@
 - ✅ app-web 재빌드 + Pages 배포
 - ✅ Mockup Skill 호출 탭: 20개 bundled skill 카드 로딩 + 평가 패널 표시 확인
 - ⚠️ Mockup 도메인 변경: `ai-foundry-mockup.pages.dev` → `ai-foundry-mockup-blt.pages.dev`
+- ✅ app-web `/mockup` 프록시 URL 교체 + React Router `/mockup` 라우트 추가
+- ✅ app-web Pages `INTERNAL_API_SECRET` 시크릿 설정 (계정 이전 누락분)
+- ✅ ai-foundry.minu.best/mockup 정상 동작 확인 (848 policies + Skill 호출 + 산출물)
 
 **검증 결과**:
 - ✅ typecheck 18/18 PASS

@@ -410,8 +410,28 @@ async function runWrangler(args: string): Promise<string> {
   return out;
 }
 
+const CF_ACCOUNT_ID = process.env["CLOUDFLARE_ACCOUNT_ID"] ?? "";
+const DB_SKILL_ID = "a3f582ba-21b6-4008-9c41-deed94f9d237";
+
 async function runD1Command(sql: string): Promise<void> {
-  const escaped = sql.replace(/'/g, "'\\''");
+  // Use REST API instead of wrangler CLI (avoids account ID mismatch)
+  if (CF_ACCOUNT_ID) {
+    const res = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/d1/database/${DB_SKILL_ID}/query`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${CF_TOKEN}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ sql }),
+      },
+    );
+    const json = (await res.json()) as { success: boolean; errors?: { message: string }[] };
+    if (!json.success) throw new Error(`D1 REST failed: ${JSON.stringify(json.errors)}`);
+    return;
+  }
+  // Fallback: wrangler CLI
   const proc = Bun.spawn(
     ["npx", "wrangler", "d1", "execute", "db-skill", "--remote", "--env", "production", "--command", sql],
     {

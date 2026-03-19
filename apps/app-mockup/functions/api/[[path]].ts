@@ -25,7 +25,7 @@ const ROUTE_TABLE: Record<string, string> = {
   mcp: "svc-mcp-server",
 };
 
-const ACCOUNT_SUBDOMAIN = "sinclair-account";
+const ACCOUNT_SUBDOMAIN = "ktds-axbd";
 
 function getWorkerUrl(serviceName: string, env: string): string {
   const suffix = env === "production" ? "-production" : "-staging";

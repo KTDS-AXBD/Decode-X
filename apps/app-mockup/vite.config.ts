@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
-const ACCOUNT = "sinclair-account";
+const ACCOUNT = "ktds-axbd";
 
 const SERVICE_MAP: Record<string, { service: string; port: number }> = {
   policies: { service: "svc-policy", port: 8703 },

@@ -19,7 +19,7 @@ export function SkillInvokerDemo() {
     setError(null);
     setSelectedId(null);
 
-    fetchSkills(domain.organizationId, { status: "published", limit: 20 })
+    fetchSkills(domain.organizationId, { status: "bundled", limit: 20 })
       .then((data) => {
         if (!cancelled) setSkills(data.skills ?? []);
       })

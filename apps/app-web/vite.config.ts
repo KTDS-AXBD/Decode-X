@@ -10,7 +10,7 @@ import path from "path";
  *   DEV_PROXY=local    → proxy to local wrangler dev ports (default)
  *   DEV_PROXY=staging  → proxy to staging Workers on Cloudflare
  */
-const ACCOUNT = "sinclair-account";
+const ACCOUNT = "ktds-axbd";
 
 const SERVICE_MAP: Record<string, { service: string; port: number }> = {
   documents: { service: "svc-ingestion", port: 8701 },

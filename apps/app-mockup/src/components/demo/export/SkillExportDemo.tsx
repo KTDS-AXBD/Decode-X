@@ -25,7 +25,7 @@ export function SkillExportDemo() {
     setError(null);
     setSelectedId(null);
 
-    fetchSkills(domain.organizationId, { status: "published", limit: 50 })
+    fetchSkills(domain.organizationId, { status: "bundled", limit: 50 })
       .then((data) => {
         if (!cancelled) setSkills(data.skills ?? []);
       })

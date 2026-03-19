@@ -89,7 +89,7 @@ export default function SettingsPage() {
     // The proxy routes /api/<segment>/health → svc-<service>/segment/health
     // But /health is the root endpoint, not under a segment.
     // So we directly fetch the Worker URLs for health checks.
-    const account = 'sinclair-account';
+    const account = 'ktds-axbd';
     const results = await Promise.allSettled(
       SERVICES.map(async (svc) => {
         const url = `https://${svc}.${account}.workers.dev/health`;

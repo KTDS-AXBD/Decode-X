@@ -2,6 +2,24 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 176 — 2026-03-19
+
+**AIF-REQ-020 계정/인프라 이전 — sinclair.seo→ktds.axbd 전체 완료**:
+- ✅ Phase 0: D1 10개 production export (72MB)
+- ✅ Phase 1: D1 20 + R2 4 + KV 6 + Queue 4 + AI Gateway + Pages 프로비저닝 (Workers Paid plan 업그레이드)
+- ✅ Phase 2: wrangler.toml ×12 D1/KV ID 교체 (26개 값) + GitHub CI/CD secrets 갱신
+- ✅ Phase 3: Workers 12×3env 배포 (36/36 health 200), D1 10 data import (FK 순서 정렬), Secrets 63개 설정, Pages 배포
+- ✅ Phase 4: 36/36 Health Check 200, 데이터 API 검증
+- ✅ Phase 5: R2 5,625파일 rclone 병렬 이전 (5.5분), DNS CNAME 변경, Pages 배포
+- 📝 D1 import 교훈: export SQL의 테이블 순서가 알파벳순→FK 의존 불일치. Python으로 부모→자식 정렬 후 성공. PRAGMA defer_foreign_keys 미동작
+- 📝 R2 이전 교훈: curl 순차(수시간) → rclone 16-스레드(5.5분), 60배 빠름
+- 새 URL: `*.ktds-axbd.workers.dev`, Pages: `ai-foundry-web-dnb.pages.dev`
+
+**검증 결과**:
+- ✅ typecheck 통과
+- ✅ Health Check 36/36 (default+staging+production)
+- ✅ R2 정합성: skill-packages 4,072개 + documents 1,553개 동일
+
 ## 세션 175 — 2026-03-19
 
 **Foundry-X MCP 통합 Phase 1-2 — org 단위 MCP 엔드포인트 + R2 재업로드 (AIF-REQ-026)**:

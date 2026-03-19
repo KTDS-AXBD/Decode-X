@@ -448,7 +448,7 @@
 
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
-| AIF-REQ-020 | Chore | Infra | P0 | IN_PROGRESS | 계정/인프라 이전 — GitHub(sinclairseo→ktds.axbd) + Cloudflare(sinclair.seo→ktds.axbd) 리소스 이전. DNS는 개인 계정 유지, Workers/D1/R2/Queue/KV/Pages 전체 이전. CI/CD secrets + wrangler.toml 리소스 ID 갱신 |
+| AIF-REQ-020 | Chore | Infra | P0 | DONE | 계정/인프라 이전 — GitHub(sinclairseo→ktds.axbd) + Cloudflare(sinclair.seo→ktds.axbd) 리소스 이전 완료. D1 20+R2 4+KV 6+Queue 4 프로비저닝, Workers 36/36 배포, D1 10 data import, Secrets 63개, R2 5,625파일 rclone 이전, Pages+DNS 전환. URL: *.ktds-axbd.workers.dev. **세션 176: Phase 0~5 전체 완료** |
 
 ### 파이프라인 고도화 — Ouroboros 패턴 반영 (신규 등록)
 

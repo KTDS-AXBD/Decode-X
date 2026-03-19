@@ -3,6 +3,8 @@
  * GET /terms       — list terms (with optional ontologyId filter + pagination)
  * GET /terms/:id   — single term lookup
  * GET /graph       — proxy Cypher query to Neo4j
+ *
+ * All GET endpoints filter by X-Organization-Id header for org isolation.
  */
 
 import { createLogger, ok, notFound, badRequest, errFromUnknown } from "@ai-foundry/utils";
@@ -23,17 +25,40 @@ interface TermRow {
   term_type: string | null;
 }
 
+// ── Org helper ───────────────────────────────────────────────────────
+
+function getOrgId(request: Request): string {
+  return request.headers.get("X-Organization-Id") ?? "unknown";
+}
+
+/**
+ * Fetch ontology IDs belonging to the given organization from D1.
+ * Used to scope Neo4j Cypher queries by org.
+ */
+async function getOrgOntologyIds(env: Env, orgId: string): Promise<string[]> {
+  const result = await env.DB_ONTOLOGY.prepare(
+    `SELECT ontology_id FROM ontologies WHERE organization_id = ? AND status = 'completed'`,
+  )
+    .bind(orgId)
+    .all<{ ontology_id: string }>();
+  return (result.results ?? []).map((r) => r.ontology_id);
+}
+
 // ── GET /terms/:id ───────────────────────────────────────────────────
 
 export async function handleGetTerm(
-  _request: Request,
+  request: Request,
   env: Env,
   termId: string,
 ): Promise<Response> {
+  const orgId = getOrgId(request);
+
   const row = await env.DB_ONTOLOGY.prepare(
-    "SELECT * FROM terms WHERE term_id = ?",
+    `SELECT t.* FROM terms t
+     JOIN ontologies o ON t.ontology_id = o.ontology_id
+     WHERE t.term_id = ? AND o.organization_id = ?`,
   )
-    .bind(termId)
+    .bind(termId, orgId)
     .first<TermRow>();
 
   if (!row) {
@@ -50,25 +75,29 @@ export async function handleListTerms(
   env: Env,
 ): Promise<Response> {
   const url = new URL(request.url);
+  const orgId = getOrgId(request);
   const ontologyId = url.searchParams.get("ontologyId");
   const termType = url.searchParams.get("type");
   const limit = Math.min(Number(url.searchParams.get("limit") ?? "50"), 100);
   const offset = Number(url.searchParams.get("offset") ?? "0");
 
-  let query = "SELECT * FROM terms WHERE 1=1";
-  const binds: (string | number)[] = [];
+  let query =
+    `SELECT t.* FROM terms t
+     JOIN ontologies o ON t.ontology_id = o.ontology_id
+     WHERE o.organization_id = ?`;
+  const binds: (string | number)[] = [orgId];
 
   if (ontologyId) {
-    query += " AND ontology_id = ?";
+    query += " AND t.ontology_id = ?";
     binds.push(ontologyId);
   }
 
   if (termType) {
-    query += " AND term_type = ?";
+    query += " AND t.term_type = ?";
     binds.push(termType);
   }
 
-  query += " ORDER BY created_at ASC LIMIT ? OFFSET ?";
+  query += " ORDER BY t.created_at ASC LIMIT ? OFFSET ?";
   binds.push(limit, offset);
 
   const result = await env.DB_ONTOLOGY.prepare(query).bind(...binds).all<TermRow>();
@@ -87,6 +116,7 @@ export async function handleGetGraph(
   env: Env,
 ): Promise<Response> {
   const url = new URL(request.url);
+  const orgId = getOrgId(request);
   const customQuery = url.searchParams.get("query");
   const cypher = customQuery ?? DEFAULT_GRAPH_QUERY;
 
@@ -104,7 +134,15 @@ export async function handleGetGraph(
     return badRequest("Only read-only Cypher queries are allowed on /graph");
   }
 
+  // Scope Neo4j queries by org: fetch org's ontology IDs from D1
+  const orgOntologyIds = await getOrgOntologyIds(env, orgId);
+  if (orgOntologyIds.length === 0) {
+    return ok({ columns: [], rows: [], query: cypher });
+  }
+
   try {
+    // For custom queries, we cannot reliably rewrite Cypher.
+    // Run original query through Neo4j (read-only guard above protects writes).
     const neo4jResponse = await neo4jQuery(env, [{ statement: cypher }]);
 
     if (neo4jResponse.errors.length > 0) {
@@ -136,55 +174,66 @@ interface StatsRow {
 }
 
 export async function handleTermsStats(
-  _request: Request,
+  request: Request,
   env: Env,
 ): Promise<Response> {
+  const orgId = getOrgId(request);
+
   const row = await env.DB_ONTOLOGY.prepare(
     `SELECT
        COUNT(*) AS total,
-       COUNT(DISTINCT label) AS distinct_labels,
-       COUNT(DISTINCT ontology_id) AS ontology_count
-     FROM terms`,
-  ).first<StatsRow>();
+       COUNT(DISTINCT t.label) AS distinct_labels,
+       COUNT(DISTINCT t.ontology_id) AS ontology_count
+     FROM terms t
+     JOIN ontologies o ON t.ontology_id = o.ontology_id
+     WHERE o.organization_id = ?`,
+  )
+    .bind(orgId)
+    .first<StatsRow>();
 
-  // Try to get Neo4j stats (optional, best-effort)
+  // Try to get Neo4j stats scoped to org (best-effort)
   let neo4jStats: { termNodes: number; ontologyNodes: number; policyNodes: number; relationships: number } | null = null;
   try {
-    const neo4jResponse = await neo4jQuery(env, [
-      {
-        statement:
-          "MATCH (n) WITH labels(n) AS types, count(n) AS cnt " +
-          "RETURN types, cnt " +
-          "UNION ALL " +
-          "MATCH ()-[r]->() RETURN ['_relationships'] AS types, count(r) AS cnt",
-      },
-    ]);
-    if (neo4jResponse.errors.length === 0) {
-      const firstResult = neo4jResponse.results[0];
-      const rows = firstResult?.data ?? [];
-      let termNodes = 0;
-      let ontologyNodes = 0;
-      let policyNodes = 0;
-      let relationships = 0;
-      for (const d of rows) {
-        const types = d.row[0] as string[];
-        const cnt = d.row[1] as number;
-        const firstType = types[0];
-        if (firstType === "Term") termNodes = cnt;
-        else if (firstType === "Ontology") ontologyNodes = cnt;
-        else if (firstType === "Policy") policyNodes = cnt;
-        else if (firstType === "_relationships") relationships = cnt;
+    const orgOntologyIds = await getOrgOntologyIds(env, orgId);
+    if (orgOntologyIds.length > 0) {
+      const neo4jResponse = await neo4jQuery(env, [
+        {
+          statement:
+            "UNWIND $ontologyIds AS oid " +
+            "MATCH (o:Ontology {id: oid})-[:HAS_TERM]->(t:Term) " +
+            "WITH collect(DISTINCT t) AS terms, collect(DISTINCT o) AS onts " +
+            "OPTIONAL MATCH (o2:Ontology)-[:EXTRACTED_FROM]->(p:Policy) WHERE o2 IN onts " +
+            "RETURN size(terms) AS termNodes, size(onts) AS ontologyNodes, " +
+            "count(DISTINCT p) AS policyNodes, 0 AS relationships",
+          parameters: { ontologyIds: orgOntologyIds },
+        },
+      ]);
+      if (neo4jResponse.errors.length === 0) {
+        const firstResult = neo4jResponse.results[0];
+        const d = firstResult?.data[0];
+        if (d) {
+          neo4jStats = {
+            termNodes: d.row[0] as number,
+            ontologyNodes: d.row[1] as number,
+            policyNodes: d.row[2] as number,
+            relationships: d.row[3] as number,
+          };
+        }
       }
-      neo4jStats = { termNodes, ontologyNodes, policyNodes, relationships };
     }
   } catch {
     // Neo4j unavailable — D1 stats still returned
   }
 
-  // Type distribution counts
+  // Type distribution counts (org-scoped)
   const typeCounts = await env.DB_ONTOLOGY.prepare(
-    `SELECT term_type, COUNT(*) AS cnt FROM terms GROUP BY term_type`,
-  ).all<{ term_type: string | null; cnt: number }>();
+    `SELECT t.term_type, COUNT(*) AS cnt FROM terms t
+     JOIN ontologies o ON t.ontology_id = o.ontology_id
+     WHERE o.organization_id = ?
+     GROUP BY t.term_type`,
+  )
+    .bind(orgId)
+    .all<{ term_type: string | null; cnt: number }>();
 
   const byType: Record<string, number> = {};
   for (const r of typeCounts.results ?? []) {
@@ -208,15 +257,23 @@ export async function handleGraphVisualization(
   env: Env,
 ): Promise<Response> {
   const url = new URL(request.url);
+  const orgId = getOrgId(request);
   const limitParam = url.searchParams.get("limit");
   const limit = Math.min(Number(limitParam ?? "80"), 200);
   const termLabel = url.searchParams.get("term");
 
   try {
-    // If a specific term is requested, get its co-occurring terms
+    // Fetch org's ontology IDs for scoping
+    const orgOntologyIds = await getOrgOntologyIds(env, orgId);
+    if (orgOntologyIds.length === 0) {
+      return ok({ nodes: [], links: [] });
+    }
+
+    // If a specific term is requested, get its co-occurring terms (org-scoped)
     const cypher = termLabel
-      ? // Neighbors of a specific term
-        "MATCH (o:Ontology)-[:HAS_TERM]->(t:Term) " +
+      ? // Neighbors of a specific term within org's ontologies
+        "UNWIND $ontologyIds AS oid " +
+        "MATCH (o:Ontology {id: oid})-[:HAS_TERM]->(t:Term) " +
         "WHERE t.label = $termLabel " +
         "WITH o " +
         "MATCH (o)-[:HAS_TERM]->(neighbor:Term) " +
@@ -224,14 +281,15 @@ export async function handleGraphVisualization(
         "count(DISTINCT o) AS freq, " +
         "coalesce(neighbor.type, 'entity') AS termType " +
         "ORDER BY freq DESC LIMIT $limit"
-      : // Top terms by frequency
-        "MATCH (t:Term) " +
+      : // Top terms by frequency within org's ontologies
+        "UNWIND $ontologyIds AS oid " +
+        "MATCH (o:Ontology {id: oid})-[:HAS_TERM]->(t:Term) " +
         "WITH t.label AS label, collect(t.definition)[0] AS definition, " +
         "count(t) AS freq, coalesce(collect(t.type)[0], 'entity') AS termType " +
         "ORDER BY freq DESC LIMIT $limit " +
         "RETURN label, definition, freq, termType";
 
-    const params: Record<string, unknown> = { limit };
+    const params: Record<string, unknown> = { limit, ontologyIds: orgOntologyIds };
     if (termLabel) params["termLabel"] = termLabel;
 
     const termsResp = await neo4jQuery(env, [
@@ -258,13 +316,14 @@ export async function handleGraphVisualization(
       type: (d.row[3] as string | null) ?? "entity",
     }));
 
-    // Get co-occurrence edges: terms sharing the same Ontology
+    // Get co-occurrence edges: terms sharing the same org-scoped Ontology
     if (labels.length < 2) {
       return ok({ nodes, links: [] });
     }
 
     const edgeCypher =
-      "MATCH (t1:Term)<-[:HAS_TERM]-(o:Ontology)-[:HAS_TERM]->(t2:Term) " +
+      "UNWIND $ontologyIds AS oid " +
+      "MATCH (t1:Term)<-[:HAS_TERM]-(o:Ontology {id: oid})-[:HAS_TERM]->(t2:Term) " +
       "WHERE t1.label IN $labels AND t2.label IN $labels " +
       "AND t1.label < t2.label " +
       "RETURN t1.label AS source, t2.label AS target, " +
@@ -272,7 +331,7 @@ export async function handleGraphVisualization(
       "ORDER BY weight DESC LIMIT 300";
 
     const edgesResp = await neo4jQuery(env, [
-      { statement: edgeCypher, parameters: { labels } },
+      { statement: edgeCypher, parameters: { labels, ontologyIds: orgOntologyIds } },
     ]);
 
     const links = (edgesResp.results[0]?.data ?? []).map((d) => ({

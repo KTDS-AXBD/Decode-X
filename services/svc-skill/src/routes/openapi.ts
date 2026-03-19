@@ -109,10 +109,12 @@ export async function handleGetOpenApiAdapter(
   skillId: string,
   ctx: ExecutionContext,
 ): Promise<Response> {
+  const orgId = request.headers.get("X-Organization-Id") ?? "unknown";
+
   const row = await env.DB_SKILL.prepare(
-    "SELECT r2_key FROM skills WHERE skill_id = ?",
+    "SELECT r2_key FROM skills WHERE skill_id = ? AND organization_id = ?",
   )
-    .bind(skillId)
+    .bind(skillId, orgId)
     .first<{ r2_key: string }>();
 
   if (!row) {

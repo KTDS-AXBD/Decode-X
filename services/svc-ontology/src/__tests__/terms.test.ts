@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { handleGetTerm, handleListTerms, handleGetGraph } from "../routes/terms.js";
+import { handleGetTerm, handleListTerms, handleGetGraph, handleTermsStats, handleGraphVisualization } from "../routes/terms.js";
 import type { Env } from "../env.js";
 
 // ── Mock neo4jQuery ─────────────────────────────────────────────
@@ -48,6 +48,13 @@ function mockEnv(dbOverrides?: Parameters<typeof mockDb>[0]): Env {
   };
 }
 
+/** Create a Request with X-Organization-Id header */
+function orgRequest(url: string, orgId = "LPON"): Request {
+  return new Request(url, {
+    headers: { "X-Organization-Id": orgId },
+  });
+}
+
 const SAMPLE_TERM = {
   term_id: "term-abc-123",
   ontology_id: "ont-xyz",
@@ -79,7 +86,7 @@ describe("handleGetTerm", () => {
 
   it("returns 404 when term is not found", async () => {
     const env = mockEnv({ firstResult: null });
-    const req = new Request("https://test.internal/terms/nonexistent");
+    const req = orgRequest("https://test.internal/terms/nonexistent");
     const res = await handleGetTerm(req, env, "nonexistent");
     expect(res.status).toBe(404);
     const body = await res.json() as { success: boolean; error: { code: string; message: string } };
@@ -90,7 +97,7 @@ describe("handleGetTerm", () => {
 
   it("returns term when found", async () => {
     const env = mockEnv({ firstResult: SAMPLE_TERM });
-    const req = new Request("https://test.internal/terms/term-abc-123");
+    const req = orgRequest("https://test.internal/terms/term-abc-123");
     const res = await handleGetTerm(req, env, "term-abc-123");
     expect(res.status).toBe(200);
     const body = await res.json() as {
@@ -115,7 +122,7 @@ describe("handleGetTerm", () => {
 
   it("formats camelCase field names from snake_case D1 rows", async () => {
     const env = mockEnv({ firstResult: SAMPLE_TERM_2 });
-    const req = new Request("https://test.internal/terms/term-def-456");
+    const req = orgRequest("https://test.internal/terms/term-def-456");
     const res = await handleGetTerm(req, env, "term-def-456");
     const body = await res.json() as {
       data: {
@@ -133,15 +140,16 @@ describe("handleGetTerm", () => {
     expect(body.data.createdAt).toBe("2026-01-15T10:01:00Z");
   });
 
-  it("queries D1 with the correct term_id binding", async () => {
+  it("queries D1 with org-scoped JOIN", async () => {
     const env = mockEnv({ firstResult: SAMPLE_TERM });
-    const req = new Request("https://test.internal/terms/my-term-id");
+    const req = orgRequest("https://test.internal/terms/my-term-id", "LPON");
     await handleGetTerm(req, env, "my-term-id");
 
     expect(env.DB_ONTOLOGY.prepare).toHaveBeenCalledOnce();
     const prepareMock = env.DB_ONTOLOGY.prepare as ReturnType<typeof vi.fn>;
     const sql = prepareMock.mock.calls[0]?.[0] as string;
-    expect(sql).toContain("WHERE term_id = ?");
+    expect(sql).toContain("JOIN ontologies o");
+    expect(sql).toContain("o.organization_id = ?");
   });
 
   it("returns null fields properly", async () => {
@@ -152,7 +160,7 @@ describe("handleGetTerm", () => {
       embedding_model: null,
     };
     const env = mockEnv({ firstResult: termWithNulls });
-    const req = new Request("https://test.internal/terms/term-abc-123");
+    const req = orgRequest("https://test.internal/terms/term-abc-123");
     const res = await handleGetTerm(req, env, "term-abc-123");
     const body = await res.json() as {
       data: {
@@ -176,7 +184,7 @@ describe("handleListTerms", () => {
 
   it("returns empty list when no terms exist", async () => {
     const env = mockEnv({ allResults: [] });
-    const req = new Request("https://test.internal/terms");
+    const req = orgRequest("https://test.internal/terms");
     const res = await handleListTerms(req, env);
     expect(res.status).toBe(200);
     const body = await res.json() as {
@@ -191,7 +199,7 @@ describe("handleListTerms", () => {
 
   it("returns list of terms with correct formatting", async () => {
     const env = mockEnv({ allResults: [SAMPLE_TERM, SAMPLE_TERM_2] });
-    const req = new Request("https://test.internal/terms");
+    const req = orgRequest("https://test.internal/terms");
     const res = await handleListTerms(req, env);
     expect(res.status).toBe(200);
     const body = await res.json() as {
@@ -210,27 +218,28 @@ describe("handleListTerms", () => {
 
   it("filters by ontologyId when provided", async () => {
     const env = mockEnv({ allResults: [SAMPLE_TERM] });
-    const req = new Request("https://test.internal/terms?ontologyId=ont-xyz");
+    const req = orgRequest("https://test.internal/terms?ontologyId=ont-xyz");
     await handleListTerms(req, env);
 
     const prepareMock = env.DB_ONTOLOGY.prepare as ReturnType<typeof vi.fn>;
     const sql = prepareMock.mock.calls[0]?.[0] as string;
-    expect(sql).toContain("ontology_id = ?");
+    expect(sql).toContain("t.ontology_id = ?");
   });
 
-  it("does not filter by ontologyId when not provided", async () => {
+  it("always includes org filter in query", async () => {
     const env = mockEnv({ allResults: [] });
-    const req = new Request("https://test.internal/terms");
+    const req = orgRequest("https://test.internal/terms", "Miraeasset");
     await handleListTerms(req, env);
 
     const prepareMock = env.DB_ONTOLOGY.prepare as ReturnType<typeof vi.fn>;
     const sql = prepareMock.mock.calls[0]?.[0] as string;
-    expect(sql).not.toContain("ontology_id = ?");
+    expect(sql).toContain("o.organization_id = ?");
+    expect(sql).toContain("JOIN ontologies o");
   });
 
   it("respects custom limit parameter", async () => {
     const env = mockEnv({ allResults: [] });
-    const req = new Request("https://test.internal/terms?limit=10");
+    const req = orgRequest("https://test.internal/terms?limit=10");
     const res = await handleListTerms(req, env);
     const body = await res.json() as { data: { limit: number } };
     expect(body.data.limit).toBe(10);
@@ -238,7 +247,7 @@ describe("handleListTerms", () => {
 
   it("caps limit at 100", async () => {
     const env = mockEnv({ allResults: [] });
-    const req = new Request("https://test.internal/terms?limit=500");
+    const req = orgRequest("https://test.internal/terms?limit=500");
     const res = await handleListTerms(req, env);
     const body = await res.json() as { data: { limit: number } };
     expect(body.data.limit).toBe(100);
@@ -246,7 +255,7 @@ describe("handleListTerms", () => {
 
   it("respects custom offset parameter", async () => {
     const env = mockEnv({ allResults: [] });
-    const req = new Request("https://test.internal/terms?offset=20");
+    const req = orgRequest("https://test.internal/terms?offset=20");
     const res = await handleListTerms(req, env);
     const body = await res.json() as { data: { offset: number } };
     expect(body.data.offset).toBe(20);
@@ -254,7 +263,7 @@ describe("handleListTerms", () => {
 
   it("defaults limit to 50 and offset to 0", async () => {
     const env = mockEnv({ allResults: [] });
-    const req = new Request("https://test.internal/terms");
+    const req = orgRequest("https://test.internal/terms");
     const res = await handleListTerms(req, env);
     const body = await res.json() as { data: { limit: number; offset: number } };
     expect(body.data.limit).toBe(50);
@@ -263,7 +272,7 @@ describe("handleListTerms", () => {
 
   it("handles combined filter and pagination", async () => {
     const env = mockEnv({ allResults: [SAMPLE_TERM] });
-    const req = new Request("https://test.internal/terms?ontologyId=ont-xyz&limit=5&offset=10");
+    const req = orgRequest("https://test.internal/terms?ontologyId=ont-xyz&limit=5&offset=10");
     const res = await handleListTerms(req, env);
     expect(res.status).toBe(200);
     const body = await res.json() as { data: { limit: number; offset: number } };
@@ -271,14 +280,14 @@ describe("handleListTerms", () => {
     expect(body.data.offset).toBe(10);
   });
 
-  it("SQL includes ORDER BY created_at ASC", async () => {
+  it("SQL includes ORDER BY t.created_at ASC", async () => {
     const env = mockEnv({ allResults: [] });
-    const req = new Request("https://test.internal/terms");
+    const req = orgRequest("https://test.internal/terms");
     await handleListTerms(req, env);
 
     const prepareMock = env.DB_ONTOLOGY.prepare as ReturnType<typeof vi.fn>;
     const sql = prepareMock.mock.calls[0]?.[0] as string;
-    expect(sql).toContain("ORDER BY created_at ASC");
+    expect(sql).toContain("ORDER BY t.created_at ASC");
   });
 });
 
@@ -296,8 +305,8 @@ describe("handleGetGraph", () => {
   // ── Default query ─────────────────────────────────────────────
 
   it("uses default graph query when no query param provided", async () => {
-    const env = mockEnv();
-    const req = new Request("https://test.internal/graph");
+    const env = mockEnv({ allResults: [{ ontology_id: "ont-1" }] });
+    const req = orgRequest("https://test.internal/graph");
     await handleGetGraph(req, env);
 
     expect(mockedNeo4jQuery).toHaveBeenCalledOnce();
@@ -310,9 +319,9 @@ describe("handleGetGraph", () => {
   });
 
   it("uses custom query from query param", async () => {
-    const env = mockEnv();
+    const env = mockEnv({ allResults: [{ ontology_id: "ont-1" }] });
     const customCypher = "MATCH (n:Ontology) RETURN n LIMIT 10";
-    const req = new Request(
+    const req = orgRequest(
       `https://test.internal/graph?query=${encodeURIComponent(customCypher)}`,
     );
     await handleGetGraph(req, env);
@@ -328,7 +337,7 @@ describe("handleGetGraph", () => {
 
   it("blocks DELETE queries", async () => {
     const env = mockEnv();
-    const req = new Request(
+    const req = orgRequest(
       `https://test.internal/graph?query=${encodeURIComponent("MATCH (n) DELETE n")}`,
     );
     const res = await handleGetGraph(req, env);
@@ -339,7 +348,7 @@ describe("handleGetGraph", () => {
 
   it("blocks DETACH queries", async () => {
     const env = mockEnv();
-    const req = new Request(
+    const req = orgRequest(
       `https://test.internal/graph?query=${encodeURIComponent("MATCH (n) DETACH DELETE n")}`,
     );
     const res = await handleGetGraph(req, env);
@@ -350,7 +359,7 @@ describe("handleGetGraph", () => {
 
   it("blocks DROP queries", async () => {
     const env = mockEnv();
-    const req = new Request(
+    const req = orgRequest(
       `https://test.internal/graph?query=${encodeURIComponent("DROP INDEX my_index")}`,
     );
     const res = await handleGetGraph(req, env);
@@ -359,7 +368,7 @@ describe("handleGetGraph", () => {
 
   it("blocks CREATE queries", async () => {
     const env = mockEnv();
-    const req = new Request(
+    const req = orgRequest(
       `https://test.internal/graph?query=${encodeURIComponent("CREATE (n:Term {name: 'test'})")}`,
     );
     const res = await handleGetGraph(req, env);
@@ -368,7 +377,7 @@ describe("handleGetGraph", () => {
 
   it("blocks MERGE queries", async () => {
     const env = mockEnv();
-    const req = new Request(
+    const req = orgRequest(
       `https://test.internal/graph?query=${encodeURIComponent("MERGE (n:Term {name: 'test'})")}`,
     );
     const res = await handleGetGraph(req, env);
@@ -377,7 +386,7 @@ describe("handleGetGraph", () => {
 
   it("blocks SET queries", async () => {
     const env = mockEnv();
-    const req = new Request(
+    const req = orgRequest(
       `https://test.internal/graph?query=${encodeURIComponent("MATCH (n) SET n.name = 'test'")}`,
     );
     const res = await handleGetGraph(req, env);
@@ -386,7 +395,7 @@ describe("handleGetGraph", () => {
 
   it("blocks REMOVE queries", async () => {
     const env = mockEnv();
-    const req = new Request(
+    const req = orgRequest(
       `https://test.internal/graph?query=${encodeURIComponent("MATCH (n) REMOVE n.name")}`,
     );
     const res = await handleGetGraph(req, env);
@@ -395,18 +404,30 @@ describe("handleGetGraph", () => {
 
   it("blocks case-insensitive destructive keywords", async () => {
     const env = mockEnv();
-    const req = new Request(
+    const req = orgRequest(
       `https://test.internal/graph?query=${encodeURIComponent("match (n) delete n")}`,
     );
     const res = await handleGetGraph(req, env);
     expect(res.status).toBe(400);
   });
 
+  // ── Empty org returns empty ───────────────────────────────────
+
+  it("returns empty when org has no ontologies", async () => {
+    const env = mockEnv({ allResults: [] });
+    const req = orgRequest("https://test.internal/graph", "EMPTY_ORG");
+    const res = await handleGetGraph(req, env);
+    expect(res.status).toBe(200);
+    const body = await res.json() as { data: { columns: string[]; rows: unknown[][] } };
+    expect(body.data.columns).toEqual([]);
+    expect(body.data.rows).toEqual([]);
+  });
+
   // ── Successful graph queries ──────────────────────────────────
 
   it("returns columns and rows from Neo4j on success", async () => {
-    const env = mockEnv();
-    const req = new Request("https://test.internal/graph");
+    const env = mockEnv({ allResults: [{ ontology_id: "ont-1" }] });
+    const req = orgRequest("https://test.internal/graph");
     const res = await handleGetGraph(req, env);
     expect(res.status).toBe(200);
     const body = await res.json() as {
@@ -428,8 +449,8 @@ describe("handleGetGraph", () => {
       results: [{ columns: ["n"], data: [] }],
       errors: [],
     });
-    const env = mockEnv();
-    const req = new Request("https://test.internal/graph");
+    const env = mockEnv({ allResults: [{ ontology_id: "ont-1" }] });
+    const req = orgRequest("https://test.internal/graph");
     const res = await handleGetGraph(req, env);
     expect(res.status).toBe(200);
     const body = await res.json() as { data: { rows: unknown[][] } };
@@ -444,8 +465,8 @@ describe("handleGetGraph", () => {
       errors: [{ code: "Neo.ClientError", message: "Syntax error at position 5" }],
     });
 
-    const env = mockEnv();
-    const req = new Request("https://test.internal/graph");
+    const env = mockEnv({ allResults: [{ ontology_id: "ont-1" }] });
+    const req = orgRequest("https://test.internal/graph");
     const res = await handleGetGraph(req, env);
     expect(res.status).toBe(400);
     const body = await res.json() as { error: { message: string } };
@@ -458,8 +479,8 @@ describe("handleGetGraph", () => {
       new Error("Connection timeout"),
     );
 
-    const env = mockEnv();
-    const req = new Request("https://test.internal/graph");
+    const env = mockEnv({ allResults: [{ ontology_id: "ont-1" }] });
+    const req = orgRequest("https://test.internal/graph");
     const res = await handleGetGraph(req, env);
     expect(res.status).toBe(500);
   });
@@ -472,8 +493,8 @@ describe("handleGetGraph", () => {
       errors: [],
     });
 
-    const env = mockEnv();
-    const req = new Request("https://test.internal/graph");
+    const env = mockEnv({ allResults: [{ ontology_id: "ont-1" }] });
+    const req = orgRequest("https://test.internal/graph");
     const res = await handleGetGraph(req, env);
     expect(res.status).toBe(200);
     const body = await res.json() as {
@@ -482,5 +503,62 @@ describe("handleGetGraph", () => {
     // firstResult is undefined, so columns/rows default to []
     expect(body.data.columns).toEqual([]);
     expect(body.data.rows).toEqual([]);
+  });
+});
+
+// ── handleTermsStats ─────────────────────────────────────────────
+
+describe("handleTermsStats", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("includes org filter in stats query", async () => {
+    const env = mockEnv({ firstResult: { total: 100, distinct_labels: 80, ontology_count: 5 } });
+    const req = orgRequest("https://test.internal/terms/stats", "LPON");
+    await handleTermsStats(req, env);
+
+    const prepareMock = env.DB_ONTOLOGY.prepare as ReturnType<typeof vi.fn>;
+    const sql = prepareMock.mock.calls[0]?.[0] as string;
+    expect(sql).toContain("JOIN ontologies o");
+    expect(sql).toContain("o.organization_id = ?");
+  });
+});
+
+// ── handleGraphVisualization ─────────────────────────────────────
+
+describe("handleGraphVisualization", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns empty when org has no ontologies", async () => {
+    const env = mockEnv({ allResults: [] });
+    const req = orgRequest("https://test.internal/graph/visualization", "EMPTY_ORG");
+    const res = await handleGraphVisualization(req, env);
+    expect(res.status).toBe(200);
+    const body = await res.json() as { data: { nodes: unknown[]; links: unknown[] } };
+    expect(body.data.nodes).toEqual([]);
+    expect(body.data.links).toEqual([]);
+  });
+
+  it("passes ontologyIds to Neo4j Cypher parameters", async () => {
+    (mockedNeo4jQuery as ReturnType<typeof vi.fn>).mockResolvedValue({
+      results: [{ columns: ["label", "definition", "freq", "termType"], data: [] }],
+      errors: [],
+    });
+
+    const env = mockEnv({ allResults: [{ ontology_id: "ont-1" }, { ontology_id: "ont-2" }] });
+    const req = orgRequest("https://test.internal/graph/visualization", "LPON");
+    await handleGraphVisualization(req, env);
+
+    expect(mockedNeo4jQuery).toHaveBeenCalledOnce();
+    const callArgs = (mockedNeo4jQuery as ReturnType<typeof vi.fn>).mock.calls[0] as [
+      Env,
+      Array<{ statement: string; parameters?: Record<string, unknown> }>,
+    ];
+    const params = callArgs[1][0]?.parameters;
+    expect(params).toBeDefined();
+    expect(params?.["ontologyIds"]).toEqual(["ont-1", "ont-2"]);
   });
 });

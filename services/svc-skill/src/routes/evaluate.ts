@@ -28,10 +28,11 @@ const BENCHMARK_PROVIDERS: LlmProvider[] = ["anthropic", "openai", "google"];
 async function fetchSkillPackage(
   env: Env,
   skillId: string,
+  orgId: string,
 ): Promise<{ pkg: SkillPackage; domain: string } | Response> {
   const row = await env.DB_SKILL.prepare(
-    "SELECT r2_key, domain FROM skills WHERE skill_id = ?",
-  ).bind(skillId).first<{ r2_key: string; domain: string }>();
+    "SELECT r2_key, domain FROM skills WHERE skill_id = ? AND organization_id = ?",
+  ).bind(skillId, orgId).first<{ r2_key: string; domain: string }>();
 
   if (!row) {
     return notFound("skill", skillId);
@@ -168,7 +169,8 @@ export async function handleEvaluateSkill(
   const { policyCode, context, parameters, provider, benchmark } = parsed.data;
 
   // Fetch skill package from R2
-  const fetchResult = await fetchSkillPackage(env, skillId);
+  const orgId = request.headers.get("X-Organization-Id") ?? "unknown";
+  const fetchResult = await fetchSkillPackage(env, skillId, orgId);
   if (fetchResult instanceof Response) return fetchResult;
   const { pkg, domain } = fetchResult;
 

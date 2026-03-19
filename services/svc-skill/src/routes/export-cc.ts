@@ -17,16 +17,18 @@ import { generateSkillMd, generatePolicyMd, buildCcSkillZip } from "../export/in
 const logger = createLogger("svc-skill:export-cc");
 
 export async function handleExportCc(
-  _request: Request,
+  request: Request,
   env: Env,
   skillId: string,
   ctx: ExecutionContext,
 ): Promise<Response> {
+  const orgId = request.headers.get("X-Organization-Id") ?? "unknown";
+
   // 1. Look up R2 key from DB
   const row = await env.DB_SKILL.prepare(
-    "SELECT r2_key, name FROM skills WHERE skill_id = ?",
+    "SELECT r2_key, name FROM skills WHERE skill_id = ? AND organization_id = ?",
   )
-    .bind(skillId)
+    .bind(skillId, orgId)
     .first<{ r2_key: string; name: string | null }>();
 
   if (!row) {

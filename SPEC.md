@@ -57,7 +57,7 @@
 
 - **Last Updated**: 2026-03-19
 - **Current Phase**: Phase 4 Sprint 2 완료 — 12 Workers + Pages 배포, 2-org 파일럿 (퇴직연금 + 온누리상품권), policies 3,675 / skills 3,924
-- **Foundry-X MCP 통합**: ✅ Phase 1-2 완료 — org 단위 통합 MCP 엔드포인트(`/mcp/org/:orgId`), bundled skills 50개 R2 업로드, E2E 검증(initialize → 2,525 tools → tools/call). PDCA 95%. AIF-REQ-026 IN_PROGRESS
+- **Foundry-X MCP 통합**: ✅ Phase 1-2 완료 — org 단위 통합 MCP 엔드포인트(`/mcp/org/:orgId`), bundled skills 27개 R2 업로드, 2,129 unique tools (LPON 616 + Miraeasset 1,513), Foundry-X McpServerRegistry 등록 + 연결 검증 완료. PDCA 95%. AIF-REQ-026 IN_PROGRESS
 - **Production E2E**: ✅ 8/8 PASS (synthetic) + 7/7 PASS (real-doc) + Batch 3: 7/11 parsed (SCDSA002 4건 → encrypted 상태)
 - **Real Document Pilot**: ✅ 20/26 문서 파싱 완료 (Batch 1: 4건, Batch 2: 9/11건, Batch 3: 7/11건)
 - **Production Data**: policies 3,675 approved (LPON 848 + Miraeasset 2,827), skills 3,924 (LPON 859 + Miraeasset 3,065). 2-org

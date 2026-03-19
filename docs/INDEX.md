@@ -71,6 +71,7 @@
 | AIF-ANLS-021 | Pipeline Quality Evaluation 분석 | 1.0 | Active | `03-analysis/AIF-ANLS-021_pipeline-quality-evaluation.md` |
 | AIF-ANLS-022 | Skill Bundling 분석 | 1.0 | Active | `03-analysis/AIF-ANLS-022_skill-bundling.md` |
 | AIF-ANLS-026 | Foundry-X 통합 비교 분석서 | 1.0 | Draft | `03-analysis/AIF-ANLS-026_foundry-x-integration-analysis.md` |
+| AIF-ANLS-026C | Foundry-X TaskType 확장 Phase 1-3 Gap 분석 | 1.0 | Active | `03-analysis/features/req-026-phase-1-3.analysis.md` |
 
 ## RPRT (12)
 
@@ -88,6 +89,7 @@
 | AIF-RPRT-010 | AIF-REQ-017 산출물 Export 완료 보고서 | 1.0 | Active | `04-report/features/lpon-deliverable-validation.report.md` |
 | AIF-RPRT-011 | LPON 온누리상품권 분석 보고서 v0.6.0 | 1.0 | Active | `04-report/AIF-RPRT-011_lpon-analysis-report.md` |
 | AIF-RPRT-012 | Miraeasset 퇴직연금 분석 보고서 v0.6.0 | 1.0 | Active | `04-report/AIF-RPRT-012_miraeasset-analysis-report.md` |
+| AIF-RPRT-026C | Foundry-X TaskType 확장 Phase 1-3 완료 보고서 | 1.0 | Active | `04-report/features/req-026-phase-1-3.report.md` |
 
 ## GUID (1)
 

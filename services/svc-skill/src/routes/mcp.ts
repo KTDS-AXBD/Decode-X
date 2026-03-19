@@ -164,19 +164,24 @@ interface OrgMcpAdapter {
 // ── GET /skills/org/:orgId/mcp ──────────────────────────────────────
 
 export async function handleGetOrgMcpAdapter(
-  _request: Request,
+  request: Request,
   env: Env,
   orgId: string,
   ctx: ExecutionContext,
 ): Promise<Response> {
-  // Check KV cache first
+  const url = new URL(request.url);
+  const refresh = url.searchParams.get("refresh") === "true";
+
+  // Check KV cache first (skip if ?refresh=true)
   const cacheKey = `mcp-org-adapter:${orgId}`;
-  const cached = await env.KV_SKILL_CACHE.get(cacheKey, "text");
-  if (cached) {
-    return new Response(cached, {
-      status: 200,
-      headers: { "Content-Type": "application/json", "X-Cache": "HIT" },
-    });
+  if (!refresh) {
+    const cached = await env.KV_SKILL_CACHE.get(cacheKey, "text");
+    if (cached) {
+      return new Response(cached, {
+        status: 200,
+        headers: { "Content-Type": "application/json", "X-Cache": "HIT" },
+      });
+    }
   }
 
   // Query bundled skills for this org

@@ -9,7 +9,7 @@
 | AIF-SPEC-001 | 퇴직연금 프로세스 정밀분석 PRD v0.1 | 1.0 | Active | `AI_Foundry_퇴직연금_프로세스_정밀분석_PRD_v0.1.md` |
 | AIF-SPEC-002 | 퇴직연금 프로세스 정밀분석 PRD v0.2 | 1.0 | Active | `AI_Foundry_퇴직연금_프로세스_정밀분석_PRD_v0.2.md` |
 
-## PLAN (14)
+## PLAN (15)
 
 | 코드 | 제목 | 버전 | 상태 | 파일 |
 |------|------|:----:|:----:|------|
@@ -30,9 +30,10 @@
 | AIF-PLAN-026C | Foundry-X TaskType 확장 Phase 1-3 | 1.0 | Active | `01-plan/features/req-026-phase-1-3.plan.md` |
 | AIF-PLAN-026D | 반제품 생성 엔진 — Working Prototype Generator (Phase 2) | 1.0 | Active | `01-plan/features/req-026-phase-2.plan.md` |
 | AIF-PLAN-027 | 반제품 스펙 포맷 정의 및 파일럿 생성 | 1.0 | Active | `01-plan/features/req-027-semi-finished-spec.plan.md` |
+| AIF-PLAN-026E | 반제품 생성 엔진 Sprint 2 — LLM 생성기 5종 | 1.0 | Active | `01-plan/features/req-026-phase-2-sprint-2.plan.md` |
 | AIF-PLAN-028 | 반제품 스펙 PoC 보고서 Production 게시 | 1.0 | Active | `01-plan/features/req-028-poc-report-page.plan.md` |
 
-## DSGN (9)
+## DSGN (10)
 
 | 코드 | 제목 | 버전 | 상태 | 파일 |
 |------|------|:----:|:----:|------|
@@ -46,6 +47,7 @@
 | AIF-DSGN-008 | SI 산출물 Export UI | 0.1 | Draft | `02-design/features/deliverable-export-ui.design.md` |
 | AIF-DSGN-026C | Foundry-X TaskType 확장 Phase 1-3 | 1.0 | Active | `02-design/features/req-026-phase-1-3.design.md` |
 | AIF-DSGN-026D | 반제품 생성 엔진 — Working Prototype Generator | 1.0 | Active | `02-design/features/req-026-phase-2.design.md` |
+| AIF-DSGN-026E | 반제품 생성 엔진 Sprint 2 — LLM 생성기 5종 | 1.0 | Active | `02-design/features/req-026-phase-2-sprint-2.design.md` |
 | AIF-DSGN-027 | 반제품 스펙 포맷 정의 및 파일럿 생성 | 1.0 | Active | `02-design/features/req-027-semi-finished-spec.design.md` |
 
 ## ANLS (23)

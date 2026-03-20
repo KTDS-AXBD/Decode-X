@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "updatedAt": "2026-03-20T00:41:31.958Z",
+  "updatedAt": "2026-03-20T01:39:20.231Z",
   "generatedBy": "scan.mjs",
   "categories": [
     {
@@ -137,7 +137,12 @@
       "type": "command",
       "path": "/home/sinclair/.claude/commands/ax-code-deploy.md",
       "category": "cicd-deployment",
-      "tags": ["deploy", "preview", "cloudflare", "ci-cd"],
+      "tags": [
+        "deploy",
+        "preview",
+        "cloudflare",
+        "ci-cd"
+      ],
       "description": "프리뷰 배포 또는 명시적 재배포.",
       "hasGotchas": false,
       "hasReferences": false,
@@ -149,7 +154,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.884Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "ax-code-verify",
@@ -158,7 +163,12 @@
       "type": "command",
       "path": "/home/sinclair/.claude/commands/ax-code-verify.md",
       "category": "code-quality",
-      "tags": ["lint", "typecheck", "test", "verification"],
+      "tags": [
+        "lint",
+        "typecheck",
+        "test",
+        "verification"
+      ],
       "description": "코드 검증 — lint + typecheck + test를 한 번에 실행한다.",
       "hasGotchas": false,
       "hasReferences": false,
@@ -170,7 +180,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "ax-git-sync",
@@ -179,7 +189,13 @@
       "type": "command",
       "path": "/home/sinclair/.claude/commands/ax-git-sync.md",
       "category": "infra-operations",
-      "tags": ["git", "sync", "multi-env", "push", "pull"],
+      "tags": [
+        "git",
+        "sync",
+        "multi-env",
+        "push",
+        "pull"
+      ],
       "description": "Git을 통한 멀티 환경(Windows/WSL/Mac) 간 프로젝트 동기화.",
       "hasGotchas": false,
       "hasReferences": false,
@@ -191,7 +207,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "ax-git-team",
@@ -200,7 +216,12 @@
       "type": "command",
       "path": "/home/sinclair/.claude/commands/ax-git-team.md",
       "category": "business-automation",
-      "tags": ["agent-team", "tmux", "parallel", "workflow"],
+      "tags": [
+        "agent-team",
+        "tmux",
+        "parallel",
+        "workflow"
+      ],
       "description": "Agent Teams를 tmux in-window split에서 병렬 수행한다.",
       "hasGotchas": false,
       "hasReferences": false,
@@ -212,7 +233,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "ax-gov-doc",
@@ -221,7 +242,13 @@
       "type": "command",
       "path": "/home/sinclair/.claude/commands/ax-gov-doc.md",
       "category": "doc-governance",
-      "tags": ["document", "index", "archive", "metadata", "governance"],
+      "tags": [
+        "document",
+        "index",
+        "archive",
+        "metadata",
+        "governance"
+      ],
       "description": "문서 관리 — 새 문서 생성, 인덱스 갱신, 버전 관리, 아카이브, 메타데이터 검증.",
       "hasGotchas": false,
       "hasReferences": false,
@@ -233,7 +260,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "ax-gov-retro",
@@ -242,7 +269,12 @@
       "type": "command",
       "path": "/home/sinclair/.claude/commands/ax-gov-retro.md",
       "category": "doc-governance",
-      "tags": ["retrospective", "milestone", "changelog", "semver"],
+      "tags": [
+        "retrospective",
+        "milestone",
+        "changelog",
+        "semver"
+      ],
       "description": "마일스톤 회고 — SemVer Minor 태그 시점에 지표 수집, 회고 작성, CHANGELOG/MEMORY 반영. 프로젝트 관리 표준(~/.claude/standards/project-governance.md) 기반.",
       "hasGotchas": false,
       "hasReferences": false,
@@ -254,7 +286,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "ax-gov-risk",
@@ -263,7 +295,12 @@
       "type": "command",
       "path": "/home/sinclair/.claude/commands/ax-gov-risk.md",
       "category": "doc-governance",
-      "tags": ["risk", "tech-debt", "blocker", "dependency"],
+      "tags": [
+        "risk",
+        "tech-debt",
+        "blocker",
+        "dependency"
+      ],
       "description": "리스크 관리 — 블로커/의존성/기술부채/제약 등록, 목록 조회, 해소 처리. 리스크 관리 표준(~/.claude/standards/risk-governance.md) 기반.",
       "hasGotchas": false,
       "hasReferences": false,
@@ -275,7 +312,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "ax-gov-standards",
@@ -284,7 +321,12 @@
       "type": "command",
       "path": "/home/sinclair/.claude/commands/ax-gov-standards.md",
       "category": "doc-governance",
-      "tags": ["governance", "standards", "gap-analysis", "compliance"],
+      "tags": [
+        "governance",
+        "standards",
+        "gap-analysis",
+        "compliance"
+      ],
       "description": "거버넌스 표준 관리 — 표준 목록 조회, 갭 분석, 적용 상태 확인.",
       "hasGotchas": false,
       "hasReferences": false,
@@ -296,7 +338,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "ax-gov-version",
@@ -305,7 +347,12 @@
       "type": "command",
       "path": "/home/sinclair/.claude/commands/ax-gov-version.md",
       "category": "doc-governance",
-      "tags": ["version", "semver", "bump", "tag"],
+      "tags": [
+        "version",
+        "semver",
+        "bump",
+        "tag"
+      ],
       "description": "버전 관리 — 현재 버전 상태 확인, 범프, 태그 생성, 일관성 검증.",
       "hasGotchas": false,
       "hasReferences": false,
@@ -317,7 +364,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "ax-infra-selfcheck",
@@ -326,7 +373,12 @@
       "type": "command",
       "path": "/home/sinclair/.claude/commands/ax-infra-selfcheck.md",
       "category": "infra-operations",
-      "tags": ["selfcheck", "plugin", "integrity", "validation"],
+      "tags": [
+        "selfcheck",
+        "plugin",
+        "integrity",
+        "validation"
+      ],
       "description": "ax plugin 자율점검 — commands, standards, hooks, 참조 정합성을 자동 검증한다.",
       "hasGotchas": false,
       "hasReferences": false,
@@ -338,7 +390,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "ax-infra-statusline",
@@ -347,7 +399,12 @@
       "type": "command",
       "path": "/home/sinclair/.claude/commands/ax-infra-statusline.md",
       "category": "infra-operations",
-      "tags": ["statusline", "tmux", "display", "requirements"],
+      "tags": [
+        "statusline",
+        "tmux",
+        "display",
+        "requirements"
+      ],
       "description": "StatusLine 요구사항 표시를 관리한다.",
       "hasGotchas": false,
       "hasReferences": false,
@@ -359,7 +416,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "ax-req-integrity",
@@ -368,7 +425,13 @@
       "type": "command",
       "path": "/home/sinclair/.claude/commands/ax-req-integrity.md",
       "category": "requirements-planning",
-      "tags": ["requirements", "integrity", "spec", "github", "3-way"],
+      "tags": [
+        "requirements",
+        "integrity",
+        "spec",
+        "github",
+        "3-way"
+      ],
       "description": "요구사항 정합성 검증 — SPEC ↔ GitHub Issues ↔ Execution Plan 3-way 비교.",
       "hasGotchas": false,
       "hasReferences": false,
@@ -380,7 +443,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "ax-req-manage",
@@ -389,7 +452,13 @@
       "type": "command",
       "path": "/home/sinclair/.claude/commands/ax-req-manage.md",
       "category": "requirements-planning",
-      "tags": ["requirements", "triage", "status", "spec-sync", "github-project"],
+      "tags": [
+        "requirements",
+        "triage",
+        "status",
+        "spec-sync",
+        "github-project"
+      ],
       "description": "요구사항 관리 — 등록/분류/상태변경/목록/SPEC 동기화. GitHub Project 동기화 포함. 요구사항 관리 표준(~/.claude/standards/requirements-governance.md) 기반.",
       "hasGotchas": false,
       "hasReferences": false,
@@ -401,7 +470,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "ax-session-end",
@@ -410,7 +479,13 @@
       "type": "command",
       "path": "/home/sinclair/.claude/commands/ax-session-end.md",
       "category": "business-automation",
-      "tags": ["session", "commit", "push", "deploy", "workflow"],
+      "tags": [
+        "session",
+        "commit",
+        "push",
+        "deploy",
+        "workflow"
+      ],
       "description": "세션 종료 시 코드 커밋 + 문서 갱신 + git push + CI/CD 배포.",
       "hasGotchas": false,
       "hasReferences": false,
@@ -422,7 +497,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "ax-session-start",
@@ -431,7 +506,12 @@
       "type": "command",
       "path": "/home/sinclair/.claude/commands/ax-session-start.md",
       "category": "business-automation",
-      "tags": ["session", "context", "restore", "workflow"],
+      "tags": [
+        "session",
+        "context",
+        "restore",
+        "workflow"
+      ],
       "description": "세션 시작 시 프로젝트 컨텍스트를 복원한다.",
       "hasGotchas": false,
       "hasReferences": false,
@@ -443,7 +523,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.885Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "ax-req-interview",
@@ -452,7 +532,13 @@
       "type": "skill",
       "path": "/home/sinclair/.claude/skills/ax-req-interview/SKILL.md",
       "category": "requirements-planning",
-      "tags": ["interview", "prd", "ai-review", "requirements", "planning"],
+      "tags": [
+        "interview",
+        "prd",
+        "ai-review",
+        "requirements",
+        "planning"
+      ],
       "description": "요구사항 기획 단계에서 인터뷰 → PRD 작성 → 외부 AI 다중 검토 → 반복 개선 → 착수 판단까지의 전체 워크플로우를 자동화하는 스킬.",
       "hasGotchas": false,
       "hasReferences": true,
@@ -464,7 +550,7 @@
       "lastUsedAt": null,
       "source": "ax",
       "addedAt": "2026-03-20T00:38:13.886Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "db-migrate",
@@ -473,7 +559,13 @@
       "type": "skill",
       "path": "/home/sinclair/work/axbd/res-ai-foundry/.claude/skills/db-migrate/SKILL.md",
       "category": "code-scaffolding",
-      "tags": ["d1", "migration", "database", "schema", "wrangler"],
+      "tags": [
+        "d1",
+        "migration",
+        "database",
+        "schema",
+        "wrangler"
+      ],
       "description": "Wrangler D1 마이그레이션 생성 → 로컬 적용 → 검증을 한 번에 수행. 스키마 변경 후 사용.",
       "hasGotchas": false,
       "hasReferences": false,
@@ -485,7 +577,7 @@
       "lastUsedAt": null,
       "source": "res-ai-foundry",
       "addedAt": "2026-03-20T00:38:13.886Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "deploy",
@@ -494,7 +586,14 @@
       "type": "skill",
       "path": "/home/sinclair/work/axbd/res-ai-foundry/.claude/skills/deploy/SKILL.md",
       "category": "cicd-deployment",
-      "tags": ["cloudflare", "workers", "pages", "ci-cd", "github-actions", "preview"],
+      "tags": [
+        "cloudflare",
+        "workers",
+        "pages",
+        "ci-cd",
+        "github-actions",
+        "preview"
+      ],
       "description": "Cloudflare Workers/Pages 배포 수행. CI/CD (GitHub Actions) 기반. --preview 옵션으로 프리뷰 배포 가능.",
       "hasGotchas": false,
       "hasReferences": false,
@@ -506,7 +605,7 @@
       "lastUsedAt": null,
       "source": "res-ai-foundry",
       "addedAt": "2026-03-20T00:38:13.886Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "e2e-pipeline",
@@ -515,7 +614,13 @@
       "type": "skill",
       "path": "/home/sinclair/work/axbd/res-ai-foundry/.claude/skills/e2e-pipeline/SKILL.md",
       "category": "product-verification",
-      "tags": ["e2e", "pipeline", "test", "stage", "integration"],
+      "tags": [
+        "e2e",
+        "pipeline",
+        "test",
+        "stage",
+        "integration"
+      ],
       "description": "5-Stage Core Engine 파이프라인 E2E 테스트 실행. 전체 또는 특정 Stage 선택 가능.",
       "hasGotchas": false,
       "hasReferences": false,
@@ -527,7 +632,7 @@
       "lastUsedAt": null,
       "source": "res-ai-foundry",
       "addedAt": "2026-03-20T00:38:13.886Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "ralph",
@@ -536,7 +641,13 @@
       "type": "skill",
       "path": "/home/sinclair/work/axbd/res-ai-foundry/.claude/skills/ralph/SKILL.md",
       "category": "business-automation",
-      "tags": ["task-loop", "autonomous", "prd", "batch", "workflow"],
+      "tags": [
+        "task-loop",
+        "autonomous",
+        "prd",
+        "batch",
+        "workflow"
+      ],
       "description": ">-",
       "hasGotchas": false,
       "hasReferences": false,
@@ -548,7 +659,7 @@
       "lastUsedAt": null,
       "source": "res-ai-foundry",
       "addedAt": "2026-03-20T00:38:13.886Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "secrets-check",
@@ -557,7 +668,13 @@
       "type": "skill",
       "path": "/home/sinclair/work/axbd/res-ai-foundry/.claude/skills/secrets-check/SKILL.md",
       "category": "runbooks",
-      "tags": ["secrets", "wrangler", "environment", "security", "diagnosis"],
+      "tags": [
+        "secrets",
+        "wrangler",
+        "environment",
+        "security",
+        "diagnosis"
+      ],
       "description": "모든 서비스의 wrangler.toml에 선언된 secrets 상태를 환경별로 검증. --env staging/production 으로 특정 환경만 확인 가능.",
       "hasGotchas": false,
       "hasReferences": false,
@@ -569,7 +686,7 @@
       "lastUsedAt": null,
       "source": "res-ai-foundry",
       "addedAt": "2026-03-20T00:38:13.886Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "sync",
@@ -578,7 +695,13 @@
       "type": "skill",
       "path": "/home/sinclair/work/axbd/res-ai-foundry/.claude/skills/sync/SKILL.md",
       "category": "infra-operations",
-      "tags": ["spec", "github", "sync", "project-management", "issues"],
+      "tags": [
+        "spec",
+        "github",
+        "sync",
+        "project-management",
+        "issues"
+      ],
       "description": "res-ai-foundry 프로젝트 관리 동기화. SPEC.md 진행상태와 GitHub 이슈/프로젝트 상태를 맞춘다.",
       "hasGotchas": false,
       "hasReferences": false,
@@ -590,7 +713,7 @@
       "lastUsedAt": null,
       "source": "res-ai-foundry",
       "addedAt": "2026-03-20T00:38:13.887Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:bkend-auth",
@@ -611,7 +734,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.903Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:bkend-cookbook",
@@ -619,7 +742,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/bkit-marketplace/bkit/1.6.0/skills/bkend-cookbook/SKILL.md",
-      "category": "uncategorized",
+      "category": "runbooks",
       "tags": [],
       "description": "bkend.ai practical project tutorials and troubleshooting guide.",
       "hasGotchas": false,
@@ -632,7 +755,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.903Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.48
     },
     {
       "id": "cache:bkend-data",
@@ -640,7 +765,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/bkit-marketplace/bkit/1.6.0/skills/bkend-data/SKILL.md",
-      "category": "uncategorized",
+      "category": "data-analysis",
       "tags": [],
       "description": "bkend.ai database expert skill.",
       "hasGotchas": false,
@@ -653,7 +778,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.903Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.33
     },
     {
       "id": "cache:bkend-quickstart",
@@ -674,7 +801,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.903Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:bkend-storage",
@@ -695,7 +822,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.903Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:bkit-rules",
@@ -703,7 +830,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/bkit-marketplace/bkit/1.6.0/skills/bkit-rules/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-quality",
       "tags": [],
       "description": "Core rules for bkit plugin. PDCA methodology, level detection, agent auto-triggering, and code quality standards.",
       "hasGotchas": false,
@@ -716,7 +843,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.903Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "cache:bkit-templates",
@@ -724,7 +853,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/bkit-marketplace/bkit/1.6.0/skills/bkit-templates/SKILL.md",
-      "category": "uncategorized",
+      "category": "library-reference",
       "tags": [],
       "description": "PDCA document templates for consistent documentation.",
       "hasGotchas": false,
@@ -737,7 +866,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.904Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "cache:claude-code-learning",
@@ -758,7 +889,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.904Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:code-review",
@@ -766,7 +897,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/bkit-marketplace/bkit/1.6.0/skills/code-review/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-quality",
       "tags": [],
       "description": "Code review skill for analyzing code quality, detecting bugs, and ensuring best practices.",
       "hasGotchas": false,
@@ -779,7 +910,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.904Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.83
     },
     {
       "id": "cache:desktop-app",
@@ -800,7 +933,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.904Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:development-pipeline",
@@ -808,7 +941,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/bkit-marketplace/bkit/1.6.0/skills/development-pipeline/SKILL.md",
-      "category": "uncategorized",
+      "category": "product-verification",
       "tags": [],
       "description": "9-phase Development Pipeline complete knowledge.",
       "hasGotchas": false,
@@ -821,7 +954,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.904Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "cache:dynamic",
@@ -842,7 +977,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.904Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:enterprise",
@@ -863,7 +998,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.904Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:mobile-app",
@@ -884,7 +1019,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.904Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:pdca",
@@ -892,7 +1027,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/bkit-marketplace/bkit/1.6.0/skills/pdca/SKILL.md",
-      "category": "uncategorized",
+      "category": "requirements-planning",
       "tags": [],
       "description": "Unified skill for managing the entire PDCA cycle.",
       "hasGotchas": false,
@@ -905,7 +1040,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.905Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "cache:phase-1-schema",
@@ -913,7 +1050,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/bkit-marketplace/bkit/1.6.0/skills/phase-1-schema/SKILL.md",
-      "category": "uncategorized",
+      "category": "data-analysis",
       "tags": [],
       "description": "Skill for defining terminology and data structures used throughout the project.",
       "hasGotchas": false,
@@ -926,7 +1063,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.905Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.33
     },
     {
       "id": "cache:phase-2-convention",
@@ -934,7 +1073,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/bkit-marketplace/bkit/1.6.0/skills/phase-2-convention/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-quality",
       "tags": [],
       "description": "Skill for defining coding rules and conventions.",
       "hasGotchas": false,
@@ -947,7 +1086,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.905Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "cache:phase-3-mockup",
@@ -968,7 +1109,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.905Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:phase-4-api",
@@ -989,7 +1130,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.905Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:phase-5-design-system",
@@ -997,7 +1138,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/bkit-marketplace/bkit/1.6.0/skills/phase-5-design-system/SKILL.md",
-      "category": "uncategorized",
+      "category": "cicd-deployment",
       "tags": [],
       "description": "Skill for building platform-independent design systems.",
       "hasGotchas": false,
@@ -1010,7 +1151,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.905Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "cache:phase-6-ui-integration",
@@ -1031,7 +1174,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.905Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:phase-7-seo-security",
@@ -1052,7 +1195,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.905Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:phase-8-review",
@@ -1060,7 +1203,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/bkit-marketplace/bkit/1.6.0/skills/phase-8-review/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-quality",
       "tags": [],
       "description": "Skill for verifying overall codebase quality and gap analysis.",
       "hasGotchas": false,
@@ -1073,7 +1216,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.905Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.83
     },
     {
       "id": "cache:phase-9-deployment",
@@ -1081,7 +1226,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/bkit-marketplace/bkit/1.6.0/skills/phase-9-deployment/SKILL.md",
-      "category": "uncategorized",
+      "category": "cicd-deployment",
       "tags": [],
       "description": "Skill for deploying to production environment.",
       "hasGotchas": false,
@@ -1094,7 +1239,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.905Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.83
     },
     {
       "id": "cache:plan-plus",
@@ -1102,7 +1249,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/bkit-marketplace/bkit/1.6.0/skills/plan-plus/SKILL.md",
-      "category": "uncategorized",
+      "category": "requirements-planning",
       "tags": [],
       "description": "Plan Plus — Brainstorming-Enhanced PDCA Planning.",
       "hasGotchas": false,
@@ -1115,7 +1262,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.905Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 1
     },
     {
       "id": "cache:pm-discovery",
@@ -1123,7 +1272,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/bkit-marketplace/bkit/1.6.0/skills/pm-discovery/SKILL.md",
-      "category": "uncategorized",
+      "category": "requirements-planning",
       "tags": [],
       "description": "PM Agent Team - Automated product discovery, strategy, and PRD generation.",
       "hasGotchas": false,
@@ -1136,7 +1285,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.906Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.74
     },
     {
       "id": "cache:starter",
@@ -1144,7 +1295,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/bkit-marketplace/bkit/1.6.0/skills/starter/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "Static web development skill for beginners and non-developers.",
       "hasGotchas": false,
@@ -1157,7 +1308,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.906Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "cache:zero-script-qa",
@@ -1165,7 +1318,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/bkit-marketplace/bkit/1.6.0/skills/zero-script-qa/SKILL.md",
-      "category": "uncategorized",
+      "category": "product-verification",
       "tags": [],
       "description": "Zero Script QA - Testing methodology without test scripts.",
       "hasGotchas": false,
@@ -1178,7 +1331,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.906Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 1
     },
     {
       "id": "cache:claude-automation-recommender",
@@ -1186,7 +1341,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/claude-code-setup/1.0.0/skills/claude-automation-recommender/SKILL.md",
-      "category": "uncategorized",
+      "category": "business-automation",
       "tags": [],
       "description": "Analyze a codebase and recommend Claude Code automations (hooks, subagents, skills, plugins, MCP servers). Use when user asks for automation recommendations, wants to optimize their Claude Code setup, mentions improving Claude Code workflows, asks how to first set up Claude Code for a project, or wants to know what Claude Code features they should use.",
       "hasGotchas": false,
@@ -1199,7 +1354,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.906Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.74
     },
     {
       "id": "cache:claude-md-improver",
@@ -1207,7 +1364,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/claude-md-management/1.0.0/skills/claude-md-improver/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "Audit and improve CLAUDE.md files in repositories. Use when user asks to check, audit, update, improve, or fix CLAUDE.md files. Scans for all CLAUDE.md files, evaluates quality against templates, outputs quality report, then makes targeted updates. Also use when the user mentions \"CLAUDE.md maintenance\" or \"project memory optimization\".",
       "hasGotchas": false,
@@ -1220,7 +1377,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.906Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "cache:firecrawl",
@@ -1241,7 +1400,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.906Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:frontend-design",
@@ -1249,7 +1408,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/frontend-design/6b70f99f769f/skills/frontend-design/SKILL.md",
-      "category": "uncategorized",
+      "category": "cicd-deployment",
       "tags": [],
       "description": "Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, or applications. Generates creative, polished code that avoids generic AI aesthetics.",
       "hasGotchas": false,
@@ -1262,7 +1421,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.909Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.83
     },
     {
       "id": "cache:frontend-design",
@@ -1270,7 +1431,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/frontend-design/78497c524da3/skills/frontend-design/SKILL.md",
-      "category": "uncategorized",
+      "category": "cicd-deployment",
       "tags": [],
       "description": "Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, or applications. Generates creative, polished code that avoids generic AI aesthetics.",
       "hasGotchas": false,
@@ -1283,7 +1444,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.909Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.83
     },
     {
       "id": "cache:frontend-design",
@@ -1291,7 +1454,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/frontend-design/7994c270e575/skills/frontend-design/SKILL.md",
-      "category": "uncategorized",
+      "category": "cicd-deployment",
       "tags": [],
       "description": "Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, or applications. Generates creative, polished code that avoids generic AI aesthetics.",
       "hasGotchas": false,
@@ -1304,7 +1467,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.909Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.83
     },
     {
       "id": "cache:frontend-design",
@@ -1312,7 +1477,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/frontend-design/8908a582f80d/skills/frontend-design/SKILL.md",
-      "category": "uncategorized",
+      "category": "cicd-deployment",
       "tags": [],
       "description": "Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, or applications. Generates creative, polished code that avoids generic AI aesthetics.",
       "hasGotchas": false,
@@ -1325,7 +1490,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.909Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.83
     },
     {
       "id": "cache:frontend-design",
@@ -1333,7 +1500,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/frontend-design/b36fd4b75301/skills/frontend-design/SKILL.md",
-      "category": "uncategorized",
+      "category": "cicd-deployment",
       "tags": [],
       "description": "Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, or applications. Generates creative, polished code that avoids generic AI aesthetics.",
       "hasGotchas": false,
@@ -1346,7 +1513,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.909Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.83
     },
     {
       "id": "cache:frontend-design",
@@ -1354,7 +1523,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/frontend-design/d53f6ca4cdb0/skills/frontend-design/SKILL.md",
-      "category": "uncategorized",
+      "category": "cicd-deployment",
       "tags": [],
       "description": "Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, or applications. Generates creative, polished code that avoids generic AI aesthetics.",
       "hasGotchas": false,
@@ -1367,7 +1536,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.909Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.83
     },
     {
       "id": "cache:frontend-design",
@@ -1375,7 +1546,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/frontend-design/d5c15b861cd2/skills/frontend-design/SKILL.md",
-      "category": "uncategorized",
+      "category": "cicd-deployment",
       "tags": [],
       "description": "Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, or applications. Generates creative, polished code that avoids generic AI aesthetics.",
       "hasGotchas": false,
@@ -1388,7 +1559,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.909Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.83
     },
     {
       "id": "cache:command-development",
@@ -1409,7 +1582,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.921Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:agent-development",
@@ -1430,7 +1603,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.920Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:command-development",
@@ -1451,7 +1624,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.921Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:hook-development",
@@ -1459,7 +1632,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/78497c524da3/skills/hook-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "business-automation",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create a hook\", \"add a PreToolUse/PostToolUse/Stop hook\", \"validate tool use\", \"implement prompt-based hooks\", \"use ${CLAUDE_PLUGIN_ROOT}\", \"set up event-driven automation\", \"block dangerous commands\", or mentions hook events (PreToolUse, PostToolUse, Stop, SubagentStop, SessionStart, SessionEnd, UserPromptSubmit, PreCompact, Notification). Provides comprehensive guidance for creating and implementing Claude Code plugin hooks with focus on advanced prompt-based hooks API.",
       "hasGotchas": false,
@@ -1472,7 +1645,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.921Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.74
     },
     {
       "id": "cache:mcp-integration",
@@ -1493,7 +1668,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:plugin-settings",
@@ -1514,7 +1689,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:plugin-structure",
@@ -1522,7 +1697,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/78497c524da3/skills/plugin-structure/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create a plugin\", \"scaffold a plugin\", \"understand plugin structure\", \"organize plugin components\", \"set up plugin.json\", \"use ${CLAUDE_PLUGIN_ROOT}\", \"add commands/agents/skills/hooks\", \"configure auto-discovery\", or needs guidance on plugin directory layout, manifest configuration, component organization, file naming conventions, or Claude Code plugin architecture best practices.",
       "hasGotchas": false,
@@ -1535,7 +1710,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "cache:skill-development",
@@ -1556,7 +1733,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.923Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:agent-development",
@@ -1577,7 +1754,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.920Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:command-development",
@@ -1598,7 +1775,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.921Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:hook-development",
@@ -1606,7 +1783,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/7994c270e575/skills/hook-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "business-automation",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create a hook\", \"add a PreToolUse/PostToolUse/Stop hook\", \"validate tool use\", \"implement prompt-based hooks\", \"use ${CLAUDE_PLUGIN_ROOT}\", \"set up event-driven automation\", \"block dangerous commands\", or mentions hook events (PreToolUse, PostToolUse, Stop, SubagentStop, SessionStart, SessionEnd, UserPromptSubmit, PreCompact, Notification). Provides comprehensive guidance for creating and implementing Claude Code plugin hooks with focus on advanced prompt-based hooks API.",
       "hasGotchas": false,
@@ -1619,7 +1796,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.921Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.74
     },
     {
       "id": "cache:mcp-integration",
@@ -1640,7 +1819,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:plugin-settings",
@@ -1661,7 +1840,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:plugin-structure",
@@ -1669,7 +1848,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/7994c270e575/skills/plugin-structure/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create a plugin\", \"scaffold a plugin\", \"understand plugin structure\", \"organize plugin components\", \"set up plugin.json\", \"use ${CLAUDE_PLUGIN_ROOT}\", \"add commands/agents/skills/hooks\", \"configure auto-discovery\", or needs guidance on plugin directory layout, manifest configuration, component organization, file naming conventions, or Claude Code plugin architecture best practices.",
       "hasGotchas": false,
@@ -1682,7 +1861,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "cache:skill-development",
@@ -1703,7 +1884,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.923Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:agent-development",
@@ -1724,7 +1905,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.920Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:command-development",
@@ -1745,7 +1926,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.921Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:hook-development",
@@ -1753,7 +1934,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/8908a582f80d/skills/hook-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "business-automation",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create a hook\", \"add a PreToolUse/PostToolUse/Stop hook\", \"validate tool use\", \"implement prompt-based hooks\", \"use ${CLAUDE_PLUGIN_ROOT}\", \"set up event-driven automation\", \"block dangerous commands\", or mentions hook events (PreToolUse, PostToolUse, Stop, SubagentStop, SessionStart, SessionEnd, UserPromptSubmit, PreCompact, Notification). Provides comprehensive guidance for creating and implementing Claude Code plugin hooks with focus on advanced prompt-based hooks API.",
       "hasGotchas": false,
@@ -1766,7 +1947,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.921Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.74
     },
     {
       "id": "cache:mcp-integration",
@@ -1787,7 +1970,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:plugin-settings",
@@ -1808,7 +1991,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:plugin-structure",
@@ -1816,7 +1999,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/8908a582f80d/skills/plugin-structure/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create a plugin\", \"scaffold a plugin\", \"understand plugin structure\", \"organize plugin components\", \"set up plugin.json\", \"use ${CLAUDE_PLUGIN_ROOT}\", \"add commands/agents/skills/hooks\", \"configure auto-discovery\", or needs guidance on plugin directory layout, manifest configuration, component organization, file naming conventions, or Claude Code plugin architecture best practices.",
       "hasGotchas": false,
@@ -1829,7 +2012,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "cache:skill-development",
@@ -1850,7 +2035,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.923Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:agent-development",
@@ -1871,7 +2056,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.920Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:command-development",
@@ -1892,7 +2077,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.921Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:hook-development",
@@ -1900,7 +2085,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/b36fd4b75301/skills/hook-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "business-automation",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create a hook\", \"add a PreToolUse/PostToolUse/Stop hook\", \"validate tool use\", \"implement prompt-based hooks\", \"use ${CLAUDE_PLUGIN_ROOT}\", \"set up event-driven automation\", \"block dangerous commands\", or mentions hook events (PreToolUse, PostToolUse, Stop, SubagentStop, SessionStart, SessionEnd, UserPromptSubmit, PreCompact, Notification). Provides comprehensive guidance for creating and implementing Claude Code plugin hooks with focus on advanced prompt-based hooks API.",
       "hasGotchas": false,
@@ -1913,7 +2098,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.921Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.74
     },
     {
       "id": "cache:mcp-integration",
@@ -1934,7 +2121,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:plugin-settings",
@@ -1955,7 +2142,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:plugin-structure",
@@ -1963,7 +2150,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/b36fd4b75301/skills/plugin-structure/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create a plugin\", \"scaffold a plugin\", \"understand plugin structure\", \"organize plugin components\", \"set up plugin.json\", \"use ${CLAUDE_PLUGIN_ROOT}\", \"add commands/agents/skills/hooks\", \"configure auto-discovery\", or needs guidance on plugin directory layout, manifest configuration, component organization, file naming conventions, or Claude Code plugin architecture best practices.",
       "hasGotchas": false,
@@ -1976,7 +2163,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "cache:skill-development",
@@ -1997,7 +2186,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.923Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:agent-development",
@@ -2018,7 +2207,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.920Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:command-development",
@@ -2039,7 +2228,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.921Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:hook-development",
@@ -2047,7 +2236,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/d53f6ca4cdb0/skills/hook-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "business-automation",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create a hook\", \"add a PreToolUse/PostToolUse/Stop hook\", \"validate tool use\", \"implement prompt-based hooks\", \"use ${CLAUDE_PLUGIN_ROOT}\", \"set up event-driven automation\", \"block dangerous commands\", or mentions hook events (PreToolUse, PostToolUse, Stop, SubagentStop, SessionStart, SessionEnd, UserPromptSubmit, PreCompact, Notification). Provides comprehensive guidance for creating and implementing Claude Code plugin hooks with focus on advanced prompt-based hooks API.",
       "hasGotchas": false,
@@ -2060,7 +2249,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.921Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.74
     },
     {
       "id": "cache:mcp-integration",
@@ -2081,7 +2272,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:plugin-settings",
@@ -2102,7 +2293,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:plugin-structure",
@@ -2110,7 +2301,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/d53f6ca4cdb0/skills/plugin-structure/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create a plugin\", \"scaffold a plugin\", \"understand plugin structure\", \"organize plugin components\", \"set up plugin.json\", \"use ${CLAUDE_PLUGIN_ROOT}\", \"add commands/agents/skills/hooks\", \"configure auto-discovery\", or needs guidance on plugin directory layout, manifest configuration, component organization, file naming conventions, or Claude Code plugin architecture best practices.",
       "hasGotchas": false,
@@ -2123,7 +2314,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "cache:skill-development",
@@ -2144,7 +2337,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.923Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:agent-development",
@@ -2165,7 +2358,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.920Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:command-development",
@@ -2186,7 +2379,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.921Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:hook-development",
@@ -2194,7 +2387,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/d5c15b861cd2/skills/hook-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "business-automation",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create a hook\", \"add a PreToolUse/PostToolUse/Stop hook\", \"validate tool use\", \"implement prompt-based hooks\", \"use ${CLAUDE_PLUGIN_ROOT}\", \"set up event-driven automation\", \"block dangerous commands\", or mentions hook events (PreToolUse, PostToolUse, Stop, SubagentStop, SessionStart, SessionEnd, UserPromptSubmit, PreCompact, Notification). Provides comprehensive guidance for creating and implementing Claude Code plugin hooks with focus on advanced prompt-based hooks API.",
       "hasGotchas": false,
@@ -2207,7 +2400,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.921Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.74
     },
     {
       "id": "cache:mcp-integration",
@@ -2228,7 +2423,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:plugin-settings",
@@ -2249,7 +2444,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:plugin-structure",
@@ -2257,7 +2452,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/plugin-dev/d5c15b861cd2/skills/plugin-structure/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create a plugin\", \"scaffold a plugin\", \"understand plugin structure\", \"organize plugin components\", \"set up plugin.json\", \"use ${CLAUDE_PLUGIN_ROOT}\", \"add commands/agents/skills/hooks\", \"configure auto-discovery\", or needs guidance on plugin directory layout, manifest configuration, component organization, file naming conventions, or Claude Code plugin architecture best practices.",
       "hasGotchas": false,
@@ -2270,7 +2465,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.922Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "cache:skill-development",
@@ -2291,7 +2488,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.923Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:skill-creator",
@@ -2299,7 +2496,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/skill-creator/6b70f99f769f/skills/skill-creator/SKILL.md",
-      "category": "uncategorized",
+      "category": "product-verification",
       "tags": [],
       "description": "Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, update or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy.",
       "hasGotchas": false,
@@ -2312,7 +2509,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.927Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "cache:skill-creator",
@@ -2320,7 +2519,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/skill-creator/78497c524da3/skills/skill-creator/SKILL.md",
-      "category": "uncategorized",
+      "category": "product-verification",
       "tags": [],
       "description": "Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, update or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy.",
       "hasGotchas": false,
@@ -2333,7 +2532,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.927Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "cache:skill-creator",
@@ -2341,7 +2542,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/skill-creator/7994c270e575/skills/skill-creator/SKILL.md",
-      "category": "uncategorized",
+      "category": "product-verification",
       "tags": [],
       "description": "Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, update or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy.",
       "hasGotchas": false,
@@ -2354,7 +2555,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.927Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "cache:skill-creator",
@@ -2362,7 +2565,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/skill-creator/8908a582f80d/skills/skill-creator/SKILL.md",
-      "category": "uncategorized",
+      "category": "product-verification",
       "tags": [],
       "description": "Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, update or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy.",
       "hasGotchas": false,
@@ -2375,7 +2578,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.927Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "cache:skill-creator",
@@ -2383,7 +2588,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/skill-creator/b36fd4b75301/skills/skill-creator/SKILL.md",
-      "category": "uncategorized",
+      "category": "product-verification",
       "tags": [],
       "description": "Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, update or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy.",
       "hasGotchas": false,
@@ -2396,7 +2601,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.927Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "cache:skill-creator",
@@ -2404,7 +2611,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/skill-creator/d53f6ca4cdb0/skills/skill-creator/SKILL.md",
-      "category": "uncategorized",
+      "category": "product-verification",
       "tags": [],
       "description": "Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, update or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy.",
       "hasGotchas": false,
@@ -2417,7 +2624,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.927Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "cache:skill-creator",
@@ -2425,7 +2634,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/claude-plugins-official/skill-creator/d5c15b861cd2/skills/skill-creator/SKILL.md",
-      "category": "uncategorized",
+      "category": "product-verification",
       "tags": [],
       "description": "Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, update or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy.",
       "hasGotchas": false,
@@ -2438,7 +2647,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.927Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "cache:brainstorm-okrs",
@@ -2446,7 +2657,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-execution/1.0.1/skills/brainstorm-okrs/SKILL.md",
-      "category": "uncategorized",
+      "category": "business-automation",
       "tags": [],
       "description": "Brainstorm team-level OKRs aligned with company objectives — qualitative objectives with measurable key results. Use when setting quarterly OKRs, aligning team goals with company strategy, drafting objectives, or learning how to write effective OKRs.",
       "hasGotchas": false,
@@ -2459,7 +2670,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.927Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "cache:create-prd",
@@ -2467,7 +2680,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-execution/1.0.1/skills/create-prd/SKILL.md",
-      "category": "uncategorized",
+      "category": "requirements-planning",
       "tags": [],
       "description": "Create a Product Requirements Document using a comprehensive 8-section template covering problem, objectives, segments, value propositions, solution, and release planning. Use when writing a PRD, documenting product requirements, preparing a feature spec, or reviewing an existing PRD.",
       "hasGotchas": false,
@@ -2480,7 +2693,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.927Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 1
     },
     {
       "id": "cache:dummy-dataset",
@@ -2488,7 +2703,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-execution/1.0.1/skills/dummy-dataset/SKILL.md",
-      "category": "uncategorized",
+      "category": "product-verification",
       "tags": [],
       "description": "Generate realistic dummy datasets for testing with customizable columns, constraints, and output formats (CSV, JSON, SQL, Python script). Use when creating test data, building mock datasets, or generating sample data for development and demos.",
       "hasGotchas": false,
@@ -2501,7 +2716,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.928Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "cache:job-stories",
@@ -2522,7 +2739,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.928Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:outcome-roadmap",
@@ -2530,7 +2747,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-execution/1.0.1/skills/outcome-roadmap/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "Transform an output-focused roadmap into an outcome-focused one that communicates strategic intent. Rewrites initiatives as outcome statements reflecting user and business impacts. Use when shifting to outcome roadmaps, making a roadmap more strategic, or rewriting feature lists as outcomes.",
       "hasGotchas": false,
@@ -2543,7 +2760,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.928Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "cache:pre-mortem",
@@ -2551,7 +2770,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-execution/1.0.1/skills/pre-mortem/SKILL.md",
-      "category": "uncategorized",
+      "category": "requirements-planning",
       "tags": [],
       "description": "Run a pre-mortem risk analysis on a PRD or launch plan. Categorizes risks as Tigers (real problems), Paper Tigers (overblown concerns), and Elephants (unspoken worries), then classifies as launch-blocking, fast-follow, or track. Use when preparing for launch, stress-testing a product plan, or identifying what could go wrong.",
       "hasGotchas": false,
@@ -2564,7 +2783,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.929Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.74
     },
     {
       "id": "cache:prioritization-frameworks",
@@ -2572,7 +2793,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-execution/1.0.1/skills/prioritization-frameworks/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "Reference guide to 9 prioritization frameworks with formulas, when-to-use guidance, and templates — RICE, ICE, Kano, MoSCoW, Opportunity Score, and more. Use when selecting a prioritization method, comparing frameworks like RICE vs ICE, or learning how different prioritization approaches work.",
       "hasGotchas": false,
@@ -2585,7 +2806,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.929Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "cache:release-notes",
@@ -2593,7 +2816,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-execution/1.0.1/skills/release-notes/SKILL.md",
-      "category": "uncategorized",
+      "category": "requirements-planning",
       "tags": [],
       "description": "Generate user-facing release notes from tickets, PRDs, or changelogs. Creates clear, engaging summaries organized by category (new features, improvements, fixes). Use when writing release notes, creating changelogs, announcing product updates, or summarizing what shipped.",
       "hasGotchas": false,
@@ -2606,7 +2829,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.929Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.74
     },
     {
       "id": "cache:retro",
@@ -2614,7 +2839,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-execution/1.0.1/skills/retro/SKILL.md",
-      "category": "uncategorized",
+      "category": "doc-governance",
       "tags": [],
       "description": "Facilitate a structured sprint retrospective — what went well, what didn't, and prioritized action items with owners and deadlines. Use when running a retrospective, reflecting on a sprint, creating action items from team feedback, or learning how to run effective retros.",
       "hasGotchas": false,
@@ -2627,7 +2852,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.929Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.83
     },
     {
       "id": "cache:sprint-plan",
@@ -2635,7 +2862,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-execution/1.0.1/skills/sprint-plan/SKILL.md",
-      "category": "uncategorized",
+      "category": "requirements-planning",
       "tags": [],
       "description": "Plan a sprint with capacity estimation, story selection, dependency mapping, and risk identification. Use when preparing for sprint planning, estimating team capacity, selecting stories, or balancing sprint scope against velocity.",
       "hasGotchas": false,
@@ -2648,7 +2875,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.930Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 1
     },
     {
       "id": "cache:stakeholder-map",
@@ -2656,7 +2885,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-execution/1.0.1/skills/stakeholder-map/SKILL.md",
-      "category": "uncategorized",
+      "category": "requirements-planning",
       "tags": [],
       "description": "Build a stakeholder map using a power/interest grid, identify communication strategies per quadrant, and generate a communication plan. Use when managing stakeholders, preparing for a launch, aligning cross-functional teams, or planning stakeholder engagement.",
       "hasGotchas": false,
@@ -2669,7 +2898,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.930Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.74
     },
     {
       "id": "cache:summarize-meeting",
@@ -2690,7 +2921,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.930Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:test-scenarios",
@@ -2698,7 +2929,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-execution/1.0.1/skills/test-scenarios/SKILL.md",
-      "category": "uncategorized",
+      "category": "product-verification",
       "tags": [],
       "description": "Create comprehensive test scenarios from user stories with test objectives, starting conditions, user roles, step-by-step actions, and expected outcomes. Use when writing QA test cases, creating test plans, defining acceptance tests, or preparing for feature validation.",
       "hasGotchas": false,
@@ -2711,7 +2942,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.930Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.74
     },
     {
       "id": "cache:user-stories",
@@ -2719,7 +2952,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-execution/1.0.1/skills/user-stories/SKILL.md",
-      "category": "uncategorized",
+      "category": "requirements-planning",
       "tags": [],
       "description": "Create user stories following the 3 C's (Card, Conversation, Confirmation) and INVEST criteria with descriptions, design links, and acceptance criteria. Use when writing user stories, breaking down features into backlog items, or defining acceptance criteria.",
       "hasGotchas": false,
@@ -2732,7 +2965,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.931Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "cache:wwas",
@@ -2740,7 +2975,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-execution/1.0.1/skills/wwas/SKILL.md",
-      "category": "uncategorized",
+      "category": "product-verification",
       "tags": [],
       "description": "Create product backlog items in Why-What-Acceptance format — independent, valuable, testable items with strategic context. Use when writing structured backlog items, breaking features into work items, or using the WWA format.",
       "hasGotchas": false,
@@ -2753,7 +2988,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.931Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "cache:beachhead-segment",
@@ -2761,7 +2998,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-go-to-market/1.0.1/skills/beachhead-segment/SKILL.md",
-      "category": "uncategorized",
+      "category": "requirements-planning",
       "tags": [],
       "description": "Identify the first beachhead market segment for a product launch. Evaluates segments against burning pain, willingness to pay, winnable market share, and referral potential. Use when choosing a first market, targeting an initial customer segment, or planning market entry strategy.",
       "hasGotchas": false,
@@ -2774,7 +3011,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.931Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.74
     },
     {
       "id": "cache:competitive-battlecard",
@@ -2782,7 +3021,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-go-to-market/1.0.1/skills/competitive-battlecard/SKILL.md",
-      "category": "uncategorized",
+      "category": "business-automation",
       "tags": [],
       "description": "Create sales-ready competitive battlecards comparing your product against a specific competitor — positioning, feature comparison, objection handling, and win/loss patterns. Use when preparing sales teams, creating competitive materials, or responding to 'why not competitor X?'",
       "hasGotchas": false,
@@ -2795,7 +3034,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.932Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "cache:growth-loops",
@@ -2803,7 +3044,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-go-to-market/1.0.1/skills/growth-loops/SKILL.md",
-      "category": "uncategorized",
+      "category": "business-automation",
       "tags": [],
       "description": "Identify growth loops (flywheels) for sustainable traction. Evaluates 5 loop types: Viral, Usage, Collaboration, User-Generated, and Referral. Use when designing growth mechanisms, building product-led traction, or understanding how growth loops work.",
       "hasGotchas": false,
@@ -2816,7 +3057,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.932Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "cache:gtm-motions",
@@ -2824,7 +3067,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-go-to-market/1.0.1/skills/gtm-motions/SKILL.md",
-      "category": "uncategorized",
+      "category": "requirements-planning",
       "tags": [],
       "description": "Identify the best GTM motions and tools across 7 motion types: Inbound, Outbound, Paid Digital, Community, Partners, ABM, and PLG. Use when selecting marketing channels, choosing between inbound and outbound strategy, or planning cross-channel campaigns.",
       "hasGotchas": false,
@@ -2837,7 +3080,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.933Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.74
     },
     {
       "id": "cache:gtm-strategy",
@@ -2845,7 +3090,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-go-to-market/1.0.1/skills/gtm-strategy/SKILL.md",
-      "category": "uncategorized",
+      "category": "requirements-planning",
       "tags": [],
       "description": "Create a go-to-market strategy covering marketing channels, messaging, success metrics, and launch timeline. Use when planning a product launch, creating a GTM plan from scratch, or defining a launch strategy for a new market.",
       "hasGotchas": false,
@@ -2858,7 +3103,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.933Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.74
     },
     {
       "id": "cache:ideal-customer-profile",
@@ -2866,7 +3113,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-go-to-market/1.0.1/skills/ideal-customer-profile/SKILL.md",
-      "category": "uncategorized",
+      "category": "data-analysis",
       "tags": [],
       "description": "Identify the Ideal Customer Profile (ICP) from research data with demographics, behaviors, JTBD, and needs. Use when defining your ICP, analyzing PMF survey data, or understanding who your best customers are.",
       "hasGotchas": false,
@@ -2879,7 +3126,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.933Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.33
     },
     {
       "id": "cache:competitor-analysis",
@@ -2900,7 +3149,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.934Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:customer-journey-map",
@@ -2921,7 +3170,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.934Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:market-segments",
@@ -2942,7 +3191,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.935Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:market-sizing",
@@ -2963,7 +3212,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.935Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:sentiment-analysis",
@@ -2971,7 +3220,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-market-research/1.0.1/skills/sentiment-analysis/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-quality",
       "tags": [],
       "description": "Analyze user feedback data to identify segments with sentiment scores, JTBD, and product satisfaction insights. Use when analyzing user feedback at scale, running sentiment analysis on reviews or surveys, or identifying satisfaction patterns.",
       "hasGotchas": false,
@@ -2984,7 +3233,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.935Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "cache:user-personas",
@@ -2992,7 +3243,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-market-research/1.0.1/skills/user-personas/SKILL.md",
-      "category": "uncategorized",
+      "category": "cicd-deployment",
       "tags": [],
       "description": "Create refined user personas from research data — 3 personas with JTBD, pains, gains, and unexpected insights. Use when building personas from survey data, creating user profiles from research, or segmenting users for product decisions.",
       "hasGotchas": false,
@@ -3005,7 +3256,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.935Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "cache:user-segmentation",
@@ -3013,7 +3266,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-market-research/1.0.1/skills/user-segmentation/SKILL.md",
-      "category": "uncategorized",
+      "category": "cicd-deployment",
       "tags": [],
       "description": "Segment users from feedback data based on behavior, JTBD, and needs. Identifies at least 3 distinct user segments. Use when segmenting a user base, analyzing diverse user feedback, or building a segmentation model.",
       "hasGotchas": false,
@@ -3026,7 +3279,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.936Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "cache:analyze-feature-requests",
@@ -3034,7 +3289,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-product-discovery/1.0.1/skills/analyze-feature-requests/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-quality",
       "tags": [],
       "description": "Analyze and prioritize a list of feature requests by theme, strategic alignment, impact, effort, and risk. Use when reviewing customer feature requests, triaging a backlog, or making prioritization decisions.",
       "hasGotchas": false,
@@ -3047,7 +3302,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.936Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "cache:brainstorm-experiments-existing",
@@ -3055,7 +3312,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-product-discovery/1.0.1/skills/brainstorm-experiments-existing/SKILL.md",
-      "category": "uncategorized",
+      "category": "requirements-planning",
       "tags": [],
       "description": "Design experiments to test assumptions for an existing product — prototypes, A/B tests, spikes, and other low-effort validation methods. Use when validating assumptions, testing feature ideas cheaply, or planning product experiments.",
       "hasGotchas": false,
@@ -3068,7 +3325,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.936Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 1
     },
     {
       "id": "cache:brainstorm-experiments-new",
@@ -3076,7 +3335,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-product-discovery/1.0.1/skills/brainstorm-experiments-new/SKILL.md",
-      "category": "uncategorized",
+      "category": "product-verification",
       "tags": [],
       "description": "Design lean startup experiments (pretotypes) for a new product. Creates XYZ hypotheses and suggests low-effort validation methods like landing pages, explainer videos, and pre-orders. Use when validating a new product idea, creating pretotypes, or testing market demand.",
       "hasGotchas": false,
@@ -3089,7 +3348,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.937Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "cache:brainstorm-ideas-existing",
@@ -3097,7 +3358,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-product-discovery/1.0.1/skills/brainstorm-ideas-existing/SKILL.md",
-      "category": "uncategorized",
+      "category": "requirements-planning",
       "tags": [],
       "description": "Brainstorm product ideas for an existing product using multi-perspective ideation from PM, Designer, and Engineer viewpoints. Use when generating new feature ideas, brainstorming solutions for an identified opportunity, or ideating with a product trio.",
       "hasGotchas": false,
@@ -3110,7 +3371,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.937Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "cache:brainstorm-ideas-new",
@@ -3118,7 +3381,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-product-discovery/1.0.1/skills/brainstorm-ideas-new/SKILL.md",
-      "category": "uncategorized",
+      "category": "requirements-planning",
       "tags": [],
       "description": "Brainstorm feature ideas for a new product in initial discovery from PM, Designer, and Engineer perspectives. Use when starting product discovery for a new product, exploring features for a startup idea, or doing initial ideation.",
       "hasGotchas": false,
@@ -3131,7 +3394,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.937Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.74
     },
     {
       "id": "cache:identify-assumptions-existing",
@@ -3139,7 +3404,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-product-discovery/1.0.1/skills/identify-assumptions-existing/SKILL.md",
-      "category": "uncategorized",
+      "category": "product-verification",
       "tags": [],
       "description": "Identify risky assumptions for a feature idea in an existing product across Value, Usability, Viability, and Feasibility. Uses multi-perspective devil's advocate thinking. Use when stress-testing a feature idea, doing risk assessment, or preparing for assumption mapping.",
       "hasGotchas": false,
@@ -3152,7 +3417,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.937Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "cache:identify-assumptions-new",
@@ -3160,7 +3427,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-product-discovery/1.0.1/skills/identify-assumptions-new/SKILL.md",
-      "category": "uncategorized",
+      "category": "business-automation",
       "tags": [],
       "description": "Identify risky assumptions for a new product idea across 8 risk categories including Go-to-Market, Strategy, and Team. Use when evaluating startup risks, assessing a new product concept, or mapping assumptions for a new venture.",
       "hasGotchas": false,
@@ -3173,7 +3440,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.938Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "cache:interview-script",
@@ -3181,7 +3450,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-product-discovery/1.0.1/skills/interview-script/SKILL.md",
-      "category": "uncategorized",
+      "category": "requirements-planning",
       "tags": [],
       "description": "Create a structured customer interview script with JTBD probing questions, warm-up, core exploration, and wrap-up sections. Follows The Mom Test principles — no leading questions, no pitching, focus on past behavior. Use when preparing for user interviews, creating interview guides, or planning discovery research.",
       "hasGotchas": false,
@@ -3194,7 +3463,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.938Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 1
     },
     {
       "id": "cache:metrics-dashboard",
@@ -3202,7 +3473,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-product-discovery/1.0.1/skills/metrics-dashboard/SKILL.md",
-      "category": "uncategorized",
+      "category": "data-analysis",
       "tags": [],
       "description": "Define and design a product metrics dashboard with key metrics, data sources, visualization types, and alert thresholds. Use when creating a metrics dashboard, defining KPIs, setting up product analytics, or building a data monitoring plan.",
       "hasGotchas": false,
@@ -3215,7 +3486,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.938Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 1
     },
     {
       "id": "cache:opportunity-solution-tree",
@@ -3223,7 +3496,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-product-discovery/1.0.1/skills/opportunity-solution-tree/SKILL.md",
-      "category": "uncategorized",
+      "category": "cicd-deployment",
       "tags": [],
       "description": "Build an Opportunity Solution Tree (OST) to structure product discovery — map a desired outcome to opportunities, solutions, and experiments. Based on Teresa Torres' Continuous Discovery Habits. Use when structuring discovery work, mapping opportunities to solutions, or deciding what to build next.",
       "hasGotchas": false,
@@ -3236,7 +3509,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.938Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "cache:prioritize-assumptions",
@@ -3244,7 +3519,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-product-discovery/1.0.1/skills/prioritize-assumptions/SKILL.md",
-      "category": "uncategorized",
+      "category": "product-verification",
       "tags": [],
       "description": "Prioritize assumptions using an Impact × Risk matrix and suggest experiments for each. Use when triaging a list of assumptions, deciding what to test first, or applying the assumption prioritization canvas.",
       "hasGotchas": false,
@@ -3257,7 +3532,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.939Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "cache:prioritize-features",
@@ -3265,7 +3542,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-product-discovery/1.0.1/skills/prioritize-features/SKILL.md",
-      "category": "uncategorized",
+      "category": "requirements-planning",
       "tags": [],
       "description": "Prioritize a backlog of feature ideas based on impact, effort, risk, and strategic alignment with top 5 recommendations. Use when prioritizing a feature backlog, making scope decisions, or ranking product ideas.",
       "hasGotchas": false,
@@ -3278,7 +3555,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.939Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.74
     },
     {
       "id": "cache:summarize-interview",
@@ -3286,7 +3565,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-product-discovery/1.0.1/skills/summarize-interview/SKILL.md",
-      "category": "uncategorized",
+      "category": "requirements-planning",
       "tags": [],
       "description": "Summarize a customer interview transcript into a structured template with JTBD, satisfaction signals, and action items. Use when processing interview recordings or transcripts, synthesizing discovery interviews, or creating interview summaries.",
       "hasGotchas": false,
@@ -3299,7 +3578,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.939Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.74
     },
     {
       "id": "cache:ansoff-matrix",
@@ -3307,7 +3588,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-product-strategy/1.0.1/skills/ansoff-matrix/SKILL.md",
-      "category": "uncategorized",
+      "category": "requirements-planning",
       "tags": [],
       "description": "Generate an Ansoff Matrix analysis mapping growth strategies across market penetration, market development, product development, and diversification. Use when considering growth options, planning market expansion, or evaluating strategic growth paths.",
       "hasGotchas": false,
@@ -3320,7 +3601,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.939Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.74
     },
     {
       "id": "cache:business-model",
@@ -3328,7 +3611,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-product-strategy/1.0.1/skills/business-model/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "Generate a Business Model Canvas with all 9 building blocks. Use when creating a business model, documenting how a business creates value, or analyzing an existing business model.",
       "hasGotchas": false,
@@ -3341,7 +3624,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.940Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "cache:lean-canvas",
@@ -3349,7 +3634,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-product-strategy/1.0.1/skills/lean-canvas/SKILL.md",
-      "category": "uncategorized",
+      "category": "product-verification",
       "tags": [],
       "description": "Generate a Lean Canvas with problem, solution, metrics, cost structure, UVP, unfair advantage, channels, segments, and revenue. Use when exploring a lean startup canvas, testing a business hypothesis, or modeling a new venture.",
       "hasGotchas": false,
@@ -3362,7 +3647,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.940Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "cache:monetization-strategy",
@@ -3370,7 +3657,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-product-strategy/1.0.1/skills/monetization-strategy/SKILL.md",
-      "category": "uncategorized",
+      "category": "doc-governance",
       "tags": [],
       "description": "Brainstorm 3-5 monetization strategies with audience fit, risks, and validation experiments. Use when exploring revenue models, evaluating pricing strategies, or deciding how to monetize a product.",
       "hasGotchas": false,
@@ -3383,7 +3670,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.941Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "cache:pestle-analysis",
@@ -3391,7 +3680,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-product-strategy/1.0.1/skills/pestle-analysis/SKILL.md",
-      "category": "uncategorized",
+      "category": "requirements-planning",
       "tags": [],
       "description": "Perform a PESTLE analysis covering Political, Economic, Social, Technological, Legal, and Environmental factors. Use when assessing the macro environment, doing strategic planning, or evaluating external factors affecting your business.",
       "hasGotchas": false,
@@ -3404,7 +3693,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.941Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.74
     },
     {
       "id": "cache:porters-five-forces",
@@ -3425,7 +3716,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.941Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:pricing-strategy",
@@ -3446,7 +3737,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.942Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:product-strategy",
@@ -3454,7 +3745,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-product-strategy/1.0.1/skills/product-strategy/SKILL.md",
-      "category": "uncategorized",
+      "category": "cicd-deployment",
       "tags": [],
       "description": "Create a comprehensive product strategy using the 9-section Product Strategy Canvas — vision, segments, costs, value propositions, trade-offs, metrics, growth, capabilities, and defensibility. Use when building a product strategy, creating a strategic plan, or defining product direction.",
       "hasGotchas": false,
@@ -3467,7 +3758,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.942Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "cache:product-vision",
@@ -3475,7 +3768,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-product-strategy/1.0.1/skills/product-vision/SKILL.md",
-      "category": "uncategorized",
+      "category": "business-automation",
       "tags": [],
       "description": "Brainstorm an inspiring, achievable, and emotional product vision that motivates teams and aligns stakeholders. Use when defining or refining a product vision, creating a vision statement, or aligning the team around a shared direction.",
       "hasGotchas": false,
@@ -3488,7 +3781,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.943Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "cache:startup-canvas",
@@ -3496,7 +3791,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-product-strategy/1.0.1/skills/startup-canvas/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "Generate a Startup Canvas combining Product Strategy (9 sections) and Business Model (costs + revenue) for a new product. An alternative to BMC and Lean Canvas that separates strategy from business model. Use when launching a new product or evaluating a startup concept.",
       "hasGotchas": false,
@@ -3509,7 +3804,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.943Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "cache:swot-analysis",
@@ -3530,7 +3827,7 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.943Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "cache:value-proposition",
@@ -3538,7 +3835,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/cache/pm-skills/pm-product-strategy/1.0.1/skills/value-proposition/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "Design a detailed value proposition using a 6-part JTBD template — Who, Why, What before, How, What after, Alternatives. Use when creating a value proposition, analyzing customer value delivery, or articulating why customers should choose your product.",
       "hasGotchas": false,
@@ -3551,7 +3848,9 @@
       "lastUsedAt": null,
       "source": "cache",
       "addedAt": "2026-03-20T00:38:13.943Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "marketplaces:bkend-auth",
@@ -3572,7 +3871,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.944Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "marketplaces:bkend-cookbook",
@@ -3580,7 +3879,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/bkit-marketplace/skills/bkend-cookbook/SKILL.md",
-      "category": "uncategorized",
+      "category": "runbooks",
       "tags": [],
       "description": "bkend.ai practical project tutorials and troubleshooting guide.",
       "hasGotchas": false,
@@ -3593,7 +3892,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.944Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.48
     },
     {
       "id": "marketplaces:bkend-data",
@@ -3601,7 +3902,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/bkit-marketplace/skills/bkend-data/SKILL.md",
-      "category": "uncategorized",
+      "category": "data-analysis",
       "tags": [],
       "description": "bkend.ai database expert skill.",
       "hasGotchas": false,
@@ -3614,7 +3915,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.945Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.33
     },
     {
       "id": "marketplaces:bkend-quickstart",
@@ -3635,7 +3938,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.945Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "marketplaces:bkend-storage",
@@ -3656,7 +3959,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.945Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "marketplaces:bkit-rules",
@@ -3664,7 +3967,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/bkit-marketplace/skills/bkit-rules/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-quality",
       "tags": [],
       "description": "Core rules for bkit plugin. PDCA methodology, level detection, agent auto-triggering, and code quality standards.",
       "hasGotchas": false,
@@ -3677,7 +3980,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.946Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "marketplaces:bkit-templates",
@@ -3685,7 +3990,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/bkit-marketplace/skills/bkit-templates/SKILL.md",
-      "category": "uncategorized",
+      "category": "library-reference",
       "tags": [],
       "description": "PDCA document templates for consistent documentation.",
       "hasGotchas": false,
@@ -3698,7 +4003,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.946Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "marketplaces:claude-code-learning",
@@ -3719,7 +4026,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.946Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "marketplaces:code-review",
@@ -3727,7 +4034,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/bkit-marketplace/skills/code-review/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-quality",
       "tags": [],
       "description": "Code review skill for analyzing code quality, detecting bugs, and ensuring best practices.",
       "hasGotchas": false,
@@ -3740,7 +4047,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.946Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.83
     },
     {
       "id": "marketplaces:desktop-app",
@@ -3761,7 +4070,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.947Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "marketplaces:development-pipeline",
@@ -3769,7 +4078,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/bkit-marketplace/skills/development-pipeline/SKILL.md",
-      "category": "uncategorized",
+      "category": "product-verification",
       "tags": [],
       "description": "9-phase Development Pipeline complete knowledge.",
       "hasGotchas": false,
@@ -3782,7 +4091,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.947Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "marketplaces:dynamic",
@@ -3803,7 +4114,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.947Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "marketplaces:enterprise",
@@ -3824,7 +4135,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.947Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "marketplaces:mobile-app",
@@ -3845,7 +4156,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.948Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "marketplaces:pdca",
@@ -3853,7 +4164,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/bkit-marketplace/skills/pdca/SKILL.md",
-      "category": "uncategorized",
+      "category": "requirements-planning",
       "tags": [],
       "description": "Unified skill for managing the entire PDCA cycle.",
       "hasGotchas": false,
@@ -3866,7 +4177,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.948Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     },
     {
       "id": "marketplaces:phase-1-schema",
@@ -3874,7 +4187,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/bkit-marketplace/skills/phase-1-schema/SKILL.md",
-      "category": "uncategorized",
+      "category": "data-analysis",
       "tags": [],
       "description": "Skill for defining terminology and data structures used throughout the project.",
       "hasGotchas": false,
@@ -3887,7 +4200,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.949Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.33
     },
     {
       "id": "marketplaces:phase-2-convention",
@@ -3895,7 +4210,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/bkit-marketplace/skills/phase-2-convention/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-quality",
       "tags": [],
       "description": "Skill for defining coding rules and conventions.",
       "hasGotchas": false,
@@ -3908,7 +4223,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.950Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "marketplaces:phase-3-mockup",
@@ -3929,7 +4246,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.951Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "marketplaces:phase-4-api",
@@ -3950,7 +4267,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.951Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "marketplaces:phase-5-design-system",
@@ -3958,7 +4275,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/bkit-marketplace/skills/phase-5-design-system/SKILL.md",
-      "category": "uncategorized",
+      "category": "cicd-deployment",
       "tags": [],
       "description": "Skill for building platform-independent design systems.",
       "hasGotchas": false,
@@ -3971,7 +4288,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.951Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "marketplaces:phase-6-ui-integration",
@@ -3992,7 +4311,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.952Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "marketplaces:phase-7-seo-security",
@@ -4013,7 +4332,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.952Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "marketplaces:phase-8-review",
@@ -4021,7 +4340,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/bkit-marketplace/skills/phase-8-review/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-quality",
       "tags": [],
       "description": "Skill for verifying overall codebase quality and gap analysis.",
       "hasGotchas": false,
@@ -4034,7 +4353,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.953Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.83
     },
     {
       "id": "marketplaces:phase-9-deployment",
@@ -4042,7 +4363,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/bkit-marketplace/skills/phase-9-deployment/SKILL.md",
-      "category": "uncategorized",
+      "category": "cicd-deployment",
       "tags": [],
       "description": "Skill for deploying to production environment.",
       "hasGotchas": false,
@@ -4055,7 +4376,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.953Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.83
     },
     {
       "id": "marketplaces:plan-plus",
@@ -4063,7 +4386,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/bkit-marketplace/skills/plan-plus/SKILL.md",
-      "category": "uncategorized",
+      "category": "requirements-planning",
       "tags": [],
       "description": "Plan Plus — Brainstorming-Enhanced PDCA Planning.",
       "hasGotchas": false,
@@ -4076,7 +4399,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.953Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 1
     },
     {
       "id": "marketplaces:starter",
@@ -4084,7 +4409,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/bkit-marketplace/skills/starter/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "Static web development skill for beginners and non-developers.",
       "hasGotchas": false,
@@ -4097,7 +4422,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.953Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "marketplaces:zero-script-qa",
@@ -4105,7 +4432,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/bkit-marketplace/skills/zero-script-qa/SKILL.md",
-      "category": "uncategorized",
+      "category": "product-verification",
       "tags": [],
       "description": "Zero Script QA - Testing methodology without test scripts.",
       "hasGotchas": false,
@@ -4118,7 +4445,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.954Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 1
     },
     {
       "id": "marketplaces:access",
@@ -4139,7 +4468,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.954Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "marketplaces:configure",
@@ -4147,7 +4476,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/claude-plugins-official/external_plugins/discord/skills/configure/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-quality",
       "tags": [],
       "description": "Set up the Discord channel — save the bot token and review access policy. Use when the user pastes a Discord bot token, asks to configure Discord, asks \"how do I set this up\" or \"who can reach me,\" or wants to check channel status.",
       "hasGotchas": false,
@@ -4160,7 +4489,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.955Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "marketplaces:stripe-best-practices",
@@ -4168,7 +4499,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/claude-plugins-official/external_plugins/stripe/skills/stripe-best-practices/SKILL.md",
-      "category": "uncategorized",
+      "category": "cicd-deployment",
       "tags": [],
       "description": "Best practices for building Stripe integrations. Use when implementing payment processing, checkout flows, subscriptions, webhooks, Connect platforms, or any Stripe API integration.",
       "hasGotchas": false,
@@ -4181,7 +4512,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.954Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "marketplaces:access",
@@ -4202,7 +4535,7 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.954Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "marketplaces:configure",
@@ -4210,7 +4543,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/claude-plugins-official/external_plugins/telegram/skills/configure/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-quality",
       "tags": [],
       "description": "Set up the Telegram channel — save the bot token and review access policy. Use when the user pastes a Telegram bot token, asks to configure Telegram, asks \"how do I set this up\" or \"who can reach me,\" or wants to check channel status.",
       "hasGotchas": false,
@@ -4223,7 +4556,9 @@
       "lastUsedAt": null,
       "source": "marketplaces",
       "addedAt": "2026-03-20T00:38:13.955Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "claude-code-setup:claude-automation-recommender",
@@ -4231,7 +4566,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/claude-plugins-official/plugins/claude-code-setup/skills/claude-automation-recommender/SKILL.md",
-      "category": "uncategorized",
+      "category": "business-automation",
       "tags": [],
       "description": "Analyze a codebase and recommend Claude Code automations (hooks, subagents, skills, plugins, MCP servers). Use when user asks for automation recommendations, wants to optimize their Claude Code setup, mentions improving Claude Code workflows, asks how to first set up Claude Code for a project, or wants to know what Claude Code features they should use.",
       "hasGotchas": false,
@@ -4244,7 +4579,9 @@
       "lastUsedAt": null,
       "source": "claude-code-setup",
       "addedAt": "2026-03-20T00:38:13.955Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.74
     },
     {
       "id": "claude-md-management:claude-md-improver",
@@ -4252,7 +4589,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/claude-plugins-official/plugins/claude-md-management/skills/claude-md-improver/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "Audit and improve CLAUDE.md files in repositories. Use when user asks to check, audit, update, improve, or fix CLAUDE.md files. Scans for all CLAUDE.md files, evaluates quality against templates, outputs quality report, then makes targeted updates. Also use when the user mentions \"CLAUDE.md maintenance\" or \"project memory optimization\".",
       "hasGotchas": false,
@@ -4265,7 +4602,9 @@
       "lastUsedAt": null,
       "source": "claude-md-management",
       "addedAt": "2026-03-20T00:38:13.955Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "example-plugin:example-command",
@@ -4286,7 +4625,7 @@
       "lastUsedAt": null,
       "source": "example-plugin",
       "addedAt": "2026-03-20T00:38:13.955Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "example-plugin:example-skill",
@@ -4294,7 +4633,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/claude-plugins-official/plugins/example-plugin/skills/example-skill/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user asks to \"demonstrate skills\", \"show skill format\", \"create a skill template\", or discusses skill development patterns. Provides a reference template for creating Claude Code plugin skills.",
       "hasGotchas": false,
@@ -4307,7 +4646,9 @@
       "lastUsedAt": null,
       "source": "example-plugin",
       "addedAt": "2026-03-20T00:38:13.955Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "frontend-design:frontend-design",
@@ -4315,7 +4656,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/claude-plugins-official/plugins/frontend-design/skills/frontend-design/SKILL.md",
-      "category": "uncategorized",
+      "category": "cicd-deployment",
       "tags": [],
       "description": "Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, or applications. Generates creative, polished code that avoids generic AI aesthetics.",
       "hasGotchas": false,
@@ -4328,7 +4669,9 @@
       "lastUsedAt": null,
       "source": "frontend-design",
       "addedAt": "2026-03-20T00:38:13.955Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.83
     },
     {
       "id": "hookify:writing-hookify-rules",
@@ -4349,7 +4692,7 @@
       "lastUsedAt": null,
       "source": "hookify",
       "addedAt": "2026-03-20T00:38:13.955Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "playground:playground",
@@ -4357,7 +4700,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/claude-plugins-official/plugins/playground/skills/playground/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-quality",
       "tags": [],
       "description": "Creates interactive HTML playgrounds — self-contained single-file explorers that let users configure something visually through controls, see a live preview, and copy out a prompt. Use when the user asks to make a playground, explorer, or interactive tool for a topic.",
       "hasGotchas": false,
@@ -4370,7 +4713,9 @@
       "lastUsedAt": null,
       "source": "playground",
       "addedAt": "2026-03-20T00:38:13.955Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "plugin-dev:agent-development",
@@ -4391,7 +4736,7 @@
       "lastUsedAt": null,
       "source": "plugin-dev",
       "addedAt": "2026-03-20T00:38:13.955Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "plugin-dev:command-development",
@@ -4412,7 +4757,7 @@
       "lastUsedAt": null,
       "source": "plugin-dev",
       "addedAt": "2026-03-20T00:38:13.955Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "plugin-dev:hook-development",
@@ -4420,7 +4765,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/claude-plugins-official/plugins/plugin-dev/skills/hook-development/SKILL.md",
-      "category": "uncategorized",
+      "category": "business-automation",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create a hook\", \"add a PreToolUse/PostToolUse/Stop hook\", \"validate tool use\", \"implement prompt-based hooks\", \"use ${CLAUDE_PLUGIN_ROOT}\", \"set up event-driven automation\", \"block dangerous commands\", or mentions hook events (PreToolUse, PostToolUse, Stop, SubagentStop, SessionStart, SessionEnd, UserPromptSubmit, PreCompact, Notification). Provides comprehensive guidance for creating and implementing Claude Code plugin hooks with focus on advanced prompt-based hooks API.",
       "hasGotchas": false,
@@ -4433,7 +4778,9 @@
       "lastUsedAt": null,
       "source": "plugin-dev",
       "addedAt": "2026-03-20T00:38:13.956Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.74
     },
     {
       "id": "plugin-dev:mcp-integration",
@@ -4454,7 +4801,7 @@
       "lastUsedAt": null,
       "source": "plugin-dev",
       "addedAt": "2026-03-20T00:38:13.956Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "plugin-dev:plugin-settings",
@@ -4475,7 +4822,7 @@
       "lastUsedAt": null,
       "source": "plugin-dev",
       "addedAt": "2026-03-20T00:38:13.956Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "plugin-dev:plugin-structure",
@@ -4483,7 +4830,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/claude-plugins-official/plugins/plugin-dev/skills/plugin-structure/SKILL.md",
-      "category": "uncategorized",
+      "category": "code-scaffolding",
       "tags": [],
       "description": "This skill should be used when the user asks to \"create a plugin\", \"scaffold a plugin\", \"understand plugin structure\", \"organize plugin components\", \"set up plugin.json\", \"use ${CLAUDE_PLUGIN_ROOT}\", \"add commands/agents/skills/hooks\", \"configure auto-discovery\", or needs guidance on plugin directory layout, manifest configuration, component organization, file naming conventions, or Claude Code plugin architecture best practices.",
       "hasGotchas": false,
@@ -4496,7 +4843,9 @@
       "lastUsedAt": null,
       "source": "plugin-dev",
       "addedAt": "2026-03-20T00:38:13.956Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.42
     },
     {
       "id": "plugin-dev:skill-development",
@@ -4517,7 +4866,7 @@
       "lastUsedAt": null,
       "source": "plugin-dev",
       "addedAt": "2026-03-20T00:38:13.956Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z"
     },
     {
       "id": "skill-creator:skill-creator",
@@ -4525,7 +4874,7 @@
       "scope": "plugin",
       "type": "skill",
       "path": "/home/sinclair/.claude/plugins/marketplaces/claude-plugins-official/plugins/skill-creator/skills/skill-creator/SKILL.md",
-      "category": "uncategorized",
+      "category": "product-verification",
       "tags": [],
       "description": "Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, update or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy.",
       "hasGotchas": false,
@@ -4538,7 +4887,9 @@
       "lastUsedAt": null,
       "source": "skill-creator",
       "addedAt": "2026-03-20T00:38:13.957Z",
-      "updatedAt": "2026-03-20T00:41:31.958Z"
+      "updatedAt": "2026-03-20T01:39:20.223Z",
+      "autoClassified": true,
+      "classifyConfidence": 0.37
     }
   ]
 }

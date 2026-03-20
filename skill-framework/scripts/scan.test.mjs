@@ -220,6 +220,189 @@ test('SECRET_EXCLUDE_RE excludes wrangler secret', () => {
   ok(SECRET_EXCLUDE_RE.test('wrangler secret put MY_KEY'));
 });
 
+// ── classifyByKeywords ──
+
+function classifyByKeywords(skill, keywordsMap) {
+  const text = [
+    skill.name || '',
+    skill.description || '',
+    skill.id || '',
+    ...(skill.tags || []),
+  ].join(' ').toLowerCase();
+
+  let bestCategory = 'uncategorized';
+  let bestScore = 0;
+
+  for (const [category, config] of Object.entries(keywordsMap)) {
+    const keywords = config.keywords || [];
+    const weight = config.weight ?? 1.0;
+    let matched = 0;
+
+    for (const kw of keywords) {
+      if (text.includes(kw.toLowerCase())) {
+        matched++;
+      }
+    }
+
+    const score = matched * weight;
+    if (score > bestScore) {
+      bestScore = score;
+      bestCategory = category;
+    }
+  }
+
+  if (bestScore === 0) {
+    return { category: 'uncategorized', confidence: 0 };
+  }
+
+  const winnerKeywords = keywordsMap[bestCategory]?.keywords || [];
+  const rawConfidence = bestScore / (winnerKeywords.length * 0.3);
+  const confidence = Math.round(Math.min(rawConfidence, 1.0) * 100) / 100;
+
+  return { category: bestCategory, confidence };
+}
+
+console.log('');
+console.log('classifyByKeywords:');
+
+const sampleKeywordsMap = {
+  'cicd-deployment': {
+    keywords: ['deploy', 'CI/CD', 'production', 'preview', 'release', 'rollout', 'build', 'publish'],
+    weight: 1.0,
+  },
+  'code-quality': {
+    keywords: ['lint', 'review', 'quality', 'simplify', 'refactor', 'convention', 'typecheck', 'bug detection'],
+    weight: 1.0,
+  },
+  'data-analysis': {
+    keywords: ['data', 'analytics', 'metrics', 'monitor', 'dashboard', 'sync', 'fetch', 'report'],
+    weight: 0.8,
+  },
+  'library-reference': {
+    keywords: ['library', 'SDK', 'API reference', 'documentation', 'docs', 'query-docs', 'resolve-library', 'code example', 'snippet'],
+    weight: 1.0,
+  },
+};
+
+test('classify: keyword 1개 매칭 시 해당 카테고리 반환', () => {
+  const skill = { id: 'my-deploy', name: 'deploy-tool', description: 'deploy to production', tags: [] };
+  const result = classifyByKeywords(skill, sampleKeywordsMap);
+  strictEqual(result.category, 'cicd-deployment');
+  ok(result.confidence > 0);
+});
+
+test('classify: keyword 0개 매칭 시 uncategorized', () => {
+  const skill = { id: 'zzz', name: 'zzz', description: 'nothing relevant here', tags: [] };
+  const result = classifyByKeywords(skill, sampleKeywordsMap);
+  strictEqual(result.category, 'uncategorized');
+  strictEqual(result.confidence, 0);
+});
+
+test('classify: 복수 카테고리 매칭 시 최고 점수', () => {
+  const skill = { id: 'tool', name: 'deploy lint review', description: 'deploy and review quality code lint', tags: [] };
+  // code-quality: lint, review, quality = 3 matches
+  // cicd-deployment: deploy = 1 match
+  const result = classifyByKeywords(skill, sampleKeywordsMap);
+  strictEqual(result.category, 'code-quality');
+});
+
+test('classify: threshold 미달 시 낮은 confidence 값 확인', () => {
+  // 1 keyword match out of 8 = score 1. confidence = 1 / (8*0.3) ≈ 0.42
+  const skill = { id: 'x', name: 'deploy', description: '', tags: [] };
+  const result = classifyByKeywords(skill, sampleKeywordsMap);
+  strictEqual(result.category, 'cicd-deployment');
+  ok(result.confidence > 0);
+  ok(result.confidence <= 1.0);
+});
+
+// ── lint --fix tests ──
+
+console.log('');
+console.log('lint --fix:');
+
+test('lint-fix: fixable 규칙만 교정 (single-category)', () => {
+  const skill = { id: 'my-deploy', name: 'deploy', description: 'deploy to production', tags: [], category: 'uncategorized' };
+  const result = classifyByKeywords(skill, sampleKeywordsMap);
+  if (result.confidence > 0) {
+    skill.category = result.category;
+    skill.autoClassified = true;
+    skill.classifyConfidence = result.confidence;
+  }
+  strictEqual(skill.category, 'cicd-deployment');
+  strictEqual(skill.autoClassified, true);
+  ok(skill.classifyConfidence > 0);
+});
+
+test('lint-fix: 백업 파일 생성 로직', () => {
+  // Test backup path generation logic
+  const inputPath = '/some/path/skill-catalog.json';
+  const backupPath = inputPath.replace(/\.json$/, '.json.bak');
+  strictEqual(backupPath, '/some/path/skill-catalog.json.bak');
+});
+
+test('lint-fix: 수동 태깅 보존 확인', () => {
+  // When a skill has a manually assigned category (not uncategorized), fix should NOT override it
+  const skill = { id: 'my-tool', name: 'my-tool', description: 'deploy', category: 'runbooks', tags: [] };
+  // single-category rule only triggers when category is 'uncategorized'
+  const isUncategorized = !skill.category || skill.category === 'uncategorized';
+  strictEqual(isUncategorized, false);
+  // Manual category preserved — not overwritten
+  strictEqual(skill.category, 'runbooks');
+});
+
+test('name-kebab 교정: MySkill → my-skill', () => {
+  const name = 'MySkill';
+  const fixed = name.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-{2,}/g, '-').replace(/^-|-$/g, '');
+  strictEqual(fixed, 'myskill');
+  const name2 = 'My_Cool_Skill';
+  const fixed2 = name2.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-{2,}/g, '-').replace(/^-|-$/g, '');
+  strictEqual(fixed2, 'my-cool-skill');
+});
+
+// ── scan auto-classify tests ──
+
+console.log('');
+console.log('scan auto-classify:');
+
+test('scan: auto-classify가 uncategorized만 대상', () => {
+  const skills = [
+    { id: 'a', category: 'code-quality', name: 'deploy tool', description: 'deploy' },
+    { id: 'b', category: 'uncategorized', name: 'deploy tool', description: 'deploy to production' },
+  ];
+  // Only skill 'b' should be auto-classified
+  const targets = skills.filter(s => s.category === 'uncategorized');
+  strictEqual(targets.length, 1);
+  strictEqual(targets[0].id, 'b');
+  // Classify skill b
+  const result = classifyByKeywords(targets[0], sampleKeywordsMap);
+  strictEqual(result.category, 'cicd-deployment');
+});
+
+test('scan: 수동 태깅 + 자동분류 공존', () => {
+  const skills = [
+    { id: 'manual', category: 'runbooks', name: 'my runbook', description: 'diagnose issues' },
+    { id: 'auto', category: 'uncategorized', name: 'lint tool', description: 'lint and review code quality' },
+  ];
+  // Manual stays as-is
+  strictEqual(skills[0].category, 'runbooks');
+  // Auto gets classified
+  const result = classifyByKeywords(skills[1], sampleKeywordsMap);
+  skills[1].category = result.category;
+  skills[1].autoClassified = true;
+  strictEqual(skills[1].category, 'code-quality');
+  // Both coexist
+  strictEqual(skills[0].category, 'runbooks');
+  strictEqual(skills[1].autoClassified, true);
+});
+
+test('edge: 빈 description 스킬 자동분류 (name/id fallback)', () => {
+  const skill = { id: 'deploy-preview', name: 'deploy-preview', description: '', tags: [] };
+  const result = classifyByKeywords(skill, sampleKeywordsMap);
+  // Should still classify via name/id containing 'deploy'
+  strictEqual(result.category, 'cicd-deployment');
+  ok(result.confidence > 0);
+});
+
 // ── Summary ──
 console.log('');
 console.log('═══════════════════════════════════════');

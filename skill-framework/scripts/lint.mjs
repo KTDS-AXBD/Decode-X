@@ -13,9 +13,10 @@
  *   --scope all  --severity all
  */
 
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, copyFileSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { parseArgs } from 'node:util';
+import { classifyByKeywords, loadKeywordsMap } from './classify.mjs';
 
 // ── CLI args ────────────────────────────────────────────────────────
 
@@ -25,6 +26,7 @@ const { values } = parseArgs({
     rules:    { type: 'string', default: 'skill-framework/data/lint-rules.json' },
     scope:    { type: 'string', default: 'all' },
     severity: { type: 'string', default: 'all' },
+    fix:      { type: 'boolean', default: false },
   },
   strict: false,
 });
@@ -201,6 +203,59 @@ const infos    = filtered.filter(i => i.severity === 'info').length;
 
 console.log('');
 console.log(`Summary: ${errors} errors, ${warnings} warnings, ${infos} info`);
+
+// ── Auto-fix ────────────────────────────────────────────────────────
+
+if (values.fix) {
+  const KEBAB_RE_FIX = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+  const keywordsMap = loadKeywordsMap(process.cwd());
+
+  // Backup catalog
+  const backupPath = inputPath.replace(/\.json$/, '.json.bak');
+  copyFileSync(inputPath, backupPath);
+  console.log(`\n📋 Backup: ${backupPath}`);
+
+  let fixedCategory = 0;
+  let fixedKebab = 0;
+
+  // Build a skill map for direct mutation
+  const skillMap = new Map();
+  for (const s of skills) skillMap.set(s.id, s);
+
+  for (const issue of filtered) {
+    const skill = skillMap.get(issue.skillId);
+    if (!skill) continue;
+
+    if (issue.ruleId === 'single-category') {
+      const result = classifyByKeywords(skill, keywordsMap);
+      if (result.confidence > 0) {
+        skill.category = result.category;
+        skill.autoClassified = true;
+        skill.classifyConfidence = result.confidence;
+        fixedCategory++;
+      }
+    }
+
+    if (issue.ruleId === 'name-kebab') {
+      const idPart = skill.id.includes(':') ? skill.id.split(':').pop() : skill.id;
+      if (!KEBAB_RE_FIX.test(idPart)) {
+        const fixed = idPart.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-{2,}/g, '-').replace(/^-|-$/g, '');
+        if (skill.id.includes(':')) {
+          const prefix = skill.id.split(':').slice(0, -1).join(':');
+          skill.id = `${prefix}:${fixed}`;
+        } else {
+          skill.id = fixed;
+        }
+        skill.name = skill.name.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-{2,}/g, '-').replace(/^-|-$/g, '');
+        fixedKebab++;
+      }
+    }
+  }
+
+  // Write fixed catalog
+  writeFileSync(inputPath, JSON.stringify(catalog, null, 2) + '\n', 'utf-8');
+  console.log(`Fixed ${fixedCategory + fixedKebab} issues: single-category ${fixedCategory}, name-kebab ${fixedKebab}`);
+}
 
 // Exit with error code if any errors found
 if (errors > 0) {

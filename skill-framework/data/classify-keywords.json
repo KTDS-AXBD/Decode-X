@@ -1,0 +1,46 @@
+{
+  "library-reference": {
+    "keywords": ["library", "SDK", "API reference", "documentation", "docs", "query-docs", "resolve-library", "code example", "snippet"],
+    "weight": 1.0
+  },
+  "product-verification": {
+    "keywords": ["test", "verify", "QA", "e2e", "pipeline", "integration test", "coverage", "assertion", "zero-script"],
+    "weight": 1.0
+  },
+  "data-analysis": {
+    "keywords": ["data", "analytics", "metrics", "monitor", "dashboard", "sync", "fetch", "report"],
+    "weight": 0.8
+  },
+  "business-automation": {
+    "keywords": ["session", "automation", "workflow", "team", "loop", "ralph", "recurring", "schedule", "batch"],
+    "weight": 1.0
+  },
+  "code-scaffolding": {
+    "keywords": ["scaffold", "template", "boilerplate", "init", "starter", "generate", "migrate", "migration"],
+    "weight": 1.0
+  },
+  "code-quality": {
+    "keywords": ["lint", "review", "quality", "simplify", "refactor", "convention", "typecheck", "bug detection"],
+    "weight": 1.0
+  },
+  "cicd-deployment": {
+    "keywords": ["deploy", "CI/CD", "production", "preview", "release", "rollout", "build", "publish"],
+    "weight": 1.0
+  },
+  "runbooks": {
+    "keywords": ["runbook", "diagnose", "symptom", "investigate", "selfcheck", "secrets-check", "troubleshoot"],
+    "weight": 1.0
+  },
+  "infra-operations": {
+    "keywords": ["infrastructure", "infra", "git-sync", "git-team", "statusline", "environment", "config sync"],
+    "weight": 1.0
+  },
+  "requirements-planning": {
+    "keywords": ["requirement", "PRD", "PDCA", "plan", "interview", "scope", "feature", "planning", "discovery"],
+    "weight": 1.0
+  },
+  "doc-governance": {
+    "keywords": ["governance", "documentation", "version", "standard", "retro", "retrospective", "risk", "changelog"],
+    "weight": 1.0
+  }
+}

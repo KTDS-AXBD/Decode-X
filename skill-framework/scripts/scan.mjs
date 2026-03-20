@@ -13,6 +13,7 @@
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { resolve, basename, dirname, join, relative } from 'node:path';
 import { homedir } from 'node:os';
+import { classifyByKeywords, loadKeywordsMap } from './classify.mjs';
 
 // ---------------------------------------------------------------------------
 // CLI Argument Parsing
@@ -27,6 +28,8 @@ function getArg(name, defaultValue) {
 }
 
 const scope = getArg('scope', 'all');
+const autoClassify = args.includes('--auto-classify');
+const threshold = parseFloat(getArg('threshold', '0.3'));
 const projectRoot = resolve(process.cwd());
 const defaultOutput = join(projectRoot, 'skill-framework', 'data', 'skill-catalog.json');
 const outputPath = resolve(getArg('output', defaultOutput));
@@ -440,6 +443,25 @@ function main() {
   const existingCatalog = loadExistingCatalog(outputPath);
   const existingSkills = existingCatalog?.skills || null;
   const merged = mergeSkills(allSkills, existingSkills);
+
+  // Auto-classify uncategorized skills
+  if (autoClassify) {
+    const keywordsMap = loadKeywordsMap(projectRoot);
+    let classified = 0;
+    for (const skill of merged) {
+      if (skill.deleted) continue;
+      if (skill.category !== 'uncategorized') continue;
+      if (skill.autoClassified === false) continue; // manually set to uncategorized — skip
+      const result = classifyByKeywords(skill, keywordsMap);
+      if (result.confidence >= threshold) {
+        skill.category = result.category;
+        skill.autoClassified = true;
+        skill.classifyConfidence = result.confidence;
+        classified++;
+      }
+    }
+    console.log(`\n   🏷️  Auto-classified: ${classified} skills (threshold: ${threshold})`);
+  }
 
   // Count uncategorized
   const uncategorized = merged.filter(s => s.category === 'uncategorized' && !s.deleted).length;

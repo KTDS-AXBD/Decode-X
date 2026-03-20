@@ -1,7 +1,7 @@
 ---
 code: AIF-RPRT-027
 title: "반제품 스펙 포맷 정의 및 파일럿 생성 — 완료 보고서"
-version: "1.0"
+version: "1.1"
 status: Active
 category: RPRT
 created: 2026-03-20
@@ -44,11 +44,13 @@ refs: "[[AIF-PLAN-027]] [[AIF-DSGN-027]] [[AIF-REQ-027]]"
 │  Phase B (파일럿 스펙 작성):  ✅ 6개 문서 112KB 생성   │
 │  Phase C (Working Version):   ✅ 14파일 1,610줄 생성   │
 │  Phase D (검증):              ✅ 24/24 테스트 통과     │
+│  Phase E (라이브 데모):       ✅ Production 게시 완료  │
 ├─────────────────────────────────────────────────────┤
-│  Files: 20 (6 spec + 14 code)                       │
-│  Lines: ~4,100 (spec) + 1,610 (code) = 5,710        │
+│  Files: 23 (6 spec + 14 code + 3 demo)              │
+│  Lines: ~4,100 (spec) + 1,610 (code) + 571 (demo)   │
 │  Tests: 24 passed / 0 failed (100%)                  │
 │  Human Intervention: 0 (스펙→코드 자동 생성)          │
+│  Production URL: ai-foundry.minu.best/poc-report     │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -113,6 +115,8 @@ refs: "[[AIF-PLAN-027]] [[AIF-DSGN-027]] [[AIF-REQ-027]]"
 | API 명세 | `반제품-스펙/pilot-lpon-cancel/05-api.md` | 23KB | ✅ |
 | 화면 정의 | `반제품-스펙/pilot-lpon-cancel/06-screens.md` | 26KB | ✅ |
 | Working Version | `반제품-스펙/pilot-lpon-cancel/working-version/src/` | 1,610줄 | ✅ |
+| 로컬 데모 서버 | `working-version/src/serve.ts` + `public/index.html` | 170줄 | ✅ |
+| Production 데모 | `apps/app-web/src/pages/poc-report.tsx` (LiveDemoTab) | 571줄 | ✅ |
 | Plan 문서 | `docs/01-plan/features/req-027-semi-finished-spec.plan.md` | 8KB | ✅ |
 | Design 문서 | `docs/02-design/features/req-027-semi-finished-spec.design.md` | 18KB | ✅ |
 
@@ -188,6 +192,53 @@ Test Results:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
+### 4.5 Phase E: 라이브 데모 + Production 게시 (AIF-REQ-028)
+
+검증 완료 후, 본부장 리뷰를 위해 Production 사이트에 PoC 결과를 게시했다.
+
+**4.5.1 로컬 데모 서버 구축**
+
+Working Version을 실행 가능한 로컬 서버로 확장:
+
+| 파일 | 역할 |
+|------|------|
+| `src/serve.ts` | Hono Node.js 서버 (`@hono/node-server`) + 시드 데이터 + JWT 데모 토큰 자동 발급 |
+| `public/index.html` | 다크 테마 데모 UI — 충전/결제/취소/환불 4버튼 + API 로그 실시간 표시 |
+| `src/auth.ts` (수정) | Demo 모드 추가 — 토큰 없이도 USER 역할로 자동 인증 |
+
+실행: `cd 반제품-스펙/pilot-lpon-cancel/working-version && bun start` → `http://localhost:3999`
+
+**검증 결과** (로컬):
+```
+1. 충전 10,000원  → ✅ 잔액 100,000 → 110,000원
+2. 결제 30,000원  → ✅ 잔액 110,000 → 80,000원 (payment_id 생성)
+3. 결제 취소      → ✅ status: CANCEL_REQUESTED (잔액 복구)
+4. 환불 신청      → ✅ status: REQUESTED (관리자 승인 대기)
+```
+
+**발견/수정 이슈**:
+- `merchants` 테이블 스키마 불일치: 시드 데이터에 `address` 컬럼 사용 → 실제 스키마에 미존재 → 수정
+- `refund_accounts` 컬럼명 불일치: `account_holder`→`holder_name`, `verified`→`is_verified` → 수정
+- 결제 API 필드명: 라우트가 `voucher_id` (snake_case) 기대, 테스트에서 `voucherId` (camelCase) 사용 → snake_case로 통일
+
+**4.5.2 Production 게시 — 라이브 데모 탭**
+
+Cloudflare Pages(정적 호스팅)에는 백엔드가 없으므로, **클라이언트 시뮬레이션 모드**로 구현:
+
+- `app-web/src/pages/poc-report.tsx`에 8번째 탭 "라이브 데모" 추가 (LiveDemoTab 컴포넌트)
+- React `useState`로 잔액/결제ID/취소상태를 관리하는 인메모리 시뮬레이션
+- BL 검증 로직 반영: 한도 검증(E422-AMT), 잔액 부족(E422-BAL), 중복 취소(E409), 취소 전 환불 불가(E409-ST)
+- API 호출 로그를 JSON 형태로 실시간 표시
+- CI/CD 자동 배포 → `ai-foundry.minu.best/poc-report` "라이브 데모" 탭에서 접근 가능
+
+**배포 확인**:
+
+| 항목 | 결과 |
+|------|:----:|
+| CI (Typecheck+Test) | ✅ success |
+| Pages Deploy | ✅ success |
+| `/poc-report` HTTP | ✅ 200 |
+
 ---
 
 ## 5. Quality Metrics
@@ -230,6 +281,8 @@ Test Results:
 - **LPON 정책 분류 미흡**: 모든 정책이 POL-PENSION-* 접두사로 저장되어 있어 온누리상품권 특화 검색이 어려움
 - **PRD AI 검토 무한 루프 경향**: 라운드가 늘수록 이론적 지적이 증가 — 3라운드 이내 종료가 적절
 - **환불 플로우 해석 차이**: 스펙은 voucher 기반인데 생성 코드는 payment 기반 — 스펙의 모호함이 원인
+- **스키마↔시드 불일치**: Working Version을 로컬 서버로 실행 시 merchants/refund_accounts 컬럼명이 시드 데이터와 불일치 → 자동 생성된 코드와 별도 작성된 시드 간 스키마 정합성 검증 필요
+- **API 필드명 컨벤션 미통일**: 라우트는 snake_case, 테스트 호출은 camelCase → 스펙에서 필드명 컨벤션을 명시적으로 지정해야 함
 
 ### 6.3 What to Try Next (Try)
 
@@ -295,6 +348,23 @@ Test Results:
 - BL-NNN → 코드 주석 추적성 패턴 검증
 - 외부 API 인터페이스 추상화 자동 도출 확인
 
+### v1.1.0 (2026-03-20)
+
+**Added:**
+- 로컬 데모 서버 (`serve.ts` + `public/index.html`) — `localhost:3999`에서 실행 가능한 인터랙티브 UI
+- auth.ts Demo 모드 — 토큰 없이 USER 역할로 자동 인증
+- Production 라이브 데모 탭 — `poc-report.tsx` LiveDemoTab (클라이언트 시뮬레이션)
+- `ai-foundry.minu.best/poc-report` 8탭 구성 완료 (개요/인터뷰/PRD/스펙/코드/라이브데모/테스트/PDCA)
+
+**Fixed:**
+- merchants 시드 데이터 스키마 불일치 (address 컬럼 제거)
+- refund_accounts 컬럼명 불일치 (account_holder→holder_name, verified→is_verified)
+- 결제 API 필드명 snake_case 통일
+
+**Validated:**
+- 로컬 서버에서 충전→결제→취소→환불 전체 플로우 실동작 확인
+- Production 클라이언트 시뮬레이션 정상 동작 (CI/CD + Pages 배포)
+
 ---
 
 ## Version History
@@ -302,3 +372,4 @@ Test Results:
 | Version | Date | Changes | Author |
 |---------|------|---------|--------|
 | 1.0 | 2026-03-20 | 완료 보고서 작성 | Sinclair Seo |
+| 1.1 | 2026-03-20 | 라이브 데모 + Production 게시 과정 반영 | Sinclair Seo |

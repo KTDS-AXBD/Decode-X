@@ -47,6 +47,7 @@ function matchPolicies(
   );
 
   return policies.filter((p) => {
+    if (!p.policy_code) return false;
     const parts = p.policy_code.split("-");
     const policyDomain = parts[1]?.toUpperCase() ?? "";
     const policyType = parts.slice(2, -1).join("-").toUpperCase();

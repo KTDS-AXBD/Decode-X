@@ -18,7 +18,8 @@ interface BusinessRule {
   tags: string[];
 }
 
-function parsePolicyCode(code: string): { domain: string; type: string } {
+function parsePolicyCode(code: string | undefined | null): { domain: string; type: string } {
+  if (!code) return { domain: "UNKNOWN", type: "GENERAL" };
   // POL-GIFTVOUCHER-CHARGE-001 → domain: GIFTVOUCHER, type: CHARGE
   const parts = code.split("-");
   return {

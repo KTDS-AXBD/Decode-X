@@ -14,7 +14,8 @@ interface PolicyGroup {
   policies: PolicyRow[];
 }
 
-function parsePolicyCode(code: string): { domain: string; type: string } {
+function parsePolicyCode(code: string | undefined | null): { domain: string; type: string } {
+  if (!code) return { domain: "UNKNOWN", type: "GENERAL" };
   const parts = code.split("-");
   return {
     domain: parts[1] ?? "UNKNOWN",

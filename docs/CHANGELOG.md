@@ -2,6 +2,24 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 187 — 2026-03-20
+
+**AIF-REQ-029 Skill Framework Phase 1b — 가이드라인·템플릿·자동분류**:
+- ✅ skill-writing-guide.md (278줄, 9섹션 작성 가이드라인)
+- ✅ templates/ 3종 (command, skill, agent 스켈레톤)
+- ✅ classify.mjs 자동분류 유틸 + classify-keywords.json (11 카테고리 키워드 맵)
+- ✅ scan.mjs --auto-classify (114/188 플러그인 자동분류, 61%)
+- ✅ lint.mjs --fix (single-category + name-kebab 자동교정)
+- ✅ deprecation-policy.md (5항목 폐기/아카이브 정책)
+- ✅ 테스트 17→28 (11 추가, 전체 PASS)
+- ✅ 카탈로그 분류율 10% → 65% (6.5배)
+- ✅ PDCA Full Cycle Plan→Design→Do→Check(90%)→Report
+- ✅ Agent Team sf-1b: W1(문서)+W2(코드) 병렬 5분15초, File Guard 0건
+
+**검증 결과**: 28/28 tests PASS, lint 동작 확인, scan --auto-classify 동작 확인
+
+---
+
 ## 세션 186 — 2026-03-20
 
 **poc-report Sprint 2 자동화 엔진 탭 추가**:

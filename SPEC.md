@@ -493,7 +493,7 @@
 
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
-| AIF-REQ-029 | Feature | Governance | P1 | PLANNED | Custom 스킬 구조화 (Skill Framework) — Claude Code 스킬(commands/skills/plugins) 210+자산을 체계적으로 분류·관리·공유. Anthropic 9가지 카테고리 기반 분류 체계 + 통합 카탈로그(user/project/plugin scope) + 스킬 작성 가이드라인(gotchas, progressive disclosure, description 최적화) + 팀 배포 파이프라인 + 사용량 추적 훅 + On Demand Hooks + 스킬 조합(Composition) + 폐기 정책. Phase 1: 인벤토리+분류+가이드라인, Phase 2: 배포+추적+리팩토링. 참조: `skill-framework/prd-final.md` |
+| AIF-REQ-029 | Feature | Governance | P1 | IN_PROGRESS | Custom 스킬 구조화 (Skill Framework) — Claude Code 스킬(commands/skills/plugins) 210+자산을 체계적으로 분류·관리·공유. Anthropic 9가지 카테고리 기반 분류 체계 + 통합 카탈로그(user/project/plugin scope) + 스킬 작성 가이드라인(gotchas, progressive disclosure, description 최적화) + 팀 배포 파이프라인 + 사용량 추적 훅 + On Demand Hooks + 스킬 조합(Composition) + 폐기 정책. Phase 1: 인벤토리+분류+가이드라인, Phase 2: 배포+추적+리팩토링. 참조: `skill-framework/prd-final.md` |
 
 ---
 

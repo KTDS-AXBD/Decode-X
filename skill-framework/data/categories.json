@@ -1,0 +1,79 @@
+[
+  {
+    "id": "library-reference",
+    "name": "Library & API Reference",
+    "nameKo": "라이브러리/API 참조",
+    "description": "Teaches how to correctly use a library, CLI, or SDK. Includes gotchas, code snippets, and edge cases.",
+    "examples": ["billing-lib", "frontend-design", "context7"]
+  },
+  {
+    "id": "product-verification",
+    "name": "Product Verification",
+    "nameKo": "제품 검증",
+    "description": "Tests and verifies product behavior end-to-end. Covers E2E pipelines, QA scripts, and integration testing.",
+    "examples": ["e2e-pipeline", "zero-script-qa", "ax-code-verify"]
+  },
+  {
+    "id": "data-analysis",
+    "name": "Data Fetching & Analysis",
+    "nameKo": "데이터 수집/분석",
+    "description": "Connects to data sources, fetches metrics, and performs monitoring or analysis. Includes sync and reporting tools.",
+    "examples": ["sync", "analytics-dashboard"]
+  },
+  {
+    "id": "business-automation",
+    "name": "Business Process & Team Automation",
+    "nameKo": "업무 프로세스/팀 자동화",
+    "description": "Automates repetitive workflows, session management, and team coordination. Reduces manual overhead for recurring tasks.",
+    "examples": ["ax-session-start", "ax-session-end", "ralph"]
+  },
+  {
+    "id": "code-scaffolding",
+    "name": "Code Scaffolding & Templates",
+    "nameKo": "코드 스캐폴딩/템플릿",
+    "description": "Generates boilerplate code, project structure, or starter templates. Covers project initialization and migration scaffolding.",
+    "examples": ["db-migrate", "starter", "dynamic", "enterprise"]
+  },
+  {
+    "id": "code-quality",
+    "name": "Code Quality & Review",
+    "nameKo": "코드 품질/리뷰",
+    "description": "Reviews code for quality, detects bugs, enforces conventions, and runs linters or type checks.",
+    "examples": ["code-review", "ax-code-verify", "simplify"]
+  },
+  {
+    "id": "cicd-deployment",
+    "name": "CI/CD & Deployment",
+    "nameKo": "CI/CD 및 배포",
+    "description": "Manages build, deploy, and release pipelines. Covers preview deploys, production rollout, and environment management.",
+    "examples": ["deploy", "ax-code-deploy", "phase-9-deployment"]
+  },
+  {
+    "id": "runbooks",
+    "name": "Runbooks",
+    "nameKo": "런북",
+    "description": "Guides symptom-based investigation with structured diagnosis steps. Follows symptom → investigate → report pattern.",
+    "examples": ["secrets-check", "ax-infra-selfcheck"]
+  },
+  {
+    "id": "infra-operations",
+    "name": "Infrastructure Operations",
+    "nameKo": "인프라 운영",
+    "description": "Manages infrastructure configuration, environment sync, and operational maintenance tasks.",
+    "examples": ["ax-git-sync", "ax-git-team", "ax-infra-statusline"]
+  },
+  {
+    "id": "requirements-planning",
+    "name": "Requirements & Planning",
+    "nameKo": "요구사항/기획",
+    "description": "Manages requirements gathering, PRD creation, PDCA planning, and feature scoping. Covers interview workflows and execution planning.",
+    "examples": ["ax-req-interview", "ax-req-manage", "ax-req-integrity", "pdca", "plan-plus"]
+  },
+  {
+    "id": "doc-governance",
+    "name": "Documentation & Governance",
+    "nameKo": "문서/거버넌스 관리",
+    "description": "Manages documentation lifecycle, versioning, governance standards, and retrospectives. Ensures project documentation consistency.",
+    "examples": ["ax-gov-doc", "ax-gov-version", "ax-gov-standards", "ax-gov-retro", "ax-gov-risk", "bkit-templates"]
+  }
+]

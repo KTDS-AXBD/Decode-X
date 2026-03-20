@@ -1,0 +1,347 @@
+{
+  "generated": "2026-03-20T00:02:03.072Z",
+  "totalItems": 56,
+  "byType": {
+    "flaw": 3,
+    "gap": 11,
+    "risk": 39
+  },
+  "items": [
+    {
+      "type": "flaw",
+      "source": "ChatGPT",
+      "text": "**문제-해결 간 직접 연결 부족**: \"중복·비일관성\", \"분류 부재\" 등 각 문제에 대해 구체적으로 어떤 핵심 액션(예: 어떤 자동화, 어떤 UI/UX)이 직접 대응하는지 좀 더 명료한 매핑이 있으면, 요구사항-해결책 traceability가 더 좋아집니다.",
+      "severity": "high"
+    },
+    {
+      "type": "flaw",
+      "source": "ChatGPT",
+      "text": "**성공 기준(KPI)와 기능 연결성**: \"사용량 추적 훅\", \"피드백 점수\" 등 KPI는 제시되어 있으나, 이 데이터를 실제로 어떻게 수집·분석·반영할지에 대한 세부 플로우가 부족합니다. 실질적 개선 사이클이 어떻게 돌아가는지 한눈에 안 보입니다.",
+      "severity": "high"
+    },
+    {
+      "type": "flaw",
+      "source": "ChatGPT",
+      "text": "**As-Is의 수치 근거 부족**: 210+ 스킬이 산재해있다는 것 외에, 실제로 어떤 문제가 발생했는지 구체적 사례나 정량적 pain point(예: 중복률, 검색 실패 사례, 신규 스킬 작성 소요 등)가 있으면 설득력이 더 높아집니다.",
+      "severity": "high"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**과소평가된 인력/일정**: 210+ 스킬의 카테고리 분류, 중복 검증, 리팩토링, 문서화, 자동화 도구 개발, PoC 등 상당한 수작업과 개발이 요구됩니다. 실무상 1인(특히 병행 업무가 있을 경우)이 1스프린트 내에 \"분류+인벤토리+가이드라인\"을 끝내기 어렵습니다. 리팩토링/클린업/도구화까지 포함하면 최소 2~3스프린트 필요로 보입니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**자동화 수준 불명확**: \"중복 자동 검출\", \"사용량 추적 훅\", \"품질 린트\" 등 자동화가 필요한 영역이 많지만, 실제 구현 수준(예: 유사도 판별의 정확도, 자동 린트 커버리지, 추적 훅 배포 범위 등)이 구체적으로 정의되어 있지 않습니다. PoC 없이 일정 산정은 위험합니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**운영/유지보수**: 장기적으로 스킬 신규 추가/폐기/품질 유지가 자동화만으로 충분히 관리될지, 혹은 주기적 인력 투입(예: 정기 인벤토리/클린업)이 필요한지 운영 인력계획이 누락되어 있습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**팀 Adoption**: 카탈로그를 실제로 팀원들이 왜/언제/어떻게 쓰게 될지(교육, 온보딩, 사용 장려 정책 등) 실행 전략이 빈약합니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**검색/탐색성 UX**: 카탈로그가 문서 형태임을 암시하나, 실제로 210+ 스킬에서 \"검색\", \"필터\", \"추천\" 등 탐색적 UX가 어떻게 구현되는지 구체적으로 빠져 있습니다. 단순 문서/README로는 탐색성이 떨어질 수 있습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**권한/접근 제어 상세**: user/project/plugin 레벨의 권한 차이 및 보안 정책이 \"명확화\"라는 한 줄로만 제시되어, 실무상 문제(예: 잘못된 스킬 노출, 삭제, 권한 오남용 등) 대응책이 부족합니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**스킬 충돌/호환성 테스트**: 다양한 스킬이 조합될 때 실행 충돌, 환경 의존성 문제(특히 Bash/Node.js 혼용 등) 검증 시나리오가 빠져 있습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**실제 사용자 Onboarding**: 신규 팀원이나 외부 팀이 카탈로그/프레임워크를 빠르게 학습·적용할 수 있는 온보딩 문서/교육 플로우가 없습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**성능/스케일링 검증**: 대규모 스킬/사용자 증가 시 카탈로그 조회/배포가 성능 저하 없이 동작하는지에 대한 검증 전략이 빠져 있습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**외부 의존성/업데이트 정책**: Anthropic 등 외부 레퍼런스 체계가 변경될 때 내부 체계와의 싱크 방안이 없습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**회고/지속적 개선 프로세스**: 실패/중단 조건만 있고, 정기 회고/분기별 리뷰와 같은 개선 사이클이 부족합니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**문제-해결 간 직접 연결 부족**: \"중복·비일관성\", \"분류 부재\" 등 각 문제에 대해 구체적으로 어떤 핵심 액션(예: 어떤 자동화, 어떤 UI/UX)이 직접 대응하는지 좀 더 명료한 매핑이 있으면, 요구사항-해결책 traceability가 더 좋아집니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**성공 기준(KPI)와 기능 연결성**: \"사용량 추적 훅\", \"피드백 점수\" 등 KPI는 제시되어 있으나, 이 데이터를 실제로 어떻게 수집·분석·반영할지에 대한 세부 플로우가 부족합니다. 실질적 개선 사이클이 어떻게 돌아가는지 한눈에 안 보입니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**As-Is의 수치 근거 부족**: 210+ 스킬이 산재해있다는 것 외에, 실제로 어떤 문제가 발생했는지 구체적 사례나 정량적 pain point(예: 중복률, 검색 실패 사례, 신규 스킬 작성 소요 등)가 있으면 설득력이 더 높아집니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**검색/탐색성 UX**: 카탈로그가 문서 형태임을 암시하나, 실제로 210+ 스킬에서 \"검색\", \"필터\", \"추천\" 등 탐색적 UX가 어떻게 구현되는지 구체적으로 빠져 있습니다. 단순 문서/README로는 탐색성이 떨어질 수 있습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**권한/접근 제어 상세**: user/project/plugin 레벨의 권한 차이 및 보안 정책이 \"명확화\"라는 한 줄로만 제시되어, 실무상 문제(예: 잘못된 스킬 노출, 삭제, 권한 오남용 등) 대응책이 부족합니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**스킬 충돌/호환성 테스트**: 다양한 스킬이 조합될 때 실행 충돌, 환경 의존성 문제(특히 Bash/Node.js 혼용 등) 검증 시나리오가 빠져 있습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**실제 사용자 Onboarding**: 신규 팀원이나 외부 팀이 카탈로그/프레임워크를 빠르게 학습·적용할 수 있는 온보딩 문서/교육 플로우가 없습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**성능/스케일링 검증**: 대규모 스킬/사용자 증가 시 카탈로그 조회/배포가 성능 저하 없이 동작하는지에 대한 검증 전략이 빠져 있습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**외부 의존성/업데이트 정책**: Anthropic 등 외부 레퍼런스 체계가 변경될 때 내부 체계와의 싱크 방안이 없습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**회고/지속적 개선 프로세스**: 실패/중단 조건만 있고, 정기 회고/분기별 리뷰와 같은 개선 사이클이 부족합니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**실제 인력 부족/병목**: 핵심 담당자가 1명(Sinclair)인데, 병행 프로젝트/업무, 휴가, 이직 등 리소스 변동 시 전체 일정이 지연될 수 있습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**중복 제거 및 리팩토링 난이도**: 기존 210+ 스킬의 중복/유사성 판단 기준이 모호하거나, 자동화가 부정확할 경우 대량의 휴먼리뷰가 필요해질 수 있습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**팀 Adoption 저조**: 카탈로그가 실질적으로 쓰이지 않고, 관성적으로 \"개별 작성\" 문화가 반복될 우려가 큽니다. 여기에 대한 강력한 장려/페널티/교육/지원책이 필요합니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**기술적 실현 불확실**: 자동화 툴(중복 검출, 린트, 의존성 그래프 등)의 PoC가 미흡하거나, 시스템 간 동기화(분산 저장소 <-> 중앙 카탈로그)에서 장애가 발생하면 실운영이 곧바로 어려워질 수 있습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**유지보수/품질 저하**: 담당자 이탈, 문서화 미흡, 자동화 도구 노후화 등으로 장기적으로 관리되지 않고 부채가 재발될 수 있습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**보안/권한 통제**: 팀/개인/프로젝트 범위의 스킬이 의도치 않게 노출/오용되는 보안 사고 위험(특히 PreToolUse 훅, 민감정보 포함 등)이 큽니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "verdict",
+      "source": "ChatGPT",
+      "text": "Conditional",
+      "severity": "info"
+    },
+    {
+      "type": "risk",
+      "source": "Gemini",
+      "text": "누락된 시장 관점\n\nPRD는 내부 스킬 관리에 초점을 맞추고 있으며, 많은 부분을 상세히 다루고 있습니다. 다만, 시장/경쟁/트렌드 측면에서 추가적으로 고려하면 좋을 사항은 다음과 같습니다.\n\n*   **AI 기반 스킬 관리 (Meta-Skill):** 가장 크게 누락된 부분은 **LLM 자체를 활용한 스킬 관리 기능**입니다. Claude Code가 스킬",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "Gemini",
+      "text": "**인력 및 일정 재검토:** 현재 \"1명 (Sinclair)\"으로 \"다음 스프린트\" 내 Phase 1 완료는 **매우 비현실적**입니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "Gemini",
+      "text": "**핵심 오픈 이슈 우선 해결:** \"오픈 이슈\" 섹션에 있는 몇몇 항목은 Phase 1 착수 전에 반드시 구체적인 방안이 마련되어야 합니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "Gemini",
+      "text": "**스킬 중복률 KPI 현실화:** \"0건\"이라는 목표는 달성하기 어렵고 비현실적이므로, \"10% 미만\" 또는 \"주요 기능 중복 5건 미만\"과 같이 **측정 가능하고 현실적인 목표**로 조정해야 합니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "Gemini",
+      "text": "**PoC (Proof of Concept) 수행 고려:** 분산형 레지스트리/저장소, 이벤트 기반 동기화, 자동화된 품질 검증(린터) 등 기술 스택에 제시된 일부 항목은 복잡도가 있으므로, 핵심 기능에 대한 소규모 PoC를 통해 기술적 실현 가능성을 확인하고 리스크를 낮추는 것을 고려해야 합니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "verdict",
+      "source": "Gemini",
+      "text": "Conditional",
+      "severity": "info"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**실시간 동기화의 복잡성**: `watchdog` 기반 파일 시스템 감시는 이론적으로 가능하나, 실제 구현 시 다음과 같은 문제 발생 가능:",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**의존성 관리의 숨겨진 복잡도**:",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**사용량 추적의 정확성 문제**:",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**중복 스킬 검출의 AI/ML적 접근 필요성**:",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**동시성 및 락 관리**:",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**크로스플랫폼 호환성**:",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**점진적 마이그레이션 부담**:",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**데이터 일관성 파괴** (가장 치명적):",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**성능 저하로 인한 사용자 거부**:",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**유지보수 부담 집중**:",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**Claude Code 플러그인 시스템 변경 리스크**:",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**Phase 1을 2단계로 세분화** 필요:",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**Phase 1a** (2주): 단순 인벤토리 + 기본 분류 + 수동 카탈로그",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**Phase 1b** (2주): 검증된 아키텍처로 확장(동기화, 의존성 관리 등)",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**핵심 가정 검증을 위한 PoC 필수**:",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**롤백 전략 명시적 수립**:",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**자동화보다 문서화 우선**: 초기 1-2스프린트는 수동 프로세스로 검증",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**측정 지점 도입**: 각 기능별 성공/실패 명확한 지표 설정(예: 동기화 지연 < 5초)",
+      "severity": "medium"
+    },
+    {
+      "type": "verdict",
+      "source": "DeepSeek",
+      "text": "Conditional",
+      "severity": "info"
+    }
+  ]
+}

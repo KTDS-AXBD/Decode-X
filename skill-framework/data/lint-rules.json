@@ -1,0 +1,9 @@
+[
+  { "id": "has-description", "severity": "error", "message": "description 필드 필수" },
+  { "id": "description-trigger", "severity": "warning", "message": "description은 트리거 조건 중심으로 작성 (Use when, Triggers 등 포함)" },
+  { "id": "has-gotchas", "severity": "warning", "message": "gotchas 섹션 권장" },
+  { "id": "folder-structure", "severity": "info", "message": "references/ 또는 scripts/ 폴더 권장" },
+  { "id": "no-secrets", "severity": "error", "message": "시크릿/크레덴셜 포함 금지" },
+  { "id": "single-category", "severity": "warning", "message": "하나의 카테고리에 분류되어야 함 (uncategorized 불가)" },
+  { "id": "name-kebab", "severity": "warning", "message": "스킬 ID는 kebab-case" }
+]

@@ -16,7 +16,7 @@ app.use("*", authMiddleware);
 app.route("/", health);
 
 // --- Service Proxy ---
-app.all("/api/:service{.+}/*", async (c) => {
+app.all("/api/:service/*", async (c) => {
   const serviceName = c.req.param("service") as string;
   const bindingKey = SERVICE_MAP[serviceName as ServiceName];
 

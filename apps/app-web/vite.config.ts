@@ -46,7 +46,7 @@ function buildProxy(mode: string) {
 
   // remote — proxy through deployed Pages Function (handles auth + routing)
   if (mode === "remote") {
-    proxy["/api"] = {
+    proxy["/api/"] = {
       target: DEPLOYED_ORIGIN,
       changeOrigin: true,
       secure: true,

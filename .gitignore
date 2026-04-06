@@ -75,8 +75,11 @@ services/*/.claude/
 # Test documents (synthetic/pilot — not for version control)
 test-docs/
 
-# Playwright MCP cache
+# Playwright
 .playwright-mcp/
+e2e/.auth/
+test-results/
+playwright-report/
 
 # Upload/operation logs
 scripts/upload-log-*.jsonl

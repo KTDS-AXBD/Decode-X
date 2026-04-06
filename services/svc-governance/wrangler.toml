@@ -10,11 +10,11 @@ inspector_port = 9208
 [[d1_databases]]
 binding = "DB_GOVERNANCE"
 database_name = "db-governance"
-database_id = "6b2a5531-e78a-4d6b-9ca5-1ee284e47160"
+database_id = "f45c7351-8d4b-458a-80ce-2a33c664e7bd"
 
 [[kv_namespaces]]
 binding = "KV_PROMPTS"
-id = "98ef788593e44f638a94cc7838f9a310"
+id = "00f4b676cf9e47cb8848ba9a3e7bcc3e"
 
 # Service binding to svc-security for audit logging
 [[services]]
@@ -72,11 +72,11 @@ vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-governance" }
 [[env.staging.d1_databases]]
 binding = "DB_GOVERNANCE"
 database_name = "db-governance-staging"
-database_id = "9a593eea-7b4d-4562-9d89-1ef85433a5e5"
+database_id = "b889d107-017d-45c1-a1fa-d08a53fecc17"
 
 [[env.staging.kv_namespaces]]
 binding = "KV_PROMPTS"
-id = "35b9f45b0fa44bde89b20cc1b9fc9d80"
+id = "6816721bb85a4df082f9413bb3311972"
 
 [[env.staging.services]]
 binding = "SECURITY"
@@ -122,11 +122,11 @@ vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-governance" }
 [[env.production.d1_databases]]
 binding = "DB_GOVERNANCE"
 database_name = "db-governance"
-database_id = "6b2a5531-e78a-4d6b-9ca5-1ee284e47160"
+database_id = "f45c7351-8d4b-458a-80ce-2a33c664e7bd"
 
 [[env.production.kv_namespaces]]
 binding = "KV_PROMPTS"
-id = "98ef788593e44f638a94cc7838f9a310"
+id = "862d4b68a2e24605a8c74d7c0babbf1b"
 
 [[env.production.services]]
 binding = "SECURITY"

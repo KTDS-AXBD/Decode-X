@@ -17,7 +17,7 @@
 const CF_TOKEN = process.env["CLOUDFLARE_API_TOKEN"] ?? "";
 const CF_ACCOUNT = process.env["CLOUDFLARE_ACCOUNT_ID"] ?? "";
 const ORG_FILTER = process.env["ORG_ID"] ?? "";
-const DB_ID = "a3f582ba-21b6-4008-9c41-deed94f9d237"; // db-skill (ktds-axbd, REST API UUID)
+const DB_ID = "96e6ac0c-eefa-45f5-9c07-4fd84a0f1df1"; // db-skill (ktds-axbd company account)
 const POLICY_API = "https://svc-policy-production.ktds-axbd.workers.dev";
 const SECRET = "e2e-test-secret-2026";
 

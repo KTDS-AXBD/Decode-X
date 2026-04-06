@@ -411,7 +411,7 @@ async function runWrangler(args: string): Promise<string> {
 }
 
 const CF_ACCOUNT_ID = process.env["CLOUDFLARE_ACCOUNT_ID"] ?? "";
-const DB_SKILL_ID = "a3f582ba-21b6-4008-9c41-deed94f9d237";
+const DB_SKILL_ID = "96e6ac0c-eefa-45f5-9c07-4fd84a0f1df1";
 
 async function runD1Command(sql: string): Promise<void> {
   // Use REST API instead of wrangler CLI (avoids account ID mismatch)

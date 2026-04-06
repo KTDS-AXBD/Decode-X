@@ -2,7 +2,7 @@
 code: AIF-PLAN-020
 title: 계정/인프라 이전 계획서
 version: "1.0"
-status: Draft
+status: Active
 category: PLAN
 created: 2026-03-18
 updated: 2026-03-18
@@ -518,44 +518,45 @@ bash scripts/test-e2e-pipeline.sh --staging
 
 ## 6. 체크리스트
 
-### Pre-Migration
-- [ ] 회사 Cloudflare 계정 로그인 확인
-- [ ] 회사 계정 API Token 생성 (Workers/D1/R2/Queue/KV 권한)
-- [ ] D1 ×10 production export 완료
-- [ ] R2 파일 목록 확인
-- [ ] 진행중 HITL 세션 없음 확인
-- [ ] DNS TTL 300s로 단축
+### Pre-Migration (세션 176 완료)
+- [x] 회사 Cloudflare 계정 로그인 확인
+- [x] 회사 계정 API Token 생성 (Workers/D1/R2/Queue/KV 권한)
+- [x] D1 ×10 production export 완료
+- [x] R2 파일 목록 확인
+- [x] 진행중 HITL 세션 없음 확인
+- [x] DNS TTL 300s로 단축
 
-### Resource Provisioning
-- [ ] D1 ×20 생성 (prod 10 + staging 10)
-- [ ] R2 ×4 생성
-- [ ] KV ×6 생성
-- [ ] Queue ×4 생성
-- [ ] AI Gateway 생성
-- [ ] Pages 프로젝트 생성
+### Resource Provisioning (세션 176 완료)
+- [x] D1 ×20 생성 (prod 10 + staging 10)
+- [x] R2 ×4 생성
+- [x] KV ×6 생성
+- [x] Queue ×4 생성
+- [x] AI Gateway 생성
+- [x] Pages 프로젝트 생성
 
-### Code Update
-- [ ] wrangler.toml ×12 database_id 교체 (20개 값)
-- [ ] wrangler.toml ×3 KV id 교체 (6개 값)
-- [ ] GitHub secrets 갱신 (CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID)
+### Code Update (세션 192 보정)
+- [x] wrangler.toml ×8 database_id 교체 (16개 D1 값) — 세션 192에서 잔존 개인계정 ID 보정
+- [x] wrangler.toml ×2 KV id 교체 (KV_PROMPTS 3환경) — 세션 192 보정
+- [x] GitHub secrets 갱신 (CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID) — 2026-04-06 갱신
+- [x] scripts/rebundle-production.ts, upload-bundled-r2.ts DB_ID 갱신 — 세션 192
 
-### Deploy & Data
-- [ ] D1 migrations 적용 (20개 DB)
-- [ ] D1 production 데이터 import (10개 DB)
-- [ ] R2 파일 이전 (documents + skill-packages)
-- [ ] Workers ×12 배포 (staging + production + default)
-- [ ] Secrets 설정 (30+ 값)
-- [ ] Pages 배포
+### Deploy & Data (세션 176 완료)
+- [x] D1 migrations 적용 (20개 DB)
+- [x] D1 production 데이터 import (10개 DB)
+- [x] R2 파일 이전 (documents + skill-packages)
+- [x] Workers ×12 배포 (staging + production + default)
+- [x] Secrets 설정 (75개 — 25종 × 3환경)
+- [x] Pages 배포
 
-### Verification
-- [ ] Health check 12/12 PASS
-- [ ] E2E pipeline 테스트 PASS
-- [ ] Pages 접속 + 데이터 확인
-- [ ] Production 데이터 정합성 확인
+### Verification (세션 192 재검증)
+- [x] Health check 12/12 PASS (ktds-axbd.workers.dev)
+- [x] E2E pipeline 테스트 PASS
+- [x] Pages 접속 + 데이터 확인 (ai-foundry.minu.best)
+- [x] Production 데이터 정합성 확인 (D1 export 106,849 INSERT)
 
-### Post-Migration
-- [ ] DNS CNAME 변경
-- [ ] SPEC.md Workers URL 갱신
-- [ ] CLAUDE.md 갱신
-- [ ] MEMORY.md 갱신
-- [ ] 구 계정 리소스 정리 (1주 후)
+### Post-Migration (세션 176 + 192 완료)
+- [x] DNS CNAME 변경
+- [x] SPEC.md repo 참조 갱신 (KTDS-AXBD/AI-Foundry) — 세션 192
+- [x] CLAUDE.md 갱신
+- [x] MEMORY.md 갱신
+- [ ] 구 계정 리소스 정리 — 개인 계정 Workers/D1 아직 유지 중 (sinclair-account.workers.dev 정상)

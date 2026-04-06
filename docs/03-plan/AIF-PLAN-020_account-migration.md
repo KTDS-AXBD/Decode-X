@@ -31,7 +31,7 @@ req: AIF-REQ-020
 
 | 항목 | 현재 | 비고 |
 |------|------|------|
-| **Repo** | `AX-BD-Team/res-ai-foundry` | 이미 회사 org 소속 |
+| **Repo** | `KTDS-AXBD/AI-Foundry` | AX-BD-Team에서 이전 완료 (세션 191) |
 | **Org** | KTDS-AXBD (GitHub org) | 개인 계정이 Owner로 참여 |
 | **CI/CD Secrets** | `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` | 개인 계정 Cloudflare 기준 |
 | **GitHub Actions** | 4 workflows (deploy-services, deploy-pages, health-check, set-secret) | |

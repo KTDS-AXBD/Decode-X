@@ -2,6 +2,18 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 191 — 2026-04-06
+
+**GitHub Org 마이그레이션 — AX-BD-Team → KTDS-AXBD**:
+- ✅ `KTDS-AXBD/AI-Foundry` repo 생성 (private) + 전체 히스토리/태그 push
+- ✅ git remote origin 교체: `KTDS-AXBD/AI-Foundry.git`
+- ✅ 코드 내 참조 갱신: sync SKILL.md (7곳), ISSUE_TEMPLATE, AIF-PLAN-020
+- ✅ CI/CD Secrets 3개 설정 (CLOUDFLARE_ACCOUNT_ID, API_TOKEN, UNSTRUCTURED_KEY)
+- ✅ 기존 `AX-BD-Team/res-ai-foundry` → archived
+- ✅ CI/CD 동작 확인: GitHub Actions 자동 실행 성공
+
+---
+
 ## 세션 190 — 2026-04-06
 
 **ax plugin 커맨드 누락 수정 + CLAUDE.md 스킬 참조 업데이트**:

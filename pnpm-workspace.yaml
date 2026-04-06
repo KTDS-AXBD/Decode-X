@@ -1,7 +1,4 @@
 packages:
   - packages/*
-
-ignoredBuiltDependencies:
-  - esbuild
-  - sharp
-  - workerd
+  - services/*
+  - apps/*

@@ -8,7 +8,7 @@
 ## 1) Project Summary
 
 - **Project**: AI Foundry (Foundry-X 제품군 — 지식 추출 엔진)
-- **Repo**: `KTDS-AXBD/AI-Foundry`
+- **Repo**: `KTDS-AXBD/Recon-X`
 - **한줄 정의**: 과거의 지식을 미래의 코드로 바꾸는 엔진 (Reverse-to-Forward Bridge)
 - **Goal**: SI 산출물 + 소스코드를 역공학하여 도메인 지식을 추출하고, 새 프로젝트의 반제품(Working Prototype)으로 재패키징
 - **Positioning**: 역공학(기존 산출물 분석) → 순공학(새 프로젝트 부트스트래핑) 양방향 엔진. Foundry-X(에이전트 협업 플랫폼)와 결합하여 완전한 소프트웨어 개발 파이프라인 구성

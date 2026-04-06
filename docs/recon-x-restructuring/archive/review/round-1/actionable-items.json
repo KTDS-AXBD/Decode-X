@@ -1,0 +1,245 @@
+{
+  "generated": "2026-04-06T22:36:39.790Z",
+  "totalItems": 39,
+  "byType": {
+    "flaw": 1,
+    "gap": 11,
+    "risk": 24
+  },
+  "items": [
+    {
+      "type": "flaw",
+      "source": "ChatGPT",
+      "text": "논리적 완결성\n\n**장점**\n- 문제(As-Is) → 목표(To-Be) → 성공 기준(KPI) 흐름이 명확하며, 해결책이 구조적 분리로 일관해 있습니다.\n- 각 단계별 산출물과 우선순위가 명확히 정의되어 있습니다.\n\n**개선 포인트**\n- “문제 정의”에서 현재 구조의 기술적/운영상 Pain Point(예: 배포/롤백 어려움, 장애 전파, 개발 속도 저하 ",
+      "severity": "high"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**롤백/Failover 계획**: 분리 실패(예: 데이터 손실, 연동 오류 등) 시 구체적 복구 절차가 없습니다. GitOps/Infra as Code 기반이라면 태그/버전 롤백이 가능할지, DB Snapshot 등 백업 전략이 명확해야 합니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**운영/모니터링 체계**: 분리 이후 각 서비스의 모니터링, 장애 감지, Alerting, Runbook이 재정비되어야 합니다. 기존 health-check만 언급되어 있으나, SLO/SLA 정의나 운영자 가이드가 없습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**의존성/공통 모듈 관리**: 분리 이후 기존 공통 유틸/타입 등(예: packages/types, packages/utils)이 실제로 어디까지 중복/중앙화될지, 라이브러리/패키지 의존성 충돌 위험은 없는지 등 구체적 가이드가 없습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**QA/검증 프로세스**: 1인 담당 체계에서 코드 리뷰, QA, UAT 등 검증 절차가 누락되어 있습니다. 실서비스라면 최소한 2인 이상 리뷰 또는 외부 검증이 필요합니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**보안 및 접근 제어**: svc-security 분리 이후 Recon-X에서 어떤 보안 로직이 어디까지 남는지, 인증/인가/감사 로그 유지에 대한 구체적 가이드가 빠져 있습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**단일 인력 리스크**: 1인 담당으로 병목 발생 시 전체 일정 지연/품질 저하 우려가 매우 큼. 병가/결근 등 예외 상황 미대응.",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**데이터 무손실 보장**: D1 DB 바인딩/분리 과정에서 데이터 누락/오염 가능성, 스키마 미스매치(필드 누락, 타입 오류 등) 우려.",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**서비스 연동 실패**: 새로 정의한 인터페이스에 외부 서비스가 아직 대응안될 경우, 실제 연동 시점에 큰 장애가 발생할 수 있음.",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**테스트 불충분**: 대규모 코드/구성 변경에 비해 테스트(특히 회귀/통합 테스트) 보장이 약함.",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**운영/장애 대응 미비**: 신규 서비스 장애시 운영팀 or 1인 담당이 신속하게 대응할 수 있는지 불분명.",
+      "severity": "medium"
+    },
+    {
+      "type": "gap",
+      "source": "ChatGPT",
+      "text": "**CI/CD/배포 프로세스 오류**: GitHub repo 리네임, 워크플로우 변경 시 배포/모니터링/자동화 스크립트가 미세하게 깨질 가능성이 높음.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**과소평가 우려**: 1인 담당(Sinclair Seo) + AI 협업이라 하지만,",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**테스트 리스크**: “E2E 전체 PASS”가 명시되어 있지만, 실제로는 분리 작업에 따라 E2E 테스트 코드 자체가 대규모로 변경/제거되어야 하는데, 이 부분에 대한 추가 공수가 반영되어 있지 않습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**배포/롤백 전략**: 서비스 분리 중 장애 발생 시 롤백 시나리오(Zero-downtime, 데이터 Migration Back 등)가 명확히 기술되어 있지 않습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**롤백/Failover 계획**: 분리 실패(예: 데이터 손실, 연동 오류 등) 시 구체적 복구 절차가 없습니다. GitOps/Infra as Code 기반이라면 태그/버전 롤백이 가능할지, DB Snapshot 등 백업 전략이 명확해야 합니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**운영/모니터링 체계**: 분리 이후 각 서비스의 모니터링, 장애 감지, Alerting, Runbook이 재정비되어야 합니다. 기존 health-check만 언급되어 있으나, SLO/SLA 정의나 운영자 가이드가 없습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**의존성/공통 모듈 관리**: 분리 이후 기존 공통 유틸/타입 등(예: packages/types, packages/utils)이 실제로 어디까지 중복/중앙화될지, 라이브러리/패키지 의존성 충돌 위험은 없는지 등 구체적 가이드가 없습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**QA/검증 프로세스**: 1인 담당 체계에서 코드 리뷰, QA, UAT 등 검증 절차가 누락되어 있습니다. 실서비스라면 최소한 2인 이상 리뷰 또는 외부 검증이 필요합니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**보안 및 접근 제어**: svc-security 분리 이후 Recon-X에서 어떤 보안 로직이 어디까지 남는지, 인증/인가/감사 로그 유지에 대한 구체적 가이드가 빠져 있습니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**단일 인력 리스크**: 1인 담당으로 병목 발생 시 전체 일정 지연/품질 저하 우려가 매우 큼. 병가/결근 등 예외 상황 미대응.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**데이터 무손실 보장**: D1 DB 바인딩/분리 과정에서 데이터 누락/오염 가능성, 스키마 미스매치(필드 누락, 타입 오류 등) 우려.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**서비스 연동 실패**: 새로 정의한 인터페이스에 외부 서비스가 아직 대응안될 경우, 실제 연동 시점에 큰 장애가 발생할 수 있음.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**테스트 불충분**: 대규모 코드/구성 변경에 비해 테스트(특히 회귀/통합 테스트) 보장이 약함.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**운영/장애 대응 미비**: 신규 서비스 장애시 운영팀 or 1인 담당이 신속하게 대응할 수 있는지 불분명.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**CI/CD/배포 프로세스 오류**: GitHub repo 리네임, 워크플로우 변경 시 배포/모니터링/자동화 스크립트가 미세하게 깨질 가능성이 높음.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**롤백/복구 전략**이 명확하게 문서화되어야 함: 분리 실패, 데이터 손실, 연동 장애 발생 시 즉시 원상 복구 가능한 절차(코드/DB/인프라 백업 및 롤백 등).",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**테스트/검증 계획** 강화: E2E 외에 최소 Smoke Test, 회귀 테스트, 데이터 검증 쿼리, QA 체크리스트 등 보완 필요.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**운영/보안 가이드** 추가: 분리 이후 운영팀(또는 담당자)이 장애 발생 시 즉시 대응할 수 있도록 Runbook과 Alert 체계, 보안/접근 제어 가이드 마련.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "ChatGPT",
+      "text": "**외부 연동 서비스 준비 상태** 확인: Foundry-X, AI Foundry 포털, svc-llm-router 등 외부 서비스가 분리된 Recon-X 연동 규격에 맞게 준비되었는지 사전 점검 필요.",
+      "severity": "medium"
+    },
+    {
+      "type": "verdict",
+      "source": "ChatGPT",
+      "text": "Conditional",
+      "severity": "info"
+    },
+    {
+      "type": "risk",
+      "source": "Gemini",
+      "text": "사실 확인: PRD에 포함된 가정이나 수치 중 검증이 필요한 것들은?\n\n*   **\"Foundry-X Phase 18과 병행 진행\" 및 \"2주 이내 완료 목표\":** MSA 재조정의 첫 단계이자 중요한 선례가 되는 작업임에도 불구하고 2주라는 매우 짧은 기간이 설정되었습니다. Foundry-X Phase 18과의 병행 작업이 Sinclair Seo 개발자 ",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "Gemini",
+      "text": "**일정 및 인력 재검토:** 2주라는 짧은 기간 내 1인 개발자가 Foundry-X Phase 18과 병행하여 이 중요한 MSA 전환 작업을 완료하는 것은 매우 높은 리스크를 수반합니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "Gemini",
+      "text": "**데이터 무손실 검증 강화:** 파일럿 데이터 무손실은 MVP의 핵심 조건이자 실패/중단 조건입니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "Gemini",
+      "text": "**오픈 이슈 해결 전략 구체화:** 오픈 이슈 5가지가 W1, W2 마감으로 설정되어 있지만, 특히 LLM 호출 방식(이슈 1)과 RBAC/마스킹 로직 처리(이슈 2), 인증 플로우(이슈 4)는 아키텍처 및 보안에 중요한 영향을 미치므로, **각 옵션의 장단점 분석 및 최종 결정에 대한 상세한 기술적 논의와 문서화가 필요합니다.** 특히, svc-secu",
+      "severity": "medium"
+    },
+    {
+      "type": "verdict",
+      "source": "Gemini",
+      "text": "Conditional",
+      "severity": "info"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**LLM 라우팅 분리로 인한 파이프라인 불안정**: LLM 라우팅 전략 선택에 따라 파이프라인의 안정성이 크게 달라질 수 있습니다. Option A로 시작하여 문제가 발생할 경우 기존 service binding으로 복원하는 대응이 필요합니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "risk",
+      "source": "DeepSeek",
+      "text": "**D1 바인딩 제거 시 런타임 에러**: D1 바인딩 제거 과정에서 런타임 에러가 발생할 가능성이 높습니다. 이를 방지하기 위해 철저한 테스트와 스테이징 환경에서의 검증이 필요합니다.",
+      "severity": "medium"
+    },
+    {
+      "type": "verdict",
+      "source": "DeepSeek",
+      "text": "Conditional",
+      "severity": "info"
+    }
+  ]
+}

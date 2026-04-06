@@ -2,6 +2,20 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 196 — 2026-04-07
+
+**GitHub 리네이밍 + API Gateway PDCA 완료**:
+- ✅ GitHub repo 리네이밍: `KTDS-AXBD/AI-Foundry` → `KTDS-AXBD/Recon-X`
+- ✅ 로컬 remote URL + SPEC/CLAUDE/sync 스킬/ISSUE_TEMPLATE 참조 일괄 교체
+- ✅ API Gateway (packages/api) PDCA 전체 완료: Plan → Design → Do → Check → Report
+  - Hono + JWT (jose) + 11 Service Bindings 프록시
+  - 미들웨어 체인: CORS → Guard → Auth → Router
+  - 6 test files, 28 tests (100% match rate)
+- ✅ PDCA 문서 4종: AIF-PLAN-021, AIF-DSGN-021, AIF-ANLS-028, AIF-RPRT-021
+
+**검증 결과**:
+- ✅ typecheck 19/19 packages / test 28 pass / PDCA 100%
+
 ## 세션 195 — 2026-04-07
 
 **하네스 이식 — Recon-X 리브랜딩 + pnpm 전환**:

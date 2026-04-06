@@ -34,7 +34,7 @@ describe("Health 라우트", () => {
     app.route("/", health);
     const res = await app.request("/health", {}, mockEnv());
     expect(res.status).toBe(200);
-    const body = await res.json();
+    const body = await res.json() as Record<string, any>;
     expect(body.status).toBe("healthy");
     expect(Object.keys(body.services)).toHaveLength(11);
   });
@@ -46,7 +46,7 @@ describe("Health 라우트", () => {
       SVC_INGESTION: mockFetcher(false),
     }));
     expect(res.status).toBe(503);
-    const body = await res.json();
+    const body = await res.json() as Record<string, any>;
     expect(body.status).toBe("degraded");
     expect(body.services.ingestion.status).toBe("unhealthy");
   });
@@ -62,7 +62,7 @@ describe("Health 라우트", () => {
       SVC_POLICY: failFetcher,
     }));
     expect(res.status).toBe(503);
-    const body = await res.json();
+    const body = await res.json() as Record<string, any>;
     expect(body.services.policy.status).toBe("unreachable");
   });
 
@@ -70,7 +70,7 @@ describe("Health 라우트", () => {
     const app = new Hono<AppEnv>();
     app.route("/", health);
     const res = await app.request("/health", {}, mockEnv());
-    const body = await res.json();
+    const body = await res.json() as Record<string, any>;
     expect(body.timestamp).toBeDefined();
   });
 });

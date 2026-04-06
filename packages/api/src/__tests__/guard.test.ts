@@ -14,7 +14,7 @@ describe("Guard 미들웨어", () => {
     const app = createApp();
     const res = await app.request("/internal/queue-event");
     expect(res.status).toBe(403);
-    const body = await res.json();
+    const body = await res.json() as Record<string, any>;
     expect(body.error.code).toBe("FORBIDDEN");
   });
 

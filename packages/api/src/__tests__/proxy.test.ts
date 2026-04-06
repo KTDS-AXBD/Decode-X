@@ -49,7 +49,7 @@ describe("프록시 라우팅", () => {
       headers: { Authorization: `Bearer ${token}` },
     }, env);
     expect(res.status).toBe(404);
-    const body = await res.json();
+    const body = await res.json() as Record<string, any>;
     expect(body.error.message).toContain("unknown");
   });
 
@@ -85,7 +85,7 @@ describe("프록시 라우팅", () => {
     const fetcher = mockFetcher();
     const env = mockEnv({ SVC_MCP_SERVER: fetcher });
     await app.request("/api/mcp/tools", {}, env);
-    const call = (fetcher.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    const call = (fetcher.fetch as ReturnType<typeof vi.fn>).mock.calls[0]!;
     expect(call).toBeDefined();
     const req = call[0] as Request;
     expect(req.headers.get("X-Internal-Secret")).toBe("test-secret");
@@ -95,7 +95,7 @@ describe("프록시 라우팅", () => {
     const fetcher = mockFetcher();
     const env = mockEnv({ SVC_MCP_SERVER: fetcher });
     await app.request("/api/mcp/tools/list?q=test", {}, env);
-    const call = (fetcher.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
+    const call = (fetcher.fetch as ReturnType<typeof vi.fn>).mock.calls[0]!;
     const req = call[0] as Request;
     const url = new URL(req.url);
     expect(url.pathname).toBe("/tools/list");

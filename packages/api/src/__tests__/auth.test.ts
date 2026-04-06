@@ -41,7 +41,7 @@ describe("Auth 미들웨어", () => {
       headers: { Authorization: `Bearer ${token}` },
     }, mockEnv());
     expect(res.status).toBe(200);
-    const body = await res.json();
+    const body = await res.json() as Record<string, any>;
     expect(body.userId).toBe("user-1");
     expect(body.userRole).toBe("analyst");
     expect(body.organizationId).toBe("org-1");
@@ -51,7 +51,7 @@ describe("Auth 미들웨어", () => {
     const app = createApp();
     const res = await app.request("/api/test", {}, mockEnv());
     expect(res.status).toBe(401);
-    const body = await res.json();
+    const body = await res.json() as Record<string, any>;
     expect(body.error.code).toBe("UNAUTHORIZED");
   });
 

@@ -2,6 +2,25 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 195 — 2026-04-07
+
+**하네스 이식 — Recon-X 리브랜딩 + pnpm 전환**:
+- ✅ CLAUDE.md: AI Foundry → Recon-X 정체성 반영 (Overview, Commands, Repo Structure)
+- ✅ package.json: name=recon-x, packageManager=pnpm@10.8.1, bun workspaces 제거
+- ✅ pnpm-workspace.yaml: packages/* + services/* + apps/* 워크스페이스
+- ✅ turbo.json: harness-kit 기본 구조로 간소화
+- ✅ eslint.config.js: harness-kit flat config + harness-rules 3종
+- ✅ packages/api, packages/web: 스캐폴드 (tsconfig + vitest)
+- ✅ CI/CD: 4개 워크플로우 bun → pnpm 전환 (ci, deploy-services, deploy-pages, set-secret)
+- ✅ E2E: playwright.config.ts webServer bun → pnpm
+- ✅ .claude/agents: build-validator, deploy-verifier (URL 수정), spec-checker
+- ✅ docs/AX-BD-MSA-Restructuring-Plan.md: 서비스 그룹 MSA 재조정 설계서 v3
+
+**검증 결과**:
+- ✅ typecheck 18/18 packages 통과
+- ✅ test 16/16 packages 통과
+- ✅ CI/CD 전체 성공 (Typecheck & Test + E2E Tests)
+
 ## 세션 194 — 2026-04-07
 
 **데모 시나리오 실행 — AI Chat Widget Tool Use 수정**:

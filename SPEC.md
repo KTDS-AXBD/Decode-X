@@ -386,6 +386,19 @@
 - [x] Sprint 1: screen-design-parser + Batch 3 (7/11 파싱) + Queue fix + SCDSA002 탐지 + 배치 자동화
 - [x] Sprint 2: bulk-approve 3,046건 + Tier 2+3 87건 업로드 + 파이프라인 완결 (26,825 terms, 3,104 skills)
 
+### 🔧 Phase 5 — Recon-X MSA 재조정 (AIF-REQ-030, AIF-REQ-031)
+- [ ] M1: 플랫폼 SVC 5개 분리 — svc-llm-router, svc-security, svc-governance, svc-notification, svc-analytics 제거
+- [ ] M2: D1 바인딩 정리 — 잔류 7 Workers의 wrangler.toml 불필요 바인딩 제거
+- [ ] M3: LLM 라우팅 전환 — svc-llm-router 분리 후 파이프라인 LLM 호출 방식 전환
+- [ ] M4: 프론트엔드 정리 — 포털 성격 페이지 제거, Recon-X 전용 UI ~10페이지
+- [ ] M5: 리포 리네임 준비 — package.json, CLAUDE.md, SPEC.md 내부 참조 정리
+- [ ] M6: E2E 테스트 조정 — 분리 기능 테스트 제거/수정, 잔류 기능 전체 PASS
+- [ ] M7: 서비스 연동 인터페이스 정의 — Foundry-X MCP/Event 연동 문서화 + 엔드포인트
+- [ ] S1: CI/CD 파이프라인 조정 (AIF-REQ-031)
+- [ ] S2: 모니터링 독립화 (AIF-REQ-031)
+- [ ] S3: Turborepo 워크스페이스 정리 (AIF-REQ-031)
+- [ ] S4: 문서 갱신 — Recon-X 관점 (AIF-REQ-031)
+
 ---
 
 ## 7) Requirements Backlog
@@ -496,6 +509,13 @@
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
 | AIF-REQ-029 | Feature | Governance | P1 | DONE | Custom 스킬 구조화 (Skill Framework) — Phase 1a~3 완료. 8 CLI + 훅 + 가이드라인 + 템플릿 3종 + 분류 100%(210/210) + 팀 배포(deploy.mjs) + 사용량 추적(usage-tracker.sh) + 리포트(usage.mjs) + 리팩토링(refactor.mjs) + 의존성(deps.mjs) + 폐기 정책. PRD 13/16 기능. 43 tests, PDCA 97%/90%/96%/100%. 참조: `skill-framework/prd-final.md` |
+
+### Recon-X MSA 재조정 (신규 등록)
+
+| ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
+|----|------|--------|:--------:|:----:|------|
+| AIF-REQ-030 | Feature | Infra | P0 | PLANNED | Recon-X MSA 재조정 — 플랫폼 SVC 5개 분리(llm-router/security/governance/notification/analytics), LLM 라우팅 전환, 프론트엔드 정리(20→~10페이지), 리포 리네임 준비, E2E 테스트 조정, 서비스 연동 인터페이스 정의. 참조: `docs/recon-x-restructuring/prd-final.md` |
+| AIF-REQ-031 | Chore | Infra | P1 | PLANNED | Recon-X 부가 작업 — CI/CD 파이프라인 조정, 모니터링 독립화, Turborepo 워크스페이스 정리, 문서 갱신(CLAUDE.md/SPEC.md → Recon-X 관점) |
 
 ---
 

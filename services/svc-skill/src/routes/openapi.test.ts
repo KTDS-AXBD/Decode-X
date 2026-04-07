@@ -193,7 +193,7 @@ describe("toOpenApiSpec", () => {
   it("includes externalDocs", () => {
     const spec = toOpenApiSpec(makeSkillPackage());
     expect(spec.externalDocs).toBeDefined();
-    expect(spec.externalDocs?.url).toContain("ai-foundry");
+    expect(spec.externalDocs?.url).toContain("rx.minu.best");
   });
 
   it("includes contact url", () => {

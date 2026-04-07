@@ -2,6 +2,16 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 200 — 2026-04-07
+**E2E 테스트 수정 + AIF-REQ-032 DONE 전환**:
+- ✅ Health check: 7 Workers + Gateway + Pages + CORS 전체 200 OK
+- ✅ E2E 3건 실패 수정: stats 카드 4→3 (MSA 재조정 반영), "최근 활동" → "빠른 실행" 테스트 교체
+- ✅ vite.config.ts: 제거된 5개 서비스(security/governance/notification/analytics) 프록시 매핑 정리
+- ✅ AIF-REQ-032 IN_PROGRESS → DONE (리브랜딩 완료 검증)
+- ✅ DNS 확인: `rx.minu.best` → Cloudflare IPs (104.26.2.214, 104.26.3.214, 172.67.71.137)
+
+**검증 결과**: typecheck PASS, E2E 42/43 passed (1 flaky — upload cleanup timeout, retry 통과)
+
 ## 세션 199 — 2026-04-07
 **Recon-X 리브랜딩 정리 (AIF-REQ-032)**:
 - ✅ 도메인 변경: `ai-foundry.minu.best` → `rx.minu.best` — CORS, OpenAPI, vite proxy, deploy-verifier 등 11파일 갱신

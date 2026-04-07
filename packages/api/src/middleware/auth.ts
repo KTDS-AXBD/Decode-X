@@ -17,10 +17,21 @@ export async function authMiddleware(c: Context<AppEnv>, next: Next) {
     return next();
   }
 
+  // --- Auth Method 1: X-Internal-Secret (trusted caller — Pages Function, curl) ---
+  const internalSecret = c.req.header("X-Internal-Secret");
+  if (internalSecret && internalSecret === c.env.INTERNAL_API_SECRET) {
+    // Trust forwarded identity headers from Pages Function
+    c.set("userId", c.req.header("X-User-Id") ?? "anonymous");
+    c.set("userRole", c.req.header("X-User-Role") ?? "Client");
+    c.set("organizationId", c.req.header("X-Organization-Id") ?? "");
+    return next();
+  }
+
+  // --- Auth Method 2: JWT Bearer token (direct client) ---
   const authHeader = c.req.header("Authorization");
   if (!authHeader?.startsWith("Bearer ")) {
     return c.json(
-      { success: false, error: { code: "UNAUTHORIZED", message: "Missing Bearer token" } },
+      { success: false, error: { code: "UNAUTHORIZED", message: "Missing Bearer token or internal secret" } },
       401,
     );
   }

@@ -70,17 +70,6 @@ describe("프록시 라우팅", () => {
     expect(res.status).toBe(404);
   });
 
-  it("/api/ingestion(trailing path 없음)도 인증 후 프록시한다", async () => {
-    const token = await createToken();
-    const fetcher = mockFetcher("root-ok");
-    const env = mockEnv({ SVC_INGESTION: fetcher });
-    const res = await app.request("/api/ingestion", {
-      headers: { Authorization: `Bearer ${token}` },
-    }, env);
-    expect(res.status).toBe(200);
-    expect((fetcher.fetch as ReturnType<typeof vi.fn>)).toHaveBeenCalled();
-  });
-
   it("X-Internal-Secret 헤더를 downstream에 주입한다", async () => {
     const fetcher = mockFetcher();
     const env = mockEnv({ SVC_MCP_SERVER: fetcher });
@@ -91,7 +80,7 @@ describe("프록시 라우팅", () => {
     expect(req.headers.get("X-Internal-Secret")).toBe("test-secret");
   });
 
-  it("downstream 경로에서 /api/:service 접두사를 제거한다", async () => {
+  it("PREFIX_STRIP_MAP 서비스는 prefix를 제거한다 (mcp)", async () => {
     const fetcher = mockFetcher();
     const env = mockEnv({ SVC_MCP_SERVER: fetcher });
     await app.request("/api/mcp/tools/list?q=test", {}, env);
@@ -100,5 +89,107 @@ describe("프록시 라우팅", () => {
     const url = new URL(req.url);
     expect(url.pathname).toBe("/tools/list");
     expect(url.search).toBe("?q=test");
+  });
+});
+
+describe("리소스 기반 라우팅 (레거시 호환)", () => {
+  it("/api/documents/123 → SVC_INGESTION으로 프록시한다", async () => {
+    const token = await createToken();
+    const fetcher = mockFetcher(JSON.stringify({ success: true }));
+    const env = mockEnv({ SVC_INGESTION: fetcher });
+    const res = await app.request("/api/documents/123", {
+      headers: { Authorization: `Bearer ${token}` },
+    }, env);
+    expect(res.status).toBe(200);
+    expect((fetcher.fetch as ReturnType<typeof vi.fn>)).toHaveBeenCalled();
+  });
+
+  it("리소스 라우팅은 리소스명을 downstream 경로에 보존한다", async () => {
+    const token = await createToken();
+    const fetcher = mockFetcher();
+    const env = mockEnv({ SVC_INGESTION: fetcher });
+    await app.request("/api/documents/123/chunks?limit=10", {
+      headers: { Authorization: `Bearer ${token}` },
+    }, env);
+    const call = (fetcher.fetch as ReturnType<typeof vi.fn>).mock.calls[0]!;
+    const req = call[0] as Request;
+    const url = new URL(req.url);
+    expect(url.pathname).toBe("/documents/123/chunks");
+    expect(url.search).toBe("?limit=10");
+  });
+
+  it("/api/factcheck → SVC_EXTRACTION으로 프록시한다", async () => {
+    const token = await createToken();
+    const fetcher = mockFetcher(JSON.stringify({ success: true }));
+    const env = mockEnv({ SVC_EXTRACTION: fetcher });
+    const res = await app.request("/api/factcheck/results", {
+      headers: { Authorization: `Bearer ${token}` },
+    }, env);
+    expect(res.status).toBe(200);
+    const call = (fetcher.fetch as ReturnType<typeof vi.fn>).mock.calls[0]!;
+    const req = call[0] as Request;
+    expect(new URL(req.url).pathname).toBe("/factcheck/results");
+  });
+
+  it("/api/policies → SVC_POLICY로 프록시한다", async () => {
+    const token = await createToken();
+    const fetcher = mockFetcher();
+    const env = mockEnv({ SVC_POLICY: fetcher });
+    await app.request("/api/policies/123/approve", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    }, env);
+    const call = (fetcher.fetch as ReturnType<typeof vi.fn>).mock.calls[0]!;
+    const req = call[0] as Request;
+    expect(new URL(req.url).pathname).toBe("/policies/123/approve");
+    expect(req.method).toBe("POST");
+  });
+
+  it("/api/cost → SVC_GOVERNANCE로 프록시한다", async () => {
+    const token = await createToken();
+    const fetcher = mockFetcher();
+    const env = mockEnv({ SVC_GOVERNANCE: fetcher });
+    await app.request("/api/cost", {
+      headers: { Authorization: `Bearer ${token}` },
+    }, env);
+    expect((fetcher.fetch as ReturnType<typeof vi.fn>)).toHaveBeenCalled();
+  });
+
+  it("/api/reports → SVC_ANALYTICS로 프록시한다", async () => {
+    const token = await createToken();
+    const fetcher = mockFetcher();
+    const env = mockEnv({ SVC_ANALYTICS: fetcher });
+    await app.request("/api/reports/sections?orgId=lpon", {
+      headers: { Authorization: `Bearer ${token}` },
+    }, env);
+    const call = (fetcher.fetch as ReturnType<typeof vi.fn>).mock.calls[0]!;
+    const req = call[0] as Request;
+    const url = new URL(req.url);
+    expect(url.pathname).toBe("/reports/sections");
+    expect(url.search).toBe("?orgId=lpon");
+  });
+
+  it("/api/skills/stats → SVC_SKILL로 프록시하며 /skills/stats를 보존한다", async () => {
+    const token = await createToken();
+    const fetcher = mockFetcher();
+    const env = mockEnv({ SVC_SKILL: fetcher });
+    await app.request("/api/skills/stats", {
+      headers: { Authorization: `Bearer ${token}` },
+    }, env);
+    const call = (fetcher.fetch as ReturnType<typeof vi.fn>).mock.calls[0]!;
+    const req = call[0] as Request;
+    expect(new URL(req.url).pathname).toBe("/skills/stats");
+  });
+
+  it("/api/export → SVC_EXTRACTION으로 프록시한다 (trailing path 없음)", async () => {
+    const token = await createToken();
+    const fetcher = mockFetcher();
+    const env = mockEnv({ SVC_EXTRACTION: fetcher });
+    await app.request("/api/export", {
+      headers: { Authorization: `Bearer ${token}` },
+    }, env);
+    const call = (fetcher.fetch as ReturnType<typeof vi.fn>).mock.calls[0]!;
+    const req = call[0] as Request;
+    expect(new URL(req.url).pathname).toBe("/export");
   });
 });

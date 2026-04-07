@@ -29,8 +29,13 @@ function createApp() {
   return app;
 }
 
+const INTERNAL_SECRET = "test-internal-secret";
+
 function mockEnv() {
-  return { GATEWAY_JWT_SECRET: JWT_SECRET } as unknown as Record<string, unknown>;
+  return {
+    GATEWAY_JWT_SECRET: JWT_SECRET,
+    INTERNAL_API_SECRET: INTERNAL_SECRET,
+  } as unknown as Record<string, unknown>;
 }
 
 describe("Auth 미들웨어", () => {
@@ -84,5 +89,41 @@ describe("Auth 미들웨어", () => {
     const app = createApp();
     const res = await app.request("/api/mcp/tools", {}, mockEnv());
     expect(res.status).toBe(200);
+  });
+
+  it("X-Internal-Secret으로 인증하면 forwarded 헤더에서 사용자 정보를 추출한다", async () => {
+    const app = createApp();
+    const res = await app.request("/api/test", {
+      headers: {
+        "X-Internal-Secret": INTERNAL_SECRET,
+        "X-User-Id": "demo-user",
+        "X-User-Role": "Reviewer",
+        "X-Organization-Id": "LPON",
+      },
+    }, mockEnv());
+    expect(res.status).toBe(200);
+    const body = await res.json() as Record<string, string>;
+    expect(body.userId).toBe("demo-user");
+    expect(body.userRole).toBe("Reviewer");
+    expect(body.organizationId).toBe("LPON");
+  });
+
+  it("잘못된 X-Internal-Secret이면 JWT로 fallback한다", async () => {
+    const app = createApp();
+    const res = await app.request("/api/test", {
+      headers: { "X-Internal-Secret": "wrong-secret" },
+    }, mockEnv());
+    expect(res.status).toBe(401);
+  });
+
+  it("X-Internal-Secret만 있고 identity 헤더가 없으면 기본값을 사용한다", async () => {
+    const app = createApp();
+    const res = await app.request("/api/test", {
+      headers: { "X-Internal-Secret": INTERNAL_SECRET },
+    }, mockEnv());
+    expect(res.status).toBe(200);
+    const body = await res.json() as Record<string, string>;
+    expect(body.userId).toBe("anonymous");
+    expect(body.userRole).toBe("Client");
   });
 });

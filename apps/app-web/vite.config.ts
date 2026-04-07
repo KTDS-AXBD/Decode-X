@@ -4,13 +4,15 @@ import tailwindcss from "@tailwindcss/vite";
 import path from "path";
 
 /**
- * Dev proxy — mirrors Pages Functions routing (functions/api/[[path]].ts)
+ * Dev proxy — routes /api/* through the API Gateway or individual Workers.
  *
  * Modes (set via DEV_PROXY env var):
- *   DEV_PROXY=local    → proxy to local wrangler dev ports (default)
- *   DEV_PROXY=staging  → proxy to staging Workers on Cloudflare
+ *   DEV_PROXY=local    → proxy to individual wrangler dev ports (default)
+ *   DEV_PROXY=gateway  → proxy to local Gateway Worker (port 8700)
+ *   DEV_PROXY=remote   → proxy to deployed Pages (→ Gateway)
  */
 const ACCOUNT = "ktds-axbd";
+const GATEWAY_PORT = 8700;
 
 const SERVICE_MAP: Record<string, { service: string; port: number }> = {
   documents: { service: "svc-ingestion", port: 8701 },
@@ -18,6 +20,9 @@ const SERVICE_MAP: Record<string, { service: string; port: number }> = {
   extract: { service: "svc-extraction", port: 8702 },
   analysis: { service: "svc-extraction", port: 8702 },
   analyze: { service: "svc-extraction", port: 8702 },
+  factcheck: { service: "svc-extraction", port: 8702 },
+  specs: { service: "svc-extraction", port: 8702 },
+  export: { service: "svc-extraction", port: 8702 },
   policies: { service: "svc-policy", port: 8703 },
   sessions: { service: "svc-policy", port: 8703 },
   terms: { service: "svc-ontology", port: 8704 },
@@ -39,12 +44,13 @@ const SERVICE_MAP: Record<string, { service: string; port: number }> = {
   deliverables: { service: "svc-analytics", port: 8710 },
 };
 
-const DEPLOYED_ORIGIN = "https://ai-foundry.minu.best";
+const DEPLOYED_ORIGIN = "https://rx.minu.best";
+const GATEWAY_ORIGIN = `https://recon-x-api.${ACCOUNT}.workers.dev`;
 
 function buildProxy(mode: string) {
   const proxy: Record<string, object> = {};
 
-  // remote — proxy through deployed Pages Function (handles auth + routing)
+  // remote — proxy through deployed Pages (→ Gateway → Workers)
   if (mode === "remote") {
     proxy["/api/"] = {
       target: DEPLOYED_ORIGIN,
@@ -54,7 +60,26 @@ function buildProxy(mode: string) {
     return proxy;
   }
 
-  // local — proxy to individual wrangler dev ports with path rewrite
+  // gateway — proxy to local Gateway Worker (single entry point)
+  if (mode === "gateway") {
+    proxy["/api/"] = {
+      target: `http://localhost:${String(GATEWAY_PORT)}`,
+      changeOrigin: true,
+    };
+    return proxy;
+  }
+
+  // staging — proxy to deployed Gateway directly
+  if (mode === "staging") {
+    proxy["/api/"] = {
+      target: GATEWAY_ORIGIN,
+      changeOrigin: true,
+      secure: true,
+    };
+    return proxy;
+  }
+
+  // local (default) — proxy to individual wrangler dev ports with path rewrite
   for (const [segment, { port }] of Object.entries(SERVICE_MAP)) {
     proxy[`/api/${segment}`] = {
       target: `http://localhost:${String(port)}`,

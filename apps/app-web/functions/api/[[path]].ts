@@ -1,33 +1,14 @@
 /**
- * Pages Function — API Proxy
+ * Pages Function — API Gateway Proxy
  *
- * Catches all /api/* requests and forwards them to the appropriate
- * staging/production Worker via HTTP fetch.
+ * Forwards all /api/* requests to the recon-x-api Gateway Worker.
+ * The Gateway handles routing (service-based + resource-based),
+ * JWT auth, CORS, and Service Bindings to downstream Workers.
  *
- * Routing table:
- *   /api/documents/**  → svc-ingestion
- *   /api/extractions/**  → svc-extraction
- *   /api/extract/**  → svc-extraction
- *   /api/analysis/**  → svc-extraction
- *   /api/analyze/**  → svc-extraction
- *   /api/factcheck/**  → svc-extraction
- *   /api/specs/**  → svc-extraction
- *   /api/export/**  → svc-extraction
- *   /api/policies/**  → svc-policy
- *   /api/sessions/**  → svc-policy
- *   /api/skills/**  → svc-skill
- *   /api/terms/**  → svc-ontology
- *   /api/graph/**  → svc-ontology
- *   /api/normalize/**  → svc-ontology
- *   /api/audit/**  → svc-security
- *   /api/cost/**  → svc-governance
- *   /api/trust/**  → svc-governance
- *   /api/prompts/**  → svc-governance
- *   /api/notifications/**  → svc-notification
- *   /api/kpi/**  → svc-analytics
- *   /api/dashboards/**  → svc-analytics
- *   /api/reports/**  → svc-analytics
- *   /api/deliverables/**  → svc-analytics
+ * This function passes through X-Internal-Secret so the Gateway
+ * can authenticate with downstream services. The Gateway also injects
+ * its own secret, but we pass the Pages-level secret for the transition
+ * period where the Gateway may not yet have all secrets configured.
  */
 
 interface ProxyEnv {
@@ -35,48 +16,16 @@ interface ProxyEnv {
   INTERNAL_API_SECRET: string;
 }
 
-/** Map first path segment after /api/ to a Worker service name */
-const ROUTE_TABLE: Record<string, string> = {
-  documents: "svc-ingestion",
-  extractions: "svc-extraction",
-  extract: "svc-extraction",
-  analysis: "svc-extraction",
-  analyze: "svc-extraction",
-  factcheck: "svc-extraction",
-  specs: "svc-extraction",
-  export: "svc-extraction",
-  policies: "svc-policy",
-  sessions: "svc-policy",
-  skills: "svc-skill",
-  terms: "svc-ontology",
-  graph: "svc-ontology",
-  normalize: "svc-ontology",
-  audit: "svc-security",
-  cost: "svc-governance",
-  trust: "svc-governance",
-  prompts: "svc-governance",
-  "golden-tests": "svc-governance",
-  "quality-evaluations": "svc-governance",
-  chat: "svc-governance",
-  notifications: "svc-notification",
-  kpi: "svc-analytics",
-  dashboards: "svc-analytics",
-  quality: "svc-analytics",
-  reports: "svc-analytics",
-  deliverables: "svc-analytics",
-};
-
 const ACCOUNT_SUBDOMAIN = "ktds-axbd";
 
-function getWorkerUrl(serviceName: string, env: string): string {
-  const suffix = env === "production" ? "-production" : "-staging";
-  return `https://${serviceName}${suffix}.${ACCOUNT_SUBDOMAIN}.workers.dev`;
+function getGatewayUrl(env: string): string {
+  if (env === "staging") return `https://recon-x-api-staging.${ACCOUNT_SUBDOMAIN}.workers.dev`;
+  return `https://recon-x-api.${ACCOUNT_SUBDOMAIN}.workers.dev`;
 }
 
 export const onRequest: PagesFunction<ProxyEnv> = async (context) => {
   const { request, env } = context;
 
-  // Build the sub-path from catch-all params (e.g. ["documents", "doc-123", "chunks"])
   const pathSegments = context.params["path"];
   if (!pathSegments) {
     return Response.json(
@@ -85,43 +34,21 @@ export const onRequest: PagesFunction<ProxyEnv> = async (context) => {
     );
   }
   const segments = Array.isArray(pathSegments) ? pathSegments : [pathSegments];
-  const firstSegment = segments[0];
-  if (!firstSegment) {
-    return Response.json(
-      { success: false, error: "Missing API path" },
-      { status: 400 },
-    );
-  }
-
-  const targetService = ROUTE_TABLE[firstSegment];
-  if (!targetService) {
-    return Response.json(
-      { success: false, error: `Unknown API route: /api/${firstSegment}` },
-      { status: 404 },
-    );
-  }
 
   const environment = env.DEPLOY_ENV ?? "production";
-  const workerBaseUrl = getWorkerUrl(targetService, environment);
+  const gatewayBase = getGatewayUrl(environment);
 
-  // Reconstruct the target path: /documents/doc-123/chunks
-  const targetPath = `/${segments.join("/")}`;
-
-  // Preserve query string
+  // Forward full path: /api/documents/123/chunks → Gateway /api/documents/123/chunks
+  const targetPath = `/api/${segments.join("/")}`;
   const url = new URL(request.url);
-  const queryString = url.search;
+  const targetUrl = `${gatewayBase}${targetPath}${url.search}`;
 
-  const targetUrl = `${workerBaseUrl}${targetPath}${queryString}`;
-
-  // Forward headers, injecting internal secret
   const headers = new Headers(request.headers);
   if (env.INTERNAL_API_SECRET) {
     headers.set("X-Internal-Secret", env.INTERNAL_API_SECRET);
   }
-  // Remove host header to avoid issues
   headers.delete("host");
 
-  // Forward the request
   const proxyRequest = new Request(targetUrl, {
     method: request.method,
     headers,
@@ -133,11 +60,10 @@ export const onRequest: PagesFunction<ProxyEnv> = async (context) => {
   try {
     const response = await fetch(proxyRequest);
 
-    // Clone response with CORS headers
     const corsHeaders = new Headers(response.headers);
     corsHeaders.set("Access-Control-Allow-Origin", "*");
     corsHeaders.set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
-    corsHeaders.set("Access-Control-Allow-Headers", "Content-Type, X-Organization-Id, X-User-Id, X-User-Role");
+    corsHeaders.set("Access-Control-Allow-Headers", "Content-Type, X-Organization-Id, X-User-Id, X-User-Role, Authorization");
 
     return new Response(response.body, {
       status: response.status,
@@ -148,7 +74,7 @@ export const onRequest: PagesFunction<ProxyEnv> = async (context) => {
     return Response.json(
       {
         success: false,
-        error: "Proxy error",
+        error: "Gateway proxy error",
         detail: err instanceof Error ? err.message : String(err),
       },
       { status: 502 },

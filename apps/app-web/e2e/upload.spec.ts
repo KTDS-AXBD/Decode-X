@@ -11,9 +11,38 @@ const MINIMAL_PDF = Buffer.from(
 );
 
 const TEST_FILENAME = "e2e-test-upload.pdf";
+const BASE_URL = "http://localhost:5173";
+const DEFAULT_HEADERS = {
+  "X-Organization-Id": "Miraeasset",
+  "X-User-Id": "analyst-001",
+};
+
+/** Delete test documents via Playwright APIRequestContext (outside browser, no test timeout pressure) */
+async function cleanupTestDocuments(request: import("@playwright/test").APIRequestContext) {
+  try {
+    const res = await request.get(`${BASE_URL}/api/documents`, { headers: DEFAULT_HEADERS });
+    if (!res.ok()) return;
+    const data = await res.json() as {
+      success: boolean;
+      data: { documents: { document_id: string; original_name: string }[] };
+    };
+    if (!data.success) return;
+    const testDocs = data.data.documents.filter((d) => d.original_name === TEST_FILENAME);
+    await Promise.all(
+      testDocs.map((doc) =>
+        request.delete(`${BASE_URL}/api/documents/${doc.document_id}`, { headers: DEFAULT_HEADERS }),
+      ),
+    );
+  } catch {
+    // best-effort cleanup
+  }
+}
 
 test.describe("File upload E2E", () => {
-  test("upload a PDF as Analyst and verify it appears in the list", async ({ browser }) => {
+  test("upload a PDF as Analyst and verify it appears in the list", async ({ browser, request }) => {
+    // Pre-cleanup: remove leftover test docs from previous failed runs
+    await cleanupTestDocuments(request);
+
     // Login as Analyst (has document:upload permission)
     const ctx = await browser.newContext({ storageState: undefined });
     const page = await ctx.newPage();
@@ -47,28 +76,10 @@ test.describe("File upload E2E", () => {
       page.getByRole("heading", { name: TEST_FILENAME }).first(),
     ).toBeVisible({ timeout: 10_000 });
 
-    // Cleanup: delete ALL test documents via API
-    await page.evaluate(async (filename) => {
-      const orgId = localStorage.getItem("ai-foundry-org-id") ?? "Miraeasset";
-      const userId = localStorage.getItem("ai-foundry-auth-user") ?? "";
-      const res = await fetch("/api/documents", {
-        headers: { "X-Organization-Id": orgId, "X-User-Id": userId },
-      });
-      const data = (await res.json()) as {
-        success: boolean;
-        data: { documents: { document_id: string; original_name: string }[] };
-      };
-      if (!data.success) return;
-      const testDocs = data.data.documents.filter((d) => d.original_name === filename);
-      for (const doc of testDocs) {
-        await fetch(`/api/documents/${doc.document_id}`, {
-          method: "DELETE",
-          headers: { "X-Organization-Id": orgId, "X-User-Id": userId },
-        });
-      }
-    }, TEST_FILENAME);
-
     await ctx.close();
+
+    // Post-cleanup via APIRequestContext (runs outside browser, independent of test timeout)
+    await cleanupTestDocuments(request);
   });
 
   test("rejects unsupported file type", async ({ page }) => {

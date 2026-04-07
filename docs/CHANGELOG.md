@@ -2,6 +2,18 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+## 세션 198 — 2026-04-07
+**API Gateway 배포 + 하이브리드 라우팅 + Pages Function 통합**:
+- ✅ Gateway 배포 (`recon-x-api.ktds-axbd.workers.dev`) + secrets 설정
+- ✅ RESOURCE_MAP (26개 리소스→서비스) + PREFIX_STRIP_MAP (mcp) 하이브리드 라우팅
+- ✅ X-Internal-Secret fallback 인증 — Pages Function 호환 (JWT + Internal Secret 이중 인증)
+- ✅ Pages Function → Gateway 단일 프록시로 단순화 (개별 Worker HTTP fetch 제거)
+- ✅ vite dev proxy에 `gateway`/`staging` 모드 추가
+- ✅ E2E 검증: 11/11 서비스 healthy, 14/14 라우팅 정상
+- ⚡ 발견: SERVICE_MAP prefix-strip 패턴이 현재 Worker 구조와 비호환 → RESOURCE_MAP(path 보존) 전환
+
+**검증 결과**: typecheck PASS, 42 tests (기존 28 + 신규 14), E2E 14/14
+
 ## 세션 197 — 2026-04-07
 **Recon-X MSA 재조정 — 요구사항 인터뷰→PRD→Plan→구현→merge→문서 갱신 (Full Cycle)**:
 - ✅ `/ax:req-interview` 5파트 인터뷰 + PRD v1→v2→final (82점, 3-AI 검토 2회)

@@ -79,7 +79,7 @@ Recon-X/
 └── package.json               # Monorepo root
 ```
 
-Each service has its own `wrangler.toml` and deploys independently. `packages/` 구조는 하네스 이식 진행 중.
+Each service has its own `wrangler.toml` and deploys independently.
 
 ---
 

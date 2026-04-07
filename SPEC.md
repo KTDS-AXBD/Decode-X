@@ -397,7 +397,7 @@
 - [x] S1: CI/CD — deploy-services.yml 5개 SVC 제거
 - [x] S2: 모니터링 — health-check.sh 7 Workers 전용
 - [x] S3: Turborepo — pnpm-lock.yaml 경량화
-- [ ] S4: 문서 갱신 — CLAUDE.md/SPEC.md Recon-X 관점 (AIF-REQ-031, 별도 세션)
+- [x] S4: 문서 갱신 — CLAUDE.md Recon-X 관점 갱신 완료 (AIF-REQ-031 DONE)
 
 ---
 
@@ -515,7 +515,7 @@
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
 | AIF-REQ-030 | Feature | Infra | P0 | DONE | Recon-X MSA 재조정 — 플랫폼 SVC 5개 분리(llm-router/security/governance/notification/analytics), LLM 라우팅 전환, 프론트엔드 정리(20→~10페이지), 리포 리네임 준비, E2E 테스트 조정, 서비스 연동 인터페이스 정의. 참조: `docs/recon-x-restructuring/prd-final.md` |
-| AIF-REQ-031 | Chore | Infra | P1 | PLANNED | Recon-X 부가 작업 — CI/CD 파이프라인 조정, 모니터링 독립화, Turborepo 워크스페이스 정리, 문서 갱신(CLAUDE.md/SPEC.md → Recon-X 관점) |
+| AIF-REQ-031 | Chore | Infra | P1 | DONE | Recon-X 부가 작업 — CI/CD 파이프라인 조정, 모니터링 독립화, Turborepo 워크스페이스 정리, 문서 갱신(CLAUDE.md/SPEC.md → Recon-X 관점) |
 
 ---
 

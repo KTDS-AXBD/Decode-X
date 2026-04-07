@@ -8,6 +8,7 @@
 - ✅ E2E 3건 실패 수정: stats 카드 4→3 (MSA 재조정 반영), "최근 활동" → "빠른 실행" 테스트 교체
 - ✅ vite.config.ts: 제거된 5개 서비스(security/governance/notification/analytics) 프록시 매핑 정리
 - ✅ AIF-REQ-032 IN_PROGRESS → DONE (리브랜딩 완료 검증)
+- ✅ svc-skill openapi test externalDocs URL `ai-foundry` → `rx.minu.best` (CI 실패 수정)
 - ✅ DNS 확인: `rx.minu.best` → Cloudflare IPs (104.26.2.214, 104.26.3.214, 172.67.71.137)
 
 **검증 결과**: typecheck PASS, E2E 42/43 passed (1 flaky — upload cleanup timeout, retry 통과)

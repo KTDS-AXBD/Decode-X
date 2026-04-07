@@ -56,7 +56,7 @@
 ## 5) Current Status
 
 - **Last Updated**: 2026-04-07
-- **Current Phase**: Phase 5 완료 (Recon-X MSA 재조정) — **7 Workers** + Pages 배포, 2-org 파일럿 (퇴직연금 + 온누리상품권), policies 3,675 / skills 3,924
+- **Current Phase**: **Pilot Core 완료** — 5-Stage 역공학 파이프라인 실증 완료. 7 Workers + Gateway + Pages, 2-org 파일럿 (퇴직연금 948건 + 온누리 88건), policies 3,675 / skills 3,924. KPI: API Coverage 95.4%, Table Coverage 100%. REQ 24/32 DONE. E2E 43/43 PASS
 <!-- 마지막 실측 (daily-check 자동 보정 대상) -->
 - **마지막 실측**: 7 Workers, D1 5 DBs (21 migrations, latest 0008), 108 test files on disk
 - **Foundry-X MCP 통합**: ✅ Phase 1-3 완료 — org MCP 2서버 + meta-tool 3종(`foundry_policy_eval`, `foundry_skill_query`, `foundry_ontology_lookup`). 619 tools (616 기존 + 3 meta). Foundry-X AgentTaskType 7종(기존4 + 신규3). SVC_ONTOLOGY binding. PDCA 100%. AIF-REQ-026 IN_PROGRESS
@@ -502,7 +502,7 @@
 
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
-| AIF-REQ-028 | Feature | UX | P0 | PLANNED | 반제품 스펙 PoC 전체 과정 보고서 Production 게시 — AIF-REQ-027의 인터뷰→PRD→PDCA→6개 스펙 문서→Working Version 자동 생성까지 전 과정을 보고서로 구성하여 Production 사이트에 게시. 본부장 리뷰용. 포함 내용: 인터뷰 로그, PRD(3라운드 AI 검토), 6개 스펙 문서(BL 95건, 테이블 17개, FN 10개, API 28개), Working Version(14파일 1,610줄, 24 테스트 100%), PDCA Plan/Design/Report |
+| AIF-REQ-028 | Feature | UX | P0 | DONE | 반제품 스펙 PoC 전체 과정 보고서 Production 게시 — AIF-REQ-027의 인터뷰→PRD→PDCA→6개 스펙 문서→Working Version 자동 생성까지 전 과정을 보고서로 구성하여 Production 사이트에 게시. 본부장 리뷰용. 포함 내용: 인터뷰 로그, PRD(3라운드 AI 검토), 6개 스펙 문서(BL 95건, 테이블 17개, FN 10개, API 28개), Working Version(14파일 1,610줄, 24 테스트 100%), PDCA Plan/Design/Report. 924줄 poc-report.tsx + 147줄 data. rx.minu.best/poc-report 배포 완료. 세션 200: 소급 DONE 전환 |
 
 ### Custom 스킬 구조화 — Skill Framework (신규 등록)
 

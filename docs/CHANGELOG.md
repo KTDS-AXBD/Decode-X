@@ -12,6 +12,12 @@
 - ✅ upload E2E flaky 해소: `page.evaluate` cleanup → Playwright `APIRequestContext` 분리 + pre-cleanup + 병렬 삭제
 - ✅ DNS 확인: `rx.minu.best` → Cloudflare IPs (104.26.2.214, 104.26.3.214, 172.67.71.137)
 
+**Pilot Core 종료 선언**:
+- ✅ AIF-REQ-028 소급 DONE 전환 — poc-report.tsx 924줄 구현+배포 완료 확인 (rx.minu.best/poc-report)
+- ✅ Pilot Core 전 항목 완료 — REQ 24/32 DONE, P0 필수 항목 전체 DONE
+- ✅ KPI PASS: API Coverage 95.4%, Table Coverage 100%
+- ✅ 인프라: 7 Workers + Gateway + Pages, CI/CD 자동, E2E 43/43
+
 **검증 결과**: typecheck PASS, svc-skill 310 tests PASS, E2E **43/43 passed** (0 flaky)
 
 ## 세션 199 — 2026-04-07

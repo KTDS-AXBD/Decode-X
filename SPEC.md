@@ -399,28 +399,37 @@
 - [x] S3: Turborepo — pnpm-lock.yaml 경량화
 - [x] S4: 문서 갱신 — CLAUDE.md Recon-X 관점 갱신 완료 (AIF-REQ-031 DONE)
 
-### 🔧 Phase 6 — Foundry-X Generative Bridge (AIF-REQ-026 Phase 2+, AIF-REQ-024)
+### 🔧 Phase 6 — Foundry-X Generative Bridge Finish Line (AIF-REQ-026 Phase 2+, AIF-REQ-024)
 
-> v0.7.0 이후 다음 마일스톤 (v0.8 가제). 역공학 결과를 Foundry-X 순공학과 실시간 UX로 연결.
-> 범위: REQ-026 Foundry-X 통합 확장 + REQ-024 Generative UI Framework.
-> 2-parallel Sprint 전략 (Batch 3개, merge 순서 Sprint 번호 오름차순).
+> **Plan 보정 (Sprint 201 완료 직후 감사)**: 당초 Phase 6 범위의 70~80%가 이미 세션 166~199(2026-03-18~19)에 구현되어 있었음이 확인됨. SPEC/MEMORY에 해당 구현이 추적되지 않아 중복 계획이 발생. 감사 결과 다음 자산이 확인됨:
+> - `apps/app-mockup/src/lib/widget-bridge.ts`, `decision-matrix.ts`, `widget-theme.ts` + `components/shared/WidgetRenderer.tsx` + HITL 3종(`PolicyApprovalCard`, `EntityConfirmation`, `ParameterInput`) + `AgentRunPanel.tsx` (47 tests PASS, `803489c`/`1a90b78`)
+> - `packages/types/src/ag-ui.ts` — AG-UI Protocol 22종 event discriminated union (`9ea00e9`)
+> - `services/svc-mcp-server` meta-tool 3종(`foundry_policy_eval/skill_query/ontology_lookup`) + SSE 스트리밍 (`b959d09`, 56 tests PASS)
+> - `apps/app-web/src/components/generative-ui/` + `pages/agent-console.tsx` (포트 완료 `1dc0d5d`)
+> 
+> Phase 6을 **finish line 정리 작업**으로 대폭 축소. v0.8 마일스톤 범위도 이에 맞춰 재정의.
 
-**Batch 1 (병렬 2):**
-- [ ] Sprint 201 (REQ-026 A1): Working Prototype Generator 확대 — generators 추가(api-spec, screen-def 2종), 테스트 하네스 완성, Foundry-X 핸드오프 포맷 검증. 대상: `services/svc-skill`
-- [ ] Sprint 202 (REQ-024 B1): app-mockup PoC — Sandboxed Widget Renderer(iframe 기반) + Decision Matrix(차트/표/카드 자동 선택). 대상: `apps/app-mockup`, `packages/types/src/ui-widget.ts` 신규
+**완료:**
+- [x] Sprint 201 (REQ-026 A1): Foundry-X 핸드오프 포맷 Zod 검증 테스트 5종 + svc-skill README 9-file 구조 갱신. Match Rate 100%, 315 tests PASS (신규 5), PR #2 (commit `07f64db`)
 
-**Batch 2 (병렬 2, Batch 1 merge 후):**
-- [ ] Sprint 203 (REQ-026 A2): Foundry-X meta-tool 확장 + AgentTaskType 추가 — 반제품→코드 생성 핸드오프 tool, skill 검색 고도화. 대상: `services/svc-mcp-server`, `services/svc-skill`
-- [ ] Sprint 204 (REQ-024 B2): AG-UI Protocol + HITL Components — 에이전트↔UI 실시간 통신 + 에이전트 일시정지→사용자 입력→재개 흐름. 대상: `apps/app-mockup`, `packages/types/src/ui-widget.ts`
+**Batch 1 (Sprint 202 단독 → Sprint 203으로 이어짐):**
+- [ ] Sprint 202 (REQ-026 A2 잔여): **AgentResume state 복구** — `services/svc-mcp-server/src/routes/agent.ts`의 AgentResume 엔드포인트 stub(line 164~181, `{status:"resumed"}` 고정 반환) 실구현. resumeToken ↔ 에이전트 세션 매핑 + DO/KV 상태 저장 + continuation. 대상: `services/svc-mcp-server`
 
-**Batch 3 (순차, Batch 1+2 merge 후):**
-- [ ] Sprint 205 (통합): app-web Generative Widget ↔ Foundry-X MCP 연동 PoC + Theme Injection — Batch 1+2 산출물을 app-web에 점진 반영, rx.minu.best에 데모 페이지 배포. 대상: `apps/app-web`
+**Batch 2 (Sprint 203 단독, Sprint 202 merge 후 의존):**
+- [ ] Sprint 203 (REQ-024 B2 잔여): **HITL backend state management** — Policy/Entity/Parameter HITL 응답을 `/agent/resume`로 전달하여 에이전트 세션 state 복구 + next tool-call 진행. HITL response schema 표준화 + e2e 시나리오(app-mockup `generative-demo` → svc-mcp-server SSE → HITL 응답 → resume) PASS. 대상: `services/svc-mcp-server`, `apps/app-mockup/src/components/shared/hitl/`
 
-**완료 기준 (마일스톤 v0.8):**
-- Working Prototype Generator 5종 generator + Foundry-X 핸드오프 E2E PASS
-- app-mockup PoC 3종 Widget(Sandboxed/Decision Matrix/HITL) 동작
-- app-web /generative-ui 데모 페이지 production 배포
-- AIF-REQ-026 Phase 2 DONE, AIF-REQ-024 DONE
+**Batch 3 (Sprint 204 독립, 언제든 병렬 가능):**
+- [ ] Sprint 204 (REQ-024 B2 잔여 + 통합): **Theme Injection + app-web 배포** — design-system tokens(Tailwind/shadcn) → iframe CSS 변수 매핑, `lib/widget-theme.ts` 확장(기본 CSS 변수 → design-token 계층화). `apps/app-web/pages/agent-console.tsx` production 빌드 검증 + `rx.minu.best/agent-console` 배포. 대상: `apps/app-web`, `packages/types/src/ag-ui.ts` (Theme schema 추가 시)
+
+**완료 기준 (마일스톤 v0.8 축소판):**
+- AgentResume 실구현 + HITL resume e2e PASS
+- `rx.minu.best/agent-console` production 배포 + design-token theme 정상 주입
+- AIF-REQ-024 DONE (기구현 + 잔여 완료)
+- AIF-REQ-026 Phase 2 DONE (반제품 + 핸드오프 + meta-tool + AgentResume)
+
+**Plan 보정 교훈 (반영 대상):**
+- SPEC §7 REQ 상태가 구현 진척과 drift할 때 다음 Sprint 계획이 잘못 세워짐 → `/ax:todo plan` 시작 시 `git log --all --name-status` 기반 "기구현 스캔" 단계 추가 필요
+- CLAUDE.md에 "Sprint 계획 전 기구현 확인" 체크리스트 신설 고려
 
 ---
 
@@ -501,7 +510,7 @@
 
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
-| AIF-REQ-024 | Feature | UX | P1 | PLANNED | Generative UI Framework — Sandboxed Widget Renderer(iframe 기반 안전 렌더링), AG-UI Protocol(에이전트↔UI 실시간 통신), HITL Components(에이전트 일시정지→사용자 입력), Decision Matrix(시각화 유형 자동 선택), Theme Injection(디자인 시스템 일관성). app-mockup PoC → app-web 점진적 반영. **Phase 6 Sprint 202/204/205에 배치** (v0.8 마일스톤). 참조: [CopilotKit/OpenGenerativeUI](https://github.com/CopilotKit/OpenGenerativeUI) |
+| AIF-REQ-024 | Feature | UX | P1 | IN_PROGRESS | Generative UI Framework — **기구현 소급**(세션 166~199): Sandboxed Widget Renderer(`apps/app-mockup/src/lib/widget-bridge.ts` + `components/shared/WidgetRenderer.tsx`, 47 tests `803489c`), Decision Matrix(`lib/decision-matrix.ts` 7종 시각화 자동 선택), AG-UI Protocol(`packages/types/src/ag-ui.ts` 22종 event `9ea00e9`), HITL Components 3종(`components/shared/hitl/` `1a90b78`), app-web 포트(`components/generative-ui/` + `pages/agent-console.tsx` `1dc0d5d`). **잔여**: HITL backend state management (Sprint 203), Theme Injection + app-web 배포 (Sprint 204). 참조: [CopilotKit/OpenGenerativeUI](https://github.com/CopilotKit/OpenGenerativeUI) |
 
 ### Skill 번들링 — LLM 의미 분류 기반 재패키징 (신규 등록)
 
@@ -513,7 +522,7 @@
 
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
-| AIF-REQ-026 | Feature | Integration | P1 | IN_PROGRESS | Foundry-X 통합 계획 — AI Foundry(역공학: SI 산출물→Skill 추출)와 Foundry-X(순공학: Spec↔Code↔Test 동기화+에이전트 협업)를 하나의 제품군으로 통합. (1) AI Foundry Skill 자산을 Foundry-X MCP/에이전트 도구로 연동, (2) 역공학↔순공학 양방향 포지셔닝 재정의, (3) 기술 스택 정합성 검토(Cloudflare Workers vs Node.js+Hono), (4) 공유 타입/패키지 통합, (5) 통합 로드맵 수립. 참조: [KTDS-AXBD/Foundry-X](https://github.com/KTDS-AXBD/Foundry-X) |
+| AIF-REQ-026 | Feature | Integration | P1 | IN_PROGRESS | Foundry-X 통합 — Phase 1-3 MCP 완료, Phase 2 Sprint 1(반제품 생성) 완료, **Sprint 201(핸드오프 포맷 검증) 완료** (`07f64db`, 315 tests PASS). **기구현 소급**: meta-tool 3종(`foundry_policy_eval/skill_query/ontology_lookup`) + SSE 스트리밍(`services/svc-mcp-server` `b959d09`, 56 tests PASS, 619 tools production). **잔여**: AgentResume state 복구 stub 실구현 (Sprint 202). 참조: [KTDS-AXBD/Foundry-X](https://github.com/KTDS-AXBD/Foundry-X) |
 
 ### 반제품 스펙 — 역공학 결과물의 개발 스펙 변환 (신규 등록)
 

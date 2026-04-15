@@ -8,7 +8,7 @@
 ## 1) Project Summary
 
 - **Project**: AI Foundry (Foundry-X 제품군 — 지식 추출 엔진)
-- **Repo**: `KTDS-AXBD/Recon-X`
+- **Repo**: `KTDS-AXBD/Decode-X` (구 Recon-X, 세션 201 리브랜딩)
 - **한줄 정의**: 과거의 지식을 미래의 코드로 바꾸는 엔진 (Reverse-to-Forward Bridge)
 - **Goal**: SI 산출물 + 소스코드를 역공학하여 도메인 지식을 추출하고, 새 프로젝트의 반제품(Working Prototype)으로 재패키징
 - **Positioning**: 역공학(기존 산출물 분석) → 순공학(새 프로젝트 부트스트래핑) 양방향 엔진. Foundry-X(에이전트 협업 플랫폼)와 결합하여 완전한 소프트웨어 개발 파이프라인 구성
@@ -517,6 +517,7 @@
 | AIF-REQ-030 | Feature | Infra | P0 | DONE | Recon-X MSA 재조정 — 플랫폼 SVC 5개 분리(llm-router/security/governance/notification/analytics), LLM 라우팅 전환, 프론트엔드 정리(20→~10페이지), 리포 리네임 준비, E2E 테스트 조정, 서비스 연동 인터페이스 정의. 참조: `docs/recon-x-restructuring/prd-final.md` |
 | AIF-REQ-031 | Chore | Infra | P1 | DONE | Recon-X 부가 작업 — CI/CD 파이프라인 조정, 모니터링 독립화, Turborepo 워크스페이스 정리, 문서 갱신(CLAUDE.md/SPEC.md → Recon-X 관점) |
 | AIF-REQ-032 | Chore | Infra | P1 | DONE | Recon-X 리브랜딩 정리 — 로컬 디렉토리명 변경(res-ai-foundry→Recon-X), 커스텀 도메인 변경(ai-foundry.minu.best→rx.minu.best), CORS/OpenAPI/vite proxy/deploy-verifier 코드 갱신, Cloudflare Pages 도메인+DNS 전환. 세션 200: health check 전체 PASS (7 Workers + Gateway + Pages + CORS) |
+| AIF-REQ-033 | Chore | Infra | P1 | DONE | **Decode-X 리브랜딩** — Recon-X(Reconnaissance) → Decode-X(Decoding) 프로젝트 정체성 재정의. **범위**: (1) GitHub 리포 KTDS-AXBD/Recon-X → KTDS-AXBD/Decode-X (완료, push redirect로 확인), (2) 로컬 git remote URL 갱신 (완료), (3) 프로젝트 정체성 파일(CLAUDE.md/SPEC.md/MEMORY.md/README.md/package.json) 갱신, (4) docs/recon-x-restructuring/ → docs/decode-x-restructuring/ 디렉토리 rename (git mv), (5) 로컬 워킹 디렉토리 /home/sinclair/work/axbd/Recon-X/ → Decode-X/ rename. **범위 제외**(infrastructure 보존): Cloudflare Worker 이름(recon-x-api 유지), 배포 URL, service binding, DO script_name. 역사적 PDCA 기록(docs/CHANGELOG.md, 기존 DONE REQ 설명)은 보존 |
 
 ---
 

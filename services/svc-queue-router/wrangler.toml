@@ -14,7 +14,7 @@ inspector_port = 9211
 # The default env svc-queue-router Worker must be deleted from Cloudflare
 # if it exists — see deploy-services.yml which skips default env for this service.
 
-# Service bindings — fan-out targets (Recon-X pipeline only)
+# Service bindings — fan-out targets (Decode-X pipeline only)
 [[services]]
 binding = "SVC_INGESTION"
 service = "svc-ingestion"

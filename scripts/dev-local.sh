@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# dev-local.sh — Start all Recon-X services locally in batches
+# dev-local.sh — Start all Decode-X services locally in batches
 # Prevents workerd resource contention by staggering startup
 set -euo pipefail
 
@@ -24,7 +24,7 @@ start_service() {
   PIDS+=($!)
 }
 
-echo "=== Recon-X Local Dev ==="
+echo "=== Decode-X Local Dev ==="
 echo ""
 
 # Wave 1: Pipeline services

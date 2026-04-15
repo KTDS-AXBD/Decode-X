@@ -311,7 +311,7 @@ export function toOpenApiSpec(pkg: SkillPackage, options?: OpenApiOptions): Open
   }
 
   spec.externalDocs = {
-    description: "Recon-X Platform Documentation",
+    description: "Decode-X Platform Documentation",
     url: "https://rx.minu.best",
   };
 

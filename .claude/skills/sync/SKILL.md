@@ -45,8 +45,8 @@ user-invocable: true
 - 최근 커밋 5개
 
 ```bash
-!`gh issue list --repo KTDS-AXBD/Recon-X --state open --limit 20`
-!`gh pr list --repo KTDS-AXBD/Recon-X --state open --limit 20`
+!`gh issue list --repo KTDS-AXBD/Decode-X --state open --limit 20`
+!`gh pr list --repo KTDS-AXBD/Decode-X --state open --limit 20`
 !`git log --oneline -5`
 ```
 
@@ -73,18 +73,18 @@ user-invocable: true
 ```bash
 # 1) Phase 이슈 생성 (템플릿 사용)
 gh issue create \
-  --repo KTDS-AXBD/Recon-X \
+  --repo KTDS-AXBD/Decode-X \
   --template phase.md \
   --title "[Phase A] monorepo 디렉토리 구조 확정"
 
 # 2) Task 이슈 생성 (템플릿 사용)
 gh issue create \
-  --repo KTDS-AXBD/Recon-X \
+  --repo KTDS-AXBD/Decode-X \
   --template task.md \
   --title "[Task] SVC-01 ingestion skeleton 생성"
 
 # 3) 완료 이슈 종료
-gh issue close <number> --repo KTDS-AXBD/Recon-X
+gh issue close <number> --repo KTDS-AXBD/Decode-X
 ```
 
 ### /sync push 체크리스트 (Issue 템플릿 기반)
@@ -112,8 +112,8 @@ GitHub에서 진행된 변경사항을 로컬 계획 문서에 반영한다.
 ### 실행 가이드
 
 ```bash
-!`gh issue list --repo KTDS-AXBD/Recon-X --state all --limit 30`
-!`gh pr list --repo KTDS-AXBD/Recon-X --state merged --limit 20`
+!`gh issue list --repo KTDS-AXBD/Decode-X --state all --limit 30`
+!`gh pr list --repo KTDS-AXBD/Decode-X --state merged --limit 20`
 ```
 
 반영 규칙:

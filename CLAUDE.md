@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Recon-X** — 기존 시스템·SI 산출물(소스코드, 요구사항 정의서, API 명세서, 테이블 정의서, 화면 설계서)을 정찰(Reconnaissance)하여 기능 스펙을 역추출하는 엔진. **AI Foundry 플랫폼**의 1단계 수집 서비스.
+**Decode-X** — 기존 시스템·SI 산출물(소스코드, 요구사항 정의서, API 명세서, 테이블 정의서, 화면 설계서)을 해독(Decoding)하여 기능 스펙을 역추출하는 엔진. **AI Foundry 플랫폼**의 1단계 수집 서비스. (구 Recon-X, 세션 201 리브랜딩)
 
-> **한줄 정의**: 기존 자산을 탐색·분석하여 가치를 추출하는 정찰 엔진
+> **한줄 정의**: 기존 자산을 해독·분석하여 기능 스펙을 추출하는 디코딩 엔진
 
 **포지셔닝**: AI Foundry 플랫폼 산하 `*-X` 패밀리 서비스 중 하나. 역공학으로 기존 산출물에서 스펙을 추출하고, Foundry-X(발굴·형상화)로 핸드오프한다. MSA 재조정 계획: `docs/AX-BD-MSA-Restructuring-Plan.md`.
 
@@ -19,9 +19,9 @@ Output: Dev Spec Package (API 명세 + 테이블 정의 + Gap 리포트)
 
 Full product requirements: `docs/AI_Foundry_PRD_TDS_v0.7.4.docx`. 정체성 재정의: `docs/AI_Foundry_Identity.md`. Built by KTDS AX BD팀. Pilot domain: 퇴직연금 + 온누리상품권.
 
-> **Status**: Phase 5 완료 (Recon-X MSA 재조정). **7 Workers** + Pages 배포. 플랫폼 SVC 5개 분리 완료 (llm-router/security/governance/notification/analytics → AI Foundry 포털). 2-org 파일럿. LLM HTTP REST 전환 (`packages/utils/src/llm-client.ts`). 상세 수치는 SPEC.md §2 참조.
+> **Status**: Phase 5 완료 (MSA 재조정). **7 Workers** + Pages 배포. 플랫폼 SVC 5개 분리 완료 (llm-router/security/governance/notification/analytics → AI Foundry 포털). 2-org 파일럿. LLM HTTP REST 전환 (`packages/utils/src/llm-client.ts`). 상세 수치는 SPEC.md §2 참조.
 > 
-> **GitHub**: `KTDS-AXBD/Recon-X`. "AI Foundry"는 상위 포털 플랫폼 이름으로 승격.
+> **GitHub**: `KTDS-AXBD/Decode-X`. "AI Foundry"는 상위 포털 플랫폼 이름으로 승격. 인프라(Worker 이름 `recon-x-api` 등)는 배포 식별자 유지.
 
 ---
 
@@ -56,7 +56,7 @@ printf 'value' | CLOUDFLARE_API_TOKEN="..." wrangler secret put SECRET_NAME
 ## Repo Structure
 
 ```
-Recon-X/
+Decode-X/
 ├── packages/
 │   ├── types/                 # @ai-foundry/types — shared Zod schemas & TS types
 │   └── utils/                 # @ai-foundry/utils — shared utilities + llm-client.ts
@@ -68,7 +68,7 @@ Recon-X/
 │   ├── svc-skill/             # SVC-05  Skill Packaging (LLM HTTP, R2)
 │   ├── svc-queue-router/      # Queue Router (pipeline event bus)
 │   └── svc-mcp-server/        # SVC-11  MCP Server (Streamable HTTP, Skill tools)
-├── apps/app-web/              # Recon-X 전용 Pages SPA (~10 pages)
+├── apps/app-web/              # Decode-X 전용 Pages SPA (~10 pages)
 ├── docs/                      # PRD, CHANGELOG, MSA 재조정 설계서
 ├── scripts/                   # 운영 스크립트
 ├── infra/migrations/          # D1 migrations (5 DBs: ingestion, structure, policy, ontology, skill)
@@ -120,7 +120,7 @@ Stage 5: Skill Packaging + 반제품 생성
           + Working Prototype (하네스 + Spec 초안 + 스키마) → Foundry-X 핸드오프
 ```
 
-### MSA — 7 Cloudflare Workers (Recon-X 전용)
+### MSA — 7 Cloudflare Workers (Decode-X 전용)
 **Domain (Pipeline):**
 - `SVC-01` Document Ingestion — Workers, R2, Queue
 - `SVC-02` Structure Extraction — LLM HTTP REST, Neo4j
@@ -141,7 +141,7 @@ Stage 5: Skill Packaging + 반제품 생성
 - **Compute**: Workers (7 SVCs) + Durable Objects (HITL session state)
 - **Storage**: D1 (5 DBs: ingestion, structure, policy, ontology, skill) + R2 (documents, Skill packages) + KV (cache)
 - **Async**: Cloudflare Queues (pipeline event bus: 6 event types)
-- **Frontend**: Cloudflare Pages (SPA, ~10 Recon-X 전용 screens)
+- **Frontend**: Cloudflare Pages (SPA, ~10 Decode-X 전용 screens)
 - **LLM gateway**: Cloudflare AI Gateway (logging, caching, rate limiting for all LLM calls — Anthropic/OpenAI/Google)
 - **Auth**: Cloudflare Access (Zero Trust, SSO with KT DS IdP)
 - **Graph DB**: Neo4j Aura (Free → Pro as needed)
@@ -178,7 +178,7 @@ Stage 5: Skill Packaging + 반제품 생성
 5 roles: `Analyst` (upload/run), `Reviewer` (HITL policy review), `Developer` (Skill integration), `Client` (read-only), `Executive` (dashboards). Details in PRD §18.
 
 ## Development Phases
-Phase 1 ✅ → 2 ✅ → 3 ✅ → 4 ✅ → **5 ✅** (Recon-X MSA 재조정 완료). 각 Phase 상세는 `SPEC.md` 참조.
+Phase 1 ✅ → 2 ✅ → 3 ✅ → 4 ✅ → **5 ✅** (MSA 재조정 완료). 각 Phase 상세는 `SPEC.md` 참조.
 
 ---
 

@@ -1,14 +1,14 @@
-# MEMORY.md — Recon-X Auto Memory
+# MEMORY.md — Decode-X Auto Memory
 
 > 세션 시작 시 자동 로딩되는 컨텍스트 캐시. 수치/실측값은 **SPEC.md SSOT** 참조(§2 "마지막 실측", §5 Current Status). 여기는 맥락·활성 작업·결정만 유지한다.
 
 ## 현재 포지션
 
-- **프로젝트**: Recon-X — AI Foundry 플랫폼 1단계 수집 서비스(역공학 엔진). 기존 SI 산출물/소스코드에서 기능 스펙 역추출 → Foundry-X 핸드오프
+- **프로젝트**: Decode-X — AI Foundry 플랫폼 1단계 수집 서비스(역공학 엔진). 기존 SI 산출물/소스코드에서 기능 스펙 역추출 → Foundry-X 핸드오프
 - **버전**: v0.7.0 (Pilot Core 완료, 2026-04-07 태깅)
 - **현재 단계**: Pilot Core 종료 선언 이후 — 다음 마일스톤 정의 전 유예 구간
 - **파일럿 도메인**: 퇴직연금(Miraeasset) + 온누리상품권(LPON) 2-org
-- **GitHub**: KTDS-AXBD/Recon-X (main 단일 브랜치)
+- **GitHub**: KTDS-AXBD/Decode-X (main 단일 브랜치)
 - **Production URL**: rx.minu.best (Cloudflare Pages + 7 Workers + API Gateway)
 
 ## 활성 작업 (IN_PROGRESS)

@@ -74,12 +74,18 @@ function generateReadme(orgName: string, data: CollectedData): GeneratedFile {
 ## 파일 구조
 
 \`\`\`
-.foundry/origin.json          # 원천 추적 메타데이터
-.foundry/manifest.json        # 패키지 매니페스트
-specs/01-business-logic.md    # 비즈니스 로직 명세
-schemas/                      # (후속 Sprint)
-rules/business-rules.json    # 정책 트리플 (JSON)
-ontology/terms.jsonld         # 도메인 용어 (SKOS)
+.foundry/origin.json         # 원천 추적 메타데이터
+.foundry/manifest.json       # 패키지 매니페스트 (Foundry-X 핸드오프)
+specs/01-business-logic.md  # 비즈니스 로직 명세 (G1)
+specs/02-data-model.md      # 데이터 모델 명세 (G2)
+specs/03-functions.md       # 기능 정의서 (G3)
+specs/04-architecture.md    # 아키텍처 정의서 (G4)
+specs/05-api.md             # API 명세 (G5)
+specs/06-screens.md         # 화면 정의서 (G9, 옵션)
+rules/business-rules.json  # 정책 트리플 JSON (기계적 변환)
+ontology/terms.jsonld       # 도메인 용어 SKOS (기계적 변환)
+CLAUDE.md                   # AI 에이전트 가이드 (G8)
+README.md                   # 반제품 패키지 설명서 (이 파일)
 \`\`\`
 
 ## 사용법
@@ -87,9 +93,11 @@ ontology/terms.jsonld         # 도메인 용어 (SKOS)
 이 패키지를 Claude Code 또는 Foundry-X에서 사용하려면:
 
 1. ZIP을 프로젝트 루트에 압축 해제
-2. \`specs/01-business-logic.md\`를 참조하여 비즈니스 로직 구현
-3. \`rules/business-rules.json\`을 런타임 정책 엔진에 로드
-4. \`ontology/terms.jsonld\`를 도메인 용어 사전으로 활용
+2. \`CLAUDE.md\`를 참조하여 전체 도메인 컨텍스트 파악
+3. \`specs/\` 디렉토리의 명세서(01~06)로 비즈니스 로직·API·화면 구현
+4. \`rules/business-rules.json\`을 런타임 정책 엔진에 로드
+5. \`ontology/terms.jsonld\`를 도메인 용어 사전으로 활용
+6. \`.foundry/manifest.json\`으로 Foundry-X 핸드오프 메타데이터 확인
 `;
 
   return {

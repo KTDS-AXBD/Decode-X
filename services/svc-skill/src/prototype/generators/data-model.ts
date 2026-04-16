@@ -64,7 +64,7 @@ function buildTables(
   entities: TermRow[],
   attributes: TermRow[],
 ): { tables: TableDef[]; unassigned: Array<{ name: string; type: string; label: string; definition: string | null }> } {
-  const entityIdSet = new Set(entities.map((e) => e.term_id));
+  const _entityIdSet = new Set(entities.map((e) => e.term_id));
   const tables: TableDef[] = [];
 
   for (const e of entities) {

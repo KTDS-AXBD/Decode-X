@@ -145,7 +145,7 @@ function buildScreens(fns: FnEntry[], tableNames: string[]): ScreenDef[] {
 
 function generateMechanical(
   screens: ScreenDef[],
-  tableNames: string[],
+  _tableNames: string[],
 ): string {
   const lines: string[] = [];
 

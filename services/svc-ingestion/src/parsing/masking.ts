@@ -1,5 +1,3 @@
-import { createLogger } from "@ai-foundry/utils";
-const logger = createLogger("svc-ingestion");
 
 /**
  * PII masking — stub after svc-security separation.

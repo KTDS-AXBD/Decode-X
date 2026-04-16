@@ -164,7 +164,7 @@ export function extractEndpoints(source: string): CodeEndpoint[] {
     // Find the method signature after the annotation
     const afterAnnotation = source.slice((match.index ?? 0) + match[0].length);
     const methodSigMatch = afterAnnotation.match(
-      /\s*(?:public|protected|private)?\s*(?:[\w<>,\s\[\]]+?)\s+(\w+)\s*\(/,
+      /\s*(?:public|protected|private)?\s*(?:[\w<>,\s[\]]+?)\s+(\w+)\s*\(/,
     );
     if (!methodSigMatch) continue;
 
@@ -349,7 +349,7 @@ function extractBalancedParens(source: string, openIdx: number): string {
   if (source[openIdx] !== "(") return "";
 
   let depth = 0;
-  let start = openIdx + 1;
+  const start = openIdx + 1;
   for (let i = openIdx; i < source.length; i++) {
     if (source[i] === "(") depth++;
     else if (source[i] === ")") {
@@ -368,7 +368,7 @@ function extractBalancedParens(source: string, openIdx: number): string {
 function extractReturnType(source: string, matchIdx: number): string {
   // Look at the method signature area — find "public ReturnType methodName("
   const region = source.slice(Math.max(0, matchIdx - 100), matchIdx + 200);
-  const methodMatch = region.match(/(?:public|protected|private)\s+([\w<>,\s\[\]?]+?)\s+\w+\s*\(/);
+  const methodMatch = region.match(/(?:public|protected|private)\s+([\w<>,\s[\]?]+?)\s+\w+\s*\(/);
   return methodMatch?.[1]?.trim() ?? "void";
 }
 

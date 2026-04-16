@@ -6,7 +6,7 @@
 
 import type { TermType } from "@ai-foundry/types";
 import { TermTypeSchema } from "@ai-foundry/types";
-import { createLogger, callLlmRouter, type LlmClientEnv } from "@ai-foundry/utils";
+import { createLogger, callLlmRouter } from "@ai-foundry/utils";
 import type { Env } from "../env.js";
 
 const logger = createLogger("svc-ontology:classify");

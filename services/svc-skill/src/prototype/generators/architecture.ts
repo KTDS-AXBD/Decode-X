@@ -22,7 +22,7 @@ interface Module {
   fns: FnEntry[];
 }
 
-const LAYERS = ["Presentation", "Application", "Domain", "Infrastructure"] as const;
+const _LAYERS = ["Presentation", "Application", "Domain", "Infrastructure"] as const;
 
 const ROLES = ["USER", "ADMIN", "SYSTEM"] as const;
 

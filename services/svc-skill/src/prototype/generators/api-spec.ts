@@ -80,7 +80,7 @@ function inferResource(title: string): string {
 function mapFnToEndpoint(fn: FnEntry): ApiEndpoint {
   let method = "POST";
   let suffix = "";
-  let description = fn.title;
+  const description = fn.title;
 
   for (const [keyword, mapping] of Object.entries(ACTION_KEYWORDS)) {
     if (fn.title.includes(keyword)) {

@@ -16,7 +16,7 @@ import type { CollectedData, PolicyRow, SkillRow } from "../collector.js";
 
 // ── 헬퍼 ────────────────────────────────────────
 
-interface SkillGroup {
+interface _SkillGroup {
   subdomain: string;
   domain: string;
   skills: SkillRow[];

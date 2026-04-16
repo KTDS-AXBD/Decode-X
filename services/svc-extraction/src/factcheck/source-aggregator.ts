@@ -12,6 +12,7 @@ import {
   CodeDdlSchema,
   CodeTransactionSchema,
 } from "@ai-foundry/types";
+import type { CodeMapper } from "@ai-foundry/types";
 import { createLogger } from "@ai-foundry/utils";
 import type {
   SourceSpec,
@@ -575,7 +576,7 @@ function processNonControllerChunk(
 
 /** Process a CodeMapper into tables and queries */
 function processMapper(
-  mapper: import("@ai-foundry/types").CodeMapper,
+  mapper: CodeMapper,
   doc: IngestionDocument,
   allTables: SourceTable[],
   allQueries: SourceQuery[],

@@ -13,3 +13,4 @@ export * from "./evaluation.js";
 export * from "./ag-ui.js";
 export * from "./mcp-shared.js";
 export * from "./prototype.js";
+export * from "./extraction.js";

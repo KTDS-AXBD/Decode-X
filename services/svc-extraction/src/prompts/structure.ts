@@ -45,11 +45,14 @@ function getDocTypeGuidance(classification: string): string {
     case "api_spec":
       return `이 문서는 **API 명세서/인터페이스 목록**입니다.
 각 인터페이스/API를 엔티티(type: "interface")로 추출하세요.
-프로세스는 연계 흐름(송신→수신)을 기준으로, 규칙은 호출 조건/주기를 기준으로 추출하세요.`;
+프로세스는 연계 흐름(송신→수신)을 기준으로, 규칙은 호출 조건/주기를 기준으로 추출하세요.
+**Technical 추출 강조**: apis(엔드포인트, 메서드, 요청/응답 스키마)와 dataFlows(호출 관계)를 상세히 추출하세요.`;
     case "erd":
-      return `이 문서는 **ERD/데이터 모델**입니다. 테이블/엔티티를 엔티티(type: "table")로, 관계를 relationships로 추출하세요.`;
+      return `이 문서는 **ERD/데이터 모델**입니다. 테이블/엔티티를 엔티티(type: "table")로, 관계를 relationships로 추출하세요.
+**Technical 추출 강조**: tables(테이블명, 컬럼명/타입/FK)를 상세히 추출하세요.`;
     case "requirements":
-      return `이 문서는 **요구사항 명세서**입니다. 기능 요구사항을 프로세스로, 비기능 요구사항을 규칙으로 추출하세요.`;
+      return `이 문서는 **요구사항 명세서**입니다. 기능 요구사항을 프로세스로, 비기능 요구사항을 규칙으로 추출하세요.
+**Technical 추출 강조**: errors(에러 코드, 예외 경로, 처리 방식)를 상세히 추출하세요.`;
     case "process":
       return `이 문서는 **업무 프로세스 문서**입니다. 업무 흐름과 분기 조건에 주목하세요.`;
     default:
@@ -100,10 +103,18 @@ ${docGuidance}
 다음 항목을 추출하여 JSON 형식으로만 응답하세요. 마크다운 코드 블록이나 추가 설명 없이 순수 JSON만 출력하세요.
 
 추출 항목:
+
+[Business 축]
 1. **프로세스(processes)**: 업무 흐름, 처리 단계, 절차, 연계 흐름
 2. **엔티티(entities)**: 주요 데이터 객체, 계좌, 인물, 상품, 규정, 시스템, 인터페이스, 테이블 등
 3. **관계(relationships)**: 엔티티 간 연관 관계
 4. **규칙(rules)**: 업무 조건, 판단 기준, 제약 조건, 기술 표준, 아키텍처 결정
+
+[Technical 축 — 해당 정보가 문서에 있을 때만 추출]
+5. **APIs(apis)**: API 엔드포인트, HTTP 메서드, 요청/응답 스키마
+6. **테이블(tables)**: DB 테이블명, 컬럼(이름, 타입, FK 관계)
+7. **데이터 흐름(dataFlows)**: 함수 호출 관계, 모듈 의존성, 이벤트 발행/구독
+8. **에러(errors)**: 에러 코드, 예외 경로, 에러 처리 방식
 
 출력 JSON 스키마:
 {
@@ -134,8 +145,45 @@ ${docGuidance}
       "outcome": "결과/처리",
       "domain": "pension"
     }
+  ],
+  "apis": [
+    {
+      "endpoint": "/api/v1/example",
+      "method": "POST",
+      "requestSchema": "요청 필드 설명 (선택)",
+      "responseSchema": "응답 필드 설명 (선택)",
+      "description": "API 설명 (선택)"
+    }
+  ],
+  "tables": [
+    {
+      "name": "테이블명",
+      "columns": [
+        { "name": "컬럼명", "type": "VARCHAR(100)", "nullable": false, "foreignKey": "참조테이블.컬럼 (선택)" }
+      ],
+      "description": "테이블 설명 (선택)"
+    }
+  ],
+  "dataFlows": [
+    {
+      "source": "호출/발행 모듈명",
+      "target": "피호출/구독 모듈명",
+      "type": "call | import | event | query",
+      "description": "흐름 설명 (선택)"
+    }
+  ],
+  "errors": [
+    {
+      "code": "에러 코드 (선택)",
+      "exception": "예외 클래스/타입 (선택)",
+      "path": "발생 경로/모듈 (선택)",
+      "handling": "처리 방식 (선택)",
+      "severity": "critical | warning | info (선택)"
+    }
   ]
 }
+
+Technical 축(apis, tables, dataFlows, errors)은 문서에 해당 정보가 있을 때만 추출하세요. 없으면 빈 배열([])로 응답하세요.
 
 --- 분석 대상 문서 청크 ---
 

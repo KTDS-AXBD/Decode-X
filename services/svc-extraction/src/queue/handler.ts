@@ -7,7 +7,7 @@
 
 import { createLogger } from "@ai-foundry/utils";
 import { PipelineEventSchema } from "@ai-foundry/types";
-import type { IngestionCompletedEvent } from "@ai-foundry/types";
+import type { IngestionCompletedEvent, ExtractionResult } from "@ai-foundry/types";
 import { buildExtractionPrompt } from "../prompts/structure.js";
 import { buildScoringPrompt, parseScoringResult, buildCoreSummary } from "../prompts/scoring.js";
 import { buildDiagnosisPrompt, parseDiagnosisResult } from "../prompts/diagnosis.js";
@@ -19,13 +19,6 @@ import { detectGaps } from "../factcheck/gap-detector.js";
 import type { Env } from "../env.js";
 
 const logger = createLogger("svc-extraction:queue");
-
-interface ExtractionResult {
-  processes: Array<{ name: string; description: string; steps: string[] }>;
-  entities: Array<{ name: string; type: string; attributes: string[] }>;
-  relationships: Array<{ from: string; to: string; type: string }>;
-  rules: Array<{ condition: string; outcome: string; domain: string }>;
-}
 
 /** Chunk with metadata from svc-ingestion. */
 export interface ChunkWithMeta {
@@ -135,7 +128,7 @@ async function runExtraction(
         rawContentLength: jsonContent.length,
         rawContentPreview: jsonContent.slice(0, 300),
       });
-      parsed = { processes: [], entities: [], relationships: [], rules: [] };
+      parsed = { processes: [], entities: [], relationships: [], rules: [], apis: [], tables: [], dataFlows: [], errors: [] };
     }
 
     const processNodeCount =

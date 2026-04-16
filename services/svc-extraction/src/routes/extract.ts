@@ -4,6 +4,7 @@
  */
 
 import { ok, badRequest, errFromUnknown } from "@ai-foundry/utils";
+import type { ExtractionResult } from "@ai-foundry/types";
 import { buildExtractionPrompt } from "../prompts/structure.js";
 import { callLlm } from "../llm/caller.js";
 import type { ChunkWithMeta } from "../queue/handler.js";
@@ -15,13 +16,6 @@ interface ExtractRequestBody {
   chunks: string[];
   classification?: string;
   tier?: "sonnet" | "haiku";
-}
-
-interface ExtractionResult {
-  processes: Array<{ name: string; description: string; steps: string[] }>;
-  entities: Array<{ name: string; type: string; attributes: string[] }>;
-  relationships: Array<{ from: string; to: string; type: string }>;
-  rules: Array<{ condition: string; outcome: string; domain: string }>;
 }
 
 export async function handleExtract(
@@ -82,7 +76,7 @@ export async function handleExtract(
       parsed = JSON.parse(jsonContent) as ExtractionResult;
     } catch {
       // LLM returned non-JSON — store raw and treat as partial result
-      parsed = { processes: [], entities: [], relationships: [], rules: [] };
+      parsed = { processes: [], entities: [], relationships: [], rules: [], apis: [], tables: [], dataFlows: [], errors: [] };
     }
 
     const processNodeCount = (parsed.processes?.length ?? 0) + (parsed.relationships?.length ?? 0);

@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import raw from "../../../../docs/poc/ai-ready-score-lpon-raw.json";
 import { useOrganization } from "@/contexts/OrganizationContext";
 import { fetchSkillSpec } from "@/api/org-spec";
+import { MarkdownContent } from "@/components/markdown-content";
 
 // ── Data shape ────────────────────────────────────────────────────────
 interface CriterionScore {
@@ -403,9 +404,9 @@ function SkillSpecTab({ skillId }: { skillId: string }) {
                 .map((section) => (
                   <div key={section.id} className="border rounded p-3">
                     <h4 className="text-xs font-semibold mb-2">{section.title}</h4>
-                    <pre className="text-[11px] whitespace-pre-wrap font-mono bg-muted/30 p-3 rounded overflow-x-auto max-h-64 overflow-y-auto">
-                      {section.content}
-                    </pre>
+                    <div className="rounded bg-muted/30 p-3 overflow-y-auto max-h-64">
+                      <MarkdownContent content={section.content} className="text-xs leading-relaxed" />
+                    </div>
                   </div>
                 ))}
             </div>

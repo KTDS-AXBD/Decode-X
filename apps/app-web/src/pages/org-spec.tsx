@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { RefreshCw, FileText, Database, Shield } from "lucide-react";
+import { RefreshCw, FileText, Database, Shield, ChevronDown, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { useOrganization } from "@/contexts/OrganizationContext";
 import { fetchOrgSpec, type OrgSpecDocument } from "@/api/org-spec";
+import { MarkdownContent } from "@/components/markdown-content";
 
 function pct(v: number): string {
   return `${(v * 100).toFixed(1)}%`;
@@ -163,19 +164,37 @@ function SpecTabContent({
         </CardContent>
       </Card>
 
-      {/* Sections — 마크다운 원문을 pre/code 블록으로 안전하게 렌더링 */}
+      {/* Sections — 마크다운 렌더링 (접기/펼치기) */}
       {sorted.map((section) => (
-        <Card key={section.id}>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">{section.title}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <pre className="text-xs whitespace-pre-wrap font-mono bg-muted/30 p-4 rounded overflow-x-auto max-h-96 overflow-y-auto">
-              {section.content}
-            </pre>
-          </CardContent>
-        </Card>
+        <SpecSection key={section.id} title={section.title} content={section.content} />
       ))}
     </>
+  );
+}
+
+function SpecSection({ title, content }: { title: string; content: string }) {
+  const [collapsed, setCollapsed] = useState(false);
+
+  return (
+    <Card>
+      <CardHeader className="pb-2 cursor-pointer select-none" onClick={() => setCollapsed((v) => !v)}>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm flex items-center gap-2">
+            {collapsed ? <ChevronRight className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+            {title}
+          </CardTitle>
+          <Badge variant="outline" className="text-[10px]">
+            {content.split("\n").length} lines
+          </Badge>
+        </div>
+      </CardHeader>
+      {!collapsed && (
+        <CardContent>
+          <div className="rounded border bg-card p-4 overflow-y-auto max-h-[32rem]">
+            <MarkdownContent content={content} className="text-sm leading-relaxed" />
+          </div>
+        </CardContent>
+      )}
+    </Card>
   );
 }

@@ -2,9 +2,12 @@
  * Admin routes for svc-skill — backfill and maintenance operations.
  */
 
+import type { SkillPackage } from "@ai-foundry/types";
 import { createLogger, ok, badRequest, errFromUnknown } from "@ai-foundry/utils";
 import type { Env } from "../env.js";
+import { generateAndStoreAdapters } from "../assembler/adapter-writer.js";
 import { rebundleSkills } from "../bundler/rebundle-orchestrator.js";
+import { scoreSkill } from "../scoring/ai-ready.js";
 
 const logger = createLogger("svc-skill:admin");
 
@@ -236,4 +239,162 @@ export async function handleRebundle(
     logger.error("Rebundle failed", { error: String(e), organizationId, domain });
     return errFromUnknown(e);
   }
+}
+
+// ── Backfill Adapters ──────────────────────────────────────────────
+
+/**
+ * POST /admin/backfill-adapters
+ *
+ * Generates MCP + OpenAPI adapter files for existing skills that have
+ * empty adapters (adapters.mcp and adapters.openapi both missing).
+ * Updates R2 skill package with adapter R2 keys.
+ *
+ * Query params:
+ *   - batchSize (default 50, max 200): skills per batch
+ */
+export async function handleBackfillAdapters(
+  request: Request,
+  env: Env,
+): Promise<Response> {
+  const url = new URL(request.url);
+  const batchSize = Math.min(Number(url.searchParams.get("batchSize") ?? "50"), 200);
+
+  const rows = await env.DB_SKILL.prepare(
+    "SELECT skill_id, r2_key FROM skills ORDER BY created_at ASC LIMIT ?",
+  )
+    .bind(batchSize)
+    .all<{ skill_id: string; r2_key: string }>();
+
+  const results = rows.results ?? [];
+  let updated = 0;
+  let skipped = 0;
+  let failed = 0;
+
+  for (const row of results) {
+    try {
+      const r2Obj = await env.R2_SKILL_PACKAGES.get(row["r2_key"]);
+      if (!r2Obj) {
+        logger.warn("R2 object not found during adapter backfill", { skillId: row["skill_id"] });
+        failed++;
+        continue;
+      }
+
+      const pkg = (await r2Obj.json()) as SkillPackage;
+
+      // Skip if adapters already populated
+      if (pkg.adapters.mcp && pkg.adapters.openapi) {
+        skipped++;
+        continue;
+      }
+
+      // Generate and store adapters
+      const adapterKeys = await generateAndStoreAdapters(pkg, env.R2_SKILL_PACKAGES);
+
+      // Update the skill package with adapter keys and re-store
+      const updatedPkg = { ...pkg, adapters: adapterKeys };
+      await env.R2_SKILL_PACKAGES.put(row["r2_key"], JSON.stringify(updatedPkg, null, 2), {
+        httpMetadata: { contentType: "application/json" },
+      });
+
+      updated++;
+    } catch (e) {
+      logger.warn("Adapter backfill error for skill", { skillId: row["skill_id"], error: String(e) });
+      failed++;
+    }
+  }
+
+  // Count remaining skills without adapters (approximate — check R2 would be too expensive)
+  const totalCount = await env.DB_SKILL.prepare(
+    "SELECT COUNT(*) as cnt FROM skills",
+  ).first<{ cnt: number }>();
+
+  logger.info("Backfill adapters batch completed", { updated, skipped, failed });
+
+  return ok({
+    updated,
+    skipped,
+    failed,
+    batchSize,
+    totalSkills: totalCount?.cnt ?? 0,
+  });
+}
+
+// ── Skill Detail (B/T/Q Drill-down) ───────────────────────────────
+
+/**
+ * GET /admin/skill-detail/:skillId
+ *
+ * Returns a detailed breakdown of a skill's AI-Ready score including
+ * the raw B/T/Q (Business/Technical/Quality) signals and policy text.
+ */
+export async function handleSkillDetail(
+  request: Request,
+  env: Env,
+  skillId: string,
+): Promise<Response> {
+  // Get R2 key from D1
+  const row = await env.DB_SKILL.prepare(
+    "SELECT r2_key, organization_id, domain, status, created_at FROM skills WHERE skill_id = ?",
+  )
+    .bind(skillId)
+    .first<{ r2_key: string; organization_id: string; domain: string; status: string; created_at: string }>();
+
+  if (!row) {
+    return new Response(
+      JSON.stringify({ error: "Skill not found", skillId }),
+      { status: 404, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
+  // Fetch skill package from R2
+  const r2Obj = await env.R2_SKILL_PACKAGES.get(row["r2_key"]);
+  if (!r2Obj) {
+    logger.error("R2 object not found for skill-detail", { skillId, r2Key: row["r2_key"] });
+    return new Response(
+      JSON.stringify({ error: "Skill package file not found in R2", skillId }),
+      { status: 404, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
+  const pkg = (await r2Obj.json()) as SkillPackage;
+
+  // Score AI-Ready
+  const aiReady = scoreSkill(pkg);
+
+  // Build policy breakdown with raw B/T/Q text
+  const policyDetails = pkg.policies.map((p) => ({
+    code: p.code,
+    title: p.title,
+    condition: p.condition,
+    criteria: p.criteria,
+    outcome: p.outcome,
+    trust: p.trust,
+    tags: p.tags,
+    source: {
+      documentId: p.source.documentId,
+      pageRef: p.source.pageRef ?? null,
+      excerptLength: p.source.excerpt?.length ?? 0,
+    },
+  }));
+
+  return ok({
+    skillId,
+    organizationId: row["organization_id"],
+    domain: row["domain"],
+    status: row["status"],
+    createdAt: row["created_at"],
+    adapters: pkg.adapters,
+    aiReady,
+    policies: policyDetails,
+    ontologyRef: {
+      graphId: pkg.ontologyRef.graphId,
+      termCount: pkg.ontologyRef.termUris.length,
+      hasSkos: Boolean(pkg.ontologyRef.skosConceptScheme),
+    },
+    provenance: {
+      sourceDocCount: pkg.provenance.sourceDocumentIds.length,
+      pipeline: pkg.provenance.pipeline,
+    },
+  });
 }

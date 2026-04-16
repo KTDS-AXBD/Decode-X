@@ -37,7 +37,7 @@ import { handleGetMcpAdapter, handleGetOrgMcpAdapter } from "./routes/mcp.js";
 import { handleExportCc } from "./routes/export-cc.js";
 import { handleGetOpenApiAdapter } from "./routes/openapi.js";
 import { handleEvaluateSkill, handleListEvaluations } from "./routes/evaluate.js";
-import { handleBackfillDepth, handleBackfillTrust, handleRebundle } from "./routes/admin.js";
+import { handleBackfillDepth, handleBackfillTrust, handleRebundle, handleBackfillAdapters, handleSkillDetail } from "./routes/admin.js";
 import { handleScoreAiReady } from "./routes/score-ai-ready.js";
 import {
   handleGeneratePrototype,
@@ -95,9 +95,22 @@ export default {
         return await handleRebundle(request, env, ctx);
       }
 
+      // POST /admin/backfill-adapters — generate adapter files for existing skills
+      if (method === "POST" && path === "/admin/backfill-adapters") {
+        return await handleBackfillAdapters(request, env);
+      }
+
       // POST /admin/score-ai-ready — AIF-REQ-034 AI-Ready 6기준 일괄 채점
       if (method === "POST" && path === "/admin/score-ai-ready") {
         return await handleScoreAiReady(request, env);
+      }
+
+      // GET /admin/skill-detail/:skillId — AI-Ready B/T/Q drill-down
+      const skillDetailMatch = path.match(/^\/admin\/skill-detail\/([^/]+)$/);
+      if (method === "GET" && skillDetailMatch) {
+        const detailSkillId = skillDetailMatch[1];
+        if (!detailSkillId) return new Response("Not Found", { status: 404 });
+        return await handleSkillDetail(request, env, detailSkillId);
       }
 
       // ── Prototype (Working Prototype Generator) ──

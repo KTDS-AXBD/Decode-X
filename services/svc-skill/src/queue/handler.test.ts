@@ -154,8 +154,8 @@ describe("processQueueEvent (svc-skill)", () => {
     expect(body.skillId).toBeDefined();
     expect(body.r2Key).toContain("skill-packages/");
 
-    // Verify R2 was called
-    expect(env.R2_SKILL_PACKAGES.put).toHaveBeenCalledOnce();
+    // Verify R2 was called: 1 skill.json + 2 adapter files (mcp + openapi)
+    expect(env.R2_SKILL_PACKAGES.put).toHaveBeenCalledTimes(3);
     // Verify D1 was called
     expect(env.DB_SKILL.prepare).toHaveBeenCalledOnce();
     // Verify queue event was emitted

@@ -20,6 +20,7 @@ import {
 } from "@ai-foundry/utils";
 import { z } from "zod";
 import { buildSkillPackage } from "../assembler/skill-builder.js";
+import { generateAndStoreAdapters } from "../assembler/adapter-writer.js";
 import type { Env } from "../env.js";
 
 const logger = createLogger("svc-skill:routes");
@@ -100,6 +101,14 @@ export async function handleCreateSkill(
   } catch (e) {
     logger.error("Failed to build skill package", { error: String(e) });
     return badRequest(`Skill assembly failed: ${String(e)}`);
+  }
+
+  // Generate adapter projections and store in R2
+  try {
+    const adapterKeys = await generateAndStoreAdapters(skillPackage, env.R2_SKILL_PACKAGES);
+    skillPackage = { ...skillPackage, adapters: adapterKeys };
+  } catch (e) {
+    logger.warn("Adapter generation failed (non-fatal)", { error: String(e) });
   }
 
   const { skillId, trust, metadata } = skillPackage;

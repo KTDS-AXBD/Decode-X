@@ -15,6 +15,7 @@ import { PipelineEventSchema } from "@ai-foundry/types";
 import type { Policy, SkillPackagedEvent } from "@ai-foundry/types";
 import { createLogger } from "@ai-foundry/utils";
 import { buildSkillPackage } from "../assembler/skill-builder.js";
+import { generateAndStoreAdapters } from "../assembler/adapter-writer.js";
 import type { Env } from "../env.js";
 
 const logger = createLogger("svc-skill:queue");
@@ -215,6 +216,14 @@ export async function processQueueEvent(
       JSON.stringify({ status: "error", reason: `Skill assembly failed: ${String(e)}` }),
       { status: 200, headers: { "Content-Type": "application/json" } },
     );
+  }
+
+  // 4b. Generate adapter projections and store in R2
+  try {
+    const adapterKeys = await generateAndStoreAdapters(skillPackage, env.R2_SKILL_PACKAGES);
+    skillPackage = { ...skillPackage, adapters: adapterKeys };
+  } catch (e) {
+    logger.warn("Adapter generation failed (non-fatal)", { policyId, error: String(e) });
   }
 
   const { skillId, trust, metadata } = skillPackage;

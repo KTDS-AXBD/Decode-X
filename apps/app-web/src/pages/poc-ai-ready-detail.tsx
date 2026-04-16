@@ -1,12 +1,15 @@
-import { useMemo } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FileText, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 import raw from "../../../../docs/poc/ai-ready-score-lpon-raw.json";
+import { useOrganization } from "@/contexts/OrganizationContext";
+import { fetchSkillSpec } from "@/api/org-spec";
 
 // ── Data shape ────────────────────────────────────────────────────────
 interface CriterionScore {
@@ -132,12 +135,13 @@ export default function PocAiReadyDetailPage() {
         )}
       </Card>
 
-      {/* 3-Tab drill-down */}
+      {/* 4-Tab drill-down */}
       <Tabs defaultValue="business">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="business">Business</TabsTrigger>
           <TabsTrigger value="technical">Technical</TabsTrigger>
           <TabsTrigger value="quality">Quality</TabsTrigger>
+          <TabsTrigger value="spec"><FileText className="w-3 h-3 mr-1" />Spec</TabsTrigger>
         </TabsList>
 
         {/* ── Business Tab ── */}
@@ -254,6 +258,11 @@ export default function PocAiReadyDetailPage() {
           <CriterionCard name="humanReviewable" criterion={row.criteria.humanReviewable} />
           <CriterionCard name="semanticConsistency" criterion={row.criteria.semanticConsistency} />
         </TabsContent>
+
+        {/* ── Spec Tab ── */}
+        <TabsContent value="spec" className="space-y-4 mt-4">
+          {skillId && <SkillSpecTab skillId={skillId} />}
+        </TabsContent>
       </Tabs>
 
       {/* Full 6-criterion summary */}
@@ -299,6 +308,111 @@ function SignalCard({ label, signal, value }: { label: string; signal: string; v
         {label}: {value ? "YES" : "NO"}
       </div>
     </div>
+  );
+}
+
+interface SpecSection {
+  id: string;
+  title: string;
+  content: string;
+  order: number;
+}
+
+interface SpecDocResponse {
+  skillId: string;
+  type: string;
+  sections: SpecSection[];
+  metadata: { domain: string; policyCount: number };
+}
+
+function SkillSpecTab({ skillId }: { skillId: string }) {
+  const { organizationId } = useOrganization();
+  const [specType, setSpecType] = useState<"business" | "technical" | "quality">("business");
+  const [specData, setSpecData] = useState<Record<string, SpecDocResponse>>({});
+  const [loading, setLoading] = useState(false);
+
+  const loadSpec = useCallback(
+    async (type: "business" | "technical" | "quality") => {
+      if (specData[type]) {
+        setSpecType(type);
+        return;
+      }
+      setLoading(true);
+      setSpecType(type);
+      try {
+        const data = await fetchSkillSpec(organizationId, skillId, type, { llm: false });
+        setSpecData((prev) => ({ ...prev, [type]: data as SpecDocResponse }));
+      } catch (err) {
+        toast.error(`Spec 조회 실패: ${String(err)}`);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [organizationId, skillId, specData],
+  );
+
+  const current = specData[specType];
+
+  return (
+    <>
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base">Skill B/T/Q Spec 문서</CardTitle>
+            <div className="flex gap-1">
+              {(["business", "technical", "quality"] as const).map((t) => (
+                <Button
+                  key={t}
+                  variant={specType === t ? "default" : "outline"}
+                  size="sm"
+                  className="text-xs"
+                  onClick={() => void loadSpec(t)}
+                >
+                  {t.charAt(0).toUpperCase() + t.slice(1)}
+                </Button>
+              ))}
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {loading && (
+            <div className="p-8 text-center">
+              <div className="w-6 h-6 border-3 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
+              <p className="text-xs text-muted-foreground mt-2">Spec 생성 중...</p>
+            </div>
+          )}
+          {!loading && !current && (
+            <div className="p-8 text-center space-y-3">
+              <p className="text-sm text-muted-foreground">
+                Spec 문서를 조회하려면 위 버튼을 클릭하세요.
+              </p>
+              <Button variant="outline" size="sm" onClick={() => void loadSpec("business")}>
+                <RefreshCw className="w-3 h-3 mr-1" /> Business Spec 조회
+              </Button>
+            </div>
+          )}
+          {!loading && current && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Badge variant="outline">{current.type}</Badge>
+                <span>Domain: {current.metadata.domain}</span>
+                <span>Policies: {current.metadata.policyCount}</span>
+              </div>
+              {[...current.sections]
+                .sort((a, b) => a.order - b.order)
+                .map((section) => (
+                  <div key={section.id} className="border rounded p-3">
+                    <h4 className="text-xs font-semibold mb-2">{section.title}</h4>
+                    <pre className="text-[11px] whitespace-pre-wrap font-mono bg-muted/30 p-3 rounded overflow-x-auto max-h-64 overflow-y-auto">
+                      {section.content}
+                    </pre>
+                  </div>
+                ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </>
   );
 }
 

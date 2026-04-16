@@ -4,13 +4,18 @@
 import type { OpenRouterEnv } from "@ai-foundry/utils";
 import type { Env } from "../env.js";
 import { collectSkillSpecData } from "./collector.js";
+import { collectOrgSpecData } from "./org-collector.js";
 import { generateBusinessSpec } from "./generators/business.js";
 import { generateTechnicalSpec } from "./generators/technical.js";
 import { generateQualitySpec } from "./generators/quality.js";
 import { enhanceWithLlm } from "./llm-enhancer.js";
-import type { SpecDocument, SpecType, SpecMetadata } from "./types.js";
+import type {
+  SpecDocument, SpecType, SpecMetadata,
+  OrgSpecDocument, OrgSpecMetadata, OrgSpecData, SkillSpecData,
+} from "./types.js";
 
 export type { SpecDocument, SpecType, SpecSection, SpecMetadata } from "./types.js";
+export type { OrgSpecDocument, OrgSpecMetadata } from "./types.js";
 
 export async function generateSpec(
   env: Env,
@@ -80,4 +85,117 @@ export async function generateAllSpecs(
 
   if (results.every((r) => r === null)) return null;
   return results.filter((r): r is SpecDocument => r !== null);
+}
+
+// ── Org 단위 Spec 생성 ──────────────────────────
+
+/** OrgSpecData → SkillSpecData 형태로 변환하여 기존 generators 재사용 */
+function orgToSkillSpecData(org: OrgSpecData): SkillSpecData {
+  // TechnicalSpec 병합 — 모든 skill의 APIs/Tables/DataFlows/Errors 합산
+  const mergedTech = org.allTechnicalSpecs.length > 0
+    ? {
+        apis: org.allTechnicalSpecs.flatMap((t) => t.apis),
+        tables: org.allTechnicalSpecs.flatMap((t) => t.tables),
+        dataFlows: org.allTechnicalSpecs.flatMap((t) => t.dataFlows),
+        errors: org.allTechnicalSpecs.flatMap((t) => t.errors),
+      }
+    : null;
+
+  // Extraction 병합
+  const mergedExtraction = org.allExtractions.length > 0
+    ? {
+        processes: org.allExtractions.flatMap((e) => e.processes),
+        entities: org.allExtractions.flatMap((e) => e.entities),
+        relationships: org.allExtractions.flatMap((e) => e.relationships),
+        rules: org.allExtractions.flatMap((e) => e.rules),
+      }
+    : null;
+
+  return {
+    skillId: `org:${org.organizationId}`,
+    organizationId: org.organizationId,
+    domain: org.domain,
+    policies: org.allPolicies,
+    technicalSpec: mergedTech,
+    adapters: {
+      mcp: org.adapters.mcpCount > 0 ? `${org.adapters.mcpCount} skills` : undefined,
+      openapi: org.adapters.openapiCount > 0 ? `${org.adapters.openapiCount} skills` : undefined,
+    },
+    trust: { level: org.avgTrustScore >= 0.7 ? "reviewed" : "unreviewed", score: org.avgTrustScore },
+    provenance: {
+      sourceDocumentIds: [],
+      organizationId: org.organizationId,
+      extractedAt: new Date().toISOString(),
+      pipeline: { stages: ["org-aggregate"], models: {} },
+    },
+    ontologyRef: { graphId: "", termUris: [] },
+    extraction: mergedExtraction,
+    terms: org.allTerms,
+  };
+}
+
+function computeOrgMetadata(org: OrgSpecData): OrgSpecMetadata {
+  const totalApis = org.allTechnicalSpecs.reduce((sum, t) => sum + t.apis.length, 0);
+  const totalTables = org.allTechnicalSpecs.reduce((sum, t) => sum + t.tables.length, 0);
+
+  const biz = org.allPolicies.length > 0 ? 0.5 : 0;
+  const tech = totalApis > 0 ? 0.35 : 0;
+  const qual = org.avgTrustScore > 0 ? 0.3 : 0;
+
+  return {
+    domain: org.domain,
+    totalPolicies: org.allPolicies.length,
+    avgTrustScore: Math.round(org.avgTrustScore * 1000) / 1000,
+    aiReadyScore: {
+      business: Math.min(1, biz + (org.allExtractions.length > 0 ? 0.25 : 0) + (org.allTerms.length > 0 ? 0.25 : 0)),
+      technical: Math.min(1, tech + (totalTables > 0 ? 0.35 : 0) + (org.adapters.mcpCount > 0 ? 0.3 : 0)),
+      quality: Math.min(1, qual + (org.allPolicies.some((p) => p.source.excerpt) ? 0.3 : 0) + 0.4),
+    },
+  };
+}
+
+export async function generateOrgSpec(
+  env: Env,
+  orgId: string,
+  type: SpecType,
+  options?: { useLlm?: boolean; limit?: number },
+): Promise<OrgSpecDocument | null> {
+  const orgData = await collectOrgSpecData(env, orgId, options?.limit);
+  if (!orgData) return null;
+
+  const skillData = orgToSkillSpecData(orgData);
+
+  let sections = type === "business"
+    ? generateBusinessSpec(skillData)
+    : type === "technical"
+      ? generateTechnicalSpec(skillData)
+      : generateQualitySpec(skillData);
+
+  if (options?.useLlm !== false && env.OPENROUTER_API_KEY) {
+    const orEnv: OpenRouterEnv = { OPENROUTER_API_KEY: env.OPENROUTER_API_KEY };
+    sections = await enhanceWithLlm(orEnv, skillData, sections, type);
+  }
+
+  return {
+    organizationId: orgId,
+    type,
+    generatedAt: new Date().toISOString(),
+    skillCount: orgData.skillCount,
+    sections,
+    metadata: computeOrgMetadata(orgData),
+  };
+}
+
+export async function generateAllOrgSpecs(
+  env: Env,
+  orgId: string,
+  options?: { useLlm?: boolean; limit?: number },
+): Promise<OrgSpecDocument[] | null> {
+  const types: SpecType[] = ["business", "technical", "quality"];
+  const results = await Promise.all(
+    types.map((t) => generateOrgSpec(env, orgId, t, options)),
+  );
+
+  if (results.every((r) => r === null)) return null;
+  return results.filter((r): r is OrgSpecDocument => r !== null);
 }

@@ -95,6 +95,7 @@ const menuGroups: MenuGroup[] = [
     items: [
       { icon: <Package className="w-4 h-4" />, label: 'Skill 카탈로그', labelEn: 'Skill Catalog', path: '/skills' },
       { icon: <FileJson className="w-4 h-4" />, label: 'Spec 카탈로그', labelEn: 'Spec Catalog', path: '/specs' },
+      { icon: <FileText className="w-4 h-4" />, label: 'Org 종합 Spec', labelEn: 'Org Spec', path: '/org-spec' },
       { icon: <PackageOpen className="w-4 h-4" />, label: 'Export 센터', labelEn: 'Export Center', path: '/export' },
       { icon: <Plug className="w-4 h-4" />, label: 'API 연결', labelEn: 'API Console', path: '/api-console' },
     ],

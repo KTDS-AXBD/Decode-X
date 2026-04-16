@@ -431,6 +431,17 @@
 - SPEC §7 REQ 상태가 구현 진척과 drift할 때 다음 Sprint 계획이 잘못 세워짐 → `/ax:todo plan` 시작 시 `git log --all --name-status` 기반 "기구현 스캔" 단계 추가 필요
 - CLAUDE.md에 "Sprint 계획 전 기구현 확인" 체크리스트 신설 고려
 
+### AIF-REQ-034 Deep Dive 정식 구현 (세션 202~)
+
+> **진단 결과** (세션 202): LPON 894건 signal 분석 — 664건(74%) api+field+adapter 전무, 230건(26%) partial signal, **894건 전수 adapterHit=false** (skill-builder.ts `adapters: {}` 하드코딩). Technical 4.3%의 근본 원인은 (1) adapter 미부착(전수), (2) 프롬프트 Technical 미추출(74%).
+
+**Batch 1 (Sprint 205 ∥ Sprint 206, 병렬 — 파일 충돌 없음):**
+- [ ] Sprint 205 (REQ-034 A): **Adapter 복구 + Drill-down API** — skill-builder.ts adapter 동기 생성(`toMcpAdapter`/`toOpenApiSpec` → R2 저장 → adapters 필드 주입) + `/admin/backfill-adapters` 기존 894건 재처리 + `GET /admin/skill-detail/:skillId` B/T/Q 원문 분해 API. 대상: `services/svc-skill/src/assembler/`, `services/svc-skill/src/routes/`, `services/svc-skill/src/index.ts`. **KPI**: 894건 전수 adapterHit=true, technical avg ≥0.3
+- [ ] Sprint 206 (REQ-034 B): **Technical Schema + Extraction 프롬프트 강화** — `@ai-foundry/types` ExtractionResult에 `apis[]`, `tables[]`, `dataFlows[]`, `errors[]` 4축 추가(Zod) + svc-extraction structure.ts 프롬프트에 Technical 섹션 additive 추가. 기존 Business 추출 유지. 대상: `packages/types/src/`, `services/svc-extraction/src/prompts/`. **KPI**: 샘플 5건 재추출 시 4축 JSON 생성 확인
+
+**Batch 2 (Sprint 207, Batch 1 merge 후 순차):**
+- [ ] Sprint 207 (REQ-034 C): **Drill-down 페이지 + Assembler 주입 + Before/After** — `/poc/ai-ready/:skillId` 3탭 drill-down(B/T/Q Spec 원문 + 채점 signal) + svc-skill assembler에 Technical 원문 주입(`apis/tables/dataFlows/errors` → SkillPackage) + Before/After 재채점 비교 뷰. 대상: `apps/app-web/src/pages/`, `services/svc-skill/src/assembler/`. **KPI**: LPON AI-Ready passRate ≥50%(현재 23.6%), drill-down에서 B/T/Q 원문 확인
+
 ---
 
 ## 7) Requirements Backlog
@@ -550,7 +561,7 @@
 | AIF-REQ-031 | Chore | Infra | P1 | DONE | Recon-X 부가 작업 — CI/CD 파이프라인 조정, 모니터링 독립화, Turborepo 워크스페이스 정리, 문서 갱신(CLAUDE.md/SPEC.md → Recon-X 관점) |
 | AIF-REQ-032 | Chore | Infra | P1 | DONE | Recon-X 리브랜딩 정리 — 로컬 디렉토리명 변경(res-ai-foundry→Recon-X), 커스텀 도메인 변경(ai-foundry.minu.best→rx.minu.best), CORS/OpenAPI/vite proxy/deploy-verifier 코드 갱신, Cloudflare Pages 도메인+DNS 전환. 세션 200: health check 전체 PASS (7 Workers + Gateway + Pages + CORS) |
 | AIF-REQ-033 | Chore | Infra | P1 | DONE | **Decode-X 리브랜딩** — Recon-X(Reconnaissance) → Decode-X(Decoding) 프로젝트 정체성 재정의. **범위**: (1) GitHub 리포 KTDS-AXBD/Recon-X → KTDS-AXBD/Decode-X (완료, push redirect로 확인), (2) 로컬 git remote URL 갱신 (완료), (3) 프로젝트 정체성 파일(CLAUDE.md/SPEC.md/MEMORY.md/README.md/package.json) 갱신, (4) docs/recon-x-restructuring/ → docs/decode-x-restructuring/ 디렉토리 rename (git mv), (5) 로컬 워킹 디렉토리 /home/sinclair/work/axbd/Recon-X/ → Decode-X/ rename. **범위 제외**(infrastructure 보존): Cloudflare Worker 이름(recon-x-api 유지), 배포 URL, service binding, DO script_name. 역사적 PDCA 기록(docs/CHANGELOG.md, 기존 DONE REQ 설명)은 보존 |
-| AIF-REQ-034 | Feature | Pipeline | P0 | PLANNED | **Decode-X Deep Dive** — Deep Dive v0.3 문서 기반 Spec 완결성 심화. **3 Must Have**: (1) B/T/Q 3종 Spec Schema + AI-Ready 6기준 자동 채점기, (2) Tacit Interview Agent, (3) Handoff 패키지 검증. **KPI**: 완결성 ≥80%, 6기준 통과율 ≥90%. **Out-of-scope**: KG Relationship Registry(→REQ-023), Ontology MCP, Foundry-X Orchestrator, 외부 파일럿. **PoC (2026-04-17 10:00 보고, 1명, 18h)**: LPON 859개 skill 6기준 일괄 채점 스크립트 + 리포트 + B/T/Q 샘플 20건 매핑. Tacit/Handoff는 포맷 명세만. **참조**: `docs/req-interview/decode-x-deep-dive/prd-final.md` (R2 82/100). **오픈 이슈**: 역호환(외부 Skill 사용자 조사 후 결정), 정식 구현 범위는 PoC 보고 승인 후 |
+| AIF-REQ-034 | Feature | Pipeline | P0 | IN_PROGRESS | **Decode-X Deep Dive** — Deep Dive v0.3 문서 기반 Spec 완결성 심화. **3 Must Have**: (1) B/T/Q 3종 Spec Schema + AI-Ready 6기준 자동 채점기, (2) Tacit Interview Agent, (3) Handoff 패키지 검증. **KPI**: 완결성 ≥80%, 6기준 통과율 ≥90%. **Out-of-scope**: KG Relationship Registry(→REQ-023), Ontology MCP, Foundry-X Orchestrator, 외부 파일럿. **PoC (2026-04-17 10:00 보고, 1명, 18h)**: LPON 859개 skill 6기준 일괄 채점 스크립트 + 리포트 + B/T/Q 샘플 20건 매핑. Tacit/Handoff는 포맷 명세만. **참조**: `docs/req-interview/decode-x-deep-dive/prd-final.md` (R2 82/100). **오픈 이슈**: 역호환(외부 Skill 사용자 조사 후 결정), 정식 구현 범위는 PoC 보고 승인 후 |
 
 ---
 

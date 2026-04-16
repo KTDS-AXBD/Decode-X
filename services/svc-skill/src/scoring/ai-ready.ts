@@ -131,10 +131,17 @@ export function scoreCompleteness(
   const business = (hasRules ? 0.5 : 0) + (domainHit ? 0.25 : 0) + (numericHit ? 0.25 : 0);
 
   // 5-T Technical
-  const apiHit = API_PATTERN.test(allText);
+  const ts = pkg.technicalSpec;
+  const hasApis = (ts?.apis?.length ?? 0) > 0;
+  const hasTables = (ts?.tables?.length ?? 0) > 0;
+  const hasDataFlows = (ts?.dataFlows?.length ?? 0) > 0;
+  const hasErrors = (ts?.errors?.length ?? 0) > 0;
+  const techSpecHit = hasApis || hasTables || hasDataFlows || hasErrors;
+
+  const apiHit = techSpecHit ? hasApis : API_PATTERN.test(allText);
   const schemaKwHit = hasAnyKeyword(allText, TECHNICAL_SCHEMA_KEYWORDS);
   const identifierHit = CAMEL_CASE_PATTERN.test(allText) || SNAKE_CASE_PATTERN.test(allText);
-  const dataFieldHit = schemaKwHit || identifierHit;
+  const dataFieldHit = techSpecHit ? (hasTables || hasDataFlows || hasErrors) : (schemaKwHit || identifierHit);
   const adapterHit = Boolean(pkg.adapters.mcp) || Boolean(pkg.adapters.openapi);
   const technical = (apiHit ? 0.35 : 0) + (dataFieldHit ? 0.35 : 0) + (adapterHit ? 0.3 : 0);
 
@@ -156,6 +163,7 @@ export function scoreCompleteness(
     apiHit,
     dataFieldHit,
     adapterHit,
+    techSpecHit,
     qualityKwHit,
     trustScoreOk,
   });

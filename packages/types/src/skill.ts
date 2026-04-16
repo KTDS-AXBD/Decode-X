@@ -1,4 +1,10 @@
 import { z } from "zod";
+import {
+  ApiItemSchema,
+  TableItemSchema,
+  DataFlowItemSchema,
+  ErrorItemSchema,
+} from "./extraction.js";
 
 // AI Foundry Skill Spec — JSON Schema Draft 2020-12 compatible
 // Policy code format: POL-{DOMAIN}-{TYPE}-{SEQ}
@@ -74,6 +80,16 @@ export const SkillMetadataSchema = z.object({
 
 export type SkillMetadata = z.infer<typeof SkillMetadataSchema>;
 
+// Technical specification extracted from source artifacts (Sprint 207)
+export const TechnicalSpecSchema = z.object({
+  apis: z.array(ApiItemSchema).default([]),
+  tables: z.array(TableItemSchema).default([]),
+  dataFlows: z.array(DataFlowItemSchema).default([]),
+  errors: z.array(ErrorItemSchema).default([]),
+});
+
+export type TechnicalSpec = z.infer<typeof TechnicalSpecSchema>;
+
 export const SkillPackageSchema = z.object({
   $schema: z.string().default("https://ai-foundry.ktds.com/schemas/skill/v1"),
   skillId: z.string().uuid(),
@@ -86,6 +102,7 @@ export const SkillPackageSchema = z.object({
     mcp: z.string().optional(),      // R2 key for MCP adapter
     openapi: z.string().optional(),  // R2 key for OpenAPI adapter
   }).default({}),
+  technicalSpec: TechnicalSpecSchema.optional(),
 });
 
 export type SkillPackage = z.infer<typeof SkillPackageSchema>;

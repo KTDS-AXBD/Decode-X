@@ -9,6 +9,7 @@ import {
   type OntologyRef,
   type Provenance,
   type SkillPackage,
+  type TechnicalSpec,
   type TrustScore,
 } from "@ai-foundry/types";
 
@@ -22,6 +23,7 @@ export interface SkillBuildParams {
   version: string;
   author: string;
   tags?: string[];
+  technicalSpec?: TechnicalSpec;
 }
 
 /**
@@ -70,6 +72,7 @@ export function buildSkillPackage(params: SkillBuildParams): SkillPackage {
     ontologyRef,
     provenance,
     adapters: {},
+    ...(params.technicalSpec !== undefined ? { technicalSpec: params.technicalSpec } : {}),
   };
 
   const parsed = SkillPackageSchema.safeParse(raw);

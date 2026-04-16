@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { Link } from "react-router-dom";
 import {
   BarChart,
   Bar,
@@ -223,6 +224,9 @@ export default function PocAiReadyPage() {
         </Card>
       </div>
 
+      {/* Before/After comparison (Sprint 207) */}
+      <BeforeAfterComparison allScores={d.allScores} aggregate={a} />
+
       <footer className="text-xs text-muted-foreground border-t pt-4">
         <p>
           <strong>채점 로직</strong>: services/svc-skill/src/scoring/ai-ready.ts (규칙 기반, LLM 없음) · <strong>엔드포인트</strong>:
@@ -232,6 +236,133 @@ export default function PocAiReadyPage() {
         </p>
       </footer>
     </div>
+  );
+}
+
+/**
+ * Before/After comparison — simulates how adapter recovery (Sprint 205)
+ * and Technical prompt injection (Sprint 206-207) affect passRate.
+ *
+ * "Before" = raw data (adapterHit=false for most).
+ * "After Adapter" = adapterHit=true → Technical += 0.3 per skill.
+ * "After Technical" = additionally, techSpecHit=true → apiHit+dataFieldHit both true.
+ */
+function BeforeAfterComparison({
+  allScores,
+  aggregate,
+}: {
+  allScores: ScoreRow[];
+  aggregate: PayloadData["aggregate"];
+}) {
+  const analysis = useMemo(() => {
+    // Simulate "After Adapter": adapterHit becomes true → technical += 0.3
+    let afterAdapterPassed = 0;
+    // Simulate "After Technical": techSpec present → apiHit=true, dataFieldHit=true, adapterHit=true
+    let afterTechPassed = 0;
+
+    const techBefore = aggregate.btqAvg.technical;
+
+    let techAfterAdapterSum = 0;
+    let techAfterFullSum = 0;
+
+    for (const row of allScores) {
+      const btq = row.criteria.completeness.btq ?? { business: 0, technical: 0, quality: 0 };
+      const hadAdapter = Boolean(row.criteria.completeness.signals["adapterHit"]);
+
+      // After Adapter: add 0.3 if no adapter before
+      const techAfterAdapter = hadAdapter ? btq.technical : Math.min(1, btq.technical + 0.3);
+      const compAfterAdapter = (btq.business + techAfterAdapter + btq.quality) / 3;
+      // Recalculate overall: replace completeness score with new value
+      const otherSum =
+        row.criteria.machineReadable.score +
+        row.criteria.semanticConsistency.score +
+        row.criteria.testable.score +
+        row.criteria.traceable.score +
+        row.criteria.humanReviewable.score;
+      const overallAfterAdapter = (otherSum + compAfterAdapter) / 6;
+      if (overallAfterAdapter >= 0.8) afterAdapterPassed++;
+      techAfterAdapterSum += techAfterAdapter;
+
+      // After Technical: apiHit=true(0.35) + dataFieldHit=true(0.35) + adapterHit=true(0.3) = 1.0
+      const techAfterFull = 1.0;
+      const compAfterFull = (btq.business + techAfterFull + btq.quality) / 3;
+      const overallAfterFull = (otherSum + compAfterFull) / 6;
+      if (overallAfterFull >= 0.8) afterTechPassed++;
+      techAfterFullSum += techAfterFull;
+    }
+
+    const n = allScores.length || 1;
+    return {
+      before: {
+        passRate: aggregate.passRate,
+        passed: aggregate.passed,
+        techAvg: techBefore,
+      },
+      afterAdapter: {
+        passRate: Math.round((afterAdapterPassed / n) * 1000) / 1000,
+        passed: afterAdapterPassed,
+        techAvg: Math.round((techAfterAdapterSum / n) * 1000) / 1000,
+      },
+      afterTech: {
+        passRate: Math.round((afterTechPassed / n) * 1000) / 1000,
+        passed: afterTechPassed,
+        techAvg: Math.round((techAfterFullSum / n) * 1000) / 1000,
+      },
+      total: allScores.length,
+    };
+  }, [allScores, aggregate]);
+
+  return (
+    <Card className="p-5">
+      <h2 className="text-lg font-semibold mb-2">Before / After 비교 (Sprint 205-207 효과 시뮬레이션)</h2>
+      <p className="text-sm text-muted-foreground mb-4">
+        Adapter 복구(S205)와 Technical 프롬프트 주입(S206-207)이 passRate에 미치는 영향을 시뮬레이션해요.
+      </p>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b text-left">
+              <th className="py-2 pr-4">단계</th>
+              <th className="py-2 pr-4 text-right">Pass Rate</th>
+              <th className="py-2 pr-4 text-right">통과 건수</th>
+              <th className="py-2 pr-4 text-right">Technical 평균</th>
+              <th className="py-2 text-right">변화</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="border-b">
+              <td className="py-2 pr-4 font-medium">Before (원본)</td>
+              <td className="py-2 pr-4 text-right font-mono text-red-600">{pct(analysis.before.passRate)}</td>
+              <td className="py-2 pr-4 text-right font-mono">{analysis.before.passed} / {analysis.total}</td>
+              <td className="py-2 pr-4 text-right font-mono text-red-600">{pct(analysis.before.techAvg)}</td>
+              <td className="py-2 text-right">—</td>
+            </tr>
+            <tr className="border-b bg-amber-50/50 dark:bg-amber-950/10">
+              <td className="py-2 pr-4 font-medium">+ Adapter 복구 <Badge variant="outline" className="text-[10px] ml-1">S205</Badge></td>
+              <td className="py-2 pr-4 text-right font-mono text-amber-600">{pct(analysis.afterAdapter.passRate)}</td>
+              <td className="py-2 pr-4 text-right font-mono">{analysis.afterAdapter.passed} / {analysis.total}</td>
+              <td className="py-2 pr-4 text-right font-mono text-amber-600">{pct(analysis.afterAdapter.techAvg)}</td>
+              <td className="py-2 text-right text-emerald-600 font-medium">
+                +{pct(analysis.afterAdapter.passRate - analysis.before.passRate)}
+              </td>
+            </tr>
+            <tr className="bg-emerald-50/50 dark:bg-emerald-950/10">
+              <td className="py-2 pr-4 font-medium">+ Technical 4축 <Badge variant="outline" className="text-[10px] ml-1">S206-207</Badge></td>
+              <td className="py-2 pr-4 text-right font-mono text-emerald-600">{pct(analysis.afterTech.passRate)}</td>
+              <td className="py-2 pr-4 text-right font-mono">{analysis.afterTech.passed} / {analysis.total}</td>
+              <td className="py-2 pr-4 text-right font-mono text-emerald-600">{pct(analysis.afterTech.techAvg)}</td>
+              <td className="py-2 text-right text-emerald-600 font-medium">
+                +{pct(analysis.afterTech.passRate - analysis.before.passRate)}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p className="text-xs text-muted-foreground mt-3">
+        시뮬레이션은 기존 채점 로직에서 <code>adapterHit</code>/<code>techSpecHit</code> signal만 변경한 결과예요.
+        실제 재채점은 <code>POST /admin/score-ai-ready</code>로 수행해요.
+      </p>
+    </Card>
   );
 }
 
@@ -255,7 +386,11 @@ function SampleTable({ rows }: { rows: ScoreRow[] }) {
         <tbody>
           {rows.map((r) => (
             <tr key={r.skillId} className="border-b last:border-0">
-              <td className="py-1 pr-2">{r.skillId.slice(0, 8)}…</td>
+              <td className="py-1 pr-2">
+                <Link to={`/poc/ai-ready/${r.skillId}`} className="text-primary hover:underline">
+                  {r.skillId.slice(0, 8)}…
+                </Link>
+              </td>
               <td className="py-1 pr-2 text-right">{r.overall.toFixed(3)}</td>
               <td className="py-1 pr-2 text-right">{r.criteria.machineReadable.score.toFixed(2)}</td>
               <td className="py-1 pr-2 text-right">{r.criteria.semanticConsistency.score.toFixed(2)}</td>

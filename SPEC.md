@@ -446,6 +446,9 @@
 **Batch 3 (Sprint 208, Spec 문서 생성기):**
 - [x] Sprint 208 (REQ-034 D): **B/T/Q Spec 문서 생성기** — Template+LLM Hybrid 방식으로 추출 데이터를 사람이 읽을 수 있는 Spec 문서(Business: 업무규칙/프로세스/엔티티/용어사전, Technical: API/ERD/데이터흐름/에러, Quality: 성능/보안/추적성/검증)로 조립. `GET /skills/:id/spec/{business|technical|quality|all}` API (JSON+Markdown). OpenRouter→Claude 3 Haiku로 요약+Gap 코멘터리 생성. 대상: `services/svc-skill/src/spec-gen/` (신규 8파일, 1,593줄), `packages/utils/src/openrouter-client.ts`. **KPI**: LPON 3건 Skill B/T/Q Spec 생성 + LLM 보강 확인
 
+**Batch 4 (Sprint 209, Org 집계 + UI):**
+- [ ] Sprint 209 (REQ-034 E): **Org 단위 B/T/Q 종합 Spec + UI** — Org 전체 skills를 집계하여 종합 Spec 문서 생성(`GET /admin/org-spec/:orgId/:type`). collector.ts 재활용. drill-down UI에 Spec 문서 탭 추가(`poc-ai-ready-detail.tsx`). org-spec 전용 페이지 신규(`/org-spec`). 대상: `services/svc-skill/src/spec-gen/` (org-spec 확장), `services/svc-skill/src/routes/` (admin 라우트), `apps/app-web/src/pages/` (UI). **KPI**: LPON org 종합 B/T/Q Spec 생성 + UI 확인
+
 ---
 
 ## 7) Requirements Backlog

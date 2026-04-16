@@ -202,7 +202,7 @@ export const AI_READY_THRESHOLDS: Record<AiReadyCriterion, number> = {
   semanticConsistency: 0.7,
   testable: 0.7,
   traceable: 0.8,
-  completeness: 0.67,
+  completeness: 0.50,
   humanReviewable: 0.6,
 };
 

@@ -74,8 +74,9 @@ export function scoreTestable(pkg: SkillPackage): CriterionScore {
   if (policies.length === 0) {
     return mkCriterion(0, AI_READY_THRESHOLDS.testable, { policyCount: 0 });
   }
+  // 한국어 압축성 반영: 20자→10자 (e.g. "3영업일 이내 처리"도 테스트 가능)
   const longEnough = policies.filter(
-    (p) => p.condition.length >= 20 && p.criteria.length >= 20 && p.outcome.length >= 20,
+    (p) => p.condition.length >= 10 && p.criteria.length >= 10 && p.outcome.length >= 10,
   ).length;
   const longRatio = longEnough / policies.length;
   const excerptCount = policies.filter(
@@ -143,11 +144,13 @@ export function scoreCompleteness(
   const identifierHit = CAMEL_CASE_PATTERN.test(allText) || SNAKE_CASE_PATTERN.test(allText);
   const dataFieldHit = techSpecHit ? (hasTables || hasDataFlows || hasErrors) : (schemaKwHit || identifierHit);
   const adapterHit = Boolean(pkg.adapters.mcp) || Boolean(pkg.adapters.openapi);
-  const technical = (apiHit ? 0.35 : 0) + (dataFieldHit ? 0.35 : 0) + (adapterHit ? 0.3 : 0);
+  // REQ-034 F: adapter 미존재가 대다수 → 텍스트 signal 가중치 강화
+  const technical = (apiHit ? 0.40 : 0) + (dataFieldHit ? 0.40 : 0) + (adapterHit ? 0.20 : 0);
 
   // 5-Q Quality
   const qualityKwHit = hasAnyKeyword(allText, QUALITY_KEYWORDS);
-  const trustScoreOk = pkg.trust.score > 0 && policies.every((p) => p.trust.score > 0);
+  // REQ-034 F: trust.score=0 대다수 (backfill 미완) → level 기반으로 완화
+  const trustScoreOk = pkg.trust.score > 0 || pkg.trust.level !== "unreviewed";
   const excerptRatio =
     policies.length === 0
       ? 0

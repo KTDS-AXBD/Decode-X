@@ -115,13 +115,47 @@ export default function PocAiReadyPage() {
         </p>
       </header>
 
+      {/* Deep Dive PoC 로드맵 */}
+      <Card className="p-5 border-blue-200 bg-blue-50/30 dark:bg-blue-950/10">
+        <h2 className="text-lg font-semibold mb-3">Deep Dive v0.3 — 3 Must-Have 진행 현황</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="flex items-start gap-3">
+            <span className="text-emerald-600 text-lg">&#x2713;</span>
+            <div>
+              <div className="font-medium text-sm">B/T/Q Spec + AI-Ready 채점기</div>
+              <div className="text-xs text-muted-foreground">6기준 규칙 기반 채점기 + {d.scored}건 일괄 실행 완료</div>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="text-blue-600 text-lg">&#x25CB;</span>
+            <div>
+              <div className="font-medium text-sm">Tacit Interview Agent</div>
+              <div className="text-xs text-muted-foreground">
+                <a href="/docs/poc/tacit-interview-agent-format.md" className="text-primary hover:underline">포맷 명세 완료</a>
+                {" "}· 구현은 정식 단계
+              </div>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="text-blue-600 text-lg">&#x25CB;</span>
+            <div>
+              <div className="font-medium text-sm">Handoff 패키지 검증</div>
+              <div className="text-xs text-muted-foreground">
+                <a href="/docs/poc/handoff-package-format.md" className="text-primary hover:underline">포맷 명세 완료</a>
+                {" "}· 구현은 정식 단계
+              </div>
+            </div>
+          </div>
+        </div>
+      </Card>
+
       {/* Hero numbers */}
       <section className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="p-5">
           <div className="text-xs text-muted-foreground mb-1">AI-Ready 통과</div>
           <div className="text-3xl font-semibold">{pct(a.passRate)}</div>
           <div className="text-xs mt-1 text-muted-foreground">
-            {a.passed} / {a.total} (overall ≥ 0.8)
+            {a.passed} / {a.total} (overall &ge; 0.8)
           </div>
         </Card>
         <Card className="p-5">
@@ -142,6 +176,58 @@ export default function PocAiReadyPage() {
           <div className="text-xs mt-1 text-red-600 font-medium">핵심 Gap — 정식 구현 최우선</div>
         </Card>
       </section>
+
+      {/* KPI 목표 vs 현재 */}
+      <Card className="p-5">
+        <h2 className="text-lg font-semibold mb-3">KPI 달성도 — 목표 vs 현재</h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b text-left">
+                <th className="py-2 pr-4">항목</th>
+                <th className="py-2 pr-4 text-right">현재</th>
+                <th className="py-2 pr-4 text-right">목표</th>
+                <th className="py-2 pr-4 text-right">Gap</th>
+                <th className="py-2">개선 방향</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b">
+                <td className="py-2 pr-4 font-medium">AI-Ready 통과율</td>
+                <td className="py-2 pr-4 text-right font-mono text-red-600">{pct(a.passRate)}</td>
+                <td className="py-2 pr-4 text-right font-mono">&ge;90%</td>
+                <td className="py-2 pr-4 text-right font-mono text-red-600">{pct(a.passRate - 0.9)}</td>
+                <td className="py-2 text-xs text-muted-foreground">Technical 4축 주입 + Tacit 인터뷰 보완</td>
+              </tr>
+              <tr className="border-b">
+                <td className="py-2 pr-4 font-medium">Completeness 통과율</td>
+                <td className="py-2 pr-4 text-right font-mono text-red-600">{pct(a.byCriterion["completeness"]?.passRate ?? 0)}</td>
+                <td className="py-2 pr-4 text-right font-mono">&ge;80%</td>
+                <td className="py-2 pr-4 text-right font-mono text-red-600">{pct((a.byCriterion["completeness"]?.passRate ?? 0) - 0.8)}</td>
+                <td className="py-2 text-xs text-muted-foreground">svc-extraction T/Q 프롬프트 강화</td>
+              </tr>
+              <tr className="border-b">
+                <td className="py-2 pr-4 font-medium">Testable 통과율</td>
+                <td className="py-2 pr-4 text-right font-mono text-amber-600">{pct(a.byCriterion["testable"]?.passRate ?? 0)}</td>
+                <td className="py-2 pr-4 text-right font-mono">&ge;70%</td>
+                <td className="py-2 pr-4 text-right font-mono text-amber-600">{pct((a.byCriterion["testable"]?.passRate ?? 0) - 0.7)}</td>
+                <td className="py-2 text-xs text-muted-foreground">condition/criteria/outcome 상세화</td>
+              </tr>
+              <tr>
+                <td className="py-2 pr-4 font-medium">BTQ Technical 평균</td>
+                <td className="py-2 pr-4 text-right font-mono text-red-600">{pct(a.btqAvg.technical)}</td>
+                <td className="py-2 pr-4 text-right font-mono">&ge;50%</td>
+                <td className="py-2 pr-4 text-right font-mono text-red-600">{pct(a.btqAvg.technical - 0.5)}</td>
+                <td className="py-2 text-xs text-muted-foreground">API/테이블/데이터 흐름 구조화 추출</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p className="text-xs text-muted-foreground mt-3">
+          현재 수치는 기존 파이프라인(Stage 1-5) 원본 데이터 기준이에요.
+          Below의 Before/After 시뮬레이션에서 Technical 4축 주입 시 도달 가능한 수준을 확인하세요.
+        </p>
+      </Card>
 
       {/* 6-criterion bar chart */}
       <Card className="p-5">
@@ -226,6 +312,46 @@ export default function PocAiReadyPage() {
 
       {/* Before/After comparison (Sprint 207) */}
       <BeforeAfterComparison allScores={d.allScores} aggregate={a} />
+
+      {/* Calibration Note */}
+      <Card className="p-5 border-amber-200 bg-amber-50/30 dark:bg-amber-950/10">
+        <h2 className="text-lg font-semibold mb-2">채점 기준 보정 (Sprint 210)</h2>
+        <div className="text-sm space-y-2">
+          <p>PoC 데이터 분석 결과 3가지 기준을 현실에 맞게 보정했어요:</p>
+          <ul className="list-disc list-inside text-xs space-y-1 text-muted-foreground">
+            <li><strong>Testable</strong>: condition/criteria/outcome 최소 길이 20자 → 10자 (한국어 압축성 반영)</li>
+            <li><strong>Completeness/Technical</strong>: adapter 가중치 0.30 → 0.20, 텍스트 signal 가중치 강화 (adapter 미존재 현실 반영)</li>
+            <li><strong>Completeness/Quality</strong>: trust.score &gt; 0 필수 → trust.level 기반 부분 점수 (backfill 미완 현실 반영)</li>
+            <li><strong>Completeness threshold</strong>: 0.67 → 0.50 (3차원 중 B만으로도 의미 있는 수준 인정)</li>
+          </ul>
+          <p className="text-xs text-muted-foreground mt-2">
+            정식 구현 시 데이터 품질 개선(Technical 4축 주입 + Tacit 인터뷰)과 함께 threshold 재조정 예정.
+          </p>
+        </div>
+      </Card>
+
+      {/* Next Steps */}
+      <Card className="p-5">
+        <h2 className="text-lg font-semibold mb-3">정식 구현 로드맵</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div>
+            <h3 className="font-medium mb-2">Phase 1: 데이터 품질 개선</h3>
+            <ul className="list-disc list-inside text-xs space-y-1 text-muted-foreground">
+              <li>svc-extraction 프롬프트에 T/Q 관점 추가</li>
+              <li>technicalSpec 4축(APIs/Tables/DataFlows/Errors) 전체 backfill</li>
+              <li>Tacit Interview Agent 구현 → SME 암묵지 수집</li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="font-medium mb-2">Phase 2: 검증 + Handoff</h3>
+            <ul className="list-disc list-inside text-xs space-y-1 text-muted-foreground">
+              <li>AI-Ready 채점 결과 D1 영구 저장</li>
+              <li>Handoff 패키지 자동 생성 API</li>
+              <li>KPI threshold 재조정 (데이터 개선 후)</li>
+            </ul>
+          </div>
+        </div>
+      </Card>
 
       <footer className="text-xs text-muted-foreground border-t pt-4">
         <p>

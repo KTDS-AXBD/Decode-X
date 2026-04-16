@@ -123,3 +123,37 @@ export interface TermSummary {
   skosUri: string | null;
   termType: string;
 }
+
+// ── Org 단위 집계 ────────────────────────────────
+
+export interface OrgSpecData {
+  organizationId: string;
+  domain: string; // 가장 많은 도메인
+  skillCount: number;
+  allPolicies: PolicySummary[];
+  allTechnicalSpecs: TechnicalSpecData[];
+  allExtractions: ExtractionData[];
+  allTerms: TermSummary[];
+  avgTrustScore: number;
+  adapters: { mcpCount: number; openapiCount: number };
+}
+
+export interface OrgSpecMetadata {
+  domain: string;
+  totalPolicies: number;
+  avgTrustScore: number;
+  aiReadyScore: {
+    business: number;
+    technical: number;
+    quality: number;
+  };
+}
+
+export interface OrgSpecDocument {
+  organizationId: string;
+  type: SpecType;
+  generatedAt: string;
+  skillCount: number;
+  sections: SpecSection[];
+  metadata: OrgSpecMetadata;
+}

@@ -40,6 +40,7 @@ import { handleEvaluateSkill, handleListEvaluations } from "./routes/evaluate.js
 import { handleBackfillDepth, handleBackfillTrust, handleRebundle, handleBackfillAdapters, handleSkillDetail } from "./routes/admin.js";
 import { handleScoreAiReady } from "./routes/score-ai-ready.js";
 import { handleSkillSpec } from "./routes/spec.js";
+import { handleOrgSpec } from "./routes/org-spec.js";
 import {
   handleGeneratePrototype,
   handleListPrototypes,
@@ -112,6 +113,16 @@ export default {
         const detailSkillId = skillDetailMatch[1];
         if (!detailSkillId) return new Response("Not Found", { status: 404 });
         return await handleSkillDetail(request, env, detailSkillId);
+      }
+
+      // GET /admin/org-spec/:orgId/:type — Org 단위 B/T/Q 종합 Spec (admin path)
+      // GET /skills/org/:orgId/spec/:type — Org 단위 B/T/Q 종합 Spec (public path, vite proxy 호환)
+      const orgSpecMatch = path.match(/^(?:\/admin\/org-spec|\/skills\/org)\/([^/]+)\/(?:spec\/)?([^/]+)$/);
+      if (method === "GET" && orgSpecMatch) {
+        const specOrgId = orgSpecMatch[1];
+        const specType = orgSpecMatch[2];
+        if (!specOrgId || !specType) return new Response("Not Found", { status: 404 });
+        return await handleOrgSpec(request, env, specOrgId, specType);
       }
 
       // ── Prototype (Working Prototype Generator) ──

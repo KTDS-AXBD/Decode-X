@@ -12,7 +12,7 @@
  */
 
 import { PipelineEventSchema } from "@ai-foundry/types";
-import type { Policy, SkillPackagedEvent } from "@ai-foundry/types";
+import type { Policy, SkillPackagedEvent, TechnicalSpec } from "@ai-foundry/types";
 import { createLogger } from "@ai-foundry/utils";
 import { buildSkillPackage } from "../assembler/skill-builder.js";
 import { generateAndStoreAdapters } from "../assembler/adapter-writer.js";
@@ -175,6 +175,49 @@ export async function processQueueEvent(
     skosConceptScheme = `urn:aif:scheme:${skosGraphId}`;
   }
 
+  // 2b. Fetch Technical 4-axis data from svc-extraction (non-fatal)
+  let technicalSpec: TechnicalSpec | undefined;
+  try {
+    const extractionId = policyData.extractionId;
+    const resp = await env.SVC_EXTRACTION.fetch(
+      `http://internal/extractions/${extractionId}`,
+      {
+        method: "GET",
+        headers: { "X-Internal-Secret": env.INTERNAL_API_SECRET },
+      },
+    );
+    if (resp.ok) {
+      const body = (await resp.json()) as {
+        data?: {
+          apis?: unknown[];
+          tables?: unknown[];
+          dataFlows?: unknown[];
+          errors?: unknown[];
+        };
+      };
+      const d = body.data;
+      if (d) {
+        const hasData =
+          (d.apis && d.apis.length > 0) ||
+          (d.tables && d.tables.length > 0) ||
+          (d.dataFlows && d.dataFlows.length > 0) ||
+          (d.errors && d.errors.length > 0);
+        if (hasData) {
+          technicalSpec = {
+            apis: (d.apis ?? []) as TechnicalSpec["apis"],
+            tables: (d.tables ?? []) as TechnicalSpec["tables"],
+            dataFlows: (d.dataFlows ?? []) as TechnicalSpec["dataFlows"],
+            errors: (d.errors ?? []) as TechnicalSpec["errors"],
+          };
+        }
+      }
+    } else {
+      logger.warn("Failed to fetch extraction data (non-fatal)", { extractionId, status: resp.status });
+    }
+  } catch (e) {
+    logger.warn("Extraction fetch error (non-fatal)", { error: String(e) });
+  }
+
   // 3. Convert policy to Policy type
   const policy = toPolicy(policyData);
 
@@ -209,6 +252,7 @@ export async function processQueueEvent(
       version: "1.0.0",
       author: "ai-foundry-pipeline",
       tags: policyData.tags,
+      ...(technicalSpec !== undefined ? { technicalSpec } : {}),
     });
   } catch (e) {
     logger.error("Failed to build skill package", { policyId, error: String(e) });

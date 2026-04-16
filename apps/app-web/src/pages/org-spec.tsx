@@ -1,10 +1,10 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { RefreshCw, FileText, Database, Shield, ChevronDown, ChevronRight } from "lucide-react";
+import { RefreshCw, FileText, Database, Shield, ChevronDown, ChevronRight, Download } from "lucide-react";
 import { toast } from "sonner";
 import { useOrganization } from "@/contexts/OrganizationContext";
 import { fetchOrgSpec, type OrgSpecDocument } from "@/api/org-spec";
@@ -18,6 +18,8 @@ export default function OrgSpecPage() {
   const { organizationId } = useOrganization();
   const [specs, setSpecs] = useState<Record<string, OrgSpecDocument>>({});
   const [loading, setLoading] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"business" | "technical" | "quality">("business");
+  const prevOrgRef = useRef(organizationId);
 
   const loadSpec = useCallback(
     async (type: "business" | "technical" | "quality") => {
@@ -33,6 +35,27 @@ export default function OrgSpecPage() {
     },
     [organizationId],
   );
+
+  // 페이지 진입 시 기본 탭 자동 로딩
+  useEffect(() => {
+    void loadSpec("business");
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Org 전환 시 캐시 초기화 + 현재 탭 재로딩
+  useEffect(() => {
+    if (prevOrgRef.current !== organizationId) {
+      prevOrgRef.current = organizationId;
+      setSpecs({});
+      void loadSpec(activeTab);
+    }
+  }, [organizationId, activeTab, loadSpec]);
+
+  // 탭 전환 시 미로딩 데이터 자동 fetch
+  const handleTabChange = (tab: string) => {
+    const t = tab as "business" | "technical" | "quality";
+    setActiveTab(t);
+    if (!specs[t]) void loadSpec(t);
+  };
 
   const currentSpec = (type: string) => specs[type];
 
@@ -52,15 +75,15 @@ export default function OrgSpecPage() {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="business">
+      <Tabs defaultValue="business" onValueChange={handleTabChange}>
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="business" onClick={() => { if (!specs["business"]) void loadSpec("business"); }}>
+          <TabsTrigger value="business">
             <FileText className="w-4 h-4 mr-2" /> Business
           </TabsTrigger>
-          <TabsTrigger value="technical" onClick={() => { if (!specs["technical"]) void loadSpec("technical"); }}>
+          <TabsTrigger value="technical">
             <Database className="w-4 h-4 mr-2" /> Technical
           </TabsTrigger>
-          <TabsTrigger value="quality" onClick={() => { if (!specs["quality"]) void loadSpec("quality"); }}>
+          <TabsTrigger value="quality">
             <Shield className="w-4 h-4 mr-2" /> Quality
           </TabsTrigger>
         </TabsList>
@@ -72,6 +95,7 @@ export default function OrgSpecPage() {
               doc={currentSpec(type)}
               loading={loading === type}
               onRefresh={() => void loadSpec(type)}
+              organizationId={organizationId}
             />
           </TabsContent>
         ))}
@@ -82,16 +106,37 @@ export default function OrgSpecPage() {
 
 // ── Sub-component ───────────────────────────────
 
+function downloadMarkdown(doc: OrgSpecDocument, orgId: string) {
+  const sections = [...doc.sections].sort((a, b) => a.order - b.order);
+  const md = [
+    `# ${orgId} — ${doc.type.charAt(0).toUpperCase() + doc.type.slice(1)} Spec`,
+    `> Generated: ${doc.generatedAt}`,
+    `> Skills: ${doc.skillCount} | Policies: ${doc.metadata.totalPolicies}`,
+    "",
+    ...sections.map((s) => `## ${s.title}\n\n${s.content}`),
+  ].join("\n\n");
+
+  const blob = new Blob([md], { type: "text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${orgId}-${doc.type}-spec.md`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 function SpecTabContent({
   type,
   doc,
   loading,
   onRefresh,
+  organizationId,
 }: {
   type: string;
   doc: OrgSpecDocument | undefined;
   loading: boolean;
   onRefresh: () => void;
+  organizationId: string;
 }) {
   if (loading) {
     return (
@@ -99,7 +144,7 @@ function SpecTabContent({
         <CardContent className="p-16 text-center">
           <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto" />
           <p className="text-sm text-muted-foreground mt-3">
-            {type} Spec 생성 중...
+            {type} Spec 로딩 중...
           </p>
         </CardContent>
       </Card>
@@ -107,18 +152,7 @@ function SpecTabContent({
   }
 
   if (!doc) {
-    return (
-      <Card>
-        <CardContent className="p-16 text-center space-y-4">
-          <p className="text-muted-foreground">
-            {type} Spec이 아직 생성되지 않았어요.
-          </p>
-          <Button onClick={onRefresh}>
-            <RefreshCw className="w-4 h-4 mr-2" /> 생성하기
-          </Button>
-        </CardContent>
-      </Card>
-    );
+    return null;
   }
 
   const { metadata, sections, skillCount } = doc;
@@ -134,9 +168,14 @@ function SpecTabContent({
             <CardTitle className="text-base">
               {type.charAt(0).toUpperCase() + type.slice(1)} Spec 요약
             </CardTitle>
-            <Button variant="ghost" size="sm" onClick={onRefresh}>
-              <RefreshCw className="w-4 h-4" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="sm" onClick={() => downloadMarkdown(doc, organizationId)} title="마크다운 다운로드">
+                <Download className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="sm" onClick={onRefresh} title="새로고침">
+                <RefreshCw className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-3">

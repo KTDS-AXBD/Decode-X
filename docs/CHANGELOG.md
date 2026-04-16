@@ -2,6 +2,17 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 202 (2026-04-16)
+**AIF-REQ-034 Deep Dive 실구현 — Adapter/Technical Gap 해소**:
+- ✅ Sprint 205: adapter-writer + backfill + drill-down API (PR #4, #5 merged)
+- ✅ Sprint 206: Technical 4축 Zod 스키마 + Extraction 프롬프트 강화 (PR #3 merged)
+- ✅ Sprint 207: drill-down 페이지 + assembler Technical 주입 + Before/After 비교 (PR #6 merged)
+- ✅ R2 Backfill: LPON 893/894건 adapter 채움 → passRate 23.6%→36.5% (+12.9%p, +115건)
+- ✅ bashrc 복원 + ccw-auto 버그 수정 (하이픈→콜론 + TUI 감지 대기)
+- 📌 Gap 확인: B/T/Q Spec 문서 생성기(generator) 부재 — 다음 세션 핵심 과제
+
+**검증**: typecheck 14/14, lint 9/9, svc-skill 332 tests, svc-extraction 420 tests, CI 4건 success
+
 ## 마일스톤 회고: v0.7.0 — Pilot Core 완료
 
 ### 지표 변화 (v0.6 → v0.7)

@@ -15,7 +15,7 @@
 
 | REQ | 우선순위 | 요지 |
 |-----|:--------:|------|
-| AIF-REQ-034 | P0 | **Decode-X Deep Dive** — 3종 Spec Schema + Tacit Interview Agent + Handoff 패키지 검증. PoC 완료(LPON 894건 pass rate 23.6%, T=10.5% 확정 Gap), 4/17 10시 보고 → 승인 후 정식 구현. `docs/req-interview/decode-x-deep-dive/prd-final.md` |
+| AIF-REQ-034 | P0 | **Decode-X Deep Dive** — Sprint 205-207 완료. Adapter 복구(passRate 23.6%→36.5%), Technical 4축 스키마+프롬프트, Drill-down 페이지, Before/After 비교. **다음**: B/T/Q Spec 문서 생성기(generator) 구현 — 현재 signal scorer만 있고 문서 조립 레이어 부재 |
 | AIF-REQ-026 | P1 | Foundry-X 통합 — AI Foundry↔Foundry-X 양방향 제품군 통합. Phase 1-3 MCP 완료, Phase 2 Sprint 1(반제품 생성) 완료. 후속 Sprint 미확정 |
 | AIF-REQ-018 | P1 | 진행 현황 리포트 UX 개선 — 3단계 구조 + accordion + 시각화 |
 | AIF-REQ-002 | P3 | Anthropic vs OpenAI extraction 품질 비교 (크레딧 충전 대기) |
@@ -36,7 +36,8 @@
 - 세션 196~198: API Gateway(Hono+JWT) + 11 Service Bindings + 하이브리드 라우팅 완성
 - 세션 199: 도메인 `ai-foundry.minu.best` → `rx.minu.best` 리브랜딩 (AIF-REQ-032)
 - 세션 200: Pilot Core 종료 선언 (REQ 24/32 DONE, E2E 43/43, 0 flaky), AIF-REQ-028 소급 DONE, v0.7.0 태그 + 회고
-- 세션 201 (2026-04-16): AIF-REQ-034 Decode-X Deep Dive PRD(82/100) + PoC 채점기 구현/배포 + LPON 894건 실측 → "B 91.8%, T 4.3%, Q 27% — Technical 강화가 핵심 Gap" 정량 확인. archive/phase5-separated-svcs 태그로 분리 5 SVC 보존. eslint/harness-kit 블록 해소. 브라우저 대시보드 rx.minu.best/poc/ai-ready 배포.
+- 세션 202 (2026-04-16): AIF-REQ-034 Deep Dive 실구현. Sprint 205(adapter 복구+backfill+drill-down API) + Sprint 206(Technical 4축 스키마+프롬프트) + Sprint 207(drill-down 페이지+assembler 주입+Before/After). R2 893건 backfill → passRate 23.6%→36.5%(+12.9%p). B/T/Q Spec 문서 생성기 Gap 확인 → 다음 세션 과제. ccw-auto 버그 수정(하이픈→콜론) + bashrc 복원 + settings.json deny 규칙 추가.
+- 세션 201 (2026-04-16): AIF-REQ-034 Decode-X Deep Dive PRD(82/100) + PoC 채점기 구현/배포 + LPON 894건 실측 → "B 91.8%, T 4.3%, Q 27% — Technical 강화가 핵심 Gap" 정량 확인.
 
 ## 인프라 상태 (v0.7.0 기준 스냅샷)
 

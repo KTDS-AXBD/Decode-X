@@ -2,6 +2,14 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 205 (2026-04-17)
+**LLM 모델 버전 현행화**:
+- ✅ Opus: `claude-opus-4-6` → `claude-opus-4-7` (TIER_MODELS, PROVIDER_TIER_MODELS, UI, seed)
+- ✅ OpenRouter: `anthropic/claude-3-haiku` → `anthropic/claude-haiku-4-5`
+- Sonnet 4-6, Haiku 4-5 — 현행 최신 확인, 유지
+
+**검증 결과**: typecheck 14/14 PASS
+
 ### 세션 204 (2026-04-16)
 **Sprint 209~210 — Org B/T/Q Spec + AI-Ready 채점기 + 인프라 개선**:
 - ✅ Sprint 209 (PR #7): Org 단위 B/T/Q 종합 Spec API + UI (`/org-spec` 페이지, drill-down Spec 탭) — +1,111줄

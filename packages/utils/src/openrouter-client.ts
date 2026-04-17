@@ -22,7 +22,7 @@ export interface OpenRouterResult {
   usage: { promptTokens: number; completionTokens: number; totalTokens: number };
 }
 
-const DEFAULT_MODEL = "anthropic/claude-3-haiku";
+const DEFAULT_MODEL = "anthropic/claude-haiku-4-5";
 
 /**
  * Call OpenRouter Chat Completions API. Returns the content string.

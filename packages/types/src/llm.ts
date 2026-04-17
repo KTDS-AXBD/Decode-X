@@ -20,7 +20,7 @@ export type LlmProvider = z.infer<typeof LlmProviderSchema>;
 
 // Model IDs per tier (Anthropic-only, kept for backward compatibility)
 export const TIER_MODELS: Record<LlmTier, string> = {
-  opus: "claude-opus-4-6",
+  opus: "claude-opus-4-7",
   sonnet: "claude-sonnet-4-6",
   haiku: "claude-haiku-4-5-20251001",
   workers: "@cf/baai/bge-m3",
@@ -29,7 +29,7 @@ export const TIER_MODELS: Record<LlmTier, string> = {
 // Per-provider tier→model mapping (workers-ai has no opus equivalent)
 export const PROVIDER_TIER_MODELS: Record<LlmProvider, Partial<Record<LlmTier, string>>> = {
   anthropic: {
-    opus: "claude-opus-4-6",
+    opus: "claude-opus-4-7",
     sonnet: "claude-sonnet-4-6",
     haiku: "claude-haiku-4-5-20251001",
     workers: "@cf/baai/bge-m3",

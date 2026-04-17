@@ -1,9 +1,14 @@
 ---
+code: AIF-RPRT-013
+title: AI-Ready 6기준 일괄 채점기 + PoC 리포트
+version: "1.0"
+status: Active
+category: report
+created: 2026-04-16
+updated: 2026-04-16
+author: Sinclair Seo
 sprint: 210
 requirement: AIF-REQ-034 F
-title: AI-Ready 6기준 일괄 채점기 + PoC 리포트
-status: completed
-created: 2026-04-16
 match_rate: 100
 ---
 

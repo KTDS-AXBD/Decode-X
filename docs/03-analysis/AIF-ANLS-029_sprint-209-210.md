@@ -1,7 +1,14 @@
 ---
+code: AIF-ANLS-029
+title: Gap Analysis — Sprint 209~210
+version: "1.0"
+status: Active
+category: analysis
+created: 2026-04-16
+updated: 2026-04-16
+author: Sinclair Seo
 feature: sprint-209-210
 phase: check
-date: 2026-04-16
 ---
 
 # Gap Analysis — Sprint 209~210 (AIF-REQ-034 E~F)

@@ -1,9 +1,15 @@
 ---
-title: "Sprint 206 Report — Technical 4축 스키마 + 프롬프트 강화"
+code: AIF-RPRT-014
+title: Sprint 206 Report — Technical 4축 스키마 + 프롬프트 강화
+version: "1.0"
+status: Active
+category: report
+created: 2026-04-16
+updated: 2026-04-16
+author: Sinclair Seo
 sprint: 206
 requirement: AIF-REQ-034
 track: B
-completed: 2026-04-16
 match_rate: 100
 ---
 

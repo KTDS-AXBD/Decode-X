@@ -1,0 +1,78 @@
+---
+emptySlotId: ES-CHARGE-006
+title: 대량 충전 Rate Limiting — 테스트 계약
+sprint: 4
+taxonomy: E1
+
+scenarios:
+  - id: TC-RL-001
+    name: 정상 요청 — 임계치 미만 통과
+    given:
+      orgId: "ORG-001"
+      requestsInLastSecond: 5
+      companyLimit: 10
+    when: charge_request_received
+    then:
+      - status: 200
+      - rateLimitApplied: false
+      - chargeProcessed: true
+
+  - id: TC-RL-002
+    name: 회사 임계치 초과 — 429 반환
+    given:
+      orgId: "ORG-001"
+      requestsInLastSecond: 12
+      companyLimit: 10
+    when: charge_request_received
+    then:
+      - status: 429
+      - errorCode: "RATE_LIMIT_EXCEEDED"
+      - retryAfterHeader: 5
+      - chargeProcessed: false
+
+  - id: TC-RL-003
+    name: 배치 임계치 초과 — 429 반환
+    given:
+      orgId: "ORG-002"
+      requestsInLastMinute: 110
+      batchLimit: 100
+    when: bulk_charge_request_received
+    then:
+      - status: 429
+      - errorCode: "RATE_LIMIT_EXCEEDED"
+      - chargeProcessed: false
+
+  - id: TC-RL-004
+    name: 시스템 전체 임계치 초과 — Circuit Breaker Open
+    given:
+      systemRequestsInLastMinute: 1100
+      systemLimit: 1000
+    when: charge_request_received
+    then:
+      - status: 503
+      - circuitBreakerStatus: "OPEN"
+      - chargeProcessed: false
+
+  - id: TC-RL-005
+    name: 긴급 요청 — Rate Limit 면제
+    given:
+      orgId: "ORG-001"
+      requestsInLastSecond: 15
+      headers:
+        X-Priority: "EMERGENCY"
+    when: charge_request_received
+    then:
+      - status: 200
+      - rateLimitApplied: false
+      - chargeProcessed: true
+
+  - id: TC-RL-006
+    name: KV 장애 — fail-open 처리
+    given:
+      orgId: "ORG-001"
+      kvAvailable: false
+    when: charge_request_received
+    then:
+      - status: 200
+      - rateLimitApplied: false
+      - logEntry: "RATE_LIMIT_CONFIG_MISSING"

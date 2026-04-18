@@ -1,0 +1,90 @@
+---
+emptySlotId: ES-CHARGE-009
+title: 출금계좌 잔액 조회 캐시 무효화 — 테스트 계약
+sprint: 4
+taxonomy: E3
+
+scenarios:
+  - id: TC-CACHE-001
+    name: 캐시 히트 — TTL 이내 캐시 반환
+    given:
+      accountId: "ACC-001"
+      cacheState:
+        exists: true
+        balance: 500000
+        cachedSecondsAgo: 30
+    when: balance_inquiry_received
+    then:
+      - cached: true
+      - balance: 500000
+      - externalApiCalled: false
+
+  - id: TC-CACHE-002
+    name: 캐시 미스 — 실시간 조회 후 캐시 갱신
+    given:
+      accountId: "ACC-002"
+      cacheState:
+        exists: false
+      externalApiBalance: 300000
+    when: balance_inquiry_received
+    then:
+      - cached: false
+      - balance: 300000
+      - externalApiCalled: true
+      - cacheUpdated: true
+      - cacheTtlSeconds: 60
+
+  - id: TC-CACHE-003
+    name: TTL 초과 캐시 — 실시간 조회
+    given:
+      accountId: "ACC-003"
+      cacheState:
+        exists: true
+        balance: 200000
+        cachedSecondsAgo: 90
+      externalApiBalance: 180000
+    when: balance_inquiry_received
+    then:
+      - cached: false
+      - balance: 180000
+      - externalApiCalled: true
+
+  - id: TC-CACHE-004
+    name: CHARGE_SUCCESS 이벤트 — 캐시 즉시 무효화
+    given:
+      accountId: "ACC-001"
+      cacheState:
+        exists: true
+        balance: 500000
+    when: charge_success_event_fired
+    then:
+      - cacheDeleted: true
+      - nextInquiryWillCallExternalApi: true
+
+  - id: TC-CACHE-005
+    name: 외부 API 장애 — stale 캐시 반환 (최대 5분)
+    given:
+      accountId: "ACC-004"
+      cacheState:
+        exists: true
+        balance: 400000
+        cachedSecondsAgo: 200
+      externalApiAvailable: false
+    when: balance_inquiry_received
+    then:
+      - cached: true
+      - balance: 400000
+      - staleFlag: true
+      - externalApiCalled: true
+
+  - id: TC-CACHE-006
+    name: 외부 API 장애 + 캐시 없음 — 오류 반환
+    given:
+      accountId: "ACC-005"
+      cacheState:
+        exists: false
+      externalApiAvailable: false
+    when: balance_inquiry_received
+    then:
+      - errorCode: "BALANCE_API_UNAVAILABLE"
+      - chargeBlocked: true

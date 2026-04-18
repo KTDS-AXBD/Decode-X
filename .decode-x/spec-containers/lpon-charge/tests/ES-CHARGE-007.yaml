@@ -1,0 +1,72 @@
+---
+emptySlotId: ES-CHARGE-007
+title: 외부 API 장애 시 재시도 정책 — 테스트 계약
+sprint: 4
+taxonomy: E4
+
+scenarios:
+  - id: TC-RETRY-001
+    name: 첫 번째 시도 성공 — 재시도 없음
+    given:
+      chargeRequestId: "REQ-001"
+      externalApiResponse:
+        attempt1: 200
+    when: charge_deduct_called
+    then:
+      - retriesAttempted: 0
+      - chargeStatus: "SUCCESS"
+      - idempotencyKeyUsed: "REQ-001"
+
+  - id: TC-RETRY-002
+    name: 5xx 오류 후 1회 재시도 성공
+    given:
+      chargeRequestId: "REQ-002"
+      externalApiResponse:
+        attempt1: 500
+        attempt2: 200
+    when: charge_deduct_called
+    then:
+      - retriesAttempted: 1
+      - chargeStatus: "SUCCESS"
+      - backoffApplied: "1s"
+
+  - id: TC-RETRY-003
+    name: 3회 모두 실패 — FAILED_RETRY_EXHAUSTED
+    given:
+      chargeRequestId: "REQ-003"
+      externalApiResponse:
+        attempt1: 503
+        attempt2: 503
+        attempt3: 503
+    when: charge_deduct_called
+    then:
+      - retriesAttempted: 3
+      - chargeStatus: "FAILED_RETRY_EXHAUSTED"
+      - alertSent: true
+      - manualQueueEnqueued: true
+
+  - id: TC-RETRY-004
+    name: 4xx 오류 — 재시도 없이 즉시 실패
+    given:
+      chargeRequestId: "REQ-004"
+      externalApiResponse:
+        attempt1: 400
+    when: charge_deduct_called
+    then:
+      - retriesAttempted: 0
+      - chargeStatus: "FAILED_CLIENT_ERROR"
+      - alertSent: false
+
+  - id: TC-RETRY-005
+    name: Timeout 후 재시도 — 멱등성 키 일관성 확인
+    given:
+      chargeRequestId: "REQ-005"
+      externalApiResponse:
+        attempt1: "timeout"
+        attempt2: 200
+    when: charge_deduct_called
+    then:
+      - retriesAttempted: 1
+      - chargeStatus: "SUCCESS"
+      - allAttemptsUseSameIdempotencyKey: true
+      - idempotencyKeyUsed: "REQ-005"

@@ -22,6 +22,7 @@ export interface LlmCallOptions {
   system?: string;
   maxTokens?: number;
   temperature?: number;
+  seed?: number;
   provider?: LlmProvider;
 }
 
@@ -57,6 +58,7 @@ export async function callLlmRouterWithMeta(
   };
   if (options?.system) body["system"] = options.system;
   if (options?.temperature !== undefined) body["temperature"] = options.temperature;
+  if (options?.seed !== undefined) body["seed"] = options.seed;
   if (options?.provider) body["provider"] = options.provider;
 
   const response = await fetch(`${env.LLM_ROUTER_URL}/complete`, {

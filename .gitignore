@@ -62,6 +62,8 @@ ralph-workspace/
 services/*/.claude/
 .claude/agent-memory/
 .claude/worktrees/
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
 
 # Screenshots (temp analysis artifacts — root level only)
 /*.png

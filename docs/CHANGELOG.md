@@ -2,6 +2,16 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 206 (2026-04-18)
+**GOV-001 문서 위생 정리 + 인프라 점검**:
+- ✅ Plugin 자율점검 (`/ax:infra-selfcheck`): 9항목 중 8 PASS, C8 WARN 4건 감지
+- ✅ 비표준 문서 파일명 4건 리네임 + frontmatter 코드 부여 (AIF-ANLS-028~029, AIF-RPRT-013~014)
+- ✅ INDEX.md 재생성: 60 → ~140개 문서 인덱싱 (PLAN 36, DSGN 28, ANLS 36, RPRT 34 등)
+- ✅ `.gitignore`에 개인 설정 파일 추가 + `settings.local.json` untrack
+- ✅ Daily Check 2회: 전 항목 정상 (TypeScript 14/14 FULL TURBO)
+
+**검증 결과**: typecheck 14/14 PASS, dirty=0, ahead=0
+
 ### 세션 205 (2026-04-17)
 **LLM 모델 버전 현행화**:
 - ✅ Opus: `claude-opus-4-6` → `claude-opus-4-7` (TIER_MODELS, PROVIDER_TIER_MODELS, UI, seed)

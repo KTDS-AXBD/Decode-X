@@ -1,0 +1,62 @@
+---
+emptySlotId: ES-CHARGE-008
+title: 이중 출금 감지 (타임아웃 후 재호출) — 테스트 계약
+sprint: 3
+taxonomy: E2
+---
+
+scenarios:
+  - id: TC-DW-001
+    name: 타임아웃 후 재호출 — 외부 이미 처리됨 → 차단
+    given:
+      withdrawalRequestId: "WD-REQ-001"
+      internalStatus: null
+      externalBankStatus: "PROCESSED"
+    when: withdrawal_retry_requested
+    then:
+      - newWithdrawalCreated: false
+      - internalStatusUpdated: "DUPLICATE_BLOCKED"
+      - escalationTicketCreated: true
+      - escalationPriority: "HIGH"
+      - responseStatus: 409
+      - errorCode: "WITHDRAWAL_DUPLICATE_DETECTED"
+
+  - id: TC-DW-002
+    name: 타임아웃 후 재호출 — 외부 미처리 → 신규 시도 허용
+    given:
+      withdrawalRequestId: "WD-REQ-002"
+      internalStatus: null
+      externalBankStatus: "NOT_PROCESSED"
+    when: withdrawal_retry_requested
+    then:
+      - newWithdrawalCreated: true
+      - responseStatus: 200
+      - retryLogCreated: true
+
+  - id: TC-DW-003
+    name: 내부 DB에 completed 상태 존재 — 재호출 차단
+    given:
+      withdrawalRequestId: "WD-REQ-003"
+      internalStatus: "completed"
+      externalBankStatus: null
+    when: withdrawal_retry_requested
+    then:
+      - newWithdrawalCreated: false
+      - responseStatus: 409
+      - errorCode: "WITHDRAWAL_DUPLICATE_DETECTED"
+      - externalApiCalled: false
+
+  - id: TC-DW-004
+    name: 외부 API 조회 타임아웃 — UNCERTAIN 에스컬레이션
+    given:
+      withdrawalRequestId: "WD-REQ-004"
+      internalStatus: null
+      externalBankStatus: "TIMEOUT"
+    when: withdrawal_retry_requested
+    then:
+      - newWithdrawalCreated: false
+      - internalStatusUpdated: "UNCERTAIN"
+      - escalationTicketCreated: true
+      - responseStatus: 409
+      - errorCode: "WITHDRAWAL_STATUS_UNCERTAIN"
+      - slaSatisfied: "4hours"

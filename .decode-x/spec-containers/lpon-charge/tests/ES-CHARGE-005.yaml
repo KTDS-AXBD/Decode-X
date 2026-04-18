@@ -1,0 +1,67 @@
+---
+emptySlotId: ES-CHARGE-005
+title: 명절/이벤트 기간 충전 한도 증량 — 테스트 계약
+sprint: 3
+taxonomy: E1
+---
+
+scenarios:
+  - id: TC-EVT-001
+    name: 이벤트 기간 내 — 증량 한도 이내 충전 허용
+    given:
+      currentTime: "2026-04-19T10:00:00+09:00"
+      activeEvent:
+        eventId: "EVT-2026-HOLIDAY-001"
+        eventType: "HOLIDAY"
+        startAt: "2026-04-18T00:00:00+09:00"
+        endAt: "2026-04-21T23:59:59+09:00"
+        baseLimit: 1000000
+        eventLimit: 3000000
+      requestAmount: 2500000
+    when: charge_requested
+    then:
+      - chargeAllowed: true
+      - appliedLimit: 3000000
+      - eventLogCreated: true
+      - appliedEventId: "EVT-2026-HOLIDAY-001"
+
+  - id: TC-EVT-002
+    name: 이벤트 기간 외 — 기본 한도 적용
+    given:
+      currentTime: "2026-04-22T10:00:00+09:00"
+      activeEvent: null
+      baseLimit: 1000000
+      requestAmount: 1500000
+    when: charge_requested
+    then:
+      - chargeAllowed: false
+      - appliedLimit: 1000000
+      - errorCode: "CHARGE_LIMIT_EXCEEDED"
+
+  - id: TC-EVT-003
+    name: 이벤트 기간 내 — 증량 한도 초과 거부
+    given:
+      currentTime: "2026-04-19T10:00:00+09:00"
+      activeEvent:
+        eventId: "EVT-2026-HOLIDAY-001"
+        eventLimit: 3000000
+      requestAmount: 3500000
+    when: charge_requested
+    then:
+      - chargeAllowed: false
+      - appliedLimit: 3000000
+      - errorCode: "CHARGE_LIMIT_EXCEEDED"
+
+  - id: TC-EVT-004
+    name: 이벤트 경계값 — 시작 시각 정확히 일치
+    given:
+      currentTime: "2026-04-18T00:00:00+09:00"
+      activeEvent:
+        startAt: "2026-04-18T00:00:00+09:00"
+        endAt: "2026-04-21T23:59:59+09:00"
+        eventLimit: 3000000
+      requestAmount: 2000000
+    when: charge_requested
+    then:
+      - chargeAllowed: true
+      - appliedLimit: 3000000

@@ -1,0 +1,58 @@
+---
+emptySlotId: ES-CHARGE-004
+title: 자동충전 중복 실행 방지 — 테스트 계약
+sprint: 3
+taxonomy: E4
+---
+
+scenarios:
+  - id: TC-LOCK-001
+    name: 단일 실행 — 락 없을 때 정상 자동충전
+    given:
+      jobId: "AUTO-JOB-001"
+      targetDate: "2026-04-19"
+      existingLockStatus: null
+    when: auto_charge_scheduled
+    then:
+      - lockAcquired: true
+      - chargeExecuted: true
+      - lockReleasedAfterCompletion: true
+
+  - id: TC-LOCK-002
+    name: 중복 실행 — 락 보유 중(30분 이내) SKIP
+    given:
+      jobId: "AUTO-JOB-001"
+      targetDate: "2026-04-19"
+      existingLockStatus: "LOCKED"
+      lockedAtMinutesAgo: 10
+    when: auto_charge_scheduled_again
+    then:
+      - lockAcquired: false
+      - chargeExecuted: false
+      - skipLogCreated: true
+      - skipReason: "AUTO_CHARGE_SKIP_LOCKED"
+
+  - id: TC-LOCK-003
+    name: 스테일 락(30분 초과) — 락 만료 후 재실행 허용
+    given:
+      jobId: "AUTO-JOB-001"
+      targetDate: "2026-04-19"
+      existingLockStatus: "LOCKED"
+      lockedAtMinutesAgo: 35
+    when: auto_charge_scheduled_again
+    then:
+      - lockAcquired: true
+      - chargeExecuted: true
+      - previousStaleInstanceId: "old-instance-replaced"
+
+  - id: TC-LOCK-004
+    name: 실행 완료 후 락 해제 확인
+    given:
+      jobId: "AUTO-JOB-002"
+      targetDate: "2026-04-19"
+      existingLockStatus: null
+    when: auto_charge_completed
+    then:
+      - lockStatus: "UNLOCKED"
+      - lockedAt: null
+      - instanceId: null

@@ -1,0 +1,54 @@
+---
+emptySlotId: ES-CHARGE-001
+title: 충전 멱등성 — 테스트 계약
+sprint: 2
+taxonomy: E4
+---
+
+scenarios:
+  - id: TC-IDEM-001
+    name: 동일 requestId 재전송 시 기존 completed 결과 반환
+    given:
+      chargeRequestId: "req-abc-001"
+      existingStatus: "completed"
+      existingChargeId: "charge-existing-001"
+    when: charge_requested_again
+    then:
+      - newWithdrawalCreated: false
+      - responseStatus: 200
+      - responseChargeId: "charge-existing-001"
+      - responseIdempotent: true
+
+  - id: TC-IDEM-002
+    name: 실패한 요청 재전송 시 신규 처리
+    given:
+      chargeRequestId: "req-abc-002"
+      existingStatus: "failed"
+    when: charge_requested_again
+    then:
+      - newWithdrawalCreated: true
+      - responseStatus: 200
+      - newChargeIdGenerated: true
+
+  - id: TC-IDEM-003
+    name: 처리 중인 요청 재전송 시 409 반환
+    given:
+      chargeRequestId: "req-abc-003"
+      existingStatus: "processing"
+    when: charge_requested_again
+    then:
+      - newWithdrawalCreated: false
+      - responseStatus: 409
+      - errorCode: "CHARGE_IN_PROGRESS"
+      - retryAfterSeconds: 10
+
+  - id: TC-IDEM-004
+    name: 신규 requestId는 정상 처리
+    given:
+      chargeRequestId: "req-new-999"
+      existingStatus: null
+    when: charge_requested
+    then:
+      - newWithdrawalCreated: true
+      - responseStatus: 200
+      - newChargeIdGenerated: true

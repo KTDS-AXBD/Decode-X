@@ -1,0 +1,58 @@
+---
+emptySlotId: ES-CHARGE-003
+title: 분할 충전 가이드 — 테스트 계약
+sprint: 2
+taxonomy: E5
+---
+
+scenarios:
+  - id: TC-SPLIT-001
+    name: 한도 초과 시 잔여 한도 안내 + splitChargeAllowed=true
+    given:
+      requestedAmount: 500000
+      dailyLimitUsed: 800000
+      dailyLimit: 1000000
+    when: charge_requested
+    then:
+      - responseStatus: 400
+      - errorCode: "CHARGE_LIMIT_EXCEEDED"
+      - availableAmount: 200000
+      - splitChargeAllowed: true
+      - limitResetAtProvided: true
+      - messageContains: "분할 충전"
+
+  - id: TC-SPLIT-002
+    name: 잔여 한도 내 요청 — 정상 처리
+    given:
+      requestedAmount: 100000
+      dailyLimitUsed: 800000
+      dailyLimit: 1000000
+    when: charge_requested
+    then:
+      - responseStatus: 200
+      - chargeCompleted: true
+      - splitChargeAllowed: false
+
+  - id: TC-SPLIT-003
+    name: 한도 정확히 일치 — 정상 처리
+    given:
+      requestedAmount: 200000
+      dailyLimitUsed: 800000
+      dailyLimit: 1000000
+    when: charge_requested
+    then:
+      - responseStatus: 200
+      - chargeCompleted: true
+
+  - id: TC-SPLIT-004
+    name: 한도 소진 — splitChargeAllowed=false
+    given:
+      requestedAmount: 10000
+      dailyLimitUsed: 1000000
+      dailyLimit: 1000000
+    when: charge_requested
+    then:
+      - responseStatus: 400
+      - errorCode: "CHARGE_LIMIT_EXHAUSTED"
+      - availableAmount: 0
+      - splitChargeAllowed: false

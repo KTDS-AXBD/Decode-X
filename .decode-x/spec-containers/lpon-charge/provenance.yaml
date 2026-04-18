@@ -1,0 +1,33 @@
+# Provenance — POL-LPON-CHARGE-001
+# 출처 추적 (FX-SPEC-002 specToTest 검증)
+
+skillId: POL-LPON-CHARGE-001
+extractedAt: "2026-04-19T00:00:00+09:00"
+extractedBy: "Decode-X Sprint 1 (AIF-REQ-035)"
+
+sources:
+  - type: reverse-engineering
+    path: "반제품-스펙/pilot-lpon-cancel/01-business-logic.md"
+    section: "시나리오 1: 충전 (Top-up)"
+    businessRules: [BL-001, BL-002, BL-003, BL-004, BL-005, BL-006, BL-007, BL-008]
+    confidence: 0.92
+
+  - type: ai-foundry-policy-db
+    source: db-policy (production)
+    policyCount: 44
+    domain: LPON
+    note: "LPON 충전 관련 정책 subset. 전체 848건 중 충전 도메인 추정 49건."
+
+inputCompleteness:
+  sInput: 0.82
+  deficiencyFlag: false
+  components:
+    rulesCoverage: 0.92    # 8/8 BL 모두 condition-criteria-outcome 완비
+    testCoverage: 0.78     # 6 시나리오 / 예상 7.7 시나리오 (엣지케이스 80% 커버)
+    provenanceLink: 1.0    # 출처 문서 연결 완료
+  notes:
+    - "기술 명세(technicalSpec) 미존재 — API 스펙(반제품-스펙/05-api.md) 추가 필요 (Sprint 2)"
+    - "수기처리 에스컬레이션(BL-039) 미포함 — 별도 Empty Slot(ES-CHARGE-004)"
+
+handoffTarget: Foundry-X
+handoffVersion: "FX-SPEC-002 v1.0"

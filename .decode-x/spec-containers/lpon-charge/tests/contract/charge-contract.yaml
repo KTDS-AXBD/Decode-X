@@ -1,0 +1,74 @@
+# Contract Tests — POL-LPON-CHARGE-001 (충전 서비스)
+# FX-SPEC-002 v1.0 triangle.codeToTest 검증 대상
+
+skillId: POL-LPON-CHARGE-001
+version: 1.0.0
+domain: lpon-charge
+
+scenarios:
+  - id: TC-CHARGE-001
+    name: 잔액 충분 시 충전 성공
+    given:
+      withdrawalAccountBalance: 100000
+      chargeAmount: 50000
+    when: charge_requested
+    then:
+      - withdrawal_processed: true
+      - charge_completed: true
+    ref: BL-001, BL-002
+
+  - id: TC-CHARGE-002
+    name: 잔액 부족 시 충전 실패
+    given:
+      withdrawalAccountBalance: 30000
+      chargeAmount: 50000
+    when: charge_requested
+    then:
+      - withdrawal_processed: false
+      - error_code: INSUFFICIENT_BALANCE
+    ref: BL-001
+
+  - id: TC-CHARGE-003
+    name: 이용자 한도 초과 시 충전 거부
+    given:
+      userChargeLimit: 200000
+      chargeAmount: 250000
+      withdrawalAccountBalance: 300000
+    when: user_charge_requested
+    then:
+      - charge_rejected: true
+      - error_code: LIMIT_EXCEEDED
+    ref: BL-005
+
+  - id: TC-CHARGE-004
+    name: 출금 타임아웃 후 5분 뒤 상태조회
+    given:
+      withdrawalTimeoutOccurred: true
+      statusQueryAfterMinutes: 5
+    when: withdrawal_timeout
+    then:
+      - status_query_triggered: true
+      - follow_up_action: determined_by_status
+    ref: BL-004
+
+  - id: TC-CHARGE-005
+    name: 자동충전 잔액 조건 충족 시 실행
+    given:
+      currentBalance: 10000
+      blceCondAmt: 20000
+      stngAmt: 100000
+    when: auto_charge_check
+    then:
+      - auto_charge_executed: true
+      - charged_amount: 100000
+    ref: BL-008
+
+  - id: TC-CHARGE-006
+    name: 자동충전 조건 미충족 시 미실행
+    given:
+      currentBalance: 50000
+      blceCondAmt: 20000
+    when: auto_charge_check
+    then:
+      - auto_charge_executed: false
+    ref: BL-008

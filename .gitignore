@@ -93,3 +93,7 @@ docs/LPON 전자식 온누리상품권 플랫폼/
 backup/
 .sprint-context
 .sprint-watch-config
+
+# Foundry-X Plumb runtime artifacts (SyncResult logs, decisions log)
+# Green run 요약은 docs/poc/sprint-*-plumb-first-run.md로 대체 기록
+.foundry-x/

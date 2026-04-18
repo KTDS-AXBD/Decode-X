@@ -1,0 +1,56 @@
+---
+emptySlotId: ES-CHARGE-002
+title: 출금 타임아웃 에스컬레이션 — 테스트 계약
+sprint: 2
+taxonomy: E4
+---
+
+scenarios:
+  - id: TC-ESC-001
+    name: 소액 타임아웃 — 2회 재시도 후 P2 에스컬레이션
+    given:
+      amount: 100000
+      withdrawalStatus: "UNKNOWN"
+      retryCount: 2
+    when: withdrawal_timeout_unresolved
+    then:
+      - escalationTicketCreated: true
+      - escalationPriority: "P2"
+      - incidentType: "WITHDRAWAL_TIMEOUT_UNRESOLVED"
+      - slaHours: 4
+
+  - id: TC-ESC-002
+    name: 고액 타임아웃 — 즉시 P1 에스컬레이션
+    given:
+      amount: 500000
+      withdrawalStatus: "UNKNOWN"
+      retryCount: 0
+    when: withdrawal_timeout_unresolved
+    then:
+      - escalationTicketCreated: true
+      - escalationPriority: "P1"
+      - incidentType: "WITHDRAWAL_TIMEOUT_UNRESOLVED"
+      - slaHours: 1
+
+  - id: TC-ESC-003
+    name: 재시도 중 SUCCESS — 에스컬레이션 없이 완료
+    given:
+      amount: 100000
+      withdrawalStatus: "SUCCESS"
+      retryCount: 1
+    when: withdrawal_status_checked
+    then:
+      - escalationTicketCreated: false
+      - chargeCompleted: true
+
+  - id: TC-ESC-004
+    name: 재시도 중 FAILED — 실패 처리
+    given:
+      amount: 100000
+      withdrawalStatus: "FAILED"
+      retryCount: 1
+    when: withdrawal_status_checked
+    then:
+      - escalationTicketCreated: false
+      - chargeFailed: true
+      - errorReturned: true

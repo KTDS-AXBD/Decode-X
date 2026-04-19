@@ -2,6 +2,27 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 211 (2026-04-19)
+**Phase 1 PoC 1.5일 압축 Full Auto 완주 — Sprint 1~5 전 단계 MERGED, Gate GO**:
+- ✅ `/ax:session-start "/sprint 2 --manual"`: 세션 210(Sprint 1 Plan v2.0) 이어받아 시작. Sprint 1 PR #9 MERGED 확인, main FF, `.foundry-x/` 전부 gitignore(`3765acf`), sprint-1 WT+브랜치 S253 L4 cleanup, signal ARCHIVED.
+- ✅ **정책 확립 (feedback memory)**: "Sprint WT 생성 후 항상 autopilot + Monitor 자동 주입 — `--manual` 플래그 무시". `feedback_sprint_autopilot.md` 생성 + MEMORY.md 인덱스 반영.
+- ✅ **Sprint 2** PR #10 — R2 LLM 예산 schema/log + T2 Prototype Shadow Mode 1 라인 + Empty Slot Fill ES-CHARGE-001/002/003 3자 바인딩(9파일). autopilot Match Rate 100%, 수동 CI 대기+squash merge 경로(`20b03fa`). `.foundry-x/decisions.jsonl` follow-up untrack(`9799974`).
+- ✅ **Sprint 3** PR #11 — T3 결정적 생성 PoC 2종(Temperature=0 + Seed 고정) + **재평가 Gate GO** + ES-CHARGE-004/005/008 Fill 이관. autopilot 자체 cleanup 도입(`0b987f2`).
+- ✅ **Sprint 4** PR #12 — B/T/Q Spec Schema 완결성(27/27 파일, 9 Empty Slot × 3자) + T3 Self-Consistency Voting PoC(Wang et al. 2022, TypeScript 구현 `selfConsistencyVote`) + `packages/utils/src/llm-client.ts`에 `seed?: number` 파라미터 추가 + ES-CHARGE-006/007/009 Fill. **autopilot 자체 merge 첫 성공**(`ab8e442`).
+- ✅ **Sprint 5** PR #13 — Tacit Interview Agent MVP(`services/svc-skill/src/routes/tacit-interview.ts` 283줄 + `.test.ts` 244줄, 4개 API: 세션 생성/Fragment 추출/조회/완료, PII 마스킹 자동 적용, Haiku tier) + Foundry-X Handoff 1건(`handoff.ts` 162줄 + `.test.ts` 156줄, `POST /handoff/generate` APPROVED/DRAFT/DENIED verdict 자동 판정) + D1 migration `infra/migrations/db-skill/0006_tacit_interview.sql`. 347/347 tests PASS, autopilot 자체 merge(`bc0f192`).
+- ✅ **발견/정책 확립 (feedback memory)**: WSL + Windows Terminal tmux attach 패턴 — `bash -lic "tmux attach"` 실패 → `bash -l -c "exec tmux attach"` 정착. `feedback_wt_tmux_attach.md` 생성.
+- ✅ **Phase 1 PoC 누적**: 5 PRs MERGED(Match Rate 전원 100%) / Empty Slot Fill 9건(ES-CHARGE-001~009) 3자 바인딩 27/27 / T3 PoC 3종(Temp=0 + Seed + Self-Consistency) / 실 코드 llm-client.ts(seed) + handoff.ts + tacit-interview.ts + D1 0006 / 세션 211 단일 work session ~38분 소요.
+- ✅ SPEC §1 Current Phase 각 Sprint 시점마다 갱신(5회), 최종 "Phase 1 PoC ✅ 완주 — Phase 2 파일럿 착수 대기"로 마감(`8559a46`).
+
+**검증 결과**: 전 Sprint autopilot Match Rate 100%, CI Typecheck & Test + E2E 전원 PASS. 실행 개입 Master 수동 merge 2회(S2 CI timeout, S3 초기) → 이후 autopilot 자체 merge로 완전 자율화.
+
+**발견/교훈**:
+- Autopilot이 session-end에서 CI 대기 + squash merge + WT/브랜치 cleanup까지 내장 (Sprint 4~부터 확인).
+- Autopilot 진화 궤적: 수동 merge(S1-2) → 자체 cleanup(S3) → 자체 merge(S4-5). Master 개입이 SPEC §1 갱신만 남음.
+- `.foundry-x/` runtime artifacts는 gitignore 필수 — Plumb decisions.jsonl 등이 강제 staged 될 수 있음(S253 L4 교훈 연장).
+- Empty Slot 택소노미(E1~E5)로 9건 Fill 시 E1 Surge/E2 Fraud/E3 Reconcile/E4 Exception 분포, E5 Tacit은 Sprint 5 interview agent가 전담.
+- PostToolUse hook 경로 문제 관찰 (`.claude/hooks/post-edit-*.sh` 미존재, non-blocking) — follow-up 필요.
+
 ### 세션 209 (2026-04-20)
 **Phase 0 Day 3 Closure — 1인 겸임 체제 재정의 후 조기 종료 + REQ-035 IN_PROGRESS 전환**:
 - ✅ `/ax:session-start "Day 3 FX PM 지정 요청"`: MEMORY.md 자동 로딩 + SPEC.md §1~§5+§7+§8+§10 선택 읽기. Pane baseline 스냅샷 생성. Stale monitor 없음 (Foundry-X-309 MERGED, monitor 비어있음).

@@ -13,7 +13,7 @@
 - **Goal**: SI 산출물 + 소스코드를 역공학하여 도메인 지식을 추출하고, 새 프로젝트의 반제품(Working Prototype)으로 재패키징
 - **Positioning**: 역공학(기존 산출물 분석) → 순공학(새 프로젝트 부트스트래핑) 양방향 엔진. Foundry-X(에이전트 협업 플랫폼)와 결합하여 완전한 소프트웨어 개발 파이프라인 구성
 - **Domain Pilot**: 퇴직연금 + 온누리상품권
-- **Current Phase**: **Phase 1 PoC 1.5일 압축 ✅ 완료 — Phase 2 파일럿 착수 대기** (2026-04-19, 세션 211) — Phase 1 전체(Sprint 1~5) 세션 211 단일 work session ~38분에 완주. **Sprint 1 ✅ MERGED** (PR #9, T1 Plumb E2E green). **Sprint 2 ✅ MERGED** (PR #10, R2 LLM 예산 + T2 Shadow + Fill ES-CHARGE-001/002/003). **Sprint 3 ✅ MERGED** (PR #11, T3 결정적 생성 PoC 2종 + **재평가 Gate GO** + ES-CHARGE-004/005/008 Fill). **Sprint 4 ✅ MERGED** (PR #12, autopilot 자체 merge, B/T/Q Spec Schema 완결성 + T3 Self-Consistency Voting PoC + ES-CHARGE-006/007/009 Fill). **Sprint 5 ✅ MERGED** (PR #13, autopilot 자체 merge, Tacit Interview Agent MVP + Foundry-X Handoff, svc-skill 라우트 2종 + D1 migration 0006 + 347/347 테스트). 누적: Fill 9건(ES-CHARGE-001~009) 3자 바인딩 27/27, T3 PoC 3종(Temp=0 + Seed + Self-Consistency), 코드 실체(handoff.ts + tacit-interview.ts + llm-client.ts seed). Match Rate 전 Sprint 100%. Plan: `docs/poc/sprint-1-plan.md` v2.0 §9. 선행 Phase 0 Closure (9조건 DONE 1 + WAIVED 2 + DEFERRED 6). Pilot Core 완료 (5-Stage 역공학, 2-org 파일럿)
+- **Current Phase**: **Phase 2 본 개발 PRD Ready ✅ (착수 정당화 완료)** (2026-04-19, 세션 216) — PRD `docs/req-interview/decode-x-v1.3-phase-2/prd-final.md` 확정. R1 79/R2 74 + Ambiguity 0.120 Ready → Phase 1 선례 기반 착수. Phase 2 목표 = "Foundry-X 핸드오프 E2E 첫 사례". Track A 양적(Tier-A 잔여 6서비스 Empty Slot Fill) + Track B 깊이(결제 → Foundry-X 실 실행 → round-trip 데이터 동작 검증). Source-First(원장=소스/참고=문서, 3종 마커: SOURCE_MISSING·DOC_ONLY·DIVERGENCE). ERWin ERD 추출 R&D. Sprint 211~216 예정. 선행 Sprint 211 = FX-SPEC-002 v1.1 작성. **Phase 1 PoC 1.5일 압축 ✅ 완료** (세션 211) — Phase 1 전체(Sprint 1~5) 세션 211 단일 work session ~38분에 완주. **Sprint 1 ✅ MERGED** (PR #9, T1 Plumb E2E green). **Sprint 2 ✅ MERGED** (PR #10, R2 LLM 예산 + T2 Shadow + Fill ES-CHARGE-001/002/003). **Sprint 3 ✅ MERGED** (PR #11, T3 결정적 생성 PoC 2종 + **재평가 Gate GO** + ES-CHARGE-004/005/008 Fill). **Sprint 4 ✅ MERGED** (PR #12, autopilot 자체 merge, B/T/Q Spec Schema 완결성 + T3 Self-Consistency Voting PoC + ES-CHARGE-006/007/009 Fill). **Sprint 5 ✅ MERGED** (PR #13, autopilot 자체 merge, Tacit Interview Agent MVP + Foundry-X Handoff, svc-skill 라우트 2종 + D1 migration 0006 + 347/347 테스트). 누적: Fill 9건(ES-CHARGE-001~009) 3자 바인딩 27/27, T3 PoC 3종(Temp=0 + Seed + Self-Consistency), 코드 실체(handoff.ts + tacit-interview.ts + llm-client.ts seed). Match Rate 전 Sprint 100%. Plan: `docs/poc/sprint-1-plan.md` v2.0 §9. 선행 Phase 0 Closure (9조건 DONE 1 + WAIVED 2 + DEFERRED 6). Pilot Core 완료 (5-Stage 역공학, 2-org 파일럿)
 - **Foundry-X 연동**: AIF-REQ-026 (P1, IN_PROGRESS) — [KTDS-AXBD/Foundry-X](https://github.com/KTDS-AXBD/Foundry-X). FX PM = Sinclair 겸임(`sinclairseo@gmail.com`) 확정, MoU v0.2 내부 기준 문서로 유지 (self-sign, Phase 0 Closure)
 - **Decode-X v1.3 본 개발**: AIF-REQ-035 (P0, **IN_PROGRESS** — 세션 209 전환) — Mission Pivot(AI-Centric 체질 전환) + Foundry-X 역할 분담. PRD: `docs/req-interview/decode-x-v1.2/prd-v2.md`, Phase 0 설계서: `docs/req-interview/decode-x-v1.2/phase-0-kickoff.md` (v1.4), Closure: `docs/req-interview/decode-x-v1.2/phase-0-closure-report.md` (v1.0 + v2.0 §7.1 재조정), **Sprint 1 Plan**: `docs/poc/sprint-1-plan.md` (**v2.0 1.5일 압축판**, 세션 210)
 
@@ -58,7 +58,7 @@
 
 ## 5) Current Status
 
-- **Last Updated**: 2026-04-18
+- **Last Updated**: 2026-04-19 (세션 216)
 - **Current Phase**: **Pilot Core 완료** — 5-Stage 역공학 파이프라인 실증 완료. 7 Workers + Gateway + Pages, 2-org 파일럿 (퇴직연금 948건 + 온누리 88건), policies 3,675 / skills 3,924. KPI: API Coverage 95.4%, Table Coverage 100%. REQ 24/32 DONE. E2E 47/47 PASS
 <!-- 마지막 실측 (daily-check 자동 보정 대상) -->
 - **마지막 실측** (세션 211, 2026-04-19): 7 Workers(운영) / 12 svc-* 디렉토리(잔존 포함), D1 5 DBs (21 migrations, latest db-skill 0006 tacit_interview), 109 test files on disk (+ Sprint 5 handoff/tacit-interview.test.ts 2건 신규), E2E 10 specs 47 tests
@@ -455,6 +455,28 @@
 **Batch 5 (Sprint 210, AI-Ready 채점기 + PoC 리포트):**
 - [ ] Sprint 210 (REQ-034 F): **AI-Ready 6기준 일괄 채점기 + PoC 리포트** — LPON 859개 skill 대상 AI-Ready 6기준(completeness/consistency/testability/implementability/traceability/adaptability) 일괄 채점 스크립트 + 결과 리포트 페이지. Tacit Interview Agent 포맷 명세 + Handoff 패키지 검증 포맷 명세. 4/17 10:00 보고 PoC 준비. 대상: `services/svc-skill/src/` (채점 로직), `apps/app-web/src/pages/` (리포트 UI). **KPI**: LPON 전체 skill 6기준 채점 완료, 완결성 ≥80%, 6기준 통과율 ≥90%
 
+### 🔧 Phase 7 — Decode-X v1.3 Phase 2 본 개발 (AIF-REQ-035 Phase 2) (세션 216~)
+
+> **Phase 2 PRD Ready** (2026-04-19, 세션 216). PRD `docs/req-interview/decode-x-v1.3-phase-2/prd-final.md` (R1 79 / R2 74 + Ambiguity 0.120, Phase 1 선례 기반 착수 정당화).
+>
+> **목표**: Foundry-X 핸드오프가 LPON 결제 도메인에서 End-to-End로 동작하는 첫 사례. Track A(Tier-A 잔여 6서비스 Empty Slot Fill) + Track B(결제 E2E → Foundry-X 실 실행 → round-trip 데이터 동작 검증). Source-First(원장=소스/참고=문서) + ERWin ERD 추출 R&D.
+>
+> **스코프 핵심 변화**: Phase 1 "문서 기반" → Phase 2 "Java/Spring 소스 기반". 정량 자산(D1/LPON 88문서) 비참조, 정성 자산(B/T/Q Schema·Tacit·Handoff·T3·llm-client) 계승.
+
+**Batch 1 (Sprint 211, 선행 게이트):**
+- [ ] Sprint 211 (REQ-035 Phase 2 A): **FX-SPEC-002 v1.1 작성·서명** — Tier-A 6개 서비스 특성 + E2E 실행 요구사항 + Working Prototype 수용 기준 + /callback 피드백 루프 명시. 대상: `docs/mou/FX-SPEC-002-v1.1.md` (신규) + Foundry-X repo 측 미러. **KPI**: v1.1 self-sign 완료, Sprint 212 착수 전 freeze
+
+**Batch 2 (Sprint 212 ∥ Sprint 213, 병렬):**
+- [ ] Sprint 212 (REQ-035 Phase 2 B): **svc-ingestion Java/Spring AST 파서 + Source-First Reconciliation 엔진** — Stage 1 입력 채널 전환. Java AST 파싱(javaparser/Tree-sitter/직접 구현 중 1종) + 3종 차이 마커(SOURCE_MISSING/DOC_ONLY/DIVERGENCE). 대상: `services/svc-ingestion/src/parsing/` 확장 + `packages/utils/src/reconcile.ts` (신규). **KPI**: LPON 결제 소스 1개 모듈 AST 추출 성공 + 문서 대조 시 최소 1건 DIVERGENCE 로그 생성
+- [ ] Sprint 213 (REQ-035 Phase 2 C): **ERWin ERD 추출 도구 R&D (PoC)** — 경로 A(SQL DDL export 파싱) + 경로 B(ERWin XML export) 병렬 PoC. 대상: `scripts/erwin-extract/` (신규) + `packages/utils/src/erd-parser.ts`. **KPI**: 최소 1개 경로에서 LPON 결제 ERD → entity/relation JSON 출력 확인
+
+**Batch 3 (Sprint 214, Track A 양적):**
+- [ ] Sprint 214 (REQ-035 Phase 2 D): **Track A Tier-A 잔여 6서비스 Empty Slot Fill** — 예산/구매/결제/환불/선물/정산 각각 소스 원장 기반 Empty Slot 발굴·Fill (각 ~2~3 슬롯). Phase 1 "충전" 방법론 재활용. 하루에 1서비스 수준 → 6일 or 병렬 2~3일. 대상: `docs/poc/phase-2-sprint-{1~6}-fill-*.md`. **KPI**: 6서비스 완결성 ≥95%, AI-Ready 6기준 통과율 ≥70%, 소스 출처 추적성 100%
+
+**Batch 4 (Sprint 215 ∥ Sprint 216, 병렬, Track B 깊이):**
+- [ ] Sprint 215 (REQ-035 Phase 2 E): **Track B 결제 E2E Handoff → Foundry-X** — 결제 서비스 Decode → Handoff Package → Foundry-X Working Prototype 생성·실행. FX-SPEC-002 v1.1 수용 기준 준수. 대상: `services/svc-skill/src/routes/handoff.ts` 확장 + Foundry-X repo 측 수용 엔드포인트 연동. **KPI**: Handoff 수용 100%(1/1), Working Prototype 실행 PASS
+- [ ] Sprint 216 (REQ-035 Phase 2 F): **Working Prototype 데이터 동작 검증 하네스** — 실 데이터 sample N건 → Working Prototype 실행 → 결과 vs 기대값 round-trip 일치율 측정. 대상: `scripts/roundtrip-verify/` (신규) + `apps/app-web/src/pages/poc-phase-2-report.tsx`. **KPI**: round-trip 일치율 ≥90%, 실패 케이스 구체 원인 분석 기재
+
 ---
 
 ## 7) Requirements Backlog
@@ -580,7 +602,7 @@
 
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
-| AIF-REQ-035 | Feature | Pipeline | P0 | IN_PROGRESS | **Decode-X v1.3 본 개발** — Decode-X 개발기획서 v1.2 + v1.3 부록 C/D/E 기반 본 개발. **Mission Pivot**: "100% Copy Machine" 폐기 → AI-Centric 체질 전환. **Foundry-X 역할 분담**: Decode-X=Input Plane 생산자 / Foundry-X=Process-Output Plane 오케스트레이터. **MVP 스코프**: 전자온누리상품권 1개 도메인, Tier-A 6개 핵심 서비스(예산/충전/구매/결제/환불/선물 + 각 취소), Java/Spring 스택. **Phase 0 Day 1**: 2026-04-18 (본부장 "진행" 결정, 세션 207). **Phase 0 Closure**: 세션 209 — FX PM = Sinclair 겸임 확정으로 C1 DONE, R1/R3 WAIVED(1인 체제), C2/C3/R2/T1~T3 DEFERRED(Phase 1/2 중 재가동). **Phase 1 v2.0 압축 재조정 (2026-04-19, 세션 210)**: 원 Phase 1 PoC 10주 → **1.5일**(2026-04-18~04-19 오후). Sprint 1~5 각 60~90분 시간 블록. AI-Native 1인 체제의 대기·동기화 비용 제거 반영. **재평가 Gate**: Sprint 3 종료 시점(오늘 내). **Sprint 1 (~90분)**: T1 Foundry-X Plumb E2E(`SyncResult.success==true` 1건 green) + Tier-A "충전" Empty Slot 발굴(long-list 15~20건 → short-list ≥6건). OD 확정: 문서40/테스트30/Plumb30. **KPI v2.0 완화**: 원 정량(95%/70%/90%) → "측정 가능성 증명 + 값 기록 + 성장 경로 문서화" 3축으로 완화. 원 정량 기준은 Phase 2 파일럿 이관. **참조**: `docs/req-interview/decode-x-v1.2/prd-v2.md` (v1.3), `docs/req-interview/decode-x-v1.2/phase-0-kickoff.md` (v1.4), `docs/req-interview/decode-x-v1.2/phase-0-closure-report.md` (v1.0 + v2.0 §7.1 재조정), `docs/poc/sprint-1-plan.md` (**v2.0 1.5일 압축판**). 3-AI 검토 R1 76점/R2 68점 + Ambiguity 0.15 (PRD Ready) |
+| AIF-REQ-035 | Feature | Pipeline | P0 | IN_PROGRESS | **Decode-X v1.3 본 개발** — Decode-X 개발기획서 v1.2 + v1.3 부록 C/D/E 기반 본 개발. **Mission Pivot**: "100% Copy Machine" 폐기 → AI-Centric 체질 전환. **Foundry-X 역할 분담**: Decode-X=Input Plane 생산자 / Foundry-X=Process-Output Plane 오케스트레이터. **MVP 스코프**: 전자온누리상품권 1개 도메인, Tier-A 6개 핵심 서비스(예산/충전/구매/결제/환불/선물 + 각 취소), Java/Spring 스택. **Phase 0 Day 1**: 2026-04-18 (본부장 "진행" 결정, 세션 207). **Phase 0 Closure**: 세션 209 — FX PM = Sinclair 겸임 확정으로 C1 DONE, R1/R3 WAIVED(1인 체제), C2/C3/R2/T1~T3 DEFERRED(Phase 1/2 중 재가동). **Phase 1 PoC 1.5일 압축 ✅ 완주** (세션 211): Sprint 1~5 전 MERGED, 재평가 Gate GO, Fill ES-CHARGE-001~009 3자 바인딩 27/27, T3 PoC 3종(Temp=0 + Seed + Self-Consistency), 실 코드(handoff.ts + tacit-interview.ts + llm-client.ts seed + D1 0006 tacit_interview). Match Rate 전 Sprint 100%. **Phase 2 본 개발 PRD Ready** (2026-04-19, 세션 216) — 목표 재정의: "Foundry-X 핸드오프 E2E 첫 사례 만들기". Track A 양적(Tier-A 잔여 6서비스 Empty Slot Fill) + Track B 깊이(결제 E2E → Foundry-X 실 실행 → round-trip 데이터 동작 검증). Source-First(원장=소스/참고=문서, 3종 마커: SOURCE_MISSING·DOC_ONLY·DIVERGENCE). ERWin ERD 추출 R&D. KPI 복귀(원 정량 95%/70%/90% + Track B 추가 지표). Sprint 211~216 예정. 선행 Sprint 211 = FX-SPEC-002 v1.1 작성. 외부 AI 검토 R1 79/R2 74 (1인 체제 집단 Conditional 수렴·TD-15 파서 고정으로 점수 역행) + Ambiguity 0.120 (Ready) → Phase 1 선례(R2 68/Amb 0.15) 기반 착수 정당화. **Phase 2 PRD**: `docs/req-interview/decode-x-v1.3-phase-2/prd-final.md`. **참조**: `docs/req-interview/decode-x-v1.2/prd-v2.md` (v1.3 원본), Phase 0 Closure, `docs/poc/sprint-{1~5}-exit-check.md` |
 
 ---
 
@@ -686,3 +708,4 @@
 - 2026-03-03: Production 전체 배포 동기화 — CI/CD svc-queue-router default env skip + 14/14 jobs success
 - 2026-03-03: 퇴직연금 실문서 파일럿 — 카테고리별 대표 11건 업로드, 9/11 parsed, 34 policies, 220 terms, 37 skills
 - 2026-03-03: SCDSA002 비표준 XLSX 발견 — 메뉴구조도/테이블정의서 2건 magic bytes 비표준 (Unstructured.io 파싱 불가)
+- 2026-04-19 (세션 216): **Decode-X v1.3 Phase 2 본 개발 PRD Ready** — 인터뷰 5파트 완료(Part 1~5, interview-log.md 167줄) → prd-v1(273줄) → Round 1 외부 AI 3모델 79/100(1 Ready+2 Conditional) → apply 27건 반영 prd-v2 → Round 2 74/100(3 Conditional, 1인 체제 집단 수렴 + TD-15 파서 고정) → Ambiguity 0.120 Ready → Phase 1 선례(R2 68/Amb 0.15로 착수 후 1.5일 Full Auto 완주) 기반 착수 정당화. prd-final.md(§11 정당화 appendix 포함) 확정, archive 정리. 목표: "Foundry-X 핸드오프 E2E 첫 사례"(LPON 결제 도메인). Track A(양적, Tier-A 잔여 6서비스 Empty Slot Fill) + Track B(깊이, 결제 E2E → Foundry-X 실 실행 → round-trip). Source-First(원장=소스/참고=문서, 3종 마커 SOURCE_MISSING·DOC_ONLY·DIVERGENCE) + ERWin ERD 추출 R&D. §6 §7 Phase 7 신설 Sprint 211~216 배정. 비용 ~$0.05, 총 소요 약 45분.

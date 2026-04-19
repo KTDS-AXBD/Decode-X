@@ -58,7 +58,7 @@
 
 ## 5) Current Status
 
-- **Last Updated**: 2026-04-19 (세션 216)
+- **Last Updated**: 2026-04-20 (세션 217)
 - **Current Phase**: **Pilot Core 완료** — 5-Stage 역공학 파이프라인 실증 완료. 7 Workers + Gateway + Pages, 2-org 파일럿 (퇴직연금 948건 + 온누리 88건), policies 3,675 / skills 3,924. KPI: API Coverage 95.4%, Table Coverage 100%. REQ 24/32 DONE. E2E 47/47 PASS
 <!-- 마지막 실측 (daily-check 자동 보정 대상) -->
 - **마지막 실측** (세션 211, 2026-04-19): 7 Workers(운영) / 12 svc-* 디렉토리(잔존 포함), D1 5 DBs (21 migrations, latest db-skill 0006 tacit_interview), 109 test files on disk (+ Sprint 5 handoff/tacit-interview.test.ts 2건 신규), E2E 10 specs 47 tests
@@ -463,18 +463,22 @@
 >
 > **스코프 핵심 변화**: Phase 1 "문서 기반" → Phase 2 "Java/Spring 소스 기반". 정량 자산(D1/LPON 88문서) 비참조, 정성 자산(B/T/Q Schema·Tacit·Handoff·T3·llm-client) 계승.
 
+> **세션 217 재정의** (2026-04-20): 체크리스트 인터뷰 결과 반영 — (1) Sprint 211을 **FX-SPEC-003 Decode-X Handoff Contract 신규 발행**으로 전환 (v1.0 PlumbBridge 계약은 그대로 유지), (2) Sprint 212 AST 파서 **javaparser (JVM)** 확정 — Cloudflare Worker 직접 실행 불가로 offline CLI/Node wrapper 사전 파싱 방식, (3) Sprint 213 ERWin **경로 A (SQL DDL)** 확정 — lpon-charge 소스 기반, (4) Sprint 214를 **214a/214b/214c 3분할** (2서비스×3 Sub-sprint), (5) Sprint 215 Foundry-X 수용 엔드포인트 **신규 구현 불요** — 기존 `POST /prototype-jobs` (F353)에 Handoff Package 매핑 어댑터로 범위 축소.
+
 **Batch 1 (Sprint 211, 선행 게이트):**
-- [ ] Sprint 211 (REQ-035 Phase 2 A): **FX-SPEC-002 v1.1 작성·서명** — Tier-A 6개 서비스 특성 + E2E 실행 요구사항 + Working Prototype 수용 기준 + /callback 피드백 루프 명시. 대상: `docs/mou/FX-SPEC-002-v1.1.md` (신규) + Foundry-X repo 측 미러. **KPI**: v1.1 self-sign 완료, Sprint 212 착수 전 freeze
+- [ ] Sprint 211 (REQ-035 Phase 2 A): **FX-SPEC-003 Decode-X↔Foundry-X Handoff Contract 신규 발행** — Tier-A 6개 서비스 특성 + E2E 실행 요구사항 + Working Prototype 수용 기준 + /callback 피드백 루프 명시. 대상: `docs/specs/FX-SPEC-003-handoff-contract.md` (신규, Foundry-X repo) + Decode-X 측 `docs/mou/FX-SPEC-003.md` (미러, `/ax:git-sync`로 동기화). v1.0 PlumbBridge 계약(FX-SPEC-002)은 변경 없음. **KPI**: self-sign 완료, Sprint 212 착수 전 freeze
 
 **Batch 2 (Sprint 212 ∥ Sprint 213, 병렬):**
-- [ ] Sprint 212 (REQ-035 Phase 2 B): **svc-ingestion Java/Spring AST 파서 + Source-First Reconciliation 엔진** — Stage 1 입력 채널 전환. Java AST 파싱(javaparser/Tree-sitter/직접 구현 중 1종) + 3종 차이 마커(SOURCE_MISSING/DOC_ONLY/DIVERGENCE). 대상: `services/svc-ingestion/src/parsing/` 확장 + `packages/utils/src/reconcile.ts` (신규). **KPI**: LPON 결제 소스 1개 모듈 AST 추출 성공 + 문서 대조 시 최소 1건 DIVERGENCE 로그 생성
-- [ ] Sprint 213 (REQ-035 Phase 2 C): **ERWin ERD 추출 도구 R&D (PoC)** — 경로 A(SQL DDL export 파싱) + 경로 B(ERWin XML export) 병렬 PoC. 대상: `scripts/erwin-extract/` (신규) + `packages/utils/src/erd-parser.ts`. **KPI**: 최소 1개 경로에서 LPON 결제 ERD → entity/relation JSON 출력 확인
+- [ ] Sprint 212 (REQ-035 Phase 2 B): **svc-ingestion Java/Spring AST 파서 + Source-First Reconciliation 엔진** — Stage 1 입력 채널 전환. **javaparser (JVM) 확정** — Cloudflare Worker 직접 실행 불가 → offline CLI 또는 Node wrapper로 사전 파싱 후 결과 주입 방식. 3종 차이 마커(SOURCE_MISSING/DOC_ONLY/DIVERGENCE). 대상: `services/svc-ingestion/src/parsing/` 확장 + `packages/utils/src/reconcile.ts` (신규) + `scripts/java-ast/` (신규, offline CLI). **KPI**: LPON 결제 소스 1개 모듈 AST 추출 성공 + 문서 대조 시 최소 1건 DIVERGENCE 로그 생성
+- [ ] Sprint 213 (REQ-035 Phase 2 C): **ERWin ERD 추출 도구 R&D (PoC) — 경로 A 확정** — SQL DDL export 파싱만 PoC (경로 B 보류). lpon-charge 기반 DDL(`반제품-스펙/pilot-lpon-cancel/working-version/migrations/0001_init.sql` 등) 소스로 파서 개발. 대상: `scripts/erwin-extract/` (신규) + `packages/utils/src/erd-parser.ts` (신규). **KPI**: SQL DDL → entity/relation JSON 변환 성공 (최소 5 테이블, 10 관계)
 
-**Batch 3 (Sprint 214, Track A 양적):**
-- [ ] Sprint 214 (REQ-035 Phase 2 D): **Track A Tier-A 잔여 6서비스 Empty Slot Fill** — 예산/구매/결제/환불/선물/정산 각각 소스 원장 기반 Empty Slot 발굴·Fill (각 ~2~3 슬롯). Phase 1 "충전" 방법론 재활용. 하루에 1서비스 수준 → 6일 or 병렬 2~3일. 대상: `docs/poc/phase-2-sprint-{1~6}-fill-*.md`. **KPI**: 6서비스 완결성 ≥95%, AI-Ready 6기준 통과율 ≥70%, 소스 출처 추적성 100%
+**Batch 3 (Sprint 214a ∥ Sprint 214b ∥ Sprint 214c, Track A 양적 3분할):**
+- [ ] Sprint 214a (REQ-035 Phase 2 D1): **Track A Fill — 예산 + 구매** — 각 소스 원장 기반 Empty Slot 발굴·Fill (각 ~2~3 슬롯). Phase 1 "충전" 방법론 재활용. 대상: `.decode-x/spec-containers/lpon-budget/`, `lpon-purchase/` (신규). **KPI**: 완결성 ≥95%, AI-Ready 6기준 ≥70%, 소스 출처 추적성 100%
+- [ ] Sprint 214b (REQ-035 Phase 2 D2): **Track A Fill — 결제 + 환불** (Track B 선행 필수). 대상: `.decode-x/spec-containers/lpon-payment/`, `lpon-refund/`. **KPI**: 동일. 결제 Fill은 Sprint 215 E2E 입력이 되므로 **214a/214c보다 우선 merge**
+- [ ] Sprint 214c (REQ-035 Phase 2 D3): **Track A Fill — 선물 + 정산**. 대상: `.decode-x/spec-containers/lpon-gift/`, `lpon-settlement/`. **KPI**: 동일
 
-**Batch 4 (Sprint 215 ∥ Sprint 216, 병렬, Track B 깊이):**
-- [ ] Sprint 215 (REQ-035 Phase 2 E): **Track B 결제 E2E Handoff → Foundry-X** — 결제 서비스 Decode → Handoff Package → Foundry-X Working Prototype 생성·실행. FX-SPEC-002 v1.1 수용 기준 준수. 대상: `services/svc-skill/src/routes/handoff.ts` 확장 + Foundry-X repo 측 수용 엔드포인트 연동. **KPI**: Handoff 수용 100%(1/1), Working Prototype 실행 PASS
+**Batch 4 (Sprint 215 → Sprint 216, 순차):**
+- [ ] Sprint 215 (REQ-035 Phase 2 E): **Track B 결제 E2E Handoff 어댑터 → Foundry-X 기존 엔드포인트** — Decode-X Handoff Package를 Foundry-X `POST /prototype-jobs` (F353) 수용 포맷(`prdContent + prdTitle`)으로 변환하는 어댑터 구현. FX-SPEC-003 수용 기준 준수. Foundry-X 측 신규 엔드포인트 **불요**. 대상: `services/svc-skill/src/routes/handoff.ts` 확장 + `packages/utils/src/handoff-adapter.ts` (신규). **KPI**: Handoff 수용 200 응답 1/1, Working Prototype 생성 PASS
 - [ ] Sprint 216 (REQ-035 Phase 2 F): **Working Prototype 데이터 동작 검증 하네스** — 실 데이터 sample N건 → Working Prototype 실행 → 결과 vs 기대값 round-trip 일치율 측정. 대상: `scripts/roundtrip-verify/` (신규) + `apps/app-web/src/pages/poc-phase-2-report.tsx`. **KPI**: round-trip 일치율 ≥90%, 실패 케이스 구체 원인 분석 기재
 
 ---
@@ -709,3 +713,4 @@
 - 2026-03-03: 퇴직연금 실문서 파일럿 — 카테고리별 대표 11건 업로드, 9/11 parsed, 34 policies, 220 terms, 37 skills
 - 2026-03-03: SCDSA002 비표준 XLSX 발견 — 메뉴구조도/테이블정의서 2건 magic bytes 비표준 (Unstructured.io 파싱 불가)
 - 2026-04-19 (세션 216): **Decode-X v1.3 Phase 2 본 개발 PRD Ready** — 인터뷰 5파트 완료(Part 1~5, interview-log.md 167줄) → prd-v1(273줄) → Round 1 외부 AI 3모델 79/100(1 Ready+2 Conditional) → apply 27건 반영 prd-v2 → Round 2 74/100(3 Conditional, 1인 체제 집단 수렴 + TD-15 파서 고정) → Ambiguity 0.120 Ready → Phase 1 선례(R2 68/Amb 0.15로 착수 후 1.5일 Full Auto 완주) 기반 착수 정당화. prd-final.md(§11 정당화 appendix 포함) 확정, archive 정리. 목표: "Foundry-X 핸드오프 E2E 첫 사례"(LPON 결제 도메인). Track A(양적, Tier-A 잔여 6서비스 Empty Slot Fill) + Track B(깊이, 결제 E2E → Foundry-X 실 실행 → round-trip). Source-First(원장=소스/참고=문서, 3종 마커 SOURCE_MISSING·DOC_ONLY·DIVERGENCE) + ERWin ERD 추출 R&D. §6 §7 Phase 7 신설 Sprint 211~216 배정. 비용 ~$0.05, 총 소요 약 45분.
+- 2026-04-20 (세션 217): **Phase 2 착수 체크리스트 인터뷰 완료 — Sprint 배치 재정의** (6→8 Sprint). (1) Sprint 211 = FX-SPEC-002 v1.1 append → **FX-SPEC-003 Decode-X Handoff Contract 신규 발행**으로 전환 (v1.0 PlumbBridge 계약 불변, 역할 분리). (2) Sprint 212 Java AST = **javaparser (JVM) 확정** — Worker 직접 실행 불가 → offline CLI/Node wrapper 사전 파싱 방식. (3) Sprint 213 ERWin = **경로 A (SQL DDL) 단독 확정** — 경로 B 보류, lpon-charge `0001_init.sql` 소스 기반. (4) Sprint 214 = **214a(예산+구매) ∥ 214b(결제+환불) ∥ 214c(선물+정산) 3분할** — 병렬도 향상, match-rate 안정. 결제 Fill(214b)은 Sprint 215 E2E 선행. (5) Sprint 215 = Foundry-X 신규 엔드포인트 **불요** — 기존 `POST /prototype-jobs` (F353, Sprint 159) 매핑 어댑터로 범위 축소. 예상 소요 4.5h→5.5h (+30분, 3분할 오버헤드). Sprint 211 착수 준비 완료.

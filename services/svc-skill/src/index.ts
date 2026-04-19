@@ -48,6 +48,13 @@ import {
   handleDownloadPrototype,
 } from "./routes/prototype.js";
 import { processQueueEvent } from "./queue/handler.js";
+import {
+  handleCreateSession,
+  handleSubmitFragment,
+  handleGetSession,
+  handleCompleteSession,
+} from "./routes/tacit-interview.js";
+import { handleGenerateHandoff } from "./routes/handoff.js";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -123,6 +130,39 @@ export default {
         const specType = orgSpecMatch[2];
         if (!specOrgId || !specType) return new Response("Not Found", { status: 404 });
         return await handleOrgSpec(request, env, specOrgId, specType);
+      }
+
+      // ── Tacit Interview Agent (Sprint 5 MVP) ──
+
+      if (method === "POST" && path === "/tacit-interview/sessions") {
+        return await handleCreateSession(request, env);
+      }
+
+      const tacitFragmentMatch = path.match(/^\/tacit-interview\/sessions\/([^/]+)\/fragments$/);
+      if (method === "POST" && tacitFragmentMatch) {
+        const sessionId = tacitFragmentMatch[1];
+        if (!sessionId) return new Response("Not Found", { status: 404 });
+        return await handleSubmitFragment(request, env, sessionId);
+      }
+
+      const tacitCompleteMatch = path.match(/^\/tacit-interview\/sessions\/([^/]+)\/complete$/);
+      if (method === "POST" && tacitCompleteMatch) {
+        const sessionId = tacitCompleteMatch[1];
+        if (!sessionId) return new Response("Not Found", { status: 404 });
+        return await handleCompleteSession(request, env, sessionId);
+      }
+
+      const tacitSessionMatch = path.match(/^\/tacit-interview\/sessions\/([^/]+)$/);
+      if (method === "GET" && tacitSessionMatch) {
+        const sessionId = tacitSessionMatch[1];
+        if (!sessionId) return new Response("Not Found", { status: 404 });
+        return await handleGetSession(request, env, sessionId);
+      }
+
+      // ── Handoff Package (Sprint 5 MVP) ──
+
+      if (method === "POST" && path === "/handoff/generate") {
+        return await handleGenerateHandoff(request, env);
       }
 
       // ── Prototype (Working Prototype Generator) ──

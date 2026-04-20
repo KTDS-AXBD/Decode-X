@@ -1,0 +1,214 @@
+{
+  "total": 28,
+  "passed": 11,
+  "failed": 17,
+  "consistencyRate": 39.3,
+  "implementedTotal": 12,
+  "implementedPassed": 11,
+  "implementedRate": 91.7,
+  "results": [
+    {
+      "contractFile": "lpon-budget",
+      "scenarioId": "TC-BUDGET-001",
+      "scenarioName": "잔액 충분 시 예산 차감 성공",
+      "passed": false,
+      "failReason": "UNSUPPORTED_WHEN",
+      "failDetail": "Working prototype does not implement: budget_deduct_requested"
+    },
+    {
+      "contractFile": "lpon-budget",
+      "scenarioId": "TC-BUDGET-002",
+      "scenarioName": "예산 부족 시 차감 거부",
+      "passed": false,
+      "failReason": "UNSUPPORTED_WHEN",
+      "failDetail": "Working prototype does not implement: budget_deduct_requested"
+    },
+    {
+      "contractFile": "lpon-budget",
+      "scenarioId": "TC-BUDGET-003",
+      "scenarioName": "충전 실패 시 예산 복구",
+      "passed": false,
+      "failReason": "UNSUPPORTED_WHEN",
+      "failDetail": "Working prototype does not implement: charge_failed_after_deduct"
+    },
+    {
+      "contractFile": "lpon-budget",
+      "scenarioId": "TC-BUDGET-004",
+      "scenarioName": "잔액 10% 이하 시 알림 발송",
+      "passed": false,
+      "failReason": "UNSUPPORTED_WHEN",
+      "failDetail": "Working prototype does not implement: budget_deduct_triggers_threshold_check"
+    },
+    {
+      "contractFile": "lpon-budget",
+      "scenarioId": "TC-BUDGET-005",
+      "scenarioName": "기간 종료 이월 처리 (rollover_yn=Y)",
+      "passed": false,
+      "failReason": "UNSUPPORTED_WHEN",
+      "failDetail": "Working prototype does not implement: period_end_batch_runs"
+    },
+    {
+      "contractFile": "lpon-charge",
+      "scenarioId": "TC-CHARGE-001",
+      "scenarioName": "잔액 충분 시 충전 성공",
+      "passed": false,
+      "failReason": "UNSUPPORTED_WHEN",
+      "failDetail": "Working prototype does not implement: charge_requested"
+    },
+    {
+      "contractFile": "lpon-charge",
+      "scenarioId": "TC-CHARGE-002",
+      "scenarioName": "잔액 부족 시 충전 실패",
+      "passed": false,
+      "failReason": "UNSUPPORTED_WHEN",
+      "failDetail": "Working prototype does not implement: charge_requested"
+    },
+    {
+      "contractFile": "lpon-charge",
+      "scenarioId": "TC-CHARGE-003",
+      "scenarioName": "이용자 한도 초과 시 충전 거부",
+      "passed": false,
+      "failReason": "UNSUPPORTED_WHEN",
+      "failDetail": "Working prototype does not implement: user_charge_requested"
+    },
+    {
+      "contractFile": "lpon-charge",
+      "scenarioId": "TC-CHARGE-004",
+      "scenarioName": "출금 타임아웃 후 5분 뒤 상태조회",
+      "passed": false,
+      "failReason": "UNSUPPORTED_WHEN",
+      "failDetail": "Working prototype does not implement: withdrawal_timeout"
+    },
+    {
+      "contractFile": "lpon-charge",
+      "scenarioId": "TC-CHARGE-005",
+      "scenarioName": "자동충전 잔액 조건 충족 시 실행",
+      "passed": false,
+      "failReason": "UNSUPPORTED_WHEN",
+      "failDetail": "Working prototype does not implement: auto_charge_check"
+    },
+    {
+      "contractFile": "lpon-charge",
+      "scenarioId": "TC-CHARGE-006",
+      "scenarioName": "자동충전 조건 미충족 시 미실행",
+      "passed": false,
+      "failReason": "UNSUPPORTED_WHEN",
+      "failDetail": "Working prototype does not implement: auto_charge_check"
+    },
+    {
+      "contractFile": "lpon-payment",
+      "scenarioId": "TC-PAYMENT-001",
+      "scenarioName": "잔액 충분 + 활성 가맹점 → 결제 성공",
+      "passed": true
+    },
+    {
+      "contractFile": "lpon-payment",
+      "scenarioId": "TC-PAYMENT-002",
+      "scenarioName": "잔액 부족 → 결제 거부",
+      "passed": true
+    },
+    {
+      "contractFile": "lpon-payment",
+      "scenarioId": "TC-PAYMENT-003",
+      "scenarioName": "비활성 가맹점 → 결제 거부",
+      "passed": true
+    },
+    {
+      "contractFile": "lpon-payment",
+      "scenarioId": "TC-PAYMENT-004",
+      "scenarioName": "50,000원 이상 결제 시 SMS 발송",
+      "passed": true
+    },
+    {
+      "contractFile": "lpon-payment",
+      "scenarioId": "TC-PAYMENT-005",
+      "scenarioName": "CARD 결제 — 카드사 승인 성공",
+      "passed": true
+    },
+    {
+      "contractFile": "lpon-payment",
+      "scenarioId": "TC-PAYMENT-006",
+      "scenarioName": "FULL 결제취소 — 잔액 복구",
+      "passed": true
+    },
+    {
+      "contractFile": "lpon-purchase",
+      "scenarioId": "TC-PURCHASE-001",
+      "scenarioName": "정상 구매 — 결제 성공 후 상품권 발행",
+      "passed": false,
+      "failReason": "UNSUPPORTED_WHEN",
+      "failDetail": "Working prototype does not implement: purchase_requested"
+    },
+    {
+      "contractFile": "lpon-purchase",
+      "scenarioId": "TC-PURCHASE-002",
+      "scenarioName": "1회 구매 한도 초과 시 거부",
+      "passed": false,
+      "failReason": "UNSUPPORTED_WHEN",
+      "failDetail": "Working prototype does not implement: purchase_requested"
+    },
+    {
+      "contractFile": "lpon-purchase",
+      "scenarioId": "TC-PURCHASE-003",
+      "scenarioName": "월 한도 초과 시 거부",
+      "passed": false,
+      "failReason": "UNSUPPORTED_WHEN",
+      "failDetail": "Working prototype does not implement: purchase_requested"
+    },
+    {
+      "contractFile": "lpon-purchase",
+      "scenarioId": "TC-PURCHASE-004",
+      "scenarioName": "구매 멱등성 — 중복 요청 시 기존 상품권 반환",
+      "passed": false,
+      "failReason": "UNSUPPORTED_WHEN",
+      "failDetail": "Working prototype does not implement: duplicate_purchase_requested"
+    },
+    {
+      "contractFile": "lpon-purchase",
+      "scenarioId": "TC-PURCHASE-005",
+      "scenarioName": "7일 이내 미사용 상품권 전액 환불",
+      "passed": false,
+      "failReason": "UNSUPPORTED_WHEN",
+      "failDetail": "Working prototype does not implement: purchase_refund_requested"
+    },
+    {
+      "contractFile": "lpon-refund",
+      "scenarioId": "TC-REFUND-001",
+      "scenarioName": "rfndPsbltyYn=Y + UNUSED_FULL + 7일 이내 → 전액 환불 신청 성공",
+      "passed": true
+    },
+    {
+      "contractFile": "lpon-refund",
+      "scenarioId": "TC-REFUND-002",
+      "scenarioName": "UNUSED_FULL + 7일 초과 → 환불 거부",
+      "passed": false,
+      "failReason": "WRONG_OUTCOME",
+      "failDetail": "Expected refund rejection but succeeded"
+    },
+    {
+      "contractFile": "lpon-refund",
+      "scenarioId": "TC-REFUND-003",
+      "scenarioName": "USED_BALANCE + 60% 이상 사용 → 잔액 환불 가능",
+      "passed": true
+    },
+    {
+      "contractFile": "lpon-refund",
+      "scenarioId": "TC-REFUND-004",
+      "scenarioName": "환불 승인 → 입금 처리",
+      "passed": true
+    },
+    {
+      "contractFile": "lpon-refund",
+      "scenarioId": "TC-REFUND-005",
+      "scenarioName": "환불 거절 → status=REJECTED",
+      "passed": true
+    },
+    {
+      "contractFile": "lpon-refund",
+      "scenarioId": "TC-REFUND-006",
+      "scenarioName": "제외금액 산정 후 입금액 계산",
+      "passed": true
+    }
+  ],
+  "generatedAt": "2026-04-20T06:50:17.530Z"
+}

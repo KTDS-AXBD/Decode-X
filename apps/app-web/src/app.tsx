@@ -30,6 +30,7 @@ const MockupPage = lazy(() => import("./pages/mockup"));
 const PocReportPage = lazy(() => import("./pages/poc-report"));
 const PocAiReadyPage = lazy(() => import("./pages/poc-ai-ready"));
 const PocAiReadyDetailPage = lazy(() => import("./pages/poc-ai-ready-detail"));
+const PocPhase2ReportPage = lazy(() => import("./pages/poc-phase-2-report"));
 const OrgSpecPage = lazy(() => import("./pages/org-spec"));
 const NotFoundPage = lazy(() => import("./pages/not-found"));
 
@@ -82,6 +83,7 @@ export function App() {
             <Route path="/mockup" element={<ProtectedRoute><Layout><MockupPage /></Layout></ProtectedRoute>} />
             <Route path="/poc-report" element={<ProtectedRoute><Layout><PocReportPage /></Layout></ProtectedRoute>} />
             <Route path="/poc/ai-ready" element={<ProtectedRoute><Layout><PocAiReadyPage /></Layout></ProtectedRoute>} />
+            <Route path="/poc-phase-2" element={<ProtectedRoute><Layout><PocPhase2ReportPage /></Layout></ProtectedRoute>} />
             <Route path="/poc/ai-ready/:skillId" element={<ProtectedRoute><Layout><PocAiReadyDetailPage /></Layout></ProtectedRoute>} />
             <Route path="/org-spec" element={<ProtectedRoute><Layout><OrgSpecPage /></Layout></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>} />

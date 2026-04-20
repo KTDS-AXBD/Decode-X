@@ -478,7 +478,7 @@
 - [x] Sprint 214c ✅ MERGED (REQ-035 Phase 2 D3, 세션 217, PR #18 @ 231e011, **autopilot 자체 merge**): **Track A Fill — 선물 + 정산** — Match 100%. `.decode-x/spec-containers/lpon-gift/` + `lpon-settlement/`. Phase 1 Sprint 4~5 autopilot 자체 merge 패턴 재현 (Batch 3 3개 중 유일). 대상: `.decode-x/spec-containers/lpon-gift/`, `lpon-settlement/`. **KPI**: 동일
 
 **Batch 4 (Sprint 215 → Sprint 216, 순차):**
-- [ ] Sprint 215 (REQ-035 Phase 2 E): **Track B 결제 E2E Handoff 어댑터 → Foundry-X 기존 엔드포인트** — Decode-X Handoff Package를 Foundry-X `POST /prototype-jobs` (F353) 수용 포맷(`prdContent + prdTitle`)으로 변환하는 어댑터 구현. FX-SPEC-003 수용 기준 준수. Foundry-X 측 신규 엔드포인트 **불요**. 대상: `services/svc-skill/src/routes/handoff.ts` 확장 + `packages/utils/src/handoff-adapter.ts` (신규). **KPI**: Handoff 수용 200 응답 1/1, Working Prototype 생성 PASS
+- [🔧] Sprint 215 (REQ-035 Phase 2 E, 세션 217~): **Track B 결제 E2E Handoff 어댑터 → Foundry-X 기존 엔드포인트** — Decode-X Handoff Package를 Foundry-X `POST /prototype-jobs` (F353) 수용 포맷(`prdContent + prdTitle`)으로 변환하는 어댑터 구현. FX-SPEC-003 수용 기준 준수. Foundry-X 측 신규 엔드포인트 **불요**. 대상: `services/svc-skill/src/routes/handoff.ts` 확장 + `packages/utils/src/handoff-adapter.ts` (신규). **KPI**: Handoff 수용 200 응답 1/1, Working Prototype 생성 PASS
 - [ ] Sprint 216 (REQ-035 Phase 2 F): **Working Prototype 데이터 동작 검증 하네스** — 실 데이터 sample N건 → Working Prototype 실행 → 결과 vs 기대값 round-trip 일치율 측정. 대상: `scripts/roundtrip-verify/` (신규) + `apps/app-web/src/pages/poc-phase-2-report.tsx`. **KPI**: round-trip 일치율 ≥90%, 실패 케이스 구체 원인 분석 기재
 
 ---

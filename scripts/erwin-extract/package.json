@@ -1,0 +1,12 @@
+{
+  "name": "@ai-foundry/erwin-extract",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "erwin-extract": "./index.ts"
+  },
+  "scripts": {
+    "start": "tsx index.ts"
+  }
+}

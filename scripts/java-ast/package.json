@@ -1,0 +1,17 @@
+{
+  "name": "@ai-foundry/java-ast-cli",
+  "version": "1.0.0",
+  "description": "Offline CLI: Java/Spring source → SourceAnalysisResult JSON",
+  "type": "module",
+  "bin": {
+    "java-ast": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

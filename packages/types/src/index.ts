@@ -14,3 +14,4 @@ export * from "./ag-ui.js";
 export * from "./mcp-shared.js";
 export * from "./prototype.js";
 export * from "./extraction.js";
+export * from "./reconcile.js";

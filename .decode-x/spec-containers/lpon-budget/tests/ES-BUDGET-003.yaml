@@ -1,0 +1,51 @@
+---
+emptySlotId: ES-BUDGET-003
+title: 기간 말 예산 이월/소멸 처리 — 테스트 계약
+sprint: 214a
+taxonomy: E2
+---
+
+scenarios:
+  - id: TC-BUDGET-ROLLOVER-001
+    name: 이월 정책 Y — 잔액 다음 기간으로 이월
+    given:
+      companyId: "company-001"
+      periodEnd: "2026-04-30"
+      totalAmount: 5000000
+      usedAmount: 3000000
+      rolloverYn: "Y"
+    when: period_end_batch_runs
+    then:
+      - currentPeriodStatus: "CLOSED"
+      - nextPeriodCreated: true
+      - nextPeriodTotalAmount: 2000000
+      - eventEmitted: "BudgetRolledOver"
+
+  - id: TC-BUDGET-ROLLOVER-002
+    name: 이월 정책 N — 잔액 소멸
+    given:
+      companyId: "company-002"
+      periodEnd: "2026-04-30"
+      totalAmount: 3000000
+      usedAmount: 1500000
+      rolloverYn: "N"
+    when: period_end_batch_runs
+    then:
+      - currentPeriodStatus: "EXPIRED"
+      - nextPeriodCreated: false
+      - expiredAmount: 1500000
+      - eventEmitted: "BudgetExpired"
+
+  - id: TC-BUDGET-ROLLOVER-003
+    name: 잔액 0원인 경우 이월 없음
+    given:
+      companyId: "company-003"
+      periodEnd: "2026-04-30"
+      totalAmount: 2000000
+      usedAmount: 2000000
+      rolloverYn: "Y"
+    when: period_end_batch_runs
+    then:
+      - currentPeriodStatus: "CLOSED"
+      - nextPeriodCreated: false
+      - rolledOverAmount: 0

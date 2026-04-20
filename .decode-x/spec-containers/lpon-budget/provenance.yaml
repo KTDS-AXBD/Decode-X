@@ -1,0 +1,42 @@
+# Provenance — POL-LPON-BUDGET-001
+# 출처 추적 (FX-SPEC-003 specToTest 검증)
+
+skillId: POL-LPON-BUDGET-001
+extractedAt: "2026-04-20T00:00:00+09:00"
+extractedBy: "Decode-X Sprint 214a (AIF-REQ-035)"
+
+sources:
+  - type: reverse-engineering
+    path: "반제품-스펙/pilot-lpon-cancel/01-business-logic.md"
+    section: "시나리오 1 BL-006 (회사 충전 한도), 시나리오 6 BL-031~032 (집계)"
+    businessRules: [BB-001, BB-002, BB-003, BB-004, BB-005]
+    confidence: 0.78
+
+  - type: reverse-engineering
+    path: "반제품-스펙/pilot-lpon-cancel/02-data-model.md"
+    section: "charge_transactions.company_id, calculations 테이블"
+    confidence: 0.82
+
+  - type: ai-foundry-policy-db
+    source: db-policy (production)
+    policyCount: 44
+    domain: LPON
+    note: "LPON 예산 관련 정책 subset. 회사 충전 한도 및 집계 관련 정책 추정 8건."
+
+  - type: inference
+    note: "예산 이월/소멸 정책, 예산 복구 규칙은 소스에서 명시적으로 정의되지 않아 표준 전자상품권 플랫폼 패턴으로 추론"
+    confidence: 0.65
+
+inputCompleteness:
+  sInput: 0.78
+  deficiencyFlag: false
+  components:
+    rulesCoverage: 0.80    # 5/5 BB condition-criteria-outcome 완비
+    testCoverage: 0.75     # 3 ES × 3 시나리오 = 9건
+    provenanceLink: 1.0    # 출처 문서 연결 완료
+  notes:
+    - "BB-004 이월 정책 및 BB-005 복구 규칙은 소스 명시 없음 — 추론 기반 (confidence 0.65)"
+    - "실제 회사별 한도 수치 미확정 — 구현 시 설정값으로 처리 권장"
+
+handoffTarget: Foundry-X
+handoffVersion: "FX-SPEC-003 v1.0"

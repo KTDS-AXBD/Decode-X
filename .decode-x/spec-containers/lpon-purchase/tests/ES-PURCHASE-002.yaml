@@ -1,0 +1,48 @@
+---
+emptySlotId: ES-PURCHASE-002
+title: 월별 구매 한도 — 테스트 계약
+sprint: 214a
+taxonomy: E1
+---
+
+scenarios:
+  - id: TC-PURCHASE-MONTHLY-001
+    name: 월 한도 이내 구매 허용
+    given:
+      userId: "user-001"
+      monthlyLimit: 1000000
+      monthlyUsed: 600000
+      requestedAmount: 300000
+    when: purchase_requested
+    then:
+      - purchaseAllowed: true
+      - newMonthlyUsed: 900000
+      - responseStatus: 200
+
+  - id: TC-PURCHASE-MONTHLY-002
+    name: 월 한도 초과 시 거부
+    given:
+      userId: "user-001"
+      monthlyLimit: 1000000
+      monthlyUsed: 800000
+      requestedAmount: 300000
+    when: purchase_requested
+    then:
+      - purchaseAllowed: false
+      - responseStatus: 422
+      - errorCode: "MONTHLY_LIMIT_EXCEEDED"
+      - responseIncludesAvailable: true
+      - availableAmount: 200000
+
+  - id: TC-PURCHASE-MONTHLY-003
+    name: 월 초 리셋 후 한도 초기화 확인
+    given:
+      userId: "user-001"
+      monthlyLimit: 1000000
+      lastMonthPurchased: 900000
+      currentMonthUsed: 0
+      requestedAmount: 500000
+    when: purchase_requested_new_month
+    then:
+      - purchaseAllowed: true
+      - newMonthlyUsed: 500000

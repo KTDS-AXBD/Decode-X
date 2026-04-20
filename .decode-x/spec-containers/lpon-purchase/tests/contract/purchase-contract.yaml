@@ -1,0 +1,72 @@
+# Contract Tests — POL-LPON-PURCHASE-001 (상품권 구매 서비스)
+# FX-SPEC-003 v1.0 triangle.codeToTest 검증 대상
+
+skillId: POL-LPON-PURCHASE-001
+version: 1.0.0
+domain: lpon-purchase
+
+scenarios:
+  - id: TC-PURCHASE-001
+    name: 정상 구매 — 결제 성공 후 상품권 발행
+    given:
+      userId: "user-001"
+      purchaseAmount: 50000
+      monthlyUsed: 100000
+      monthlyLimit: 1000000
+    when: purchase_requested
+    then:
+      - paymentProcessed: true
+      - voucherIssued: true
+      - voucherFaceAmount: 50000
+    ref: BP-001, BP-002
+
+  - id: TC-PURCHASE-002
+    name: 1회 구매 한도 초과 시 거부
+    given:
+      userId: "user-001"
+      purchaseAmount: 600000
+      singlePurchaseLimit: 500000
+    when: purchase_requested
+    then:
+      - purchaseRejected: true
+      - error_code: SINGLE_PURCHASE_LIMIT_EXCEEDED
+    ref: BP-001
+
+  - id: TC-PURCHASE-003
+    name: 월 한도 초과 시 거부
+    given:
+      userId: "user-001"
+      purchaseAmount: 300000
+      monthlyUsed: 800000
+      monthlyLimit: 1000000
+    when: purchase_requested
+    then:
+      - purchaseRejected: true
+      - error_code: MONTHLY_LIMIT_EXCEEDED
+    ref: BP-003
+
+  - id: TC-PURCHASE-004
+    name: 구매 멱등성 — 중복 요청 시 기존 상품권 반환
+    given:
+      purchaseRequestId: "req-dup-001"
+      existingStatus: "completed"
+      existingVoucherId: "voucher-001"
+    when: duplicate_purchase_requested
+    then:
+      - newVoucherIssued: false
+      - returnedVoucherId: "voucher-001"
+    ref: BP-004
+
+  - id: TC-PURCHASE-005
+    name: 7일 이내 미사용 상품권 전액 환불
+    given:
+      voucherId: "voucher-fresh-001"
+      purchasedAt: "2026-04-14T10:00:00+09:00"
+      currentDate: "2026-04-20T10:00:00+09:00"
+      voucherBalance: 50000
+      voucherFaceAmount: 50000
+    when: purchase_refund_requested
+    then:
+      - refundAllowed: true
+      - refundAmount: 50000
+    ref: BP-005

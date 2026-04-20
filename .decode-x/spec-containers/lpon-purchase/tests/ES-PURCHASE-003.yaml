@@ -1,0 +1,38 @@
+---
+emptySlotId: ES-PURCHASE-003
+title: 상품권 유효기간 산정 — 테스트 계약
+sprint: 214a
+taxonomy: E2
+---
+
+scenarios:
+  - id: TC-PURCHASE-VALIDITY-001
+    name: 기본 60개월 유효기간 산정 (정상 일자)
+    given:
+      purchasedAt: "2026-01-15T10:00:00+09:00"
+      validityMonths: 60
+    when: voucher_issued
+    then:
+      - expiresAt: "2031-01-15T23:59:59+09:00"
+      - validityCorrect: true
+
+  - id: TC-PURCHASE-VALIDITY-002
+    name: 월말 일자 보정 (1월 31일 + 1개월 → 2월 28일)
+    given:
+      purchasedAt: "2026-01-31T10:00:00+09:00"
+      validityMonths: 1
+    when: voucher_issued
+    then:
+      - expiresAt: "2026-02-28T23:59:59+09:00"
+      - noOverflow: true
+
+  - id: TC-PURCHASE-VALIDITY-003
+    name: 설정 미존재 시 기본값 60개월 적용
+    given:
+      purchasedAt: "2026-04-20T09:00:00+09:00"
+      validityMonthsConfig: null
+    when: voucher_issued
+    then:
+      - expiresAt: "2031-04-20T23:59:59+09:00"
+      - defaultApplied: true
+      - adminAlertSent: true

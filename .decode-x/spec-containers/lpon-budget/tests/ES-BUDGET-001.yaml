@@ -1,0 +1,63 @@
+---
+emptySlotId: ES-BUDGET-001
+title: 예산 배정 한도 초과 처리 — 테스트 계약
+sprint: 214a
+taxonomy: E1
+---
+
+scenarios:
+  - id: TC-BUDGET-LIMIT-001
+    name: 잔액 충분 시 예산 차감 성공
+    given:
+      companyId: "company-001"
+      totalAmount: 5000000
+      usedAmount: 2000000
+      requestedAmount: 500000
+    when: budget_deduct_requested
+    then:
+      - deductionAllowed: true
+      - newUsedAmount: 2500000
+      - responseStatus: 200
+
+  - id: TC-BUDGET-LIMIT-002
+    name: 잔액 부족 시 예산 차감 거부
+    given:
+      companyId: "company-001"
+      totalAmount: 5000000
+      usedAmount: 4800000
+      requestedAmount: 300000
+    when: budget_deduct_requested
+    then:
+      - deductionAllowed: false
+      - responseStatus: 422
+      - errorCode: "BUDGET_LIMIT_EXCEEDED"
+      - responseIncludesAvailableAmount: true
+
+  - id: TC-BUDGET-LIMIT-003
+    name: 동시 요청 중 한 건만 성공 (Race Condition)
+    given:
+      companyId: "company-001"
+      totalAmount: 5000000
+      usedAmount: 4600000
+      concurrentRequests:
+        - requestedAmount: 300000
+        - requestedAmount: 300000
+    when: concurrent_budget_deduct_requested
+    then:
+      - successCount: 1
+      - failureCount: 1
+      - finalUsedAmount: 4900000
+      - noDoubleDeduction: true
+
+  - id: TC-BUDGET-LIMIT-004
+    name: 정확히 잔액과 같은 금액 차감 허용
+    given:
+      companyId: "company-001"
+      totalAmount: 1000000
+      usedAmount: 700000
+      requestedAmount: 300000
+    when: budget_deduct_requested
+    then:
+      - deductionAllowed: true
+      - newUsedAmount: 1000000
+      - responseStatus: 200

@@ -1,0 +1,41 @@
+# Provenance — POL-LPON-PURCHASE-001
+# 출처 추적 (FX-SPEC-003 specToTest 검증)
+
+skillId: POL-LPON-PURCHASE-001
+extractedAt: "2026-04-20T00:00:00+09:00"
+extractedBy: "Decode-X Sprint 214a (AIF-REQ-035)"
+
+sources:
+  - type: reverse-engineering
+    path: "반제품-스펙/pilot-lpon-cancel/01-business-logic.md"
+    section: "시나리오 5 BL-024 (구매 후 7일 이내 환불), 시나리오 1 BL-005 (이용자 충전 한도)"
+    businessRules: [BP-001, BP-002, BP-003, BP-004, BP-005]
+    confidence: 0.75
+
+  - type: reverse-engineering
+    path: "반제품-스펙/pilot-lpon-cancel/02-data-model.md"
+    section: "vouchers 테이블 (purchased_at, face_amount, expires_at)"
+    confidence: 0.90
+
+  - type: reverse-engineering
+    path: "반제품-스펙/pilot-lpon-cancel/03-functions.md"
+    section: "FN-005 환불신청 §UNUSED_FULL 케이스"
+    confidence: 0.80
+
+  - type: inference
+    note: "상품권 구매 플로우(신규 발행), 월별 한도, 유효기간 산정은 소스에 명시적 정의 없어 표준 e-voucher 패턴으로 추론"
+    confidence: 0.65
+
+inputCompleteness:
+  sInput: 0.80
+  deficiencyFlag: false
+  components:
+    rulesCoverage: 0.85    # 5/5 BP condition-criteria-outcome 완비
+    testCoverage: 0.78     # 3 ES × 3~4 시나리오
+    provenanceLink: 1.0    # 출처 문서 연결 완료
+  notes:
+    - "구매 결제 API 상세 명세 미확정 — 실제 결제 게이트웨이 연동 스펙 별도 필요"
+    - "월별 한도 수치(BP-003) 미확정 — 설정값으로 처리 권장"
+
+handoffTarget: Foundry-X
+handoffVersion: "FX-SPEC-003 v1.0"

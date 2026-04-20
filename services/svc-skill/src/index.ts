@@ -54,7 +54,7 @@ import {
   handleGetSession,
   handleCompleteSession,
 } from "./routes/tacit-interview.js";
-import { handleGenerateHandoff } from "./routes/handoff.js";
+import { handleGenerateHandoff, handleSubmitHandoff, handleHandoffCallback } from "./routes/handoff.js";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -159,10 +159,21 @@ export default {
         return await handleGetSession(request, env, sessionId);
       }
 
-      // ── Handoff Package (Sprint 5 MVP) ──
+      // ── Handoff Package (Sprint 5 MVP + Sprint 215 Phase 2 E) ──
 
       if (method === "POST" && path === "/handoff/generate") {
         return await handleGenerateHandoff(request, env);
+      }
+
+      if (method === "POST" && path === "/handoff/submit") {
+        return await handleSubmitHandoff(request, env);
+      }
+
+      const callbackMatch = path.match(/^\/callback\/([^/]+)$/);
+      if (method === "POST" && callbackMatch) {
+        const foundryJobId = callbackMatch[1];
+        if (!foundryJobId) return new Response("Not Found", { status: 404 });
+        return await handleHandoffCallback(request, env, foundryJobId);
       }
 
       // ── Prototype (Working Prototype Generator) ──

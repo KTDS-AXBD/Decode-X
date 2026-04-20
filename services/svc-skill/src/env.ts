@@ -13,6 +13,7 @@ export interface Env {
 
   // External service URLs (HTTP, no service bindings)
   LLM_ROUTER_URL: string;
+  FOUNDRY_X_URL: string;
   SVC_POLICY: Fetcher;
   SVC_ONTOLOGY: Fetcher;
   SVC_EXTRACTION: Fetcher;
@@ -24,6 +25,7 @@ export interface Env {
 
   // Secrets (set via `wrangler secret put`)
   INTERNAL_API_SECRET: string;
+  FOUNDRY_X_SECRET: string;
 
   // Optional secrets — LLM enhancement skipped if absent
   OPENROUTER_API_KEY?: string | undefined;

@@ -9,3 +9,4 @@ export * from "./llm-client.js";
 export * from "./openrouter-client.js";
 export * from "./reconcile.js";
 export * from "./erd-parser.js";
+export * from "./handoff-adapter.js";

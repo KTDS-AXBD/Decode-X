@@ -94,6 +94,8 @@ function mockEnv(): Env {
     ENVIRONMENT: "development",
     SERVICE_NAME: "svc-skill",
     INTERNAL_API_SECRET: "test-secret",
+    FOUNDRY_X_URL: "http://localhost:8710",
+    FOUNDRY_X_SECRET: "fx-secret",
   };
 }
 

@@ -1,0 +1,84 @@
+# Contract Tests — POL-LPON-PAYMENT-001 (결제 서비스)
+# FX-SPEC-003 Handoff Contract 검증 대상 (Sprint 215 E2E 입력)
+
+skillId: POL-LPON-PAYMENT-001
+version: 1.0.0
+domain: lpon-payment
+
+scenarios:
+  - id: TC-PAYMENT-001
+    name: 잔액 충분 + 활성 가맹점 → 결제 성공
+    given:
+      voucherBalance: 100000
+      paymentAmount: 30000
+      merchantStatus: "ACTIVE"
+      method: "QR"
+    when: payment_requested
+    then:
+      - payment_completed: true
+      - balance_after: 70000
+    ref: BL-013, BL-014
+
+  - id: TC-PAYMENT-002
+    name: 잔액 부족 → 결제 거부
+    given:
+      voucherBalance: 20000
+      paymentAmount: 30000
+      merchantStatus: "ACTIVE"
+    when: payment_requested
+    then:
+      - payment_completed: false
+      - error_code: "INSUFFICIENT_VOUCHER_BALANCE"
+      - balance_unchanged: true
+    ref: BL-013
+
+  - id: TC-PAYMENT-003
+    name: 비활성 가맹점 → 결제 거부
+    given:
+      voucherBalance: 100000
+      paymentAmount: 30000
+      merchantStatus: "INACTIVE"
+    when: payment_requested
+    then:
+      - payment_completed: false
+      - error_code: "MERCHANT_INACTIVE"
+    ref: BL-014
+
+  - id: TC-PAYMENT-004
+    name: 50,000원 이상 결제 시 SMS 발송
+    given:
+      voucherBalance: 200000
+      paymentAmount: 70000
+      method: "QR"
+    when: payment_requested
+    then:
+      - payment_completed: true
+      - sms_sent: true
+    ref: BL-015
+
+  - id: TC-PAYMENT-005
+    name: CARD 결제 — 카드사 승인 성공
+    given:
+      method: "CARD"
+      voucherBalance: 100000
+      paymentAmount: 30000
+      merchantStatus: "ACTIVE"
+      cardAuthResult: "success"
+    when: payment_requested
+    then:
+      - payment_completed: true
+      - card_approval_id: "non-null"
+    ref: BL-016
+
+  - id: TC-PAYMENT-006
+    name: FULL 결제취소 — 잔액 복구
+    given:
+      paymentId: "payment-001"
+      paymentStatus: "PAID"
+      paymentAmount: 30000
+      cancelType: "FULL"
+    when: payment_cancel_requested
+    then:
+      - cancel_completed: true
+      - balance_restored: 30000
+    ref: BL-014

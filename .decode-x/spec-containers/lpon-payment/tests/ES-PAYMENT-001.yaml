@@ -1,0 +1,56 @@
+---
+emptySlotId: ES-PAYMENT-001
+title: 결제 멱등성 — 테스트 계약
+sprint: 214b
+taxonomy: E4
+---
+
+scenarios:
+  - id: TC-PAY-IDEM-001
+    name: 동일 paymentRequestId 재전송 시 기존 paid 결과 반환
+    given:
+      paymentRequestId: "pay-req-abc-001"
+      existingStatus: "paid"
+      existingPaymentId: "payment-existing-001"
+    when: payment_requested_again
+    then:
+      - newBalanceDeducted: false
+      - responseStatus: 200
+      - responsePaymentId: "payment-existing-001"
+      - responseIdempotent: true
+
+  - id: TC-PAY-IDEM-002
+    name: 실패한 요청 재전송 시 신규 처리
+    given:
+      paymentRequestId: "pay-req-abc-002"
+      existingStatus: "failed"
+    when: payment_requested_again
+    then:
+      - newBalanceDeducted: true
+      - responseStatus: 200
+      - newPaymentIdGenerated: true
+
+  - id: TC-PAY-IDEM-003
+    name: 처리 중인 요청 재전송 시 409 반환
+    given:
+      paymentRequestId: "pay-req-abc-003"
+      existingStatus: "processing"
+    when: payment_requested_again
+    then:
+      - newBalanceDeducted: false
+      - responseStatus: 409
+      - errorCode: "PAYMENT_IN_PROGRESS"
+      - retryAfterSeconds: 10
+
+  - id: TC-PAY-IDEM-004
+    name: 신규 paymentRequestId는 정상 처리
+    given:
+      paymentRequestId: "pay-req-new-999"
+      existingStatus: null
+      voucherBalance: 100000
+      amount: 50000
+    when: payment_requested
+    then:
+      - newBalanceDeducted: true
+      - responseStatus: 200
+      - newPaymentIdGenerated: true

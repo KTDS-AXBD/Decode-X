@@ -1,0 +1,46 @@
+---
+emptySlotId: ES-REFUND-002
+title: 캐시백 환불불가 대안 처리 — 테스트 계약
+sprint: 214b
+taxonomy: E3
+---
+
+scenarios:
+  - id: TC-CASHBACK-001
+    name: 캐시백 voucher → 포인트 자동 전환 성공
+    given:
+      voucherType: "CASHBACK"
+      voucherBalance: 10000
+      pointSystemAvailable: true
+    when: refund_requested
+    then:
+      - cashRefundAllowed: false
+      - pointConversionTriggered: true
+      - pointsAdded: 10000
+      - voucherStatus: "CONVERTED"
+      - responseStatus: 200
+
+  - id: TC-CASHBACK-002
+    name: 포인트 시스템 장애 시 안내 메시지 반환
+    given:
+      voucherType: "CASHBACK"
+      voucherBalance: 10000
+      pointSystemAvailable: false
+    when: refund_requested
+    then:
+      - cashRefundAllowed: false
+      - pointConversionTriggered: false
+      - errorCode: "CASHBACK_CASH_REFUND_NOT_ALLOWED"
+      - responseBody:
+          message: "캐시백 상품권은 현금 환불이 불가하며, 포인트로 전환하실 수 있습니다."
+      - responseStatus: 422
+
+  - id: TC-CASHBACK-003
+    name: 일반 voucher → 이 규칙 비적용
+    given:
+      voucherType: "STANDARD"
+      voucherBalance: 10000
+    when: refund_requested
+    then:
+      - cashbackRuleApplied: false
+      - standardRefundFlow: true

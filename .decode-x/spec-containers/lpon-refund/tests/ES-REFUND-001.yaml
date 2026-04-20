@@ -1,0 +1,65 @@
+---
+emptySlotId: ES-REFUND-001
+title: rfndPsbltyYn 자동 판정 — 테스트 계약
+sprint: 214b
+taxonomy: E1
+---
+
+scenarios:
+  - id: TC-RFND-PSBLTY-001
+    name: 이미 취소된 voucher → N
+    given:
+      voucherStatus: "CANCELED"
+      voucherType: "STANDARD"
+    when: refund_requested
+    then:
+      - rfndPsbltyYn: "N"
+      - errorCode: "ALREADY_CANCELED"
+      - responseStatus: 422
+
+  - id: TC-RFND-PSBLTY-002
+    name: 중복 환불 신청 → N
+    given:
+      voucherStatus: "ACTIVE"
+      existingRefundStatus: "PENDING"
+    when: refund_requested
+    then:
+      - rfndPsbltyYn: "N"
+      - errorCode: "DUPLICATE_REFUND"
+      - responseStatus: 422
+
+  - id: TC-RFND-PSBLTY-003
+    name: 캐시백 voucher → N
+    given:
+      voucherType: "CASHBACK"
+      voucherStatus: "ACTIVE"
+    when: refund_requested
+    then:
+      - rfndPsbltyYn: "N"
+      - errorCode: "CASHBACK_NOT_REFUNDABLE"
+      - responseStatus: 422
+
+  - id: TC-RFND-PSBLTY-004
+    name: 만료 voucher → N
+    given:
+      voucherType: "STANDARD"
+      voucherExpired: true
+      forcedRefundAllowed: false
+    when: refund_requested
+    then:
+      - rfndPsbltyYn: "N"
+      - errorCode: "EXPIRED_NOT_REFUNDABLE"
+      - responseStatus: 422
+
+  - id: TC-RFND-PSBLTY-005
+    name: 정상 voucher → Y → 환불 접수
+    given:
+      voucherType: "STANDARD"
+      voucherStatus: "ACTIVE"
+      voucherExpired: false
+      noExistingRefund: true
+    when: refund_requested
+    then:
+      - rfndPsbltyYn: "Y"
+      - refundStatus: "PENDING"
+      - responseStatus: 201

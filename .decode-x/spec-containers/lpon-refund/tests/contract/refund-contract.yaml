@@ -1,0 +1,81 @@
+# Contract Tests — POL-LPON-REFUND-001 (환불 서비스)
+# FX-SPEC-003 Handoff Contract 검증 대상 (Sprint 215 E2E 입력)
+
+skillId: POL-LPON-REFUND-001
+version: 1.0.0
+domain: lpon-refund
+
+scenarios:
+  - id: TC-REFUND-001
+    name: rfndPsbltyYn=Y + UNUSED_FULL + 7일 이내 → 전액 환불 신청 성공
+    given:
+      voucherType: "STANDARD"
+      voucherStatus: "ACTIVE"
+      purchasedDaysAgo: 3
+      refundType: "UNUSED_FULL"
+    when: refund_requested
+    then:
+      - refund_status: "PENDING"
+      - rfndPsbltyYn: "Y"
+    ref: BL-020, BL-024
+
+  - id: TC-REFUND-002
+    name: UNUSED_FULL + 7일 초과 → 환불 거부
+    given:
+      voucherType: "STANDARD"
+      purchasedDaysAgo: 10
+      refundType: "UNUSED_FULL"
+    when: refund_requested
+    then:
+      - refund_rejected: true
+      - error_code: "FULL_REFUND_PERIOD_EXPIRED"
+    ref: BL-024
+
+  - id: TC-REFUND-003
+    name: USED_BALANCE + 60% 이상 사용 → 잔액 환불 가능
+    given:
+      originalAmount: 100000
+      usedAmount: 65000
+      remainingBalance: 35000
+      refundType: "USED_BALANCE"
+    when: refund_requested
+    then:
+      - refund_status: "PENDING"
+      - rfndPsbltyYn: "Y"
+    ref: BL-025
+
+  - id: TC-REFUND-004
+    name: 환불 승인 → 입금 처리
+    given:
+      refundId: "refund-001"
+      refundStatus: "PENDING"
+      depositAccountValid: true
+    when: admin_approves_refund
+    then:
+      - deposit_requested: true
+      - refund_status: "COMPLETED"
+    ref: BL-021, BL-022
+
+  - id: TC-REFUND-005
+    name: 환불 거절 → status=REJECTED
+    given:
+      refundId: "refund-002"
+      refundStatus: "PENDING"
+      rejectReason: "INVALID_REQUEST"
+    when: admin_rejects_refund
+    then:
+      - refund_status: "REJECTED"
+      - reject_reason_recorded: true
+    ref: BL-021
+
+  - id: TC-REFUND-006
+    name: 제외금액 산정 후 입금액 계산
+    given:
+      refundType: "USED_BALANCE"
+      requestedAmount: 50000
+      cashbackUsed: 5000
+    when: refund_approved
+    then:
+      - deposit_amount: 44500
+      - exclusion_amount: 5500
+    ref: BL-028

@@ -1,0 +1,40 @@
+---
+emptySlotId: ES-PAYMENT-004
+title: SMS 발송 실패 비즈니스 영향 — 테스트 계약
+sprint: 214b
+taxonomy: E2
+---
+
+scenarios:
+  - id: TC-SMS-001
+    name: SMS 실패해도 결제는 성공 유지
+    given:
+      amount: 60000
+      smsServiceFails: true
+    when: payment_completed
+    then:
+      - responseStatus: 200
+      - paymentStatus: "paid"
+      - balanceDeducted: true
+      - notificationStatus: "failed"
+
+  - id: TC-SMS-002
+    name: 5분 후 SMS 재발송 스케줄링 등록
+    given:
+      amount: 60000
+      smsServiceFails: true
+    when: payment_completed
+    then:
+      - retryScheduled: true
+      - retryDelayMinutes: 5
+
+  - id: TC-SMS-003
+    name: 50,000원 미만 결제 시 SMS 미발송 (규칙 비적용)
+    given:
+      amount: 30000
+      smsServiceFails: false
+    when: payment_completed
+    then:
+      - smsAttempted: false
+      - responseStatus: 200
+      - paymentStatus: "paid"

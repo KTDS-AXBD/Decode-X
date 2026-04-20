@@ -1,0 +1,53 @@
+---
+emptySlotId: ES-PAYMENT-003
+title: MIXED 결제 부분 실패 — 테스트 계약
+sprint: 214b
+taxonomy: E3
+---
+
+scenarios:
+  - id: TC-MIXED-001
+    name: CARD 성공 + 현금 실패 시 카드 취소 롤백
+    given:
+      method: "MIXED"
+      cardAuthResponse: "200"
+      cardApprovalId: "APPROVAL-001"
+      cashProcessingFails: true
+      cardCancelResponse: "200"
+    when: mixed_payment_requested
+    then:
+      - cardCancelCalled: true
+      - cardCancelApprovalId: "APPROVAL-001"
+      - responseStatus: 500
+      - errorCode: "MIXED_PAYMENT_ROLLBACK"
+      - paymentStatus: "mixed_partial_failed"
+      - balanceDeducted: false
+
+  - id: TC-MIXED-002
+    name: CARD 성공 + 현금 실패 + 카드 취소도 실패 → 에스컬레이션
+    given:
+      method: "MIXED"
+      cardAuthResponse: "200"
+      cardApprovalId: "APPROVAL-002"
+      cashProcessingFails: true
+      cardCancelResponse: "503"
+    when: mixed_payment_requested
+    then:
+      - escalationCreated: true
+      - escalationIncidentType: "MIXED_PAYMENT_CARD_DANGLING"
+      - escalationPriority: "P1"
+      - responseStatus: 500
+
+  - id: TC-MIXED-003
+    name: CARD + 현금 모두 성공 → 정상 완료
+    given:
+      method: "MIXED"
+      cardAuthResponse: "200"
+      cashProcessingFails: false
+      voucherBalance: 100000
+      amount: 50000
+    when: mixed_payment_requested
+    then:
+      - responseStatus: 200
+      - paymentStatus: "paid"
+      - balanceDeducted: true

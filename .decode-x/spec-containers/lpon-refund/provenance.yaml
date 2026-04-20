@@ -1,0 +1,44 @@
+# Provenance — POL-LPON-REFUND-001
+# 출처 추적 (FX-SPEC-003 Handoff Contract 검증 대상)
+
+skillId: POL-LPON-REFUND-001
+extractedAt: "2026-04-20T09:00:00+09:00"
+extractedBy: "Decode-X Sprint 214b (AIF-REQ-035 Phase 2 D2)"
+
+sources:
+  - type: reverse-engineering
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/refund.ts"
+    section: "processRefundRequest() — FN-005"
+    businessRules: [BL-020, BL-021, BL-022, BL-023, BL-024, BL-025, BL-026, BL-027, BL-028]
+    confidence: 0.82
+
+  - type: reverse-engineering
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/docs/functions.md"
+    section: "FN-005: 환불 신청, FN-006: 환불 승인/거절"
+    businessRules: [BL-020, BL-021, BL-022, BL-023, BL-024, BL-025, BL-026, BL-027, BL-028, BL-029, BL-030]
+    confidence: 0.88
+
+  - type: reverse-engineering
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/rules/business-logic.md"
+    section: "시나리오 4: 환불"
+    businessRules: [BL-020, BL-021, BL-022, BL-023, BL-024, BL-025, BL-026, BL-027, BL-028, BL-029, BL-030]
+    confidence: 0.85
+
+  - type: ai-foundry-policy-db
+    source: db-policy (production)
+    policyIds: [POL-PENSION-WD-400, POL-PENSION-WD-005, POL-PENSION-WD-006, POL-PENSION-WD-007, POL-PENSION-WD-008, POL-PENSION-CL-226, POL-PENSION-EX-006, POL-PENSION-EX-022]
+    domain: LPON
+    note: "LPON 환불 관련 정책. BL-020~030 매핑."
+
+inputCompleteness:
+  sInput: 0.83
+  deficiencyFlag: false
+  components:
+    rulesCoverage: 0.83    # BL-020~030 중 11개 중 4개 [미정의] 포함
+    testCoverage: 0.75
+    provenanceLink: 1.0
+  notes:
+    - "BL-026(캐시백 환불불가 대안) — [미정의] → ES-REFUND-002"
+    - "BL-027(계좌오류 재처리) — [미정의] → ES-REFUND-003"
+    - "BL-029(강제환불 기준) — [미정의] → ES-REFUND-004"
+    - "BL-028(제외금액 공식) — PoC에서 0으로 하드코딩 → ES-REFUND-005"

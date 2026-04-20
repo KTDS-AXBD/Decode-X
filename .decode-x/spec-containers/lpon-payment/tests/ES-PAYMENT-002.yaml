@@ -1,0 +1,48 @@
+---
+emptySlotId: ES-PAYMENT-002
+title: CARD 승인 실패 재시도 — 테스트 계약
+sprint: 214b
+taxonomy: E4
+---
+
+scenarios:
+  - id: TC-CARD-RETRY-001
+    name: 503 오류 시 재시도 후 성공
+    given:
+      method: "CARD"
+      cardApiResponses: ["503", "503", "200"]
+      voucherBalance: 100000
+      amount: 30000
+    when: payment_requested
+    then:
+      - retryCount: 2
+      - responseStatus: 200
+      - paymentStatus: "paid"
+      - balanceDeducted: true
+
+  - id: TC-CARD-RETRY-002
+    name: 3회 재시도 후 최종 실패
+    given:
+      method: "CARD"
+      cardApiResponses: ["503", "503", "503", "503"]
+      voucherBalance: 100000
+      amount: 30000
+    when: payment_requested
+    then:
+      - retryCount: 3
+      - responseStatus: 502
+      - errorCode: "CARD_AUTHORIZATION_FAILED"
+      - paymentStatus: "card_auth_failed"
+      - balanceDeducted: false
+
+  - id: TC-CARD-RETRY-003
+    name: 400 즉시 실패 — 재시도 없음
+    given:
+      method: "CARD"
+      cardApiResponses: ["402"]
+    when: payment_requested
+    then:
+      - retryCount: 0
+      - responseStatus: 402
+      - errorCode: "CARD_LIMIT_EXCEEDED"
+      - balanceDeducted: false

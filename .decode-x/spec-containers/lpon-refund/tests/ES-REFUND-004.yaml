@@ -1,0 +1,54 @@
+---
+emptySlotId: ES-REFUND-004
+title: 강제환불 권한 및 감사 — 테스트 계약
+sprint: 214b
+taxonomy: E4
+---
+
+scenarios:
+  - id: TC-FORCE-001
+    name: 권한 있는 ADMIN + 조건 충족 → 강제환불 성공
+    given:
+      adminHasForcedRefundApproval: true
+      voucherExpiredDaysAgo: 90
+      annualForceRefundCount: 1
+      reason: "STRONG_COMPLAINT"
+    when: forced_refund_requested
+    then:
+      - forceRefundProcessed: true
+      - auditLogCreated: true
+      - auditLogType: "FORCED_REFUND"
+      - adminNotificationSent: true
+      - responseStatus: 200
+
+  - id: TC-FORCE-002
+    name: 권한 없는 ADMIN → 403
+    given:
+      adminHasForcedRefundApproval: false
+    when: forced_refund_requested
+    then:
+      - forceRefundProcessed: false
+      - responseStatus: 403
+      - errorCode: "FORCED_REFUND_NOT_AUTHORIZED"
+
+  - id: TC-FORCE-003
+    name: 만료 1년 초과 → 422
+    given:
+      adminHasForcedRefundApproval: true
+      voucherExpiredDaysAgo: 400
+    when: forced_refund_requested
+    then:
+      - forceRefundProcessed: false
+      - responseStatus: 422
+      - errorCode: "FORCED_REFUND_EXPIRED_BEYOND_LIMIT"
+
+  - id: TC-FORCE-004
+    name: 연간 한도 3건 초과 → 422
+    given:
+      adminHasForcedRefundApproval: true
+      annualForceRefundCount: 3
+    when: forced_refund_requested
+    then:
+      - forceRefundProcessed: false
+      - responseStatus: 422
+      - errorCode: "FORCED_REFUND_ANNUAL_LIMIT_EXCEEDED"

@@ -1,0 +1,38 @@
+---
+emptySlotId: ES-REFUND-003
+title: 환불계좌 오류 재처리 — 테스트 계약
+sprint: 214b
+taxonomy: E4
+---
+
+scenarios:
+  - id: TC-ACCOUNT-001
+    name: 계좌 오류 → status=DEPOSIT_ACCOUNT_ERROR + 사용자 알림
+    given:
+      depositApiError: "ACCOUNT_NOT_FOUND"
+    when: deposit_attempted
+    then:
+      - refundStatus: "DEPOSIT_ACCOUNT_ERROR"
+      - userNotificationSent: true
+      - retryScheduledDays: 7
+
+  - id: TC-ACCOUNT-002
+    name: 7일 내 재등록 완료 → 자동 재처리 성공
+    given:
+      refundStatus: "DEPOSIT_ACCOUNT_ERROR"
+      accountReregisteredWithinDays: 5
+      depositApiAvailable: true
+    when: auto_retry_triggered
+    then:
+      - refundStatus: "COMPLETED"
+
+  - id: TC-ACCOUNT-003
+    name: 7일 초과 미등록 → EXPIRED_ACCOUNT_ERROR + CS 큐 등록
+    given:
+      refundStatus: "DEPOSIT_ACCOUNT_ERROR"
+      daysSinceFailure: 8
+    when: auto_retry_check
+    then:
+      - refundStatus: "EXPIRED_ACCOUNT_ERROR"
+      - csQueueRegistered: true
+      - escalationPriority: "P2"

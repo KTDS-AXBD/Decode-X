@@ -1,0 +1,43 @@
+# Provenance — POL-LPON-PAYMENT-001
+# 출처 추적 (FX-SPEC-003 Handoff Contract 검증 대상)
+
+skillId: POL-LPON-PAYMENT-001
+extractedAt: "2026-04-20T09:00:00+09:00"
+extractedBy: "Decode-X Sprint 214b (AIF-REQ-035 Phase 2 D2)"
+
+sources:
+  - type: reverse-engineering
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/payment.ts"
+    section: "processPayment() — FN-003"
+    businessRules: [BL-013, BL-014, BL-015, BL-016, BL-017, BL-018, BL-019]
+    confidence: 0.85
+
+  - type: reverse-engineering
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/docs/functions.md"
+    section: "FN-003: 결제, FN-004: 결제취소"
+    businessRules: [BL-013, BL-014, BL-015, BL-016, BL-017, BL-018, BL-019]
+    confidence: 0.90
+
+  - type: reverse-engineering
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/rules/business-logic.md"
+    section: "시나리오 3: 결제"
+    businessRules: [BL-014, BL-015, BL-016, BL-017, BL-018, BL-019]
+    confidence: 0.88
+
+  - type: ai-foundry-policy-db
+    source: db-policy (production)
+    policyIds: [POL-PENSION-WD-011, POL-PENSION-NF-010, POL-PENSION-WD-251, POL-PENSION-WD-220, POL-PENSION-WD-224, POL-PENSION-EX-009]
+    domain: LPON
+    note: "LPON 결제/결제취소 관련 정책. BL-013~019 매핑."
+
+inputCompleteness:
+  sInput: 0.87
+  deficiencyFlag: false
+  components:
+    rulesCoverage: 0.85    # BL-013~019 중 7개 condition-criteria-outcome 완비. BL-017/018/019는 [미정의] 포함
+    testCoverage: 0.75     # 5개 ES × 3~4 시나리오. 엣지케이스 75% 커버
+    provenanceLink: 1.0    # 출처 문서 연결 완료
+  notes:
+    - "BL-017(QR 취소 가맹점 버튼), BL-018(QR 취소 승인) — 가맹점 UI 연동 세부 미정의"
+    - "BL-019(탈퇴회원 AP06 API) — 외부 API 스펙 미포함"
+    - "MIXED 결제 부분 실패 시 보상 트랜잭션 규칙 미정의 → ES-PAYMENT-003"

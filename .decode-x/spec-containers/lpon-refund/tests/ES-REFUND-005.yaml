@@ -1,0 +1,58 @@
+---
+emptySlotId: ES-REFUND-005
+title: 제외금액 산정 공식 — 테스트 계약
+sprint: 214b
+taxonomy: E1
+---
+
+scenarios:
+  - id: TC-EXCLUSION-001
+    name: 캐시백 사용 + 수수료 정상 산정
+    given:
+      refundType: "USED_BALANCE"
+      requestedAmount: 50000
+      cashbackUsed: 5000
+      discountCompensation: 0
+      convertedToPoints: 0
+    when: exclusion_calculated
+    then:
+      - exclusionAmount: 5500      # 5000(캐시백) + 500(수수료 1%)
+      - depositAmount: 44500       # 50000 - 5500
+      - feeApplied: 500
+
+  - id: TC-EXCLUSION-002
+    name: UNUSED_FULL 환불 → 수수료 면제
+    given:
+      refundType: "UNUSED_FULL"
+      requestedAmount: 30000
+      cashbackUsed: 0
+      discountCompensation: 0
+    when: exclusion_calculated
+    then:
+      - exclusionAmount: 0
+      - depositAmount: 30000
+      - feeApplied: 0
+
+  - id: TC-EXCLUSION-003
+    name: 제외금액 > 환불요청액 → 422
+    given:
+      refundType: "USED_BALANCE"
+      requestedAmount: 3000
+      cashbackUsed: 3000
+      discountCompensation: 1000
+    when: exclusion_calculated
+    then:
+      - responseStatus: 422
+      - errorCode: "EXCLUSION_EXCEEDS_REFUND_AMOUNT"
+
+  - id: TC-EXCLUSION-004
+    name: 수수료 100원 미만 절사 검증
+    given:
+      refundType: "USED_BALANCE"
+      requestedAmount: 5000
+      cashbackUsed: 0
+    when: exclusion_calculated
+    then:
+      - feeBeforeTruncation: 50
+      - feeAfterTruncation: 0    # 100원 미만이므로 절사 → 0
+      - depositAmount: 5000

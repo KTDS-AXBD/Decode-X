@@ -1,0 +1,42 @@
+---
+emptySlotId: ES-PAYMENT-005
+title: 탈퇴 회원 AP06 실패 — 테스트 계약
+sprint: 214b
+taxonomy: E4
+---
+
+scenarios:
+  - id: TC-AP06-001
+    name: AP06 503 시 1회 재시도 후 성공
+    given:
+      memberStatus: "withdrawn"
+      ap06Responses: ["503", "200"]
+    when: payment_cancel_requested
+    then:
+      - retryCount: 1
+      - cancelStatus: "completed"
+      - responseStatus: 200
+
+  - id: TC-AP06-002
+    name: AP06 2회 실패 → 에스컬레이션 + 202 반환
+    given:
+      memberStatus: "withdrawn"
+      ap06Responses: ["503", "503"]
+    when: payment_cancel_requested
+    then:
+      - escalationCreated: true
+      - escalationIncidentType: "WITHDRAW_MEMBER_CANCEL_AP06_FAILED"
+      - escalationPriority: "P2"
+      - cancelStatus: "ap06_failed"
+      - responseStatus: 202
+      - responseBody:
+          status: "PENDING_MANUAL"
+
+  - id: TC-AP06-003
+    name: 일반 회원 결제취소 → AP06 규칙 적용 안 됨
+    given:
+      memberStatus: "active"
+    when: payment_cancel_requested
+    then:
+      - ap06Called: false
+      - standardCancelFlow: true

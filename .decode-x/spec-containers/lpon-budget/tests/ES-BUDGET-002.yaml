@@ -1,0 +1,48 @@
+---
+emptySlotId: ES-BUDGET-002
+title: 예산 차감 후 충전 실패 시 복구 — 테스트 계약
+sprint: 214a
+taxonomy: E4
+---
+
+scenarios:
+  - id: TC-BUDGET-RESTORE-001
+    name: 충전 실패 시 예산 즉시 복구
+    given:
+      companyId: "company-001"
+      budgetUsedBefore: 3000000
+      chargeAmount: 500000
+      chargeStatus: "FAILED"
+    when: charge_failed_after_budget_deduct
+    then:
+      - budgetUsedAfter: 3000000
+      - budgetRestored: true
+      - restorationLogCreated: true
+      - eventEmitted: "BudgetRestored"
+
+  - id: TC-BUDGET-RESTORE-002
+    name: 충전 타임아웃 후 최종 실패 확정 시 복구
+    given:
+      companyId: "company-001"
+      budgetUsedBefore: 2000000
+      chargeAmount: 300000
+      chargeStatus: "TIMEOUT_UNRESOLVED"
+      timeoutMinutesPassed: 5
+    when: charge_timeout_resolved_as_failed
+    then:
+      - budgetUsedAfter: 2000000
+      - budgetRestored: true
+      - restorationReason: "CHARGE_FAILED"
+
+  - id: TC-BUDGET-RESTORE-003
+    name: 충전 성공 시 예산 복구 미실행
+    given:
+      companyId: "company-001"
+      budgetUsedBefore: 2000000
+      chargeAmount: 300000
+      chargeStatus: "CHARGED"
+    when: charge_completed
+    then:
+      - budgetUsedAfter: 2300000
+      - budgetRestored: false
+      - restorationLogCreated: false

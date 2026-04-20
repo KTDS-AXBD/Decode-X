@@ -1,0 +1,63 @@
+# Contract Tests — POL-LPON-BUDGET-001 (예산 관리 서비스)
+# FX-SPEC-003 v1.0 triangle.codeToTest 검증 대상
+
+skillId: POL-LPON-BUDGET-001
+version: 1.0.0
+domain: lpon-budget
+
+scenarios:
+  - id: TC-BUDGET-001
+    name: 잔액 충분 시 예산 차감 성공
+    given:
+      remainingBudget: 1000000
+      requestedAmount: 300000
+    when: budget_deduct_requested
+    then:
+      - deductionAllowed: true
+      - newRemaining: 700000
+    ref: BB-001, BB-002
+
+  - id: TC-BUDGET-002
+    name: 예산 부족 시 차감 거부
+    given:
+      remainingBudget: 200000
+      requestedAmount: 300000
+    when: budget_deduct_requested
+    then:
+      - deductionAllowed: false
+      - error_code: BUDGET_LIMIT_EXCEEDED
+    ref: BB-001
+
+  - id: TC-BUDGET-003
+    name: 충전 실패 시 예산 복구
+    given:
+      budgetUsedBefore: 500000
+      chargeAmount: 100000
+      chargeOutcome: FAILED
+    when: charge_failed_after_deduct
+    then:
+      - budgetRestored: true
+      - budgetUsedAfter: 500000
+    ref: BB-005
+
+  - id: TC-BUDGET-004
+    name: 잔액 10% 이하 시 알림 발송
+    given:
+      totalBudget: 1000000
+      usedBudget: 910000
+    when: budget_deduct_triggers_threshold_check
+    then:
+      - warningNotificationSent: true
+      - notificationChannel: LMS
+    ref: BB-003
+
+  - id: TC-BUDGET-005
+    name: 기간 종료 이월 처리 (rollover_yn=Y)
+    given:
+      remainingBudget: 500000
+      rolloverYn: "Y"
+    when: period_end_batch_runs
+    then:
+      - nextPeriodBudget: 500000
+      - currentPeriodStatus: CLOSED
+    ref: BB-004

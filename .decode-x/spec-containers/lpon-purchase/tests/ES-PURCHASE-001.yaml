@@ -1,0 +1,55 @@
+---
+emptySlotId: ES-PURCHASE-001
+title: 구매 멱등성 — 테스트 계약
+sprint: 214a
+taxonomy: E4
+---
+
+scenarios:
+  - id: TC-PURCHASE-IDEM-001
+    name: 동일 requestId 재전송 시 기존 completed 결과 반환
+    given:
+      purchaseRequestId: "req-purchase-001"
+      existingStatus: "completed"
+      existingVoucherId: "voucher-existing-001"
+    when: purchase_requested_again
+    then:
+      - newVoucherIssued: false
+      - responseStatus: 200
+      - responseVoucherId: "voucher-existing-001"
+      - responseIdempotent: true
+
+  - id: TC-PURCHASE-IDEM-002
+    name: 처리 중인 요청 재전송 시 409 반환
+    given:
+      purchaseRequestId: "req-purchase-002"
+      existingStatus: "processing"
+    when: purchase_requested_again
+    then:
+      - newVoucherIssued: false
+      - responseStatus: 409
+      - errorCode: "PURCHASE_IN_PROGRESS"
+      - retryAfterSeconds: 10
+
+  - id: TC-PURCHASE-IDEM-003
+    name: 실패한 요청 재전송 시 신규 처리
+    given:
+      purchaseRequestId: "req-purchase-003"
+      existingStatus: "failed"
+    when: purchase_requested_again
+    then:
+      - newVoucherIssued: true
+      - responseStatus: 200
+      - newVoucherIdGenerated: true
+
+  - id: TC-PURCHASE-IDEM-004
+    name: 신규 requestId 정상 구매 처리
+    given:
+      purchaseRequestId: "req-purchase-new-999"
+      existingStatus: null
+      purchaseAmount: 50000
+    when: purchase_requested
+    then:
+      - newVoucherIssued: true
+      - responseStatus: 200
+      - voucherFaceAmount: 50000

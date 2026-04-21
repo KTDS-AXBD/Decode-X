@@ -311,6 +311,15 @@ async function main() {
     }
 
     try {
+      // Compute AI-Ready locally before API call (patched converter, deterministic)
+      let localAiReady: AiReadyScore | undefined;
+      try {
+        const pkg = convertSpecContainerToSkillPackage(input);
+        localAiReady = scoreSkill(pkg);
+      } catch {
+        // non-fatal — production call continues without local score
+      }
+
       const res = await fetch(`${baseUrl}/skills/from-spec-container`, {
         method: "POST",
         headers: {
@@ -325,10 +334,22 @@ async function main() {
         console.log(`❌ HTTP ${res.status}`);
         results.push({ id: containerId, status: "error", detail: `HTTP ${res.status}: ${body.slice(0, 100)}` });
       } else {
-        const body = await res.json<{ data?: { skillId?: string } }>().catch(() => ({}));
+        const body = await res.json<{ data?: { skillId?: string; r2Key?: string; policyCount?: number } }>().catch(() => ({}));
         const skillId = body?.data?.skillId ?? "?";
-        console.log(`✅ skillId=${skillId}`);
-        results.push({ id: containerId, status: "ok", detail: skillId });
+        const r2Key = body?.data?.r2Key;
+        const policyCount = body?.data?.policyCount ?? input.policies.length;
+        const passLabel = localAiReady ? (localAiReady.passAiReady ? "✅" : "❌") : "";
+        const scoreLabel = localAiReady ? ` ai-ready=${localAiReady.overall.toFixed(3)} ${passLabel}` : "";
+        console.log(`✅ skillId=${skillId}${scoreLabel}`);
+        results.push({
+          id: containerId,
+          status: "ok",
+          detail: skillId,
+          policyCount,
+          testScenarioCount: input.testScenarios.length,
+          ...(localAiReady ? { aiReady: localAiReady } : {}),
+          ...({ r2Key } as { r2Key?: string }),
+        });
       }
     } catch (e) {
       console.log(`❌ ${e instanceof Error ? e.message : String(e)}`);
@@ -341,6 +362,49 @@ async function main() {
   const skip = results.filter((r) => r.status === "skip").length;
   const error = results.filter((r) => r.status === "error").length;
   console.log(`\n📊 Summary: ✅ ${ok} ok | ⚠ ${skip} skip | ❌ ${error} error`);
+
+  // Production report (non-dry-run + --report)
+  if (!isDryRun && reportPath) {
+    const successResults = results.filter((r) => r.status === "ok");
+    mkdirSync(dirname(reportPath), { recursive: true });
+    const report = {
+      generatedAt: new Date().toISOString(),
+      productionUrl: baseUrl,
+      orgFilter,
+      summary: {
+        total: results.length,
+        success: successResults.length,
+        failed: results.filter((r) => r.status === "error").length,
+        skipped: results.filter((r) => r.status === "skip").length,
+      },
+      skills: results.map((r) => ({
+        container: r.id,
+        skillId: r.status === "ok" ? (r.detail ?? "?") : null,
+        status: r.status,
+        policyCount: r.policyCount,
+        testScenarioCount: r.testScenarioCount,
+        r2Key: (r as { r2Key?: string }).r2Key,
+        aiReadyScore: r.aiReady
+          ? {
+              overall: r.aiReady.overall,
+              passAiReady: r.aiReady.passAiReady,
+              failedCriteria: r.aiReady.failedCriteria,
+              criteria: {
+                machineReadable: r.aiReady.criteria.machineReadable.score,
+                semanticConsistency: r.aiReady.criteria.semanticConsistency.score,
+                testable: r.aiReady.criteria.testable.score,
+                traceable: r.aiReady.criteria.traceable.score,
+                completeness: r.aiReady.criteria.completeness.score,
+                humanReviewable: r.aiReady.criteria.humanReviewable.score,
+              },
+            }
+          : null,
+        error: r.status !== "ok" ? r.detail : undefined,
+      })),
+    };
+    writeFileSync(reportPath, JSON.stringify(report, null, 2));
+    console.log(`\n📝 Production report: ${reportPath}`);
+  }
 
   // AI-Ready aggregate (dry-run --with-ai-ready only)
   if (isDryRun && withAiReady) {

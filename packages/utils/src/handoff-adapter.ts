@@ -39,6 +39,7 @@ export interface HandoffManifest {
 export interface FoundryXPayload {
   prdTitle: string;
   prdContent: string;
+  orgId: string;
   metadata: {
     handoffPackageId: string;
     serviceId: string;
@@ -97,6 +98,7 @@ export function buildFoundryXPayload(
   return {
     prdTitle: `LPON ${serviceLabel} Working Prototype — ${manifest.skillId}`,
     prdContent,
+    orgId: manifest.orgId,
     metadata: {
       handoffPackageId: manifest.reportId,
       serviceId: manifest.skillId,

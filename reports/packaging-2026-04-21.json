@@ -1,0 +1,160 @@
+{
+  "generatedAt": "2026-04-21T14:11:12.596Z",
+  "productionUrl": "https://svc-skill-production.ktds-axbd.workers.dev",
+  "orgFilter": "lpon",
+  "summary": {
+    "total": 7,
+    "success": 7,
+    "failed": 0,
+    "skipped": 0
+  },
+  "skills": [
+    {
+      "container": "lpon-budget",
+      "skillId": "5d59e8d7-790d-4a0b-91a3-30e316e88a26",
+      "status": "ok",
+      "policyCount": 5,
+      "testScenarioCount": 10,
+      "r2Key": "skill-packages/5d59e8d7-790d-4a0b-91a3-30e316e88a26.skill.json",
+      "aiReadyScore": {
+        "overall": 0.955,
+        "passAiReady": true,
+        "failedCriteria": [],
+        "criteria": {
+          "machineReadable": 1,
+          "semanticConsistency": 1,
+          "testable": 1,
+          "traceable": 1,
+          "completeness": 0.933,
+          "humanReviewable": 0.8
+        }
+      }
+    },
+    {
+      "container": "lpon-charge",
+      "skillId": "4591b69e-4e6a-4ac8-8261-ce177c35f994",
+      "status": "ok",
+      "policyCount": 8,
+      "testScenarioCount": 41,
+      "r2Key": "skill-packages/4591b69e-4e6a-4ac8-8261-ce177c35f994.skill.json",
+      "aiReadyScore": {
+        "overall": 0.924,
+        "passAiReady": true,
+        "failedCriteria": [],
+        "criteria": {
+          "machineReadable": 1,
+          "semanticConsistency": 1,
+          "testable": 0.813,
+          "traceable": 1,
+          "completeness": 0.933,
+          "humanReviewable": 0.8
+        }
+      }
+    },
+    {
+      "container": "lpon-gift",
+      "skillId": "17bc6d1d-f8b6-49e9-8407-2b424b97cd6a",
+      "status": "ok",
+      "policyCount": 6,
+      "testScenarioCount": 13,
+      "r2Key": "skill-packages/17bc6d1d-f8b6-49e9-8407-2b424b97cd6a.skill.json",
+      "aiReadyScore": {
+        "overall": 0.897,
+        "passAiReady": true,
+        "failedCriteria": [],
+        "criteria": {
+          "machineReadable": 1,
+          "semanticConsistency": 1,
+          "testable": 1,
+          "traceable": 1,
+          "completeness": 0.583,
+          "humanReviewable": 0.8
+        }
+      }
+    },
+    {
+      "container": "lpon-payment",
+      "skillId": "7dd016bb-7f66-4a68-b905-a68972d6203c",
+      "status": "ok",
+      "policyCount": 7,
+      "testScenarioCount": 16,
+      "r2Key": "skill-packages/7dd016bb-7f66-4a68-b905-a68972d6203c.skill.json",
+      "aiReadyScore": {
+        "overall": 0.922,
+        "passAiReady": true,
+        "failedCriteria": [],
+        "criteria": {
+          "machineReadable": 1,
+          "semanticConsistency": 1,
+          "testable": 0.929,
+          "traceable": 1,
+          "completeness": 0.8,
+          "humanReviewable": 0.8
+        }
+      }
+    },
+    {
+      "container": "lpon-purchase",
+      "skillId": "b923a11b-3b6e-4489-9600-2345fa395bce",
+      "status": "ok",
+      "policyCount": 5,
+      "testScenarioCount": 10,
+      "r2Key": "skill-packages/b923a11b-3b6e-4489-9600-2345fa395bce.skill.json",
+      "aiReadyScore": {
+        "overall": 0.917,
+        "passAiReady": true,
+        "failedCriteria": [],
+        "criteria": {
+          "machineReadable": 1,
+          "semanticConsistency": 1,
+          "testable": 0.9,
+          "traceable": 1,
+          "completeness": 0.8,
+          "humanReviewable": 0.8
+        }
+      }
+    },
+    {
+      "container": "lpon-refund",
+      "skillId": "fc4204c8-af26-4c47-889d-11012e56c241",
+      "status": "ok",
+      "policyCount": 11,
+      "testScenarioCount": 19,
+      "r2Key": "skill-packages/fc4204c8-af26-4c47-889d-11012e56c241.skill.json",
+      "aiReadyScore": {
+        "overall": 0.888,
+        "passAiReady": true,
+        "failedCriteria": [],
+        "criteria": {
+          "machineReadable": 1,
+          "semanticConsistency": 1,
+          "testable": 0.727,
+          "traceable": 1,
+          "completeness": 0.8,
+          "humanReviewable": 0.8
+        }
+      }
+    },
+    {
+      "container": "lpon-settlement",
+      "skillId": "5c872ee3-f506-417d-8429-e23935cfd50b",
+      "status": "ok",
+      "policyCount": 6,
+      "testScenarioCount": 12,
+      "r2Key": "skill-packages/5c872ee3-f506-417d-8429-e23935cfd50b.skill.json",
+      "aiReadyScore": {
+        "overall": 0.911,
+        "passAiReady": true,
+        "failedCriteria": [],
+        "criteria": {
+          "machineReadable": 1,
+          "semanticConsistency": 1,
+          "testable": 1,
+          "traceable": 1,
+          "completeness": 0.667,
+          "humanReviewable": 0.8
+        }
+      }
+    }
+  ]
+}

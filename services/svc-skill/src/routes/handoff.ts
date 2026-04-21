@@ -235,16 +235,20 @@ export async function handleSubmitHandoff(request: Request, env: Env): Promise<R
   // Forward to Foundry-X
   // F355a (Sprint 218, TD-30): path 정정 — Foundry-X app.route("/api", prototypeJobsRoute)
   // F355b (Sprint 219, TD-31): /api/internal/prototype-jobs — X-Internal-Secret 전용 endpoint (JWT 우회)
-  //   Foundry-X에 internalPrototypeJobsRoute 신설 (packages/api/src/core/harness/routes/internal-prototype-jobs.ts)
-  //   app.ts에서 app.use("/api/*", authMiddleware) 이전에 마운트됨
-  const foundryRes = await fetch(`${env.FOUNDRY_X_URL}/api/internal/prototype-jobs`, {
+  //   F397 (Sprint 228): CF error 1042 — same-zone Workers cannot HTTP fetch each other.
+  //   Production/staging use SVC_FOUNDRY_X Service Binding; dev falls back to HTTP fetch.
+  const foundryReqHeaders = {
+    "Content-Type": "application/json",
+    "X-Internal-Secret": env.FOUNDRY_X_SECRET,
+  };
+  const foundryReqInit: RequestInit = {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Internal-Secret": env.FOUNDRY_X_SECRET,
-    },
+    headers: foundryReqHeaders,
     body: JSON.stringify(payload),
-  });
+  };
+  const foundryRes = env.SVC_FOUNDRY_X
+    ? await env.SVC_FOUNDRY_X.fetch(new Request("https://svc-foundry-x/api/internal/prototype-jobs", foundryReqInit))
+    : await fetch(`${env.FOUNDRY_X_URL}/api/internal/prototype-jobs`, foundryReqInit);
 
   if (!foundryRes.ok) {
     const errText = await foundryRes.text().catch(() => "");
@@ -253,7 +257,7 @@ export async function handleSubmitHandoff(request: Request, env: Env): Promise<R
       `UPDATE handoff_jobs SET status = 'failed' WHERE id = ?`,
     ).bind(jobId).run();
     return new Response(
-      JSON.stringify({ success: false, error: { code: "UPSTREAM_ERROR", message: `Foundry-X returned ${foundryRes.status}` } }),
+      JSON.stringify({ success: false, error: { code: "UPSTREAM_ERROR", message: `Foundry-X returned ${foundryRes.status}`, detail: errText } }),
       { status: 502, headers: { "Content-Type": "application/json" } },
     );
   }

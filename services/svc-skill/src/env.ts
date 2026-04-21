@@ -19,6 +19,9 @@ export interface Env {
   SVC_EXTRACTION: Fetcher;
   SVC_INGESTION: Fetcher;
 
+  // Service Binding — Foundry-X (CF error 1042: same-zone Workers cannot HTTP fetch each other)
+  SVC_FOUNDRY_X?: Fetcher;
+
   // Vars
   ENVIRONMENT: string;
   SERVICE_NAME: string;

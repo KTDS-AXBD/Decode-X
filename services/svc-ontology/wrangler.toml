@@ -11,6 +11,7 @@ inspector_port = 9204
 binding = "DB_ONTOLOGY"
 database_name = "db-ontology"
 database_id = "f7a72b06-a6d7-43e3-8912-f8a77399cced"
+migrations_dir = "../../infra/migrations/db-ontology"
 
 # Service binding to svc-policy for fetching approved policies (queue handler)
 [[services]]

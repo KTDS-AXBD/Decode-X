@@ -1,5 +1,6 @@
 -- Policy classification results for Skill bundling
 -- Maps each policy to a business domain category via LLM classification
+-- (Moved from services/svc-skill/migrations/ — F366 migration consolidation)
 
 CREATE TABLE IF NOT EXISTS policy_classifications (
   policy_id TEXT NOT NULL,

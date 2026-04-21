@@ -11,6 +11,7 @@ inspector_port = 9205
 binding = "DB_SKILL"
 database_name = "db-skill"
 database_id = "96e6ac0c-eefa-45f5-9c07-4fd84a0f1df1"
+migrations_dir = "../../infra/migrations/db-skill"
 
 [[r2_buckets]]
 binding = "R2_SKILL_PACKAGES"

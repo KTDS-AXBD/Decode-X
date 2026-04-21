@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Organization switching", () => {
   test("switch from Miraeasset to LPON and verify data refreshes", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/?legacy=1");
     await expect(page.getByRole("heading", { name: /대시보드 Dashboard/ })).toBeVisible();
 
     // Default org should be Miraeasset — verify selector shows it
@@ -51,7 +51,7 @@ test.describe("Organization switching", () => {
 
   test("org selection persists across page navigation", async ({ page }) => {
     // Set org to LPON via localStorage before navigating
-    await page.goto("/");
+    await page.goto("/?legacy=1");
     await page.evaluate(() =>
       localStorage.setItem("ai-foundry-org-id", "LPON"),
     );
@@ -78,7 +78,7 @@ test.describe("Organization switching", () => {
   });
 
   test("org selector lists all 4 organizations", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/?legacy=1");
     await expect(page.getByRole("heading", { name: /대시보드 Dashboard/ })).toBeVisible();
 
     // Open the selector dropdown

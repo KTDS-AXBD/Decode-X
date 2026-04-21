@@ -3,7 +3,7 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Extract group", () => {
   test("dashboard renders", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/?legacy=1");
     await expect(page.getByRole("heading", { name: /대시보드 Dashboard/ })).toBeVisible();
   });
 

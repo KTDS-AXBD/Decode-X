@@ -57,7 +57,7 @@ test.describe("RBAC: sidebar shows correct user info", () => {
     const ctx = await loginAsDemoUser(browser);
     const page = await ctx.newPage();
 
-    await page.goto("/");
+    await page.goto("/?legacy=1");
     await expect(page.getByRole("heading", { name: /대시보드 Dashboard/ })).toBeVisible();
 
     // Demo user email is 'e2e@test' — sidebar shows email or displayName
@@ -71,7 +71,7 @@ test.describe("RBAC: sidebar shows correct user info", () => {
     const ctx = await loginAsDemoUser(browser);
     const page = await ctx.newPage();
 
-    await page.goto("/");
+    await page.goto("/?legacy=1");
     await expect(page.locator("body")).toBeVisible();
 
     // Demo user: role = 'engineer' — sidebar displays role

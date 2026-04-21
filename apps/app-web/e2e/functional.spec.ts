@@ -3,24 +3,24 @@ import { test, expect } from "@playwright/test";
 
 test.describe("Dashboard functional", () => {
   test("quick action cards navigate correctly", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/?legacy=1");
     await expect(page.getByRole("heading", { name: /대시보드 Dashboard/ })).toBeVisible();
 
     // Quick actions are inside the "빠른 실행" card — use links to target
     await page.locator('a[href="/upload"]').last().click();
     await expect(page).toHaveURL("/upload");
 
-    await page.goto("/");
+    await page.goto("/?legacy=1");
     await page.locator('a[href="/analysis"]').last().click();
     await expect(page).toHaveURL(/\/executive\/overview/);
 
-    await page.goto("/");
+    await page.goto("/?legacy=1");
     await page.locator('a[href="/skills"]').last().click();
     await expect(page).toHaveURL("/skills");
   });
 
   test("stats cards display loaded data", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/?legacy=1");
 
     // Wait for loading to finish (stats show '...' while loading)
     await page.waitForFunction(() => {
@@ -33,7 +33,7 @@ test.describe("Dashboard functional", () => {
   });
 
   test("quick actions section renders", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/?legacy=1");
     await expect(page.getByText("빠른 실행")).toBeVisible();
     // Verify all 4 quick action links exist
     await expect(page.locator('a[href="/upload"]').last()).toBeVisible();

@@ -2,6 +2,20 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 222 (2026-04-21)
+**Sprint 220 F366 autopilot 단독 Sprint — CI migration workflow 코드 merge ✅ but Production 첫 배포 실패 (TD-39 신규)**:
+- ✅ **Sprint 220 scope 재편** (`8944fef`): 기존 F356-B/F357 → Sprint 221+ 이관, F366(TD-35 해소, CI D1 migration workflow) 단독 주력으로 등록. 근거: Sprint 219~221 production drift 6건 연속 발견(TD-33~38), migration 자동 파이프라인 부재가 근원.
+- ✅ **Sprint 220 WT + autopilot 자체 완결 (8분여)**: tmux sprint-220 pane(%29)에 `ccs --model sonnet` + `/ax:sprint-autopilot` 주입 → 자체 Plan+Design+Implement+Analyze, Match Rate **100%**, typecheck/lint/test pass. 13 files 406 insertions. 커밋 `21b0dc2` push.
+- ✅ **F366 구현 산출물 7종**: (1) `.github/workflows/ci.yml` migration-drift job 추가, (2) `deploy-services.yml` migrate-d1 job + environment protection + deploy 선행, (3) `scripts/db-init-staging.sh` 신설, (4) `scripts/check-migration-drift.sh` 신설, (5) 5 서비스 wrangler.toml `migrations_dir` 추가, (6) svc-skill `migrations/0003` → `infra/migrations/db-skill/0010_policy_classifications.sql` 통합, (7) plan + design 문서.
+- ✅ **PR #23 MERGED** (`8b4a31a`, squash): autopilot pr-lookup 단계 실패(no PR found) 감지 → 수동 `gh pr create` 보정 후 merge-monitor 자동 픽업. CI 3/3 pass(typecheck/test/migration-drift).
+- ❌ **Production 배포 실패** (`gh run 24719084237`, 1m47s): F366 merge 직후 자동 deploy 트리거. migrate-d1 job production 실패. **2중 버그**: (a) `wrangler d1 migrations apply --env production`에 `--remote` flag 누락 → wrangler 경고 "Resource location: local". (b) `migrations_dir`가 wrangler.toml 최상위 `[[d1_databases]]`에만 있고 `[env.production.[[d1_databases]]]` override 부재 → "No migrations folder found" ERROR → exit 1.
+- 📌 **TD-39 신규 등록 (P0)**: F366 자체 구현 2중 버그. 세션 223+ 즉시 착수. 해결안: (1) 모든 migrate-d1 step에 `--remote` 추가, (2) env별 `migrations_dir` 복제.
+- 📌 **TD-35 부분 해소 (P1)**: 구조적 해결안 3종 도입(migrate-d1 job + db-init-staging.sh + drift 감지). 하지만 실 staging/production 동작 증명 안 됨 — TD-39 수정 후 검증 연기.
+- 📌 **세션 221 R1 외부 AI 검토 완료** (`772c5b0`): AIF-REQ-036 PRD v0.2 대상 OpenRouter 3 AI(ChatGPT gpt-4.1 Conditional / Gemini 2.5 Flash Ready / DeepSeek chat-v3 Conditional). 스코어카드 79/100(Ready 1/3 + 커버리지 22/30). Actionable items 52건. review-history.md v0.4 패치.
+- 📌 **다른 pane (A) 병행**: `fda4376` AIF-REQ-036 TRIAGED→PLANNED(R1/R2 완료 75/100) + `f90b237` Plan 문서 작성. 우리 세션 rebase 이후 동거.
+- 📌 **교훈**: autopilot Match Rate 100% ≠ Production 동작 증명. 3회 연속 재현(Sprint 215 TD-25 + Sprint 219 F362 14% 갭 + Sprint 220 F366 CI 실패) — **autopilot 완결 후 production smoke test 1회 모사 필수**.
+- Commits: `772c5b0` → `8944fef` → `8b4a31a` PR #23 merge (autopilot `21b0dc2` squash) → `1ff3df4` + `f90b237` pane A rebase.
+
 ### 세션 221 (2026-04-21)
 **Production 1/7 실증 — M-2 KPI 첫 증거 (Sprint 219 회귀 5건 해소 + Foundry-X handoff 실 호출 성공)**:
 - ✅ **Foundry-X Production E2E 1/7 실사례**: lpon-charge 실 호출 증명 확보. `POST /handoff/submit` with `skillId=66f5e9cc-77f9-406a-b694-338949db0901` → HTTP 409 GATE_FAILED(AI-Ready 0.69<0.75). **인증·manifest·source-manifest·gate-check 전 구간 기능 정상** 동작 증명. Gate PASS 자체는 Track A Empty Slot Fill 강화 후 달성 예정.

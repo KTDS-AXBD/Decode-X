@@ -17,10 +17,13 @@ import {
   notFound,
   errFromUnknown,
   extractRbacContext,
+  verifyInternalSecret,
 } from "@ai-foundry/utils";
 import { z } from "zod";
 import { buildSkillPackage } from "../assembler/skill-builder.js";
 import { generateAndStoreAdapters } from "../assembler/adapter-writer.js";
+import { SpecContainerInputSchema } from "../spec-container/types.js";
+import { convertSpecContainerToSkillPackage } from "../spec-container/converter.js";
 import type { Env } from "../env.js";
 
 const logger = createLogger("svc-skill:routes");
@@ -591,4 +594,96 @@ export function rowToDetail(row: SkillRow) {
     ...rowToSummary(row),
     ontologyId: row.ontology_id,
   };
+}
+
+// ── POST /skills/from-spec-container (F362) ───────────────────────────
+// spec-container 디렉토리 구조(provenance.yaml + rules + tests)를
+// SkillPackage로 변환하여 R2 + skills D1에 저장.
+// X-Internal-Secret 인증 (scripts/package-spec-containers.ts가 호출).
+
+export async function handleCreateSkillFromSpecContainer(
+  request: Request,
+  env: Env,
+  _ctx: ExecutionContext,
+): Promise<Response> {
+  if (!verifyInternalSecret(request, env.INTERNAL_API_SECRET)) {
+    return new Response(
+      JSON.stringify({ success: false, error: { code: "UNAUTHORIZED" } }),
+      { status: 401, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
+  let raw: unknown;
+  try {
+    raw = await request.json();
+  } catch {
+    return badRequest("Request body must be valid JSON");
+  }
+
+  const parsed = SpecContainerInputSchema.safeParse(raw);
+  if (!parsed.success) {
+    return badRequest("Invalid spec-container input", parsed.error.flatten());
+  }
+
+  const input = parsed.data;
+  const skillPackage = convertSpecContainerToSkillPackage(input);
+  const { skillId, trust, metadata } = skillPackage;
+  const r2Key = `skill-packages/${skillId}.skill.json`;
+  const now = new Date().toISOString();
+
+  try {
+    await env.R2_SKILL_PACKAGES.put(r2Key, JSON.stringify(skillPackage, null, 2), {
+      httpMetadata: { contentType: "application/json" },
+    });
+  } catch (e) {
+    logger.error("R2 put failed (spec-container)", { skillId, error: String(e) });
+    return errFromUnknown(e);
+  }
+
+  let contentDepth = 0;
+  for (const p of skillPackage.policies) {
+    contentDepth += p.condition.length + p.criteria.length + p.outcome.length;
+  }
+
+  try {
+    await env.DB_SKILL.prepare(
+      `INSERT INTO skills (
+        skill_id, ontology_id, organization_id, domain, subdomain, language, version,
+        r2_key, policy_count, trust_level, trust_score, tags, author,
+        status, content_depth, spec_container_id, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'reviewed', ?, ?, ?, ?)`,
+    )
+      .bind(
+        skillId,
+        `spec-container:${input.specContainerId}`,
+        input.orgId,
+        metadata.domain,
+        metadata.subdomain ?? null,
+        metadata.language,
+        metadata.version,
+        r2Key,
+        skillPackage.policies.length,
+        trust.level,
+        trust.score,
+        JSON.stringify(metadata.tags),
+        metadata.author,
+        contentDepth,
+        input.specContainerId,
+        now,
+        now,
+      )
+      .run();
+  } catch (e) {
+    logger.error("D1 insert failed (spec-container)", { skillId, error: String(e) });
+    return errFromUnknown(e);
+  }
+
+  logger.info("Skill created from spec-container", {
+    skillId,
+    specContainerId: input.specContainerId,
+    domain: metadata.domain,
+    policyCount: skillPackage.policies.length,
+  });
+
+  return created({ skillId, domain: metadata.domain, policyCount: skillPackage.policies.length, r2Key });
 }

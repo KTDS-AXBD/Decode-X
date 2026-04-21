@@ -233,10 +233,11 @@ export async function handleSubmitHandoff(request: Request, env: Env): Promise<R
   ).bind(jobId, orgId, skillId, manifest.domain, manifest.aiReadyScore.overall, payload.prdTitle).run();
 
   // Forward to Foundry-X
-  // F355a (Sprint 218, TD-30): path 정정 — Foundry-X app.route("/api", prototypeJobsRoute) (packages/api/src/app.ts:384)
-  // F355b (Sprint 219, TD-31): X-Internal-Secret은 현재 Foundry-X authMiddleware(JWT)와 미스매치.
-  // /api/internal/prototype-jobs (X-Internal-Secret 미들웨어 + 명시적 orgId) 신설 후 endpoint 변경 예정.
-  const foundryRes = await fetch(`${env.FOUNDRY_X_URL}/api/prototype-jobs`, {
+  // F355a (Sprint 218, TD-30): path 정정 — Foundry-X app.route("/api", prototypeJobsRoute)
+  // F355b (Sprint 219, TD-31): /api/internal/prototype-jobs — X-Internal-Secret 전용 endpoint (JWT 우회)
+  //   Foundry-X에 internalPrototypeJobsRoute 신설 (packages/api/src/core/harness/routes/internal-prototype-jobs.ts)
+  //   app.ts에서 app.use("/api/*", authMiddleware) 이전에 마운트됨
+  const foundryRes = await fetch(`${env.FOUNDRY_X_URL}/api/internal/prototype-jobs`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

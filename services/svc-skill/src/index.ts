@@ -32,6 +32,7 @@ import {
   handleGetSkillStats,
   handleUpdateSkillStatus,
   handleBulkPublish,
+  handleCreateSkillFromSpecContainer,
 } from "./routes/skills.js";
 import { handleGetMcpAdapter, handleGetOrgMcpAdapter } from "./routes/mcp.js";
 import { handleExportCc } from "./routes/export-cc.js";
@@ -221,6 +222,11 @@ export default {
           });
         }
         return await handleGetOrgMcpAdapter(request, env, orgId, ctx);
+      }
+
+      // POST /skills/from-spec-container — F362: spec-container → SkillPackage (X-Internal-Secret)
+      if (method === "POST" && path === "/skills/from-spec-container") {
+        return await handleCreateSkillFromSpecContainer(request, env, ctx);
       }
 
       // POST /skills — package a new Skill from confirmed policies

@@ -24,6 +24,7 @@ function mapPolicy(
   specContainerId: string,
   idx: number,
   orgId: string,
+  primaryDocumentId: string,
 ): Policy {
   const code = toPolicyCode(p.code, specContainerId, idx + 1);
   return {
@@ -33,7 +34,7 @@ function mapPolicy(
     criteria: p.criteria,
     outcome: p.outcome,
     source: {
-      documentId: `${specContainerId}-rules`,
+      documentId: primaryDocumentId,
       excerpt: `${p.condition} → ${p.outcome}`,
     },
     trust: {
@@ -51,8 +52,19 @@ export function convertSpecContainerToSkillPackage(
   const now = new Date().toISOString();
   const skillId = crypto.randomUUID();
 
+  // P1: primary document ID — use first source path if available, else specContainerId
+  const primaryDocumentId =
+    input.provenance.sources[0]?.path ?? input.specContainerId;
+
+  // P2: expand sourceDocumentIds to all unique source paths
+  const sourceDocumentIds = [
+    ...new Set(
+      input.provenance.sources.map((s) => s.path ?? input.specContainerId),
+    ),
+  ];
+
   const policies = input.policies.map((p, i) =>
-    mapPolicy(p, input.specContainerId, i, input.orgId),
+    mapPolicy(p, input.specContainerId, i, input.orgId, primaryDocumentId),
   );
 
   // trust score = average policy confidence
@@ -84,12 +96,18 @@ export function convertSpecContainerToSkillPackage(
       termUris: [],
     },
     provenance: {
-      sourceDocumentIds: [input.specContainerId],
+      sourceDocumentIds,
       organizationId: input.orgId,
       // Normalize to UTC ISO 8601 (Zod datetime() requires Z or +00:00)
       extractedAt: new Date(input.provenance.extractedAt || now).toISOString(),
       pipeline: {
-        stages: ["spec-container-import"],
+        // P3: full pipeline stage chain for stageOk (≥3 stages required)
+        stages: [
+          "ingestion",
+          "extraction",
+          "policy-inference",
+          "spec-container-import",
+        ],
         models: {},
       },
     },

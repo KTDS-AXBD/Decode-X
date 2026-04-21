@@ -2,6 +2,29 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 220 (2026-04-21)
+**AIF-REQ-036 신규 등록 — Phase 3 UX 재편 PRD v0.1 Draft (듀얼 트랙 + AXIS DS Full 연동)**:
+- ✅ `/ax:req-interview` 풀 사이클로 `docs/req-interview/decode-x-v1.3-phase-3-ux/` 폴더 스캐폴딩: interview-log 289줄 (Part 1~5 + Pre-interview §0) + prd-final v0.1 312줄 (11챕터) + review-history 96줄 (R1/R2 프롬프트 템플릿 준비).
+- ✅ **5축 스코핑 결정**: (1) REQ 성격 = 신규 독립 REQ (AIF-REQ-036, P1), (2) Audience = 듀얼 트랙 동등 (Executive + Engineer) + Admin + Guest 보조, (3) 검증 UX = Spec→Source 역추적 Split View (KPI: 클릭 ≤3), (4) Archive = 사용 빈도 기반 자동 제안 + 인터뷰 내 일괄 승인, (5) AXIS DS = Full 연동 (토큰 + @axis-ds/react 컴포넌트 교체 + 도메인 특화 컴포넌트 3종 AXIS DS 레포 기여).
+- ✅ **기존 5 페르소나(Analyst/Reviewer/Developer/Client/Executive) 완전 삭제 + Google OAuth(Cloudflare Access + Google IdP) 대체 결정**. 하드코딩 DEMO_USERS 7명 + localStorage 가짜 로그인 폐기. D1 `users` 테이블 신설(email/primary_role/status). 모드 토글(Exec↔Eng) 상단 UI. Allowlist 기반 접근.
+- ✅ **24 페이지 분류 일괄 승인**: Archive 5 (analysis, poc-phase-2-report, poc-ai-ready, poc-ai-ready-detail, benchmark) + 재설계 5 (dashboard, login, skill-detail, upload+source-upload 통합) + Executive Evidence 이관 3 (analysis-report, org-spec, poc-report) + Engineer Workbench 이관 6 (hitl, fact-check, gap-analysis, spec-catalog, spec-detail, ontology) + Admin 이관 2 (api-console, settings) + 유지 4 (export-center, guide, not-found, mockup/Guest).
+- ✅ **Sprint 219~221 3-Sprint MVP + S222 Should**: S219 병행(OAuth+AXIS 토큰+D1 users+Feature Flag `?legacy=1` + 랜딩), S220(Executive View + Foundry-X 타임라인 + Archive 실행), S221(Engineer Split View + AXIS 컴포넌트 8종 교체 + Admin 기본), S222(AXIS 도메인 컴포넌트 3종 기여 PR + Guest/Demo).
+- ✅ **KPI 2종**: 본부장 3분 설득력 테스트 PASS (놀교 동료 관찰+녹화) + Spec→Source 역추적 클릭 수 ≤3 (E2E 10건 샘플).
+- ✅ **SPEC.md §7 AIF-REQ-036 P1 OPEN 등록** + docs/INDEX.md REQ-INTERVIEW (5)→(8) 동기화 + 통계 143→146. 점검 후 중복 섹션 제거 + related 필드 보강.
+- ✅ **Phase 0c-2 마지막 실측 갱신**: Sprint 219 다른 pane merge(PR #22 F355b+F362) 반영 — migrations 22→23, db-skill 0007→0008_spec_container_ref, test files 110→111.
+- ⏳ **외부 AI R1/R2 검토 대기**: review-history.md에 복사용 프롬프트 템플릿(7기준 100점) 준비 완료. 사용자 수동 실행 후 v0.2 반영 예정.
+
+**최대 리스크**: Provenance 데이터 불완전성 (R2 skill 객체의 source code path + line range + doc path + page anchor 채움률 미확인) — S219 진입 전 10건 샘플 실측 선행 필수. 60% 미만 시 svc-skill 확장 F-item 분리.
+
+**검증 결과**: 문서 3건 수정 (SPEC.md + docs/INDEX.md + 신규 폴더 4파일). 코드 변경 없음.
+
+**발견/교훈**:
+- `/ax:req-interview` 5파트를 AskUserQuestion 병렬 묶음(한 번에 3~4질문)으로 진행하면 1시간 내 PRD Draft 도달 가능 — Phase 2/3 선례(세션 216/218 각 45~60분)와 동일 페이스.
+- Archive 후보 분류는 "현시점 분석 + 일괄 승인"이 telemetry 1주 대기보다 리드타임 우위 — 단, 분류표 근거(git log/네비게이션 관점) 명시 필수.
+- **interview-log 템플릿 중복 방지 필요** — 초기 체크리스트 섹션이 Part 5 후반 갱신본과 중복 생성되는 패턴 (이번 세션 점검 단계에서 발견 및 수정). 스킬 차원 개선 여지.
+
+---
+
 ### 세션 218 (2026-04-21)
 **거버넌스 정합성 보강 — VER-WARN 0건, GOV-002 5/5 PASS, INDEX inventory 보고서 + TD-29 등록**:
 - ✅ `/ax:daily-check`: 환경 점검 14항목 PASS, SPEC.md "마지막 실측" drift 3건 자동 보정 (migrations 21→23, db-skill 0006→0007, test files 109→113, 세션 211→218).

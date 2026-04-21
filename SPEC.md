@@ -58,10 +58,10 @@
 
 ## 5) Current Status
 
-- **Last Updated**: 2026-04-21 (세션 219 착수 준비 — AIF-REQ-035 Phase 3 Sprint 219 scope 명시: F355b(M-2b) + F362(M-2c) 주력 + F359/F356-A 체력 여유 시. Cross-repo PR + packaging pipeline 결정타로 Foundry-X Production E2E 6/6 실사례 확보 목표)
+- **Last Updated**: 2026-04-21 (세션 220 session-end — AIF-REQ-036 신규 OPEN 등록: Phase 3 UX 재편 PRD v0.1 Draft 작성 완료. 듀얼 트랙(Executive+Engineer+Admin+Guest) + Spec→Source Split View + 기존 5 페르소나 폐기 + Google OAuth(Cloudflare Access) + AXIS DS Full 연동 + 24페이지 Archive 분류 일괄 승인(Hard 5/재설계 5/이관 11/유지 4). Sprint 219~221 3-Sprint MVP + S222 Should. 외부 AI R1/R2 검토 대기. 선행 Sprint 219(F355b+F362) ✅ PR #22 MERGED (세션 220 다른 pane))
 - **Current Phase**: **Pilot Core 완료** — 5-Stage 역공학 파이프라인 실증 완료. 7 Workers + Gateway + Pages, 2-org 파일럿 (퇴직연금 948건 + 온누리 88건), policies 3,675 / skills 3,924. KPI: API Coverage 95.4%, Table Coverage 100%. REQ 24/32 DONE. E2E 47/47 PASS
 <!-- 마지막 실측 (daily-check 자동 보정 대상) -->
-- **마지막 실측** (세션 218, 2026-04-21, session-end): 7 Workers(운영) / 12 svc-* 디렉토리(잔존 포함), D1 5 DBs (22 migrations, latest db-skill 0007 handoff_jobs production-applied), 110 test files on disk, E2E 10 specs 47 tests
+- **마지막 실측** (세션 220, 2026-04-21, session-end): 7 Workers(운영) / 12 svc-* 디렉토리(잔존 포함), D1 5 DBs (23 migrations, latest db-skill 0008 spec_container_ref), 111 test files on disk, E2E 10 specs 47 tests
 - **Foundry-X MCP 통합**: ✅ Phase 1-3 완료 — org MCP 2서버 + meta-tool 3종(`foundry_policy_eval`, `foundry_skill_query`, `foundry_ontology_lookup`). 619 tools (616 기존 + 3 meta). Foundry-X AgentTaskType 7종(기존4 + 신규3). SVC_ONTOLOGY binding. PDCA 100%. AIF-REQ-026 IN_PROGRESS
 - **반제품 생성 엔진**: AIF-REQ-026 Phase 2 Sprint 1 완료 — Working Prototype Generator (svc-skill 확장). POST /prototype/generate API, collector(5 SVC) + generators 3종(business-logic/rules-json/terms-jsonld) + fflate ZIP → R2. 262 tests, PDCA 93%. AIF-REQ-027 IN_PROGRESS (별도 pane). D1 0004 production 적용
 - **B/T/Q Spec 문서 생성기**: ✅ Sprint 208 완료 — Template+LLM Hybrid 방식 Spec 조립 레이어. `GET /skills/:id/spec/{type}` API, 3종 생성기(Business/Technical/Quality) + OpenRouter→Haiku 요약+Gap. `spec-gen/` 8파일 1,593줄 + `openrouter-client.ts`. Production 배포+검증 완료 (LPON 3건 B/T/Q 전수 PASS)
@@ -642,6 +642,12 @@
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
 | AIF-REQ-035 | Feature | Pipeline | P0 | IN_PROGRESS | **Decode-X v1.3 본 개발** — Decode-X 개발기획서 v1.2 + v1.3 부록 C/D/E 기반 본 개발. **Mission Pivot**: "100% Copy Machine" 폐기 → AI-Centric 체질 전환. **Foundry-X 역할 분담**: Decode-X=Input Plane 생산자 / Foundry-X=Process-Output Plane 오케스트레이터. **MVP 스코프**: 전자온누리상품권 1개 도메인, Tier-A 6개 핵심 서비스(예산/충전/구매/결제/환불/선물 + 각 취소), Java/Spring 스택. **Phase 0 Day 1**: 2026-04-18 (본부장 "진행" 결정, 세션 207). **Phase 0 Closure**: 세션 209 — FX PM = Sinclair 겸임 확정으로 C1 DONE, R1/R3 WAIVED(1인 체제), C2/C3/R2/T1~T3 DEFERRED(Phase 1/2 중 재가동). **Phase 1 PoC 1.5일 압축 ✅ 완주** (세션 211): Sprint 1~5 전 MERGED, 재평가 Gate GO, Fill ES-CHARGE-001~009 3자 바인딩 27/27, T3 PoC 3종(Temp=0 + Seed + Self-Consistency), 실 코드(handoff.ts + tacit-interview.ts + llm-client.ts seed + D1 0006 tacit_interview). Match Rate 전 Sprint 100%. **Phase 2 본 개발 ✅ 완주** (2026-04-20, 세션 217) — Sprint 211~216 Batch 1~4 전항 merged. Phase 전체 Match **95.6%**, MVP 5/5, round-trip 91.7%. TC-REFUND-002 실패 = Source-First 정책 성과 proof. 신규 TD 9건(TD-20~28) 등록. **Phase 3 본 개발 PRD Ready** (2026-04-21, 세션 218) — 목표: "Phase 2 미완 마무리 + AI-Centric 품질 도구·Production 운영화". True Must = TD-24 DIVERGENCE 공식 마커(M-1) + TD-25 Foundry-X Production E2E 증거(M-2). Should = AI-Ready 자동 채점기(S-1, 5,214 점수) + AgentResume 실구현(S-2) + Tree-sitter Java(S-3) + comparator 교체(S-4) + Phase 2 작연 정리(S-5) + Java 공용 모듈(S-6). KPI 3종(AI-Ready 자상 점수 95%+ 통과 / Foundry-X Production E2E 실사례 6/6 / DIVERGENCE 공식 마커 3건+). 외부 AI 검토 R1 74/R2 77 (3사 Conditional, 1인 체제 집단 수렴·TD-15 파서 고정) + Ambiguity 0.122 (Ready) → Phase 1/2 선례(R2 68/74, Amb 0.15/0.120로 착수 성공) 기반 착수 정당화. Sprint 218 True Must, Sprint 219~220 Should Have, Sprint 221+ 체력 여유 시. **Phase 3 PRD**: `docs/req-interview/decode-x-v1.3-phase-3/prd-final.md`. **참조**: `docs/req-interview/decode-x-v1.2/prd-v2.md` (v1.3 원본), Phase 0 Closure, `docs/req-interview/decode-x-v1.3-phase-2/prd-final.md`, `docs/03-analysis/features/phase-2-pipeline.analysis.md` |
+
+### Phase 3 UX 재편 — 듀얼 트랙 + AXIS DS 연동 (신규 등록)
+
+| ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
+|----|------|--------|:--------:|:----:|------|
+| AIF-REQ-036 | Feature | UX | P1 | OPEN | **Phase 3 UX 재편 — 듀얼 트랙(Executive View + Engineer Workbench) + AXIS DS 연동** — Audience 우선순위 재정의: 본부장 + 전문 엔지니어 동등 트랙. 핵심 검증 워크플로우 = **Spec→Source 역추적 Split View**(policy/rule/skill detail 좌측 vs 원본 소스 우측 줄 하이라이트 + 원본 문서 페이지 앵커, provenance 자동 해상도). 기존 24 페이지 **사용 빈도 기반 Archive 자동 제안**. **AXIS DS Full 연동**: `@axis-ds/tokens` 적용 + `@axis-ds/react`로 shadcn 대체 + 도메인 특화 컴포넌트(`SpecSourceSplitView`, `ProvenanceInspector`, `StageReplayer`)를 `IDEA-on-Action/AXIS-Design-System` 레포에 재활용 가능한 형태로 기여. **상태**: 2026-04-21 세션 220 착수 준비 — 인터뷰 Part 1 진입. PRD 폴더: `docs/req-interview/decode-x-v1.3-phase-3-ux/`. **참조**: AIF-REQ-035 Phase 3, `docs/AX-BD-MSA-Restructuring-Plan.md` §S7, `apps/app-web/src/components/Sidebar.tsx` |
 
 ---
 

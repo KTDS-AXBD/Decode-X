@@ -194,7 +194,7 @@
 | Spec B/T/Q Sample | `poc/spec-btq-sample.md` |
 | 암묵지 인터뷰 Agent Format | `poc/tacit-interview-agent-format.md` |
 
-## REQ-INTERVIEW (5)
+## REQ-INTERVIEW (8)
 
 | 제목 | 파일 |
 |------|------|
@@ -203,6 +203,9 @@
 | Decode-X v1.3 Phase 3 본 개발 PRD (Ready, AIF-PRD-decode-x-v1.3-phase-3 v1.2) | `req-interview/decode-x-v1.3-phase-3/prd-final.md` |
 | Decode-X v1.3 Phase 3 요구사항 인터뷰 로그 (Active, AIF-INTV-decode-x-v1.3-phase-3 v1.0) | `req-interview/decode-x-v1.3-phase-3/interview-log.md` |
 | Decode-X v1.3 Phase 3 PRD Review History | `req-interview/decode-x-v1.3-phase-3/review-history.md` |
+| Decode-X v1.3 Phase 3 UX 재편 PRD (Draft, AIF-PRD-decode-x-v1.3-phase-3-ux v0.1) | `req-interview/decode-x-v1.3-phase-3-ux/prd-final.md` |
+| Decode-X v1.3 Phase 3 UX 재편 인터뷰 로그 (Active, AIF-INTV-decode-x-v1.3-phase-3-ux v0.1) | `req-interview/decode-x-v1.3-phase-3-ux/interview-log.md` |
+| Decode-X v1.3 Phase 3 UX 재편 Review History (R1 Pending) | `req-interview/decode-x-v1.3-phase-3-ux/review-history.md` |
 
 ## Archive
 
@@ -214,4 +217,4 @@
 
 ---
 
-**통계**: 활성 문서 ~143개 (SPEC 2 + PLAN 36 + DSGN 28 + ANLS 36 + RPRT 34 + GUID 1 + IDEN 1 + OPS 4 + PoC 6 + REQ 5), 아카이브 12+개
+**통계**: 활성 문서 ~146개 (SPEC 2 + PLAN 36 + DSGN 28 + ANLS 36 + RPRT 34 + GUID 1 + IDEN 1 + OPS 4 + PoC 6 + REQ 8), 아카이브 12+개

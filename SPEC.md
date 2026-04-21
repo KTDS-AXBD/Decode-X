@@ -58,7 +58,7 @@
 
 ## 5) Current Status
 
-- **Last Updated**: 2026-04-21 (세션 218 — AIF-REQ-035 Phase 3 Sprint 218 MVP 완결. F354 ✅ DIVERGENCE 마커 5건 + F355a ✅ 도구 정리 4건 + 갭 명세 보고서. F355b/F362는 Sprint 219~220 이관. TD-30/31/32 등록)
+- **Last Updated**: 2026-04-21 (세션 219 착수 준비 — AIF-REQ-035 Phase 3 Sprint 219 scope 명시: F355b(M-2b) + F362(M-2c) 주력 + F359/F356-A 체력 여유 시. Cross-repo PR + packaging pipeline 결정타로 Foundry-X Production E2E 6/6 실사례 확보 목표)
 - **Current Phase**: **Pilot Core 완료** — 5-Stage 역공학 파이프라인 실증 완료. 7 Workers + Gateway + Pages, 2-org 파일럿 (퇴직연금 948건 + 온누리 88건), policies 3,675 / skills 3,924. KPI: API Coverage 95.4%, Table Coverage 100%. REQ 24/32 DONE. E2E 47/47 PASS
 <!-- 마지막 실측 (daily-check 자동 보정 대상) -->
 - **마지막 실측** (세션 218, 2026-04-21, session-end): 7 Workers(운영) / 12 svc-* 디렉토리(잔존 포함), D1 5 DBs (22 migrations, latest db-skill 0007 handoff_jobs production-applied), 110 test files on disk, E2E 10 specs 47 tests
@@ -496,9 +496,11 @@
 - [ ] F362 (AIF-REQ-035 Phase 3 신규, **P0**, Sprint 219~220): **spec-container → skills D1 packaging pipeline** — `.decode-x/spec-containers/lpon-*/` 디렉토리(provenance.yaml + rules + runbooks + tests + contracts) → SkillPackage Zod schema 변환 + R2 .skill.json 업로드 + skills D1 INSERT. 신규 endpoint `POST /skills/from-spec-container` + 7서비스 일괄 packaging 스크립트. **결정타** — Tier-A handoff 데이터 흐름 복원(갭 #6). 1~2 Sprint 분량
 - [ ] F360 (AIF-REQ-035 Phase 3 S-5, P3): **TD-20/21/23 Phase 2 작연 정리** — Sprint 215 retroactive Plan/Design(0.5h) + gift/settlement provenance FX-SPEC 버전 drift 수정(0.1h) + `rfndPsbltyYn` 하드코딩 해결(1h). 총 1.6h
 
-**Sprint 219 (Should Have 1차, Week 2):**
-- [ ] F359 (AIF-REQ-035 Phase 3 S-4, P2): **TD-22 comparator 8 keys silent PASS 교체** — `scripts/roundtrip-verify/comparator.ts:168-177` 하드코딩 → 실 D1 조회로 교체. round-trip 신뢰도 보강. 예상 2h
-- [ ] F356-A (AIF-REQ-035 Phase 3 S-1 Phase 1, P1): **AI-Ready 6기준 자동 채점기 Phase 1 (스크립트 + 샘플링)** — LPON 80건 × 6기준 = 480 점수 PoC. LLM 비용 가드 (일 $30) 포함. 스키마/프롬프트 확정
+**Sprint 219 (M-2b/M-2c 완결 + Should Have 1차, Week 2):**
+- [ ] F355b (AIF-REQ-035 Phase 3 M-2b, **P0**, Sprint 219 주력): **Foundry-X internal endpoint 신설 + Cross-repo PR** — Foundry-X repo에 `POST /api/internal/prototype-jobs` 신설(X-Internal-Secret 미들웨어 + 명시적 `orgId` 파라미터 + tenantGuard 우회). Decode-X `services/svc-skill/src/routes/handoff.ts:240` `callerSecret` 정렬. FOUNDRY_X_SECRET production 실값 확정(F355a placeholder 교체). Production 1서비스 실 호출 200 응답 확보 → TD-31 인증 미스매치 해소. Cross-repo PR 2개(Foundry-X main + Decode-X main). 예상 2~3h
+- [ ] F362 (AIF-REQ-035 Phase 3 M-2c, **P0**, Sprint 219 주력, 필요 시 Sprint 220 연장): **spec-container → skills D1 packaging pipeline** — `.decode-x/spec-containers/lpon-*/` 디렉토리(provenance.yaml + rules + runbooks + tests + contracts) → SkillPackage Zod schema 변환 + R2 `.skill.json` 업로드 + skills D1 INSERT. 신규 endpoint `POST /skills/from-spec-container` + 7서비스 일괄 packaging 스크립트(`scripts/package-spec-containers.ts`). **결정타** — Tier-A handoff 데이터 흐름 복원(TD-32 갭 #6 해소). Production skills의 lpon-* domain count 0→7+. 1~2 Sprint 분량
+- [ ] F359 (AIF-REQ-035 Phase 3 S-4, P2, 체력 여유 시): **TD-22 comparator 8 keys silent PASS 교체** — `scripts/roundtrip-verify/comparator.ts:168-177` 하드코딩 → 실 D1 조회로 교체. round-trip 신뢰도 보강. 예상 2h
+- [ ] F356-A (AIF-REQ-035 Phase 3 S-1 Phase 1, P1, 체력 여유 시): **AI-Ready 6기준 자동 채점기 Phase 1 (스크립트 + 샘플링)** — LPON 80건 × 6기준 = 480 점수 PoC. LLM 비용 가드 (일 $30) 포함. 스키마/프롬프트 확정
 
 **Sprint 220 (Should Have 2차, Week 3):**
 - [ ] F356-B (AIF-REQ-035 Phase 3 S-1 Phase 2, P1): **AI-Ready 자동 채점기 전수 배치** — LPON 859 skill + Fill 9건 = 5,214 점수 배치. `/ai-ready/evaluate` API 엔드포인트 + 구조 점수 출력 JSON. 30분 이내 완료 목표

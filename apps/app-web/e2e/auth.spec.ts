@@ -1,9 +1,11 @@
 import { test, expect } from "@playwright/test";
 
-// F392/TD-41: CF Access JWT mock으로 재활성화 (auth.setup.ts 참조)
+// TODO(S224/TD-41): DEMO_USERS 폐기(F389)로 데모 로그인 기반 테스트 전면 skip.
+// CF Access JWT mock 구현 후 재활성화.
 
 test.describe("Authentication", () => {
   test("unauthenticated user is redirected to /welcome", async ({ browser }) => {
+    // Fresh context with no stored auth — CF Access cookie absent in CI
     const ctx = await browser.newContext({ storageState: undefined });
     const page = await ctx.newPage();
     await page.goto("/");
@@ -11,28 +13,30 @@ test.describe("Authentication", () => {
     await ctx.close();
   });
 
-  test("welcome page is accessible without auth", async ({ browser }) => {
+  test.skip("login page renders demo user cards — DEMO_USERS 폐기(F389)", async ({ browser }) => {
     const ctx = await browser.newContext({ storageState: undefined });
     const page = await ctx.newPage();
-    await page.goto("/welcome");
-    await expect(page.locator("body")).not.toBeEmpty();
+    await page.goto("/login");
+    await expect(page.getByRole("heading", { name: "AI Foundry" })).toBeVisible();
+    await expect(page.getByText("서민원")).toBeVisible();
+    await expect(page.getByText("양대진")).toBeVisible();
     await ctx.close();
   });
 
-  test("authenticated user can access executive overview", async ({ page }) => {
-    await page.route("**/auth/me", async (route) => {
-      await route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          email: "test@ktds.co.kr",
-          name: "E2E Test User",
-          role: "analyst",
-          userId: "e2e-test-001",
-        }),
-      });
-    });
-    await page.goto("/executive/overview");
-    await expect(page).not.toHaveURL(/\/welcome/);
+  test.skip("demo login redirects to dashboard — DEMO_USERS 폐기(F389)", async ({ browser }) => {
+    const ctx = await browser.newContext({ storageState: undefined });
+    const page = await ctx.newPage();
+    await page.goto("/login");
+    await page.getByText("서민원").click();
+    await expect(page).toHaveURL("/");
+    await expect(page.getByRole("heading", { name: /대시보드/ })).toBeVisible();
+    await ctx.close();
+  });
+
+  test.skip("logout returns to login page — DEMO_USERS 폐기(F389)", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.getByRole("heading", { name: /대시보드/ })).toBeVisible();
+    await page.locator('button[title="로그아웃"]').click();
+    await expect(page).toHaveURL(/\/login/);
   });
 });

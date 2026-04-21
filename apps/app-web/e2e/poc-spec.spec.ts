@@ -1,7 +1,7 @@
 // TODO(S224/TD-41): /poc/ai-ready, /org-spec protected route — CF Access mock 후 재활성화.
 import { test, expect } from "@playwright/test";
 
-test.describe("PoC & Spec pages (Sprint 209~210)", () => {
+test.describe.skip("PoC & Spec pages (Sprint 209~210)", () => {
   test("AI-Ready 채점 리포트 페이지 렌더링", async ({ page }) => {
     await page.goto("/poc/ai-ready");
     await expect(

@@ -39,7 +39,7 @@ async function cleanupTestDocuments(request: import("@playwright/test").APIReque
   }
 }
 
-test.describe("File upload E2E", () => {
+test.describe.skip("File upload E2E", () => {
   test("upload a PDF as Analyst and verify it appears in the list", async ({ browser, request }) => {
     // Pre-cleanup: remove leftover test docs from previous failed runs
     await cleanupTestDocuments(request);

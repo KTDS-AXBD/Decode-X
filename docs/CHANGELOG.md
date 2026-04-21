@@ -2,7 +2,24 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
-### 세션 229 (2026-04-21)
+### 세션 229 (2026-04-21 ~ 2026-04-22)
+
+**Sprint 226 ✅ MERGED — AIF-REQ-036 S3 M-UX-3 Engineer Workbench 완결 (PR #27 `4d35270`, 8/9 F-item DONE + F392 partial)**:
+- ✅ **계획 수립 선행**: "기존 작업에 이어서 메뉴 개편 후속 계획" 요청 → AIF-REQ-036 Plan doc §11 Follow-up 추가(v0.2, commit `9350ed4`). Sprint 226 9 F-item Wave 1~5 배치 + F396 신규 위생 F-item + Sprint 227 Should 확정 포함 + TD-41을 F392에 통합. AskUserQuestion 3 결정 확정(Gap-1 처리 / S3 범위 / S4 포함).
+- ✅ **Sprint 226 WT 생성 + autopilot Full Auto**: SPEC §6 Phase 9 Sprint 226 헤더 🔧 IN_PROGRESS 전환(`8516c7d`) + push → `bash -i -c "sprint 226"` 실패 → 수동 fallback Phase 2a~2e(git worktree add + tmux + wt.exe 탭 + .sprint-context WAVE_ORDER 주입 + signal CREATED). task-daemon 기존 실행 중(Foundry-X pane에서 시작) 생존 확인만.
+- ✅ **Autopilot 20분 24초 자체 완결**: WT Sonnet 4.6 `ccs --model sonnet` + `/ax:sprint-autopilot` 주입. 1st invoke ESC interrupt 후 2nd invoke로 시작됐고 정상 진행. Match **100% (autopilot self)** + typecheck 14/14 + unit test(F391 provenance.test.ts 4 신규 포함) PASS + signal STATUS=DONE. 커밋 `6d27fa0 feat(sprint-226): M-UX-3 Engineer Workbench — 9 F-items`. PR #27 자동 생성(pr-lookup 4호차 실패 패턴 돌파 — S217/S225/S224 3연속 회피).
+- ⚠️ **CI 1차 E2E FAILURE (37/45 fail, 14분 1초)**: autopilot이 TD-41 해소 목적으로 11 E2E spec의 `test.describe.skip` 15개 해제 → CF Access mock(msw or Playwright `page.route()`)이 CI 환경에서 미작동 → protected route 전원 /welcome redirect → 37 failed / 8 passed(welcome/unauth 전용). 한편 task-daemon은 5분 ci-checks timeout에 먼저 걸려 signal STATUS=FAILED 전환(실 CI는 계속 진행이었음).
+- ✅ **옵션 B 복구 (AskUserQuestion 3지선다)**: F392 KPI-3 미달성을 Sprint 227 F401로 분리 + E2E skip 복원 후 merge 전략 선택. `git checkout main -- apps/app-web/e2e/`로 11 spec 파일 main 상태 rollback (`b87ecd7 revert(sprint-226): F392 E2E skip 복원 — CF Access mock CI 미작동 (37/45 fail)`, 11 files, +191/-186). `describe.skip` 15개 전원 복원 확인.
+- ✅ **CI 2차 3/3 SUCCESS**: Migration Sequence Check ✅ + Typecheck & Test ✅ + E2E Tests ✅ (skip 상태로 1 test만 실행 = 기존 TD-41 상태 유지). 즉시 `gh pr merge 27 --squash --delete-branch` 성공 → `4d35270`.
+- ✅ **Cleanup**: tmux kill-session + `git worktree remove --force` + `git branch -D sprint/226` + main pull + signal archive. Monitor bl1xh6yjh/bofuhumiu/bzuuc0ucw 3건 자동 종료. 병행 pane의 Sprint 228 WT 계속 활성.
+- ✅ **F401 Sprint 227 신규 등록**: **CF Access JWT E2E mock 실 CI 작동 + 45 tests 통과** (P1, 6h). 3 접근 후보(`?demo=1` bypass endpoint / Playwright `context.addCookies` + server flag / auth.setup 테스트 유저 자동 발급)를 착수 전 PoC 2h로 1개 선택 (AskUserQuestion). KPI-3 F392 미달성분 승계.
+- 📌 **교훈 3종**: (a) **autopilot local TEST=pass ≠ CI production pass 3연속 재현** (S219 F362 14% + S220 F366 CI fail + S226 E2E fail) → `feedback_autopilot_production_smoke` rules/ 승격 조건 A(2회 이상) 초과. (b) **task-daemon CI timeout < 확장 E2E 실 소요** — TD-41 해소 시도가 45 tests로 E2E를 ~2분→14분+로 확장했으나 daemon의 ci-checks phase가 5분 내외 timeout 유지 → 실 CI는 정상인데 signal FAILED 오판. daemon timeout 상향 or CI duration 사전 예측 로직 추가 검토. (c) **복구 옵션 설계 원칙**: E2E skip rollback + F-item 분리(F401)로 **구현 실체(F379/F380/F391 핵심 UX/API)는 유지** + 문제 영역만 격리 → Sprint 재작업 회피 + 8 F-item 실속 확보 + 1개 partial 투명화.
+- 📌 **실 소요**: 계획 수립 ~15m + WT 생성~MERGE ~50m (autopilot 20m + CI 1차 14m + revert 1m + CI 2차 3m + cleanup 5m). 총 ~1h 10m.
+- 📌 **산출물**: `docs/02-design/features/sprint-226.design.md`(autopilot 신설, E2E 설계 역동기화 필요) + `docs/04-report/features/sprint-226.report.md`(autopilot) + `docs/03-analysis/features/section-only-pilot-f388.md` + `services/svc-skill/src/routes/provenance.{ts,test.ts}` + 라우트 `/engineer/workbench/:id`.
+- Commits: `9350ed4`(plan §11 v0.2) → `8516c7d`(SPEC IN_PROGRESS) → `6d27fa0`(autopilot impl) → `b87ecd7`(E2E revert) → **`4d35270`**(#27 squash) → 세션 229 SPEC/Plan/CHANGELOG 갱신 예정.
+
+---
+
 **Sprint 225 ✅ MERGED — AIF-PLAN-037 G-1 Phase 2 converter.ts 패치 완결 (7/7 PASS @ 0.916)**:
 - ✅ **Sprint 225 WT 생성 + autopilot Full Auto**: SPEC §7 신규 F393/F394/F395 3건 등록(`31cfc60`) → Sprint 번호 재배치 (AIF-REQ-036 S3 M-UX-3 Sprint 225 → 226 이관, Should M-UX-4 → 227). WT manual fallback 경로(Phase 2a~2e): `git worktree add` + tmux session + wt.exe 탭 + signal CREATED. task-daemon 미존재 프로젝트라 autopilot 자체 merge 경로 선택.
 - ✅ **Autopilot 7m 27s 자체 완결**: WT Sonnet 4.6에서 Plan(기존 PLAN-037 재활용) → Implement 3 커밋(`b3d4003` F393 TR 패치 P1~P3 + `a9f078e` F394 SC 패치 P4~P5 + `2c6dee5` F395 baseline-2 산출) → session-end(`91daccd`) → PR #26 생성 → CI 3/3 green → squash merge → WT cleanup. Match **91.6%**. 7 commits → 4 files (+249/-23).

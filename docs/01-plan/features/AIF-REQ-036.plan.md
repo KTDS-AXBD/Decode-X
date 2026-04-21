@@ -407,10 +407,23 @@ Sprint 226 완료 기준 (기존 "S221 완료 시" → "Sprint 226 완료 시"):
 
 ### 11.5 착수 지시 (다음 세션)
 
-1. `git status` clean 확인 (세션 229 편집: SPEC.md + 본 Plan doc)
-2. `/ax:sprint 226` → WT 생성 → `.sprint-context`에 F_ITEMS=F396+F391+F379+F380+F381+F382+F387+F388+F392 명시
-3. autopilot 범위 주입: 본 §11.2 Wave 1~5 순서 준수
-4. Gate: Wave 1 완료 후 typecheck/lint/smoke PASS, Wave 5 완료 후 CI E2E 47/47 복원 확인
+1. [x] ~~`git status` clean 확인~~ ✅ 세션 229
+2. [x] ~~`/ax:sprint 226` WT 생성~~ ✅ 세션 229 (수동 fallback Phase 2a~2e)
+3. [x] ~~autopilot 주입 + Wave 1~5~~ ✅ 세션 229 Match 100% self-reported
+4. [~] Gate: Wave 1~4 PASS / Wave 5 F392 skeleton DONE but TD-41 완전 해소 실패 → Sprint 227 F401 이관
+
+### 11.6 Sprint 226 MERGED 결과 (세션 229, 2026-04-22)
+
+- **PR #27 `4d35270`** squash merged (autopilot 20분 4초 자체 완결 + Master 복구 ~15분)
+- **9 F-item**: F396 + F379 + F380 + F381 + F382 + F387 + F388 + F391 = 8 ✅ DONE / F392 ⚠️ skeleton
+- **Match**: 100% (autopilot self) — CI E2E 실측 반영 시 조정 필요 (실 구현 품질은 Sprint 227 F401 복구 후 재평가)
+- **CI 이력**: 1차 PR #27 E2E 37/45 fail (14분 1초) → `b87ecd7` revert → 2차 CI 3/3 PASS → merge
+- **Design 역동기화**: `docs/02-design/features/sprint-226.design.md` autopilot 신설 + 세션 229 revert 반영 필요 (별도 작업)
+- **Report**: `docs/04-report/features/sprint-226.report.md` autopilot 신설
+- **Pilot 아티팩트**: `docs/03-analysis/features/section-only-pilot-f388.md` (F388 실사용자 인터뷰 3건)
+- **신규 라우트**: `/engineer/workbench/:id` (Split View) + `GET /skills/:id/provenance/resolve` (svc-skill)
+- **TD-41 P1 유지**: Sprint 227 F401로 완전 해소 작업 이관
+- **신규 TD 후보**: (1) autopilot local TEST=pass ≠ CI E2E pass 3연속 재현(S219/S220/S226) → rules/ 승격, (2) task-daemon CI timeout < 확장 E2E 실 소요 (15분+) → daemon timeout 상향 검토
 
 ---
 
@@ -420,3 +433,4 @@ Sprint 226 완료 기준 (기존 "S221 완료 시" → "Sprint 226 완료 시"):
 |---------|------|---------|--------|
 | 0.1 | 2026-04-21 | 초안 — PRD v0.3 기반 Plan 작성, F-item 15건 제안, Sprint 219~222 분해, R2 전이 9건 F-item 매핑 | Sinclair |
 | 0.2 | 2026-04-21 (세션 229) | Sprint 223/224 MERGED 반영 + §11 Follow-up Plan 추가 (Sprint 226 9 F-item 확정 — F396 신규 위생 + TD-41을 F392에 통합, Sprint 227 Should 확정 포함) + §10 Next Steps 체크 갱신 | Sinclair |
+| 0.3 | 2026-04-22 (세션 229) | Sprint 226 ✅ MERGED PR #27 `4d35270` 결과 반영 — §11.6 추가 (8/9 F-item DONE, F392 partial, TD-41 완전 해소를 Sprint 227 F401로 이관), §11.5 착수 지시 체크 갱신 | Sinclair |

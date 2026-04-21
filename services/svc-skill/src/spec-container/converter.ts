@@ -93,7 +93,13 @@ export function convertSpecContainerToSkillPackage(
     },
     ontologyRef: {
       graphId: `spec-container:${input.specContainerId}`,
-      termUris: [],
+      // P4: SKOS-style term URIs from unique skill tags
+      termUris: [...new Set(input.tags)].map(
+        (tag) =>
+          `https://ai-foundry.ktds.com/terms/${input.domain.toLowerCase()}#${tag}`,
+      ),
+      // P5: domain-scoped SKOS concept scheme
+      skosConceptScheme: `https://ai-foundry.ktds.com/schemes/${input.domain.toLowerCase()}`,
     },
     provenance: {
       sourceDocumentIds,

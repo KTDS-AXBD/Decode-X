@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { convertSpecContainerToSkillPackage } from "./converter.js";
 import { SkillPackageSchema } from "@ai-foundry/types";
-import { scoreTraceable } from "../scoring/ai-ready.js";
+import { scoreTraceable, scoreSemanticConsistency } from "../scoring/ai-ready.js";
 import type { SpecContainerInput } from "./types.js";
 
 const baseInput: SpecContainerInput = {
@@ -145,5 +145,30 @@ describe("convertSpecContainerToSkillPackage", () => {
     const tr = scoreTraceable(pkg);
     expect(tr.score).toBeCloseTo(1.0, 3);
     expect(tr.pass).toBe(true);
+  });
+
+  // F394: SC patch (P4~P5) — Semantic Consistency score 0.30 → 1.00
+  it("P4: termUris generated from input tags as SKOS URIs", () => {
+    const pkg = convertSpecContainerToSkillPackage(baseInput);
+    expect(pkg.ontologyRef.termUris).toContain(
+      "https://ai-foundry.ktds.com/terms/lpon#lpon",
+    );
+    expect(pkg.ontologyRef.termUris).toContain(
+      "https://ai-foundry.ktds.com/terms/lpon#voucher",
+    );
+  });
+
+  it("P5: skosConceptScheme set to domain-scoped URI", () => {
+    const pkg = convertSpecContainerToSkillPackage(baseInput);
+    expect(pkg.ontologyRef.skosConceptScheme).toBe(
+      "https://ai-foundry.ktds.com/schemes/lpon",
+    );
+  });
+
+  it("P4~P5: SC score reaches 1.00", () => {
+    const pkg = convertSpecContainerToSkillPackage(baseInput);
+    const sc = scoreSemanticConsistency(pkg);
+    expect(sc.score).toBeCloseTo(1.0, 3);
+    expect(sc.pass).toBe(true);
   });
 });

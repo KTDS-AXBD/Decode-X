@@ -555,7 +555,7 @@
 - [x] F394 (AIF-PLAN-037 G-1 Phase 2 P4~P5, **P0**, Sprint 225, `a9f078e`): **converter.ts Semantic Consistency 패치** ✅ — (P4) `ontologyRef.termUris`를 policy.tags 유니크 → SKOS URI 생성(`https://ai-foundry.ktds.com/terms/{domain}#{tag}`), (P5) `ontologyRef.skosConceptScheme` 설정(`https://ai-foundry.ktds.com/schemes/{domain}`). **SC 0.30 → 1.00** (예상 +0.11 → 실측 +0.11)
 - [x] F395 (AIF-PLAN-037 G-1 Phase 2 검증, **P0**, Sprint 225, `2c6dee5`): **converter.test.ts 업데이트 + baseline-2 산출** ✅ — 기존 테스트 84 lines 신규 assertion 추가 + `reports/ai-ready-baseline-2-2026-04-21.json` 127 lines 산출. **7/7 PASS mean 0.916**. G-1 Phase 3 즉시 착수 가능
 
-**Sprint 226 (S3 — M-UX-3 Engineer Workbench, 📋 PLANNED, ← Sprint 225 이관):**
+**Sprint 226 (S3 — M-UX-3 Engineer Workbench, 🔧 IN_PROGRESS, ← Sprint 225 이관):**
 - [ ] F396 (AIF-REQ-036 위생 선행, **P1**, Sprint 226 첫 항목, 1.5h): **Gap-1 root 중복 5건 정리 + Sidebar 라우트 정합성 점검** — Sprint 224 soft-archive 5건(`pages/{analysis,benchmark,poc-ai-ready,poc-ai-ready-detail,poc-phase-2-report}.tsx`)이 root + `_archived/` 양쪽 존재 → `_archived/` 일원화(root 5건 삭제). `apps/app-web/src/app.tsx` redirect 5건 유지 검증. `Sidebar.tsx` 6 그룹(Dashboard + Executive/Extract/Verify/Deliver/Admin) 14 링크 중 실재 라우트 매칭률 100% 확인. typecheck + lint + E2E smoke PASS 후 이어서 F391/F379 착수
 - [ ] F379 (AIF-REQ-036 M-UX-3, **P0**, Sprint 226, 6h): **Engineer Workbench Split View** — 좌 Spec / 우 재구성 마크다운 + section 앵커 스크롤. 원본 소스 줄 하이라이트는 Out-of-Scope(F364 별도). KPI-2 ≤ 3 클릭 목표
 - [ ] F380 (AIF-REQ-036 M-UX-3, **P0**, Sprint 226, 4h): **Provenance Inspector** — 우측 drawer + Provenance 그래프 탐색. F391 API 응답 소비

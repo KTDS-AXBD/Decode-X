@@ -6,9 +6,9 @@ BRANCH=sprint/228
 SCOPE=AIF-PLAN-037 G-1 Phase 3 — 7 lpon-* Packaging + /handoff/submit × 7 + Foundry-X production D1 handoff_jobs 조회 + AIF-ANLS-031 증빙 리포트 (본부장 리뷰용). 결과 = M-2 Production E2E 1/7 → 7/7 달성 목표. Sprint 225 baseline-2 7/7 PASS @ 0.8 mean 0.916 선행 완료.
 PLAN_DOC=docs/01-plan/features/phase-3-gap-remediation.plan.md
 CREATED=2026-04-21T22:58:47+09:00
-CHECKPOINT=design
-MATCH_RATE=
-TEST_RESULT=
+CHECKPOINT=analyze
+MATCH_RATE=97
+TEST_RESULT=pass
 
 # F-ITEMS 상세
 # F397 (P0, 1h): 7 lpon-* containers packaging — scripts/package-spec-containers.ts로 lpon-{budget,charge,gift,payment,purchase,refund,settlement} 7건 → POST /skills/from-spec-container (svc-skill Production) 호출 → R2 .skill.json + D1 skills INSERT. 각 skillId + AI-Ready score 7건 JSON 리포트 (reports/packaging-2026-04-21.json). lpon-charge skillId 66f5e9cc-77f9-406a-b694-338949db0901 재사용 검토.

@@ -63,6 +63,7 @@ vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-skill", LLM_ROUTER_URL = "
 binding = "DB_SKILL"
 database_name = "db-skill-staging"
 database_id = "2ed51d83-f7c1-4835-98e0-65b548d79135"
+migrations_dir = "../../infra/migrations/db-skill"
 
 [[env.staging.r2_buckets]]
 binding = "R2_SKILL_PACKAGES"
@@ -102,6 +103,7 @@ vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-skill", LLM_ROUTER_URL 
 binding = "DB_SKILL"
 database_name = "db-skill"
 database_id = "96e6ac0c-eefa-45f5-9c07-4fd84a0f1df1"
+migrations_dir = "../../infra/migrations/db-skill"
 
 [[env.production.r2_buckets]]
 binding = "R2_SKILL_PACKAGES"

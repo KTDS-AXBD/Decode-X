@@ -42,6 +42,7 @@ vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-ingestion", MAX_FILE_SIZE_
 binding = "DB_INGESTION"
 database_name = "db-ingestion-staging"
 database_id = "101ab983-2f40-482e-b658-567695580e3b"
+migrations_dir = "../../infra/migrations/db-ingestion"
 
 [[env.staging.r2_buckets]]
 binding = "R2_DOCUMENTS"
@@ -61,6 +62,7 @@ vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-ingestion", MAX_FILE_SI
 binding = "DB_INGESTION"
 database_name = "db-ingestion"
 database_id = "d0039ffe-48b1-456f-9b6f-0e267c46168a"
+migrations_dir = "../../infra/migrations/db-ingestion"
 
 [[env.production.r2_buckets]]
 binding = "R2_DOCUMENTS"

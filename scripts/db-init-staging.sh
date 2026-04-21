@@ -44,11 +44,11 @@ for svc in svc-ingestion svc-extraction svc-policy svc-ontology svc-skill; do
   fi
 
   if [[ "$DRY_RUN" == "true" ]]; then
-    echo "  [dry-run] wrangler d1 migrations apply $binding --env staging"
+    echo "  [dry-run] wrangler d1 migrations apply $binding --env staging --remote"
     continue
   fi
 
-  if ! (cd "$svc_dir" && npx wrangler d1 migrations apply "$binding" --env staging 2>&1); then
+  if ! (cd "$svc_dir" && npx wrangler d1 migrations apply "$binding" --env staging --remote 2>&1); then
     echo "  ERROR: migration failed for $svc" >&2
     FAILED=$((FAILED + 1))
   else

@@ -191,23 +191,23 @@ jobs:
 
       - name: Apply D1 migrations — svc-ingestion
         working-directory: services/svc-ingestion
-        run: npx wrangler d1 migrations apply DB_INGESTION --env "$DEPLOY_ENV"
+        run: npx wrangler d1 migrations apply DB_INGESTION --env "$DEPLOY_ENV" --remote
 
       - name: Apply D1 migrations — svc-extraction
         working-directory: services/svc-extraction
-        run: npx wrangler d1 migrations apply DB_EXTRACTION --env "$DEPLOY_ENV"
+        run: npx wrangler d1 migrations apply DB_EXTRACTION --env "$DEPLOY_ENV" --remote
 
       - name: Apply D1 migrations — svc-policy
         working-directory: services/svc-policy
-        run: npx wrangler d1 migrations apply DB_POLICY --env "$DEPLOY_ENV"
+        run: npx wrangler d1 migrations apply DB_POLICY --env "$DEPLOY_ENV" --remote
 
       - name: Apply D1 migrations — svc-ontology
         working-directory: services/svc-ontology
-        run: npx wrangler d1 migrations apply DB_ONTOLOGY --env "$DEPLOY_ENV"
+        run: npx wrangler d1 migrations apply DB_ONTOLOGY --env "$DEPLOY_ENV" --remote
 
       - name: Apply D1 migrations — svc-skill
         working-directory: services/svc-skill
-        run: npx wrangler d1 migrations apply DB_SKILL --env "$DEPLOY_ENV"
+        run: npx wrangler d1 migrations apply DB_SKILL --env "$DEPLOY_ENV" --remote
 
   # -----------------------------------------------------------------------
   # Deploy services (matrix strategy)

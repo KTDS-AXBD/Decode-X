@@ -208,6 +208,10 @@
 
 > `docs/archive/2026-03/` — 별도 인덱스 참조
 
+## 보조 자료
+
+- [`INDEX-inventory-2026-04-21.md`](INDEX-inventory-2026-04-21.md) — `/ax:gov-doc index` dry-run 전수 inventory(227건). 이 INDEX는 큐레이션, inventory는 raw. frontmatter 누락 90건 보강 시 대상 목록 (TD-29 참조)
+
 ---
 
 **통계**: 활성 문서 ~143개 (SPEC 2 + PLAN 36 + DSGN 28 + ANLS 36 + RPRT 34 + GUID 1 + IDEN 1 + OPS 4 + PoC 6 + REQ 5), 아카이브 12+개

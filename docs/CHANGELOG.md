@@ -2,6 +2,24 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 218 (2026-04-21)
+**거버넌스 정합성 보강 — VER-WARN 0건, GOV-002 5/5 PASS, INDEX inventory 보고서 + TD-29 등록**:
+- ✅ `/ax:daily-check`: 환경 점검 14항목 PASS, SPEC.md "마지막 실측" drift 3건 자동 보정 (migrations 21→23, db-skill 0006→0007, test files 109→113, 세션 211→218).
+- ✅ **VER-WARN false positive 5건 → 0건 (ax-marketplace upstream patch)**: `KTDS-AXBD/ax-plugin@7ac07e2` SPEC.md 인라인 버전 마커 검출 정밀화 — 단독 닫힘 괄호 강제(`\(v\d+(\.\d+)+\)`) + 백틱 파일명 화이트리스트(`.md/.docx/.json/.yaml/.yml/.html/.sh/.ts/.js/.py/.sql/.toml`). session-init.sh ↔ check-version.sh 동일 필터로 통일. 회귀 테스트 정당 7케이스 모두 제외 + 진짜 인라인 마커 2건 정상 검출.
+- ✅ **GOV-002 §4 system-version stale 6건 → 0건**: (1) ax-marketplace `864aa54` exclude 패턴 `docs/archive/*` → `*/archive/*` 확장 (feature별 하위 archive 인식, false positive 2건 자동 해소), (2) 활성 4건 frontmatter `system-version: 0.2.0 → 0.7.0` 갱신 (phase-2-pipeline.analysis / phase-2-batch2-pipeline.analysis / decode-x-v1.3-phase-3 prd-final / interview-log).
+- ✅ **GOV-002 일관성 검증 5/5 PASS**: package.json 0.7.0 + git tag v0.7.0 + SPEC 레거시 마커 0 + 문서 system-version 정상 + MEMORY.md 일치.
+- ✅ **`/ax:gov-doc` Phase 3 신규 3건 INDEX 등록**: REQ-INTERVIEW 섹션 (2)→(5) — prd-final.md(AIF-PRD-decode-x-v1.3-phase-3 v1.2 Ready) + interview-log.md(AIF-INTV v1.0 Active) + review-history.md. 통계 행 ~140→~143개.
+- ✅ **`/ax:gov-doc index` dry-run + 보존**: docs/ 전수 inventory 생성(227건 = 137 frontmatter + 90 누락). 자동 INDEX 교체 거부(품질 저하 위험: (no-fm) 90건 + review/round-* 12건 noise + 수기 큐레이션 손실). `docs/INDEX-inventory-2026-04-21.md`로 rename, INDEX.md "보조 자료" 섹션에 링크. 카테고리 격차 가시화: PoC +17, REQ-INTERVIEW +25, PLAN +10, DSGN +11.
+- ✅ **TD-29 신규 등록**: docs/ frontmatter 누락 90건 (40%) GOV-001 위반. 누락 주요 영역(features/sprint-* 35 + poc 13 + review/round-* 12 + decode-x-v1.2 6 + restructuring 3 + contracts 3 + 직속 4) + 오타 디렉토리 `03-plan`/`03-report`/`06-report` 정리 필요. P3.
+
+**검증 결과**: turbo typecheck 14/14 cached PASS (FULL TURBO 74ms), check-version.sh + session-init.sh 회귀 테스트 정당 7건 제외 / 인라인 마커 2건 검출, ax-marketplace patch 2개 push + cache sync 완료.
+
+**발견/교훈**:
+- 외부 plugin patch 시 source(`~/.claude/plugins/marketplaces/`) ↔ cache(`~/.claude-work/.claude/plugins/cache/`) drift 가능 — 매번 cp 동기화 필요. 환경의 symlink 공유는 보장 아님.
+- check-version.sh exclude 패턴 `docs/archive/*` (top-level only)는 feature별 archive(`docs/req-interview/{feature}/archive/`) 인식 못함 — `*/archive/*`로 일반화 필수.
+- INDEX 자동 재생성은 frontmatter 정돈도 (40% 누락 시 noise 압도) ≥ 80% 달성 후 검토 권장. 그 전까지 "보조 inventory + 수기 큐레이션 INDEX" 병용이 현실적.
+- AskUserQuestion 4회 사용 (조치 옵션, 서브커맨드, 정정 방안, INDEX 처리) — 사용자 판단 필요한 분기점에서 일관 적용.
+
 ### 세션 211 (2026-04-19)
 **Phase 1 PoC 1.5일 압축 Full Auto 완주 — Sprint 1~5 전 단계 MERGED, Gate GO**:
 - ✅ `/ax:session-start "/sprint 2 --manual"`: 세션 210(Sprint 1 Plan v2.0) 이어받아 시작. Sprint 1 PR #9 MERGED 확인, main FF, `.foundry-x/` 전부 gitignore(`3765acf`), sprint-1 WT+브랜치 S253 L4 cleanup, signal ARCHIVED.

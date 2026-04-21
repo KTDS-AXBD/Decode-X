@@ -1,9 +1,9 @@
-// TODO(S224/TD-41): protected route — CF Access mock 후 재활성화.
+// F401 (TD-41): test.describe.skip 해제
 import { test, expect } from "@playwright/test";
 
-test.describe.skip("Extract group", () => {
+test.describe("Extract group", () => {
   test("dashboard renders", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/?legacy=1");
     await expect(page.getByRole("heading", { name: /대시보드 Dashboard/ })).toBeVisible();
   });
 
@@ -17,9 +17,10 @@ test.describe.skip("Extract group", () => {
     await expect(page.getByRole("heading", { name: /소스코드 업로드/ })).toBeVisible();
   });
 
-  test("analysis page renders", async ({ page }) => {
+  // /analysis → Navigate to /executive/overview (F377 archive)
+  test("analysis route redirects to executive overview", async ({ page }) => {
     await page.goto("/analysis");
-    await expect(page.getByRole("heading", { name: /문서 파싱 결과/ })).toBeVisible();
+    await expect(page).toHaveURL(/\/executive\/overview/);
   });
 
   test("analysis report page renders", async ({ page }) => {

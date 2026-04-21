@@ -1,7 +1,7 @@
-// TODO(S224/TD-41): protected route — CF Access mock 없이 /welcome redirect. 재활성화 S224.
+// F401 (TD-41): test.describe.skip 해제 — VITE_DEMO_MODE=1 + ?demo=1 bypass 적용
 import { test, expect } from "@playwright/test";
 
-test.describe.skip("Experience group", () => {
+test.describe("Experience group", () => {
   test("mockup page renders", async ({ page }) => {
     await page.goto("/mockup");
     await expect(page.getByRole("heading", { name: /Working Mock-up/ })).toBeVisible();
@@ -13,15 +13,16 @@ test.describe.skip("Experience group", () => {
   });
 });
 
-test.describe.skip("Admin group", () => {
+test.describe("Admin group", () => {
   test("ontology page renders", async ({ page }) => {
     await page.goto("/ontology");
     await expect(page.getByRole("heading", { name: /온톨로지 탐색기/ })).toBeVisible();
   });
 
-  test("benchmark page renders", async ({ page }) => {
+  // /benchmark → Navigate to /executive/overview (F377 archive)
+  test("benchmark route redirects to executive overview", async ({ page }) => {
     await page.goto("/benchmark");
-    await expect(page.getByRole("heading", { name: /Benchmark Report/ })).toBeVisible();
+    await expect(page).toHaveURL(/\/executive\/overview/);
   });
 
   test("settings page renders", async ({ page }) => {
@@ -35,7 +36,7 @@ test.describe.skip("Admin group", () => {
   });
 });
 
-test.describe.skip("Error handling", () => {
+test.describe("Error handling", () => {
   test("404 page renders for unknown route", async ({ page }) => {
     await page.goto("/nonexistent-route");
     await expect(page.getByText("페이지를 찾을 수 없습니다")).toBeVisible();

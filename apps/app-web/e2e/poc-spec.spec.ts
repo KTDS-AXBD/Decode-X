@@ -1,24 +1,18 @@
-// TODO(S224/TD-41): /poc/ai-ready, /org-spec protected route — CF Access mock 후 재활성화.
+// F401 (TD-41): test.describe.skip 해제
+// /poc/ai-ready → archived, redirects to /executive/overview (F377)
+// /org-spec → still active route
 import { test, expect } from "@playwright/test";
 
-test.describe.skip("PoC & Spec pages (Sprint 209~210)", () => {
-  test("AI-Ready 채점 리포트 페이지 렌더링", async ({ page }) => {
+test.describe("PoC & Spec pages (Sprint 209~210)", () => {
+  // /poc/ai-ready → Navigate to /executive/overview (F377 archive)
+  test("poc/ai-ready redirects to executive overview", async ({ page }) => {
     await page.goto("/poc/ai-ready");
-    await expect(
-      page.getByRole("heading", { name: /AI-Ready 6기준 채점 리포트/ }),
-    ).toBeVisible();
-    // KPI 섹션 존재 확인
-    await expect(page.getByText("KPI 달성도")).toBeVisible();
+    await expect(page).toHaveURL(/\/executive\/overview/);
   });
 
-  test("AI-Ready drill-down 페이지 진입", async ({ page }) => {
-    await page.goto("/poc/ai-ready");
-    // 스킬 링크가 있으면 첫 번째 클릭
-    const skillLink = page.locator('a[href*="/poc/ai-ready/"]').first();
-    if (await skillLink.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await skillLink.click();
-      await expect(page.url()).toContain("/poc/ai-ready/");
-    }
+  test("poc/ai-ready drill-down redirects to executive overview", async ({ page }) => {
+    await page.goto("/poc/ai-ready/test-skill");
+    await expect(page).toHaveURL(/\/executive\/overview/);
   });
 
   test("Org 종합 Spec 페이지 렌더링", async ({ page }) => {

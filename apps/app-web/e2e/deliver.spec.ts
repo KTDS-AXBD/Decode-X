@@ -1,7 +1,7 @@
-// TODO(S224/TD-41): protected route — CF Access mock 후 재활성화.
+// F401 (TD-41): test.describe.skip 해제
 import { test, expect } from "@playwright/test";
 
-test.describe.skip("Deliver group", () => {
+test.describe("Deliver group", () => {
   test("skill catalog page renders", async ({ page }) => {
     await page.goto("/skills");
     await expect(page.getByRole("heading", { name: /Skill Marketplace/ })).toBeVisible();

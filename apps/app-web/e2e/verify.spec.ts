@@ -1,7 +1,7 @@
-// TODO(S224/TD-41): protected route — CF Access mock 후 재활성화.
+// F401 (TD-41): test.describe.skip 해제
 import { test, expect } from "@playwright/test";
 
-test.describe.skip("Verify group", () => {
+test.describe("Verify group", () => {
   test("HITL review page renders", async ({ page }) => {
     await page.goto("/hitl");
     await expect(page.getByRole("heading", { name: /HITL 검토/ })).toBeVisible();
@@ -16,5 +16,4 @@ test.describe.skip("Verify group", () => {
     await page.goto("/gap-analysis");
     await expect(page.getByRole("heading", { name: /Gap 분석/ })).toBeVisible();
   });
-
 });

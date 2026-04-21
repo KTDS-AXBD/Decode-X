@@ -14,6 +14,7 @@
 interface ProxyEnv {
   DEPLOY_ENV: string;
   INTERNAL_API_SECRET: string;
+  DEMO_MODE?: string; // CI E2E only — never set in production/preview
 }
 
 const ACCOUNT_SUBDOMAIN = "ktds-axbd";
@@ -34,6 +35,15 @@ export const onRequest: PagesFunction<ProxyEnv> = async (context) => {
     );
   }
   const segments = Array.isArray(pathSegments) ? pathSegments : [pathSegments];
+
+  // Demo mode: CI E2E bypass — DEMO_MODE env var + ?demo=1 param → stub user
+  if (
+    env.DEMO_MODE === "1" &&
+    url.searchParams.get("demo") === "1" &&
+    segments.join("/") === "auth/me"
+  ) {
+    return Response.json({ email: "e2e@test", role: "engineer", status: "active" });
+  }
 
   const environment = env.DEPLOY_ENV ?? "production";
   const gatewayBase = getGatewayUrl(environment);

@@ -1,0 +1,147 @@
+{
+  "round": 2,
+  "timestamp": "2026-04-21T11:00:16.221Z",
+  "total": 71,
+  "verdict": "추가 검토 권장",
+  "emoji": "🔄",
+  "item1": {
+    "score": 20,
+    "max": 20,
+    "reason": "가중밀도 3.6/1K자 (이전 5, Δ-1.4) [flaw+2, gap+3, risk-2]",
+    "totalIssues": 55,
+    "weightedIssues": 71,
+    "prevIssues": 52,
+    "density": 3.6,
+    "prevDensity": 5,
+    "severityBreakdown": {
+      "flaws": 8,
+      "gaps": 8,
+      "risks": 39,
+      "weighted": 71,
+      "raw": 55
+    }
+  },
+  "item2": {
+    "score": 15,
+    "max": 30,
+    "details": [
+      {
+        "name": "ChatGPT",
+        "verdict": "Conditional",
+        "ratio": 0.5
+      },
+      {
+        "name": "Gemini",
+        "verdict": "Conditional",
+        "ratio": 0.5
+      },
+      {
+        "name": "DeepSeek",
+        "verdict": "Conditional",
+        "ratio": 0.5
+      }
+    ],
+    "readyPercent": 50,
+    "count": 3
+  },
+  "item3": {
+    "score": 19,
+    "max": 30,
+    "details": [
+      {
+        "name": "핵심 문제 정의",
+        "max": 5,
+        "grade": "충실",
+        "matchedKeywords": [
+          "현재",
+          "문제",
+          "pain"
+        ],
+        "score": 5
+      },
+      {
+        "name": "사용자/이해관계자",
+        "max": 5,
+        "grade": "최소",
+        "matchedKeywords": [
+          "사용자"
+        ],
+        "score": 3
+      },
+      {
+        "name": "핵심 기능 범위",
+        "max": 5,
+        "grade": "최소",
+        "matchedKeywords": [],
+        "score": 3
+      },
+      {
+        "name": "Out-of-scope",
+        "max": 4,
+        "grade": "최소",
+        "matchedKeywords": [
+          "scope"
+        ],
+        "score": 2
+      },
+      {
+        "name": "KPI/성공 기준",
+        "max": 6,
+        "grade": "최소",
+        "matchedKeywords": [
+          "목표",
+          "kpi"
+        ],
+        "score": 3
+      },
+      {
+        "name": "MVP 기준",
+        "max": 5,
+        "grade": "최소",
+        "matchedKeywords": [
+          "mvp"
+        ],
+        "score": 3
+      }
+    ]
+  },
+  "item4": {
+    "score": 17,
+    "max": 20,
+    "details": [
+      {
+        "name": "사용자 관점",
+        "max": 7,
+        "grade": "충실",
+        "matchedKeywords": [
+          "ux",
+          "페르소나",
+          "사용 시나리오",
+          "온보딩"
+        ],
+        "score": 7
+      },
+      {
+        "name": "기술 관점",
+        "max": 7,
+        "grade": "충실",
+        "matchedKeywords": [
+          "기술 스택",
+          "api",
+          "인프라",
+          "백엔드"
+        ],
+        "score": 7
+      },
+      {
+        "name": "비즈니스 관점",
+        "max": 6,
+        "grade": "최소",
+        "matchedKeywords": [
+          "예산"
+        ],
+        "score": 3
+      }
+    ]
+  }
+}

@@ -9,14 +9,19 @@
  * then calls POST /skills/from-spec-container on svc-skill.
  */
 
-import { readFileSync, readdirSync, existsSync } from "fs";
-import { join, basename } from "path";
+import { readFileSync, readdirSync, existsSync, writeFileSync, mkdirSync } from "fs";
+import { join, basename, dirname } from "path";
+import { convertSpecContainerToSkillPackage } from "../services/svc-skill/src/spec-container/converter.js";
+import { scoreSkill } from "../services/svc-skill/src/scoring/ai-ready.js";
+import { AI_READY_OVERALL_THRESHOLD, type AiReadyScore } from "@ai-foundry/types";
 
 // ── CLI args ─────────────────────────────────────────────────────────
 const args = process.argv.slice(2);
 const isDryRun = args.includes("--dry-run");
+const withAiReady = args.includes("--with-ai-ready");
 const orgFilter = args.find((a, i) => args[i - 1] === "--org") ?? "lpon";
 const onlyFilter = args.find((a, i) => args[i - 1] === "--only");
+const reportPath = args.find((a, i) => args[i - 1] === "--report");
 const baseUrl =
   args.find((a, i) => args[i - 1] === "--url") ??
   process.env["SKILL_API_URL"] ??
@@ -248,9 +253,20 @@ async function main() {
     .map((d) => join(SPEC_CONTAINERS_DIR, d.name));
 
   console.log(`\n📦 Spec Container Packaging — ${dirs.length} directories found`);
-  console.log(`   org: ${orgFilter} | dry-run: ${isDryRun} | url: ${baseUrl}\n`);
+  console.log(
+    `   org: ${orgFilter} | dry-run: ${isDryRun}${withAiReady ? " +ai-ready" : ""} | url: ${baseUrl}${reportPath ? ` | report: ${reportPath}` : ""}\n`,
+  );
 
-  const results: { id: string; status: "ok" | "skip" | "error"; detail?: string }[] = [];
+  interface ContainerResult {
+    id: string;
+    status: "ok" | "skip" | "error";
+    detail?: string;
+    policyCount?: number;
+    testScenarioCount?: number;
+    aiReady?: AiReadyScore;
+  }
+
+  const results: ContainerResult[] = [];
 
   for (const dir of dirs) {
     const containerId = basename(dir);
@@ -264,8 +280,33 @@ async function main() {
     }
 
     if (isDryRun) {
-      console.log(`[dry-run] ${input.policies.length} policies, ${input.testScenarios.length} tests`);
-      results.push({ id: containerId, status: "ok", detail: "dry-run" });
+      const base: ContainerResult = {
+        id: containerId,
+        status: "ok",
+        detail: "dry-run",
+        policyCount: input.policies.length,
+        testScenarioCount: input.testScenarios.length,
+      };
+
+      if (withAiReady) {
+        try {
+          const pkg = convertSpecContainerToSkillPackage(input);
+          const score = scoreSkill(pkg);
+          base.aiReady = score;
+          const pass = score.passAiReady ? "✅" : "❌";
+          console.log(
+            `[dry-run] ${input.policies.length} pol / ${input.testScenarios.length} test → ai-ready ${score.overall.toFixed(3)} ${pass} (fail: ${score.failedCriteria.join(",") || "-"})`,
+          );
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : String(e);
+          console.log(`[dry-run] ${input.policies.length} pol / ${input.testScenarios.length} test → score error: ${msg}`);
+          base.detail = `score error: ${msg}`;
+        }
+      } else {
+        console.log(`[dry-run] ${input.policies.length} policies, ${input.testScenarios.length} tests`);
+      }
+
+      results.push(base);
       continue;
     }
 
@@ -300,6 +341,61 @@ async function main() {
   const skip = results.filter((r) => r.status === "skip").length;
   const error = results.filter((r) => r.status === "error").length;
   console.log(`\n📊 Summary: ✅ ${ok} ok | ⚠ ${skip} skip | ❌ ${error} error`);
+
+  // AI-Ready aggregate (dry-run --with-ai-ready only)
+  if (isDryRun && withAiReady) {
+    const scored = results.filter((r): r is ContainerResult & { aiReady: AiReadyScore } => !!r.aiReady);
+    const passed = scored.filter((r) => r.aiReady.passAiReady);
+    const overalls = scored.map((r) => r.aiReady.overall).sort((a, b) => b - a);
+    const mean = overalls.length === 0 ? 0 : overalls.reduce((s, v) => s + v, 0) / overalls.length;
+    console.log(
+      `\n🎯 AI-Ready Baseline (threshold ${AI_READY_OVERALL_THRESHOLD}):`,
+    );
+    console.log(
+      `   passed ${passed.length}/${scored.length} | mean ${mean.toFixed(3)} | max ${(overalls[0] ?? 0).toFixed(3)} | min ${(overalls.at(-1) ?? 0).toFixed(3)}`,
+    );
+    for (const r of scored.sort((a, b) => b.aiReady.overall - a.aiReady.overall)) {
+      const pass = r.aiReady.passAiReady ? "✅" : "❌";
+      console.log(
+        `   ${pass} ${r.id.padEnd(18)} overall=${r.aiReady.overall.toFixed(3)}  fail=[${r.aiReady.failedCriteria.join(",") || "-"}]`,
+      );
+    }
+
+    if (reportPath) {
+      mkdirSync(dirname(reportPath), { recursive: true });
+      const report = {
+        generatedAt: new Date().toISOString(),
+        thresholdOverall: AI_READY_OVERALL_THRESHOLD,
+        orgFilter,
+        summary: {
+          total: scored.length,
+          passed: passed.length,
+          failed: scored.length - passed.length,
+          mean: Math.round(mean * 1000) / 1000,
+          max: overalls[0] ?? 0,
+          min: overalls.at(-1) ?? 0,
+        },
+        containers: scored.map((r) => ({
+          id: r.id,
+          policyCount: r.policyCount ?? 0,
+          testScenarioCount: r.testScenarioCount ?? 0,
+          overall: r.aiReady.overall,
+          passAiReady: r.aiReady.passAiReady,
+          failedCriteria: r.aiReady.failedCriteria,
+          criteria: {
+            machineReadable: r.aiReady.criteria.machineReadable.score,
+            semanticConsistency: r.aiReady.criteria.semanticConsistency.score,
+            testable: r.aiReady.criteria.testable.score,
+            traceable: r.aiReady.criteria.traceable.score,
+            completeness: r.aiReady.criteria.completeness.score,
+            humanReviewable: r.aiReady.criteria.humanReviewable.score,
+          },
+        })),
+      };
+      writeFileSync(reportPath, JSON.stringify(report, null, 2));
+      console.log(`\n📝 Report written: ${reportPath}`);
+    }
+  }
 
   if (error > 0) process.exit(1);
 }

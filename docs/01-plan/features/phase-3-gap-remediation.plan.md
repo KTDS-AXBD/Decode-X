@@ -1,7 +1,7 @@
 ---
 code: AIF-PLAN-037
 title: Phase 3 Gap 해소 실행 계획 (G-1 · G-2 · G-3)
-version: 1.0
+version: 1.1
 status: Ready
 category: Plan
 system-version: 0.7.0
@@ -12,6 +12,7 @@ related:
   - docs/03-analysis/AIF-ANLS-030_phase-3-progress.md
   - docs/req-interview/decode-x-v1.3-phase-3/prd-final.md
   - SPEC.md §6 "Phase 8 — v1.3 Phase 3"
+  - reports/ai-ready-baseline-2026-04-21.json
 ---
 
 # Phase 3 Gap 해소 실행 계획
@@ -53,46 +54,81 @@ related:
 
 ---
 
-## G-1 · M-2 Tier-A 5/6 추가 확보 (P0, 2~4 Sprint)
+## G-1 · M-2 Tier-A 5/6 추가 확보 (P0, ~~2~4 Sprint~~ → **1~2 Sprint로 축소**)
+
+> **v1.1 업데이트 (세션 227, 2026-04-21)**: Phase 1 실측 완료. 시나리오 **C** 확정 + **converter.ts 3군데 구조적 결함 발견** → Phase 2 전략이 "container별 Fill"에서 "converter 패치 1회"로 **전환**. 예상 소요 축소.
 
 ### 현 상태 실측
-- **7 lpon-* containers 전수 보유**: `.decode-x/spec-containers/lpon-{budget,charge,gift,payment,...}/`
-- **현재 KPI**: 1/6 (lpon-charge HTTP 409 GATE_FAILED, AI-Ready 0.69<0.75)
+- **7 lpon-* containers 전수 보유**: `.decode-x/spec-containers/lpon-{budget,charge,gift,payment,purchase,refund,settlement}/`
+- **현재 KPI**: 1/6 (lpon-charge HTTP 409 GATE_FAILED, AI-Ready 0.691)
 - **packaging script**: TD-33 해소로 7/7 파싱 가능 확인 (세션 221)
 - **Production infra**: TD-34~40 전원 해소 (secret/D1/CI/env 4중 드리프트 근간 제거)
+- **Gate threshold (canonical)**: `AI_READY_OVERALL_THRESHOLD = 0.8` (`packages/types/src/skill.ts:209`). doc `0.75` 기재는 stale — 이하 모두 0.8 기준으로 재평가
 
 ### 3-Phase 실행
 
-#### Phase 1 — 현황 실측 (2h, 1 세션)
-**목표**: "7개 중 몇 개가 현재 Gate PASS 가능한가" 저비용 판단
+#### Phase 1 — 현황 실측 ✅ **완료 (세션 227, 실 소요 1h)**
 
 | 작업 | 시간 | 산출물 |
 |------|:----:|--------|
-| `scripts/package-spec-containers.ts`에 `--dry-run --with-ai-ready` 모드 추가 | 30min | AI-Ready 사전 측정 없이도 Empty Slot rate + 예상 점수 리포트 |
-| 7 containers 전수 dry-run 실행 | 30min | `reports/ai-ready-baseline-{date}.json` |
-| 시나리오 분기 결정 | 30min | AskUserQuestion으로 사용자 확정 |
+| `scripts/package-spec-containers.ts`에 `--with-ai-ready --report` 플래그 추가 | 30min | Shadow Real Scorer 호출 (LLM 비용 0, 결정적) |
+| 7 containers 전수 dry-run 실행 | 10min | `reports/ai-ready-baseline-2026-04-21.json` |
+| 시나리오 분기 결정 | 10min | 시나리오 **C** 확정 |
+| **[신규] Root Cause 진단** | 10min | SC/TR 0.30 고정 실패 원인 분해 |
 
-**시나리오 분기**:
-- **A** (대부분 0.75↑): Phase 2 스킵 → 즉시 Phase 3. 1 Sprint로 M-2 6/6 완결
-- **B** (2~3건만 0.75↑): Phase 3 우선 일부(2~3건) → M-2 4/6 부분 달성 → Phase 2 나머지
-- **C** (전원 ~0.69): Phase 2 전면 Fill 선행
+**baseline 결과** (모두 0.8 threshold FAIL):
 
-#### Phase 2 — Empty Slot Fill 강화 (시나리오 B/C만, 1~2 Sprint)
+| container | pol | tst | overall | MR | SC | TE | TR | CP | HR |
+|-----------|:---:|:---:|:-------:|:--:|:--:|:--:|:--:|:--:|:--:|
+| lpon-budget | 5 | 10 | **0.722** | 1.00 | 0.30 | 1.00 | 0.30 | 0.93 | 0.80 |
+| lpon-charge | 8 | 41 | 0.691 | 1.00 | 0.30 | 0.81 | 0.30 | 0.93 | 0.80 |
+| lpon-payment | 7 | 16 | 0.688 | 1.00 | 0.30 | 0.93 | 0.30 | 0.80 | 0.80 |
+| lpon-purchase | 5 | 10 | 0.683 | 1.00 | 0.30 | 0.90 | 0.30 | 0.80 | 0.80 |
+| lpon-settlement | 6 | 12 | 0.678 | 1.00 | 0.30 | 1.00 | 0.30 | 0.67 | 0.80 |
+| lpon-gift | 6 | 13 | 0.664 | 1.00 | 0.30 | 1.00 | 0.30 | 0.58 | 0.80 |
+| lpon-refund | 11 | 19 | 0.655 | 1.00 | 0.30 | 0.73 | 0.30 | 0.80 | 0.80 |
 
-**우선순위 매트릭스** (AI-Ready 6기준 영향도 × Fill 난이도):
+- 시나리오 **A** (대부분 0.80↑): ❌ 해당 없음
+- 시나리오 **B** (2~3건만 0.80↑): ❌ 해당 없음
+- 시나리오 **C** (전원 ~0.69): ✅ **확정** (mean 0.683, range 0.655~0.722)
 
-| Fill 대상 | AI-Ready 영향 | 난이도 | 우선순위 |
-|-----------|:------------:|:-----:|:-------:|
-| 정책 리스트 (BL/BP/BB/BG/BS) | **기준 3·5·6** 3개 | 중 | **P0** |
-| 비즈니스 룰 | 기준 1·2 | 중 | P1 |
-| 테스트 케이스 (TC-*) | 기준 6 | 저 | P1 |
-| Runbook | 기준 4 | 저 | P2 |
-| Contract | 기준 3 | 고 | P2 |
+**Root Cause 진단** (세션 227 신규):
+
+1. **SC = 0.30 고정**: `converter.ts:82-85` `ontologyRef.termUris=[]` + `skosConceptScheme` 미설정 → `scoreSemanticConsistency`의 0.4+0.3=0.7 contribution 전량 손실. domainConsistent 0.3만 반영.
+2. **TR = 0.30 고정**: `converter.ts:36-37` `policy.source.documentId = "${specContainerId}-rules"` 가 `provenance.sourceDocumentIds = [specContainerId]`와 **문자열 불일치** → coveredRatio=0 (0.5 손실). `pipeline.stages = ["spec-container-import"]` 1개뿐 (0.2 손실).
+3. **즉 두 failure는 container 내용 부족이 아닌 converter 전파 누락**. spec-container provenance.yaml에는 5+ sources, section, businessRules 등 실 메타가 살아있음에도 converter가 버림.
+
+#### Phase 2 — ~~Empty Slot Fill 강화~~ → **converter.ts 패치 중심 (0.5~1 Sprint)**
+
+> **전략 전환 근거**: Root Cause 진단 결과 SC/TR 0.30은 container별 변이가 없는 **구조적 상수**. container Fill로 해결 불가, converter 코드 수정이 유일한 경로.
+
+**패치 대상 3종** (`services/svc-skill/src/spec-container/converter.ts`):
+
+| # | 위치 | 현재 | 수정 | 영향 criteria |
+|:-:|------|------|------|---------------|
+| P1 | L36 `source.documentId` | `"${id}-rules"` | provenance.sources[].path 매핑 (rules 파일 기반) | TR coveredRatio: 0 → 1.0 (+0.5) |
+| P2 | L87 `sourceDocumentIds` | `[specContainerId]` | `[...provenance.sources.map(s => s.path ?? specContainerId)]` | TR sourceDocCount (이미 OK) |
+| P3 | L91-93 `pipeline.stages` | `["spec-container-import"]` | `["ingestion", "extraction", "policy-inference", "spec-container-import"]` | TR stageOk: false → true (+0.2) |
+| P4 | L82-85 `ontologyRef.termUris` | `[]` | policy.tags 유니크 추출 → SKOS-style URI 생성 (e.g. `https://ai-foundry.ktds.com/terms/lpon#${tag}`) | SC hasTermUris: false → true (+0.4) |
+| P5 | L82-85 `ontologyRef.skosConceptScheme` | undefined | `"https://ai-foundry.ktds.com/schemes/${domain}"` | SC hasSkos: false → true (+0.3) |
+
+**예상 점수 상승** (converter 패치 단독):
+- TR: 0.30 → **1.00** (+0.70 max, 실제로는 coveredRatio에 따라 0.85~1.00)
+- SC: 0.30 → **1.00** (termUris/skos/domain 전부 충족)
+- overall 상승분: `(0.7 + 0.7) / 6 ≈ +0.233` 산술 상한
+- 예상 overall: lpon-budget **0.955**, 최하 lpon-refund **0.888** — **7/7 PASS 가능성 매우 높음**
+
+**검증 단계**:
+1. converter.ts 3군데 패치 (2h)
+2. 기존 converter.test.ts assertion 업데이트 (1h)
+3. dry-run 재실행 → baseline-2.json 생성 → delta 비교 (30min)
+4. 7/7 PASS 확인 시 즉시 Phase 3 이동 (예상 경로)
+5. 부분 PASS 시 미달 container 한정 container-content Fill로 보완 (fallback 경로)
 
 **원칙**:
-- 1 lpon-* container 집중 (병렬 금지 — WIP 제한)
-- 각 Fill 후 AI-Ready 재채점 → 0.75 돌파 즉시 Phase 3 이동 (전원 Fill 대기 금지)
-- Gate threshold 조정(0.75 → 0.70) 절대 금지 — KPI 신뢰성 회복이 Phase 3 본질
+- P1~P5 **한 커밋에 묶지 말 것** — TR 패치(P1~P3)와 SC 패치(P4~P5)는 별도 커밋. 점수 기여 독립 측정용
+- converter 패치는 **기존 3,924 skill 재생성이 필요 없는 신규 container 인입 경로에만 영향**. production skills는 미변경 (변경 필요 시 별도 backfill 계획)
+- Gate threshold (0.8) 조정 금지 유지
 
 #### Phase 3 — Packaging + Submit + 증빙 (0.5 Sprint)
 
@@ -178,14 +214,14 @@ related:
 | Sprint | 세션 | Scope | 예상 | 선행 | 상태 |
 |:-----:|:----:|-------|:----:|:----:|:----:|
 | 223 | S225 (autopilot) | **G-2** PR #24 E2E fix + TD-41 신규 | 4h 14m | 없음 | ✅ 완료 (`c49d2ef`) |
-| 224 | - | **G-1 Phase 1** dry-run baseline + ai-ready 사전 측정 | 반일 (2h) | 없음 | 📋 PLANNED |
-| 225~226 | - | **G-1 Phase 2** Empty Slot Fill (시나리오 B/C 시) | 1~2 Sprint | Phase 1 결과 | 📋 PLANNED (조건부) |
-| 227 | - | **G-1 Phase 3** Packaging+Submit+증빙 6건 | 0.5 Sprint | Phase 2 완료 or 시나리오 A | 📋 PLANNED |
-| 228~229 | - | **G-3 Phase 1** AI-Ready PoC 80건 | 1 Sprint | 독립 (G-1 Phase 3 후 권장) | 📋 PLANNED |
-| 230~231 | - | **G-3 Phase 2** 전수 5,214건 + API | 1 Sprint | PoC 정확도 ≥ 80% | 📋 PLANNED |
-| 232+ | - | **TD-41** CF Access mock E2E 재작성 | 1~2 Sprint | 후순위 | 📋 PLANNED |
+| - | S227 | **G-1 Phase 1** dry-run baseline + Root Cause 진단 | 1h 실측 | 없음 | ✅ 완료 (세션 227, `reports/ai-ready-baseline-2026-04-21.json`) |
+| 225 | - | **G-1 Phase 2** ~~Empty Slot Fill~~ → **converter.ts 패치 (P1~P5)** + dry-run 재측정 | **0.5~1 Sprint** | Phase 1 결과 | 📋 PLANNED (시나리오 C 확정, 전략 전환) |
+| 226 | - | **G-1 Phase 3** Packaging + /handoff/submit × 7 + 증빙 리포트 | 0.5 Sprint | Phase 2 7/7 PASS 확인 | 📋 PLANNED |
+| 227~228 | - | **G-3 Phase 1** AI-Ready PoC 80건 | 1 Sprint | 독립 (G-1 Phase 3 후 권장) | 📋 PLANNED |
+| 229~230 | - | **G-3 Phase 2** 전수 5,214건 + API | 1 Sprint | PoC 정확도 ≥ 80% | 📋 PLANNED |
+| 231+ | - | **TD-41** CF Access mock E2E 재작성 | 1~2 Sprint | 후순위 | 📋 PLANNED |
 
-**남은 작업 총 4~5 Sprint (1.5~2주)**. 본부장 리뷰 D-Day 임박 시 G-3 Phase 2 + TD-41은 Phase 4 이관 허용 (PRD §4.2).
+**남은 작업 총 ~~4~5~~ → 3~4 Sprint (1~1.5주)**. converter 패치 전략 전환으로 -1 Sprint 단축. 본부장 리뷰 D-Day 임박 시 G-3 Phase 2 + TD-41은 Phase 4 이관 허용 (PRD §4.2).
 
 ---
 

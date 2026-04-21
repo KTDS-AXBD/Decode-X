@@ -1,0 +1,155 @@
+{
+  "generatedAt": "2026-04-21T13:07:19.797Z",
+  "thresholdOverall": 0.8,
+  "orgFilter": "lpon",
+  "summary": {
+    "total": 7,
+    "passed": 0,
+    "failed": 7,
+    "mean": 0.683,
+    "max": 0.722,
+    "min": 0.655
+  },
+  "containers": [
+    {
+      "id": "lpon-budget",
+      "policyCount": 5,
+      "testScenarioCount": 10,
+      "overall": 0.722,
+      "passAiReady": false,
+      "failedCriteria": [
+        "semanticConsistency",
+        "traceable",
+        "overall"
+      ],
+      "criteria": {
+        "machineReadable": 1,
+        "semanticConsistency": 0.3,
+        "testable": 1,
+        "traceable": 0.3,
+        "completeness": 0.933,
+        "humanReviewable": 0.8
+      }
+    },
+    {
+      "id": "lpon-charge",
+      "policyCount": 8,
+      "testScenarioCount": 41,
+      "overall": 0.691,
+      "passAiReady": false,
+      "failedCriteria": [
+        "semanticConsistency",
+        "traceable",
+        "overall"
+      ],
+      "criteria": {
+        "machineReadable": 1,
+        "semanticConsistency": 0.3,
+        "testable": 0.813,
+        "traceable": 0.3,
+        "completeness": 0.933,
+        "humanReviewable": 0.8
+      }
+    },
+    {
+      "id": "lpon-payment",
+      "policyCount": 7,
+      "testScenarioCount": 16,
+      "overall": 0.688,
+      "passAiReady": false,
+      "failedCriteria": [
+        "semanticConsistency",
+        "traceable",
+        "overall"
+      ],
+      "criteria": {
+        "machineReadable": 1,
+        "semanticConsistency": 0.3,
+        "testable": 0.929,
+        "traceable": 0.3,
+        "completeness": 0.8,
+        "humanReviewable": 0.8
+      }
+    },
+    {
+      "id": "lpon-purchase",
+      "policyCount": 5,
+      "testScenarioCount": 10,
+      "overall": 0.683,
+      "passAiReady": false,
+      "failedCriteria": [
+        "semanticConsistency",
+        "traceable",
+        "overall"
+      ],
+      "criteria": {
+        "machineReadable": 1,
+        "semanticConsistency": 0.3,
+        "testable": 0.9,
+        "traceable": 0.3,
+        "completeness": 0.8,
+        "humanReviewable": 0.8
+      }
+    },
+    {
+      "id": "lpon-settlement",
+      "policyCount": 6,
+      "testScenarioCount": 12,
+      "overall": 0.678,
+      "passAiReady": false,
+      "failedCriteria": [
+        "semanticConsistency",
+        "traceable",
+        "overall"
+      ],
+      "criteria": {
+        "machineReadable": 1,
+        "semanticConsistency": 0.3,
+        "testable": 1,
+        "traceable": 0.3,
+        "completeness": 0.667,
+        "humanReviewable": 0.8
+      }
+    },
+    {
+      "id": "lpon-gift",
+      "policyCount": 6,
+      "testScenarioCount": 13,
+      "overall": 0.664,
+      "passAiReady": false,
+      "failedCriteria": [
+        "semanticConsistency",
+        "traceable",
+        "overall"
+      ],
+      "criteria": {
+        "machineReadable": 1,
+        "semanticConsistency": 0.3,
+        "testable": 1,
+        "traceable": 0.3,
+        "completeness": 0.583,
+        "humanReviewable": 0.8
+      }
+    },
+    {
+      "id": "lpon-refund",
+      "policyCount": 11,
+      "testScenarioCount": 19,
+      "overall": 0.655,
+      "passAiReady": false,
+      "failedCriteria": [
+        "semanticConsistency",
+        "traceable",
+        "overall"
+      ],
+      "criteria": {
+        "machineReadable": 1,
+        "semanticConsistency": 0.3,
+        "testable": 0.727,
+        "traceable": 0.3,
+        "completeness": 0.8,
+        "humanReviewable": 0.8
+      }
+    }
+  ]
+}

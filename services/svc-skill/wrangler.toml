@@ -56,7 +56,7 @@ FOUNDRY_X_URL = "http://localhost:8710"
 # Staging environment
 # ---------------------------------------------------------------------------
 [env.staging]
-vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-skill", LLM_ROUTER_URL = "https://svc-llm-router-staging.ktds-axbd.workers.dev", FOUNDRY_X_URL = "https://foundry-x-staging.ktds-axbd.workers.dev" }
+vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-skill", LLM_ROUTER_URL = "https://svc-llm-router-staging.ktds-axbd.workers.dev", FOUNDRY_X_URL = "https://foundry-x-api-staging.ktds-axbd.workers.dev" }
 
 [[env.staging.d1_databases]]
 binding = "DB_SKILL"
@@ -95,7 +95,7 @@ queue = "ai-foundry-pipeline-staging"
 # Production environment
 # ---------------------------------------------------------------------------
 [env.production]
-vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-skill", LLM_ROUTER_URL = "https://svc-llm-router-production.ktds-axbd.workers.dev", FOUNDRY_X_URL = "https://foundry-x-production.ktds-axbd.workers.dev" }
+vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-skill", LLM_ROUTER_URL = "https://svc-llm-router-production.ktds-axbd.workers.dev", FOUNDRY_X_URL = "https://foundry-x-api.ktds-axbd.workers.dev" }
 
 [[env.production.d1_databases]]
 binding = "DB_SKILL"

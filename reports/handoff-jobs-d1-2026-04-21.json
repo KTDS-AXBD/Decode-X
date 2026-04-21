@@ -1,0 +1,151 @@
+{
+  "generatedAt": "2026-04-21T23:30:00.000Z",
+  "summary": {
+    "total": 7,
+    "submitted": 7,
+    "gatePass": 7,
+    "foundryXRows": 7
+  },
+  "svcSkillHandoffJobs": [
+    {
+      "id": "HPK-lpon-5d59e8d7-790d-4a0b-91a3-30e316e88a26-MO992ZC2",
+      "container": "lpon-budget",
+      "skillId": "5d59e8d7-790d-4a0b-91a3-30e316e88a26",
+      "orgId": "lpon",
+      "serviceId": "LPON",
+      "status": "submitted",
+      "gatePass": 1,
+      "aiReadyOverall": 0.955,
+      "createdAt": "2026-04-21 23:23:57"
+    },
+    {
+      "id": "HPK-lpon-4591b69e-4e6a-4ac8-8261-ce177c35f994-MO9930XM",
+      "container": "lpon-charge",
+      "skillId": "4591b69e-4e6a-4ac8-8261-ce177c35f994",
+      "orgId": "lpon",
+      "serviceId": "LPON",
+      "status": "submitted",
+      "gatePass": 1,
+      "aiReadyOverall": 0.924,
+      "createdAt": "2026-04-21 23:23:59"
+    },
+    {
+      "id": "HPK-lpon-17bc6d1d-f8b6-49e9-8407-2b424b97cd6a-MO993298",
+      "container": "lpon-gift",
+      "skillId": "17bc6d1d-f8b6-49e9-8407-2b424b97cd6a",
+      "orgId": "lpon",
+      "serviceId": "LPON",
+      "status": "submitted",
+      "gatePass": 1,
+      "aiReadyOverall": 0.897,
+      "createdAt": "2026-04-21 23:24:01"
+    },
+    {
+      "id": "HPK-lpon-7dd016bb-7f66-4a68-b905-a68972d6203c-MO9933NV",
+      "container": "lpon-payment",
+      "skillId": "7dd016bb-7f66-4a68-b905-a68972d6203c",
+      "orgId": "lpon",
+      "serviceId": "LPON",
+      "status": "submitted",
+      "gatePass": 1,
+      "aiReadyOverall": 0.922,
+      "createdAt": "2026-04-21 23:24:03"
+    },
+    {
+      "id": "HPK-lpon-b923a11b-3b6e-4489-9600-2345fa395bce-MO99351F",
+      "container": "lpon-purchase",
+      "skillId": "b923a11b-3b6e-4489-9600-2345fa395bce",
+      "orgId": "lpon",
+      "serviceId": "LPON",
+      "status": "submitted",
+      "gatePass": 1,
+      "aiReadyOverall": 0.917,
+      "createdAt": "2026-04-21 23:24:04"
+    },
+    {
+      "id": "HPK-lpon-fc4204c8-af26-4c47-889d-11012e56c241-MO9936OX",
+      "container": "lpon-refund",
+      "skillId": "fc4204c8-af26-4c47-889d-11012e56c241",
+      "orgId": "lpon",
+      "serviceId": "LPON",
+      "status": "submitted",
+      "gatePass": 1,
+      "aiReadyOverall": 0.888,
+      "createdAt": "2026-04-21 23:24:07"
+    },
+    {
+      "id": "HPK-lpon-5c872ee3-f506-417d-8429-e23935cfd50b-MO993842",
+      "container": "lpon-settlement",
+      "skillId": "5c872ee3-f506-417d-8429-e23935cfd50b",
+      "orgId": "lpon",
+      "serviceId": "LPON",
+      "status": "submitted",
+      "gatePass": 1,
+      "aiReadyOverall": 0.911,
+      "createdAt": "2026-04-21 23:24:08"
+    }
+  ],
+  "foundryXPrototypeJobs": [
+    {
+      "id": "98670a9b-76dd-4835-8a07-77df5b43113e",
+      "container": "lpon-budget",
+      "skillId": "5d59e8d7-790d-4a0b-91a3-30e316e88a26",
+      "prdTitle": "LPON LPON Working Prototype — 5d59e8d7-790d-4a0b-91a3-30e316e88a26",
+      "status": "building",
+      "createdAt": 1776813837
+    },
+    {
+      "id": "4058c17e-4f2a-4d7e-9fcc-dab98bcfaf1c",
+      "container": "lpon-charge",
+      "skillId": "4591b69e-4e6a-4ac8-8261-ce177c35f994",
+      "prdTitle": "LPON LPON Working Prototype — 4591b69e-4e6a-4ac8-8261-ce177c35f994",
+      "status": "queued",
+      "createdAt": 1776813839
+    },
+    {
+      "id": "4fe9344f-dbc6-4f76-8dbd-c9ee04b76e0d",
+      "container": "lpon-gift",
+      "skillId": "17bc6d1d-f8b6-49e9-8407-2b424b97cd6a",
+      "prdTitle": "LPON LPON Working Prototype — 17bc6d1d-f8b6-49e9-8407-2b424b97cd6a",
+      "status": "queued",
+      "createdAt": 1776813841
+    },
+    {
+      "id": "1f8ad735-67ce-4ef8-a234-4a18d576eb19",
+      "container": "lpon-payment",
+      "skillId": "7dd016bb-7f66-4a68-b905-a68972d6203c",
+      "prdTitle": "LPON LPON Working Prototype — 7dd016bb-7f66-4a68-b905-a68972d6203c",
+      "status": "queued",
+      "createdAt": 1776813843
+    },
+    {
+      "id": "27c3731b-94fe-42d7-b289-194c9afc311c",
+      "container": "lpon-purchase",
+      "skillId": "b923a11b-3b6e-4489-9600-2345fa395bce",
+      "prdTitle": "LPON LPON Working Prototype — b923a11b-3b6e-4489-9600-2345fa395bce",
+      "status": "queued",
+      "createdAt": 1776813845
+    },
+    {
+      "id": "d20442e1-0aec-494c-8a8e-7436e09df4bf",
+      "container": "lpon-refund",
+      "skillId": "fc4204c8-af26-4c47-889d-11012e56c241",
+      "prdTitle": "LPON LPON Working Prototype — fc4204c8-af26-4c47-889d-11012e56c241",
+      "status": "queued",
+      "createdAt": 1776813847
+    },
+    {
+      "id": "54413668-aa74-406c-859b-010eee72bc8c",
+      "container": "lpon-settlement",
+      "skillId": "5c872ee3-f506-417d-8429-e23935cfd50b",
+      "prdTitle": "LPON LPON Working Prototype — 5c872ee3-f506-417d-8429-e23935cfd50b",
+      "status": "queued",
+      "createdAt": 1776813848
+    }
+  ],
+  "crossCheck": {
+    "allSkillsInSvcSkillD1": true,
+    "allSkillsInFoundryXD1": true,
+    "mismatch": []
+  }
+}

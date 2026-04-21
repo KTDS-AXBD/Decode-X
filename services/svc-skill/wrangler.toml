@@ -38,6 +38,10 @@ service = "svc-extraction"
 binding = "SVC_INGESTION"
 service = "svc-ingestion"
 
+[[services]]
+binding = "SVC_FOUNDRY_X"
+service = "foundry-x-api"
+
 # Queue consumer removed — svc-queue-router is the sole consumer
 
 [[queues.producers]]
@@ -89,6 +93,10 @@ service = "svc-extraction-staging"
 binding = "SVC_INGESTION"
 service = "svc-ingestion-staging"
 
+[[env.staging.services]]
+binding = "SVC_FOUNDRY_X"
+service = "foundry-x-api-staging"
+
 [[env.staging.queues.producers]]
 binding = "QUEUE_PIPELINE"
 queue = "ai-foundry-pipeline-staging"
@@ -128,6 +136,10 @@ service = "svc-extraction-production"
 [[env.production.services]]
 binding = "SVC_INGESTION"
 service = "svc-ingestion-production"
+
+[[env.production.services]]
+binding = "SVC_FOUNDRY_X"
+service = "foundry-x-api"
 
 [[env.production.queues.producers]]
 binding = "QUEUE_PIPELINE"

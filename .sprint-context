@@ -1,13 +1,27 @@
-SPRINT_NUM=226
+SPRINT_NUM=228
 PROJECT=Decode-X
-BRANCH=sprint/226
-F_ITEMS=F396+F391+F379+F380+F381+F382+F387+F388+F392
-MILESTONE=M-UX-3 Engineer Workbench
-WAVE_ORDER=F396(위생) → F391(API) → F379/F380/F381(UX) → F382/F387/F388(운영) → F392+TD-41(QA)
-PLAN_DOC=docs/01-plan/features/AIF-REQ-036.plan.md §11 Follow-up Plan
-KPI_TARGETS=KPI-1 3분 설득 / KPI-2 Split View ≤ 3 클릭 / KPI-3 E2E 95% pass + 47 복원
-CHECKPOINT=design
-MATCH_RATE=100
+F_ITEMS=F397,F398,F399,F400
+F_TITLE=G-1 Phase 3 Packaging+Submit+Evidence
+BRANCH=sprint/228
+SCOPE=AIF-PLAN-037 G-1 Phase 3 — 7 lpon-* Packaging + /handoff/submit × 7 + Foundry-X production D1 handoff_jobs 조회 + AIF-ANLS-031 증빙 리포트 (본부장 리뷰용). 결과 = M-2 Production E2E 1/7 → 7/7 달성 목표. Sprint 225 baseline-2 7/7 PASS @ 0.8 mean 0.916 선행 완료.
+PLAN_DOC=docs/01-plan/features/phase-3-gap-remediation.plan.md
+CREATED=2026-04-21T22:58:47+09:00
+CHECKPOINT=session-end
+MATCH_RATE=97
 TEST_RESULT=pass
-CHECKPOINT=analyze
-CHECKPOINT=report
+
+# F-ITEMS 상세
+# F397 (P0, 1h): 7 lpon-* containers packaging — scripts/package-spec-containers.ts로 lpon-{budget,charge,gift,payment,purchase,refund,settlement} 7건 → POST /skills/from-spec-container (svc-skill Production) 호출 → R2 .skill.json + D1 skills INSERT. 각 skillId + AI-Ready score 7건 JSON 리포트 (reports/packaging-2026-04-21.json). lpon-charge skillId 66f5e9cc-77f9-406a-b694-338949db0901 재사용 검토.
+# F398 (P0, 1h): POST /handoff/submit × 7 Production 실 호출 — INTERNAL_API_SECRET=e2e-test-secret-2026 + FOUNDRY_X_SECRET 설정됨(양측). 7 skillId 각각 submit → HTTP 200 or GATE_FAILED 응답 로그. baseline-2 mean 0.916 > threshold 0.8이라 Gate PASS 기대. 1/7 이상 GATE_FAILED 시 TD 분리.
+# F399 (P0, 30min): Foundry-X production D1 handoff_jobs 7 rows 확인 — Foundry-X 레포 wrangler d1 execute --remote --env production --command "SELECT id, skill_id, org_id, status, created_at FROM handoff_jobs WHERE skill_id IN (...)". Cross-repo 접근 (세션 218 F355a 선례). reports/handoff-jobs-d1-2026-04-21.json 산출.
+# F400 (P0, 1h): AIF-ANLS-031 증빙 리포트 — docs/03-analysis/AIF-ANLS-031_m2-tier-a-production-evidence.md 신규 (본부장 리뷰 제출용). 각 skillId별: (1) spec-container path, (2) packaging AI-Ready score, (3) submit HTTP 응답, (4) Foundry-X D1 row. SPEC.md §5 "Foundry-X Production E2E 1/7" → "7/7" 갱신. PLAN-037 로드맵 G-1 Phase 3 ✅ 마킹. M-2 TD-25 패턴 최종 종결 증빙.
+
+# 의존성 순서
+# F397 → F398 → F399 → F400 (엄격 직렬)
+# F397 packaging 실패 시 F398~F400 블록 → 즉시 HITL / TD 분리
+
+# KPI
+# - Foundry-X production D1 handoff_jobs Tier-A 7서비스 각 1건 이상
+# - 각 skill별 HTTP 200 응답 로그 + D1 timestamp cross-check
+# - AIF-ANLS-031 리포트 작성 (본부장 리뷰 제출용)
+# - SPEC.md §5 "Foundry-X Production E2E" 1/7 → 7/7 갱신

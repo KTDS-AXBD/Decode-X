@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { convertSpecContainerToSkillPackage } from "./converter.js";
 import { SkillPackageSchema } from "@ai-foundry/types";
+import { scoreTraceable, scoreSemanticConsistency } from "../scoring/ai-ready.js";
 import type { SpecContainerInput } from "./types.js";
 
 const baseInput: SpecContainerInput = {
@@ -86,5 +87,88 @@ describe("convertSpecContainerToSkillPackage", () => {
   it("sets orgId in provenance", () => {
     const pkg = convertSpecContainerToSkillPackage(baseInput);
     expect(pkg.provenance.organizationId).toBe("org-lpon-001");
+  });
+
+  // F393: TR patch (P1~P3) — Traceable score 0.30 → 1.00
+  it("P1: policy source.documentId matches specContainerId when source has no path", () => {
+    const pkg = convertSpecContainerToSkillPackage(baseInput);
+    expect(pkg.policies[0]?.source.documentId).toBe("lpon-purchase");
+    expect(pkg.policies[1]?.source.documentId).toBe("lpon-purchase");
+  });
+
+  it("P1: policy source.documentId uses source path when available", () => {
+    const input: SpecContainerInput = {
+      ...baseInput,
+      provenance: {
+        ...baseInput.provenance,
+        sources: [
+          { type: "reverse-engineering", path: "/lpon/rules.yaml", confidence: 0.8 },
+        ],
+      },
+    };
+    const pkg = convertSpecContainerToSkillPackage(input);
+    expect(pkg.policies[0]?.source.documentId).toBe("/lpon/rules.yaml");
+  });
+
+  it("P2: sourceDocumentIds derived from source paths (fallback: specContainerId)", () => {
+    const pkg = convertSpecContainerToSkillPackage(baseInput);
+    expect(pkg.provenance.sourceDocumentIds).toEqual(["lpon-purchase"]);
+  });
+
+  it("P2: sourceDocumentIds contains multiple paths when sources have paths", () => {
+    const input: SpecContainerInput = {
+      ...baseInput,
+      provenance: {
+        ...baseInput.provenance,
+        sources: [
+          { type: "reverse-engineering", path: "/lpon/rules.yaml", confidence: 0.8 },
+          { type: "inference", path: "/lpon/spec.yaml", confidence: 0.7 },
+        ],
+      },
+    };
+    const pkg = convertSpecContainerToSkillPackage(input);
+    expect(pkg.provenance.sourceDocumentIds).toEqual([
+      "/lpon/rules.yaml",
+      "/lpon/spec.yaml",
+    ]);
+  });
+
+  it("P3: pipeline.stages has 4 entries (stageOk ≥ 3)", () => {
+    const pkg = convertSpecContainerToSkillPackage(baseInput);
+    expect(pkg.provenance.pipeline.stages).toHaveLength(4);
+    expect(pkg.provenance.pipeline.stages).toContain("spec-container-import");
+    expect(pkg.provenance.pipeline.stages).toContain("ingestion");
+  });
+
+  it("P1~P3: TR score reaches 1.00", () => {
+    const pkg = convertSpecContainerToSkillPackage(baseInput);
+    const tr = scoreTraceable(pkg);
+    expect(tr.score).toBeCloseTo(1.0, 3);
+    expect(tr.pass).toBe(true);
+  });
+
+  // F394: SC patch (P4~P5) — Semantic Consistency score 0.30 → 1.00
+  it("P4: termUris generated from input tags as SKOS URIs", () => {
+    const pkg = convertSpecContainerToSkillPackage(baseInput);
+    expect(pkg.ontologyRef.termUris).toContain(
+      "https://ai-foundry.ktds.com/terms/lpon#lpon",
+    );
+    expect(pkg.ontologyRef.termUris).toContain(
+      "https://ai-foundry.ktds.com/terms/lpon#voucher",
+    );
+  });
+
+  it("P5: skosConceptScheme set to domain-scoped URI", () => {
+    const pkg = convertSpecContainerToSkillPackage(baseInput);
+    expect(pkg.ontologyRef.skosConceptScheme).toBe(
+      "https://ai-foundry.ktds.com/schemes/lpon",
+    );
+  });
+
+  it("P4~P5: SC score reaches 1.00", () => {
+    const pkg = convertSpecContainerToSkillPackage(baseInput);
+    const sc = scoreSemanticConsistency(pkg);
+    expect(sc.score).toBeCloseTo(1.0, 3);
+    expect(sc.pass).toBe(true);
   });
 });

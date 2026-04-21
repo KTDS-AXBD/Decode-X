@@ -2,6 +2,18 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 221 (2026-04-21)
+**Production 1/7 실증 — M-2 KPI 첫 증거 (Sprint 219 회귀 5건 해소 + Foundry-X handoff 실 호출 성공)**:
+- ✅ **Foundry-X Production E2E 1/7 실사례**: lpon-charge 실 호출 증명 확보. `POST /handoff/submit` with `skillId=66f5e9cc-77f9-406a-b694-338949db0901` → HTTP 409 GATE_FAILED(AI-Ready 0.69<0.75). **인증·manifest·source-manifest·gate-check 전 구간 기능 정상** 동작 증명. Gate PASS 자체는 Track A Empty Slot Fill 강화 후 달성 예정.
+- ✅ **TD-34 해소 (P0)**: shared secret 양측 정렬. 사용자 `openssl rand -hex 32` 생성값을 Decode-X `FOUNDRY_X_SECRET` + Foundry-X `DECODE_X_HANDOFF_SECRET`에 동일하게 put. svc-skill production redeploy (Version `415addcd`).
+- ✅ **TD-33 해소**: F362 packaging script regex 0/7→7/7 복구. 기존 `/^\|\s*(BP-\d{3})\s*\|/`가 lpon-purchase만 매칭 → `(?:BL\|BP\|BB\|BG\|BS)-[A-Z]?\d{3}`로 확장.
+- ✅ **TD-37 신규+해소 (P0)**: `handoff.ts:78`이 SELECT하는 `document_ids` 컬럼 production 부재 drift. `infra/migrations/db-skill/0009_add_document_ids.sql` 신설+적용. Sprint 5 이후 한 번도 실 production에서 동작 안 한 drift 해소.
+- ✅ **TD-38 신규+해소 (P1)**: `0006_tacit_interview.sql` production 미적용 drift. F355a/F362 배포자가 0007/0008만 선택 적용. wrangler d1 execute로 수동 적용. TD-35와 함께 **CI/CD D1 migration 자동 파이프라인 필요성의 결정타**.
+- ✅ **Script 확장**: `scripts/package-spec-containers.ts`에 `--only <containerId>` CLI 플래그 추가. Sprint 220+ 2/7~6/7 실증 재활용.
+- 📌 **TD-35/36 잔존**: staging 자동 migration 파이프라인 부재 + Foundry-X `[env.production]` 섹션 부재. Sprint 220 선행 과제.
+- 📌 **Sprint 219 회귀 패턴 확증**: "완결" 주장 6건이 production에서 한 번도 검증 안 됐음. Sprint 215 TD-25 패턴 반복. 이번 세션으로 drift 모두 걷어내고 첫 E2E 증거 확보.
+- Commits: `5a04bf3` fix(sprint-221) + `c2d3673` feat(sprint-221).
+
 ### 세션 220 (2026-04-21)
 **AIF-REQ-036 신규 등록 — Phase 3 UX 재편 PRD v0.1 Draft (듀얼 트랙 + AXIS DS Full 연동)**:
 - ✅ `/ax:req-interview` 풀 사이클로 `docs/req-interview/decode-x-v1.3-phase-3-ux/` 폴더 스캐폴딩: interview-log 289줄 (Part 1~5 + Pre-interview §0) + prd-final v0.1 312줄 (11챕터) + review-history 96줄 (R1/R2 프롬프트 템플릿 준비).

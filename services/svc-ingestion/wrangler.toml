@@ -11,6 +11,7 @@ inspector_port = 9201
 binding = "DB_INGESTION"
 database_name = "db-ingestion"
 database_id = "d0039ffe-48b1-456f-9b6f-0e267c46168a"
+migrations_dir = "../../infra/migrations/db-ingestion"
 
 [[r2_buckets]]
 binding = "R2_DOCUMENTS"

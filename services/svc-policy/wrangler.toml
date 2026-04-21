@@ -11,6 +11,7 @@ inspector_port = 9203
 binding = "DB_POLICY"
 database_name = "db-policy"
 database_id = "48c22ca4-a7f8-4f3d-ae1b-e5dee4e8712a"
+migrations_dir = "../../infra/migrations/db-policy"
 
 # Service binding to svc-extraction for fetching extraction results (queue handler)
 [[services]]

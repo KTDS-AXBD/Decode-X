@@ -11,6 +11,7 @@ inspector_port = 9202
 binding = "DB_EXTRACTION"
 database_name = "db-structure"
 database_id = "698c88b5-5355-401d-960a-4d8aa74c3b2c"
+migrations_dir = "../../infra/migrations/db-structure"
 
 # Pipeline event bus producer (to emit extraction.completed)
 [[queues.producers]]

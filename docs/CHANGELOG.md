@@ -2,6 +2,18 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 229 (2026-04-21)
+**Sprint 225 ✅ MERGED — AIF-PLAN-037 G-1 Phase 2 converter.ts 패치 완결 (7/7 PASS @ 0.916)**:
+- ✅ **Sprint 225 WT 생성 + autopilot Full Auto**: SPEC §7 신규 F393/F394/F395 3건 등록(`31cfc60`) → Sprint 번호 재배치 (AIF-REQ-036 S3 M-UX-3 Sprint 225 → 226 이관, Should M-UX-4 → 227). WT manual fallback 경로(Phase 2a~2e): `git worktree add` + tmux session + wt.exe 탭 + signal CREATED. task-daemon 미존재 프로젝트라 autopilot 자체 merge 경로 선택.
+- ✅ **Autopilot 7m 27s 자체 완결**: WT Sonnet 4.6에서 Plan(기존 PLAN-037 재활용) → Implement 3 커밋(`b3d4003` F393 TR 패치 P1~P3 + `a9f078e` F394 SC 패치 P4~P5 + `2c6dee5` F395 baseline-2 산출) → session-end(`91daccd`) → PR #26 생성 → CI 3/3 green → squash merge → WT cleanup. Match **91.6%**. 7 commits → 4 files (+249/-23).
+- ✅ **7/7 PASS 달성** (`reports/ai-ready-baseline-2-2026-04-21.json`): threshold canonical 0.8 기준 all pass. mean **0.916**, max 0.955 (lpon-budget), min 0.888 (lpon-refund). **Phase 1 예측(+0.233 산술 상한)과 실측 정확히 일치** — Root Cause 진단 완벽 검증 + 7 container 개별 +0.233 균일 delta (converter 패치가 container 독립적임을 증명).
+- ✅ **converter.ts 5곳 패치**: (P1) `policy.source.documentId` ← `provenance.sources[].path` 매핑, (P2) `sourceDocumentIds` 복수 sources enumeration, (P3) `pipeline.stages` 4단계 확장, (P4) `ontologyRef.termUris` SKOS URI 생성(`https://ai-foundry.ktds.com/terms/{domain}#{tag}`), (P5) `ontologyRef.skosConceptScheme` 설정. converter.test.ts +84줄 신규 assertion.
+- ✅ **CI 3/3 green**: Migration Sequence Check ✅ + E2E Tests ✅ + Typecheck & Test ✅. PR #26 squash merge(`710eaca`) + branch auto-delete.
+- 📌 **교훈 3종**: (a) **실측=예측 100% 일치 증명**: Root Cause 진단이 scoring function wiring 분해에 기반했기에 가능. 이론 추정이 아닌 코드 경로 역추적. (b) **Autopilot 자체 merge 품질 임계값 확립**: Match 91.6% + CI all green + 7/7 PASS 3가지 신호 동시 충족 시 admin 개입 불필요. 이전 Sprint 223(admin squash)/224(sonnet 자동 merge)에 이어 Sprint 225는 **MERGING signal 기반 완전 자율**. (c) **1 session complete loop**: G-1 Phase 1 baseline 1h + Phase 2 converter 15m = **총 1h 15m에 2/3 phase 완주**. Root Cause 정확도 덕분에 Phase 2가 단순 구현으로 축소.
+- 📌 **실 소요 ~15m** (WT 생성 → MERGED, Plan 예상 6h 대비 **4%**). Plan 예상 0.5~1 Sprint도 대폭 단축.
+- 📌 **다음 P0**: G-1 Phase 3 (Packaging × 7 + /handoff/submit × 7 + Foundry-X production D1 조회 + AIF-ANLS-031 증빙 리포트). 예상 0.5 Sprint. Sprint 226으로 착수 가능.
+- Commits: `31cfc60` SPEC 선등록 → `b3d4003`/`a9f078e`/`2c6dee5`/`91daccd` WT 4건 → **`710eaca` (#26 squash)** → `d433fa1` SPEC 갱신.
+
 ### 세션 227 (2026-04-21)
 **AIF-PLAN-037 G-1 Phase 1 ✅ 완료 — AI-Ready baseline 실측 + converter.ts 전략 전환 발견**:
 - ✅ **Shadow Real Scorer 신설** (`4a8352c`): `scripts/package-spec-containers.ts`에 `--with-ai-ready --report <path>` 플래그 추가. `services/svc-skill/src/scoring/ai-ready.ts` `scoreSkill()`이 순수 결정적(LLM 비용 0)이라는 발견으로 PLAN-037 "사전 측정 없이 Empty Slot rate만" 가정 뒤집음 — production gate와 완전 동일한 점수를 0 비용으로 산출. `convertSpecContainerToSkillPackage()` + `scoreSkill()` 스크립트에서 직접 import. 108 insertions.

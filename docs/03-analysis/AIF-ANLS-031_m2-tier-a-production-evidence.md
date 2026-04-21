@@ -50,14 +50,15 @@ AIF-PLAN-037 G-1 Phase 3 (Sprint 228) 실행 결과를 담는다:
 | Container | skillId | AI-Ready | policies | testScenarios | R2 Key |
 |-----------|---------|:--------:|:--------:|:-------------:|--------|
 | lpon-budget | `5d59e8d7-790d-4a0b-91a3-30e316e88a26` | **0.955** ✅ | 5 | 10 | `skill-packages/5d59e8d7...` |
-| lpon-charge | `4591b69e-4e6a-4ac8-8261-ce177c35f994` | **0.924** ✅ | 5 | 10 | `skill-packages/4591b69e...` |
-| lpon-gift | `17bc6d1d-f8b6-49e9-8407-2b424b97cd6a` | **0.897** ✅ | 5 | 10 | `skill-packages/17bc6d1d...` |
-| lpon-payment | `7dd016bb-7f66-4a68-b905-a68972d6203c` | **0.922** ✅ | 5 | 10 | `skill-packages/7dd016bb...` |
+| lpon-charge | `4591b69e-4e6a-4ac8-8261-ce177c35f994` | **0.924** ✅ | 8 | 41 | `skill-packages/4591b69e...` |
+| lpon-gift | `17bc6d1d-f8b6-49e9-8407-2b424b97cd6a` | **0.897** ✅ | 6 | 13 | `skill-packages/17bc6d1d...` |
+| lpon-payment | `7dd016bb-7f66-4a68-b905-a68972d6203c` | **0.922** ✅ | 7 | 16 | `skill-packages/7dd016bb...` |
 | lpon-purchase | `b923a11b-3b6e-4489-9600-2345fa395bce` | **0.917** ✅ | 5 | 10 | `skill-packages/b923a11b...` |
-| lpon-refund | `fc4204c8-af26-4c47-889d-11012e56c241` | **0.888** ✅ | 5 | 10 | `skill-packages/fc4204c8...` |
-| lpon-settlement | `5c872ee3-f506-417d-8429-e23935cfd50b` | **0.911** ✅ | 5 | 10 | `skill-packages/5c872ee3...` |
+| lpon-refund | `fc4204c8-af26-4c47-889d-11012e56c241` | **0.888** ✅ | 11 | 19 | `skill-packages/fc4204c8...` |
+| lpon-settlement | `5c872ee3-f506-417d-8429-e23935cfd50b` | **0.911** ✅ | 6 | 12 | `skill-packages/5c872ee3...` |
 
-**AI-Ready 통계**: min 0.888 / max 0.955 / **mean 0.916** — 전원 threshold 0.8 초과
+**AI-Ready 통계**: min 0.888 / max 0.955 / **mean 0.916** — 전원 threshold 0.8 초과  
+**Container 실측**: policies 합 **48** (min 5 lpon-budget/purchase, max 11 lpon-refund) / testScenarios 합 **121** (min 10, max 41 lpon-charge)
 
 ---
 

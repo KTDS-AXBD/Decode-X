@@ -58,7 +58,7 @@
 
 ## 5) Current Status
 
-- **Last Updated**: 2026-04-21 (세션 225 — **Sprint 223 ✅ MERGED (PR #24 `c49d2ef`)** AIF-REQ-036 S1 OAuth+기반 완결. F370~F389 (7 F-item): Google OAuth(CF Access JWT) + D1 users 0011 + Guest /welcome + AXIS DS tokens stub + Feature Flag skeleton + 온보딩 문서 4건 + DEMO_USERS 완전 폐기. Match 94% + 로컬 E2E 2 pass/45 skip/0 fail. **R1/R2 자동화 (OpenRouter 3 모델, 평균 75/100)**로 PRD v0.3 확정 → Plan+Design 문서(`f90b237`/`18035c0`) → Sprint 223 WT autopilot → PR #24 → E2E auth.setup DEMO_USERS 폐기 부수효과 수정(`aa57eda` + TD-41 신규) → CI webhook race 우회 → main과 TD-40 번호 conflict을 TD-41 재번호로 해결(`8a1a013`) → admin squash merge. **교훈**: autopilot이 SPEC §8 최근 P0 TD를 Sprint 목표로 오인 — `.sprint-context` 파일 없을 때 방향 이탈. 즉시 메시지 주입으로 복구. `/loop` dynamic mode 6 사이클 모니터링으로 상태 변화 적시 감지. 이전 마커: 세션 224 TD-36 ~~해소~~ Foundry-X wrangler env.production)
+- **Last Updated**: 2026-04-21 (세션 226 — **Sprint 224 🔧 착수 (AIF-REQ-036 S2)** Master에서 SPEC §6 Phase 9 v1.3 Phase 3 UX 재편 신설 + F370~F392 15건 공식 등록. F370~F374/F385/F389 7건 DONE 마킹(Sprint 223 MERGED 소급), F375/F376/F377/F378/F386/F390 6건 IN_PROGRESS 전환(Sprint 224 WT autopilot 범위). TD-41 Sprint 224 연계. AIF-REQ-036 PLANNED→IN_PROGRESS. 이전 마커: 세션 225 — **Sprint 223 ✅ MERGED (PR #24 `c49d2ef`)** AIF-REQ-036 S1 OAuth+기반 완결. F370~F389 (7 F-item): Google OAuth(CF Access JWT) + D1 users 0011 + Guest /welcome + AXIS DS tokens stub + Feature Flag skeleton + 온보딩 문서 4건 + DEMO_USERS 완전 폐기. Match 94% + 로컬 E2E 2 pass/45 skip/0 fail. **R1/R2 자동화 (OpenRouter 3 모델, 평균 75/100)**로 PRD v0.3 확정 → Plan+Design 문서(`f90b237`/`18035c0`) → Sprint 223 WT autopilot → PR #24 → E2E auth.setup DEMO_USERS 폐기 부수효과 수정(`aa57eda` + TD-41 신규) → CI webhook race 우회 → main과 TD-40 번호 conflict을 TD-41 재번호로 해결(`8a1a013`) → admin squash merge. **교훈**: autopilot이 SPEC §8 최근 P0 TD를 Sprint 목표로 오인 — `.sprint-context` 파일 없을 때 방향 이탈. 즉시 메시지 주입으로 복구. `/loop` dynamic mode 6 사이클 모니터링으로 상태 변화 적시 감지. 이전 마커: 세션 224 TD-36 ~~해소~~ Foundry-X wrangler env.production)
 - **Current Phase**: **Pilot Core 완료** — 5-Stage 역공학 파이프라인 실증 완료. 7 Workers + Gateway + Pages, 2-org 파일럿 (퇴직연금 948건 + 온누리 88건), policies 3,675 / skills 3,924. KPI: API Coverage 95.4%, Table Coverage 100%. REQ 24/32 DONE. E2E 47/47 PASS
 - **Foundry-X Production E2E 1/7 실사례** (세션 221, 2026-04-21): AIF-REQ-035 Phase 3 M-2 KPI 첫 정량 증거 확보. `POST /handoff/submit`로 lpon-charge(skillId `66f5e9cc-77f9-406a-b694-338949db0901`) 실 호출 → HTTP 409 GATE_FAILED(AI-Ready 0.69<0.75). 인증·manifest·source-manifest·gate-check 전 구간 기능 정상 동작 증명. Gate PASS는 Track A Empty Slot Fill 강화 후 달성 예정. 선행 해소: TD-34(shared secret 양측 put) + TD-37(document_ids 컬럼 추가) + TD-38(0006 tacit migration 적용)
 <!-- 마지막 실측 (daily-check 자동 보정 대상) -->
@@ -522,6 +522,64 @@
 
 > **세션 222 재편 (2026-04-21)**: Sprint 219~221 과정에서 production "자가보고 vs 실측" 갭 6건 연속 발견(TD-33~38). 그중 **TD-35(Staging 환경 방치, P1) + migration 자동 파이프라인 부재**가 production 드리프트의 근원 — M-2 KPI Production E2E 실 검증을 쌓기 전에 인프라 위생 선행 필수. Sprint 220 scope = **F366 CI D1 migration workflow 단독**으로 재편. 기존 F356-B(AI-Ready 전수 배치) + F357(AgentResume)은 Sprint 221+로 이관. 이유: Should Have 진도보다 Production 신뢰성 회복이 M-2 KPI 본질에 선행.
 
+### 🔧 Phase 9 — v1.3 Phase 3 UX 재편 (AIF-REQ-036, 듀얼 트랙 + AXIS DS 연동) — 🔧 IN_PROGRESS
+
+> **Plan**: `docs/01-plan/features/AIF-REQ-036.plan.md`
+> **Design**: `docs/02-design/features/AIF-REQ-036.design.md`
+> **PRD**: `docs/req-interview/decode-x-v1.3-phase-3-ux/prd-final.md` (v0.3, R1 79 + R2 71 평균 75/100 ✅, Ambiguity 0.175 착수 승인)
+> **목표**: Audience 우선순위 재정의 (본부장 + 전문 엔지니어 동등 트랙). Spec→Source 역추적 Split View(policy/rule/skill detail 좌측 vs 재구성 마크다운 section 앵커 우측). 기존 24 페이지 사용 빈도 기반 Archive 자동 제안. AXIS DS Full 연동(tokens + react + 도메인 특화 기여).
+> **착수일**: 2026-04-21 (세션 225, Sprint 223 MERGED 직후 Phase 9 공식 활성화)
+> **MVP 임계값**: S1(인증/기반) + S2(Executive View) + S3(Engineer Workbench) 3 Sprint 모두 DONE. Should(S4)는 체력 여유 시.
+
+**Sprint 223 (S1 — M-UX-1 인증 & 기반, ✅ MERGED PR #24 `c49d2ef`, 세션 225):**
+- [x] F370 ✅ (AIF-REQ-036 M-UX-1, **P0**, 세션 225): **Google OAuth (Cloudflare Access + Google IdP + Allowlist)** — `apps/app-web`에 CF Access JWT 검증 + `/auth/me` stub + Allowlist 도메인 필터. `CLOUDFLARE_ACCESS_AUD` + `GOOGLE_OAUTH_ALLOWED_DOMAINS` 환경변수. 앱 코드 OAuth zero, Zero Trust 보안 모델
+- [x] F371 ✅ (AIF-REQ-036 M-UX-1, **P0**, 세션 225): **D1 `users` 테이블 신설 + 0011_users.sql** — users 테이블(id/email/name/roles/last_login_at/created_at). CF Access JWT의 `iss/sub` 매핑. RLS 정책 준수
+- [x] F372 ✅ (AIF-REQ-036 M-UX-1, **P0**, 세션 225): **Guest 랜딩 페이지 `/welcome`** — 3줄 요약 + Google 로그인 CTA. 비인증 사용자 Auto-redirect. Access 전 화이트페이지 방지
+- [x] F373 ✅ (AIF-REQ-036 M-UX-1, **P1**, 세션 225): **AXIS DS Tier 1 `@axis-ds/tokens` CSS variable 주입** — 전역 토큰(color/spacing/typography) CSS 변수 주입. shadcn 기존 토큰과 공존. 단계적 전환 경로 확보
+- [x] F374 ✅ (AIF-REQ-036 M-UX-1, **P0**, 세션 225): **Feature Flag `?legacy=1` skeleton** — URL query 기반 듀얼 화면 토글. 롤아웃/롤백 경량. 실 분기 활성화는 Sprint 224 연계(TD-41)
+- [x] F385 ✅ (AIF-REQ-036 M-UX-1, **P1**, 세션 225): **§12 Rollout/온보딩 본문 작성** — PRD §12 보완, 2주 롤아웃 플랜(Day 1 Allowlist 5인 → Week 1 30인 → Week 2 전원) + FAQ + Fallback flow. R2 재발 방지
+- [x] F389 ✅ (AIF-REQ-036 M-UX-1, **P0**, 세션 225): **DEMO_USERS 폐기 + 5 페르소나 UI 제거 마이그레이션** — 레거시 DEMO_USERS 카드/로직 전수 제거. 부수효과로 E2E 10 spec skip → TD-41로 S224 연계
+
+**Sprint 224 (S2 — M-UX-2 Executive View, 🔧 IN_PROGRESS 세션 226):**
+- [ ] F375 (AIF-REQ-036 M-UX-2, **P0**, Sprint 224, 4h): **Executive View Overview + 4 Group 요약 위젯** — 본부장 첫 화면. 4 Group(Pipeline/Foundry-X/Quality/Archive) 요약 카드. 3분 파악 KPI-1 기준 설계
+- [ ] F376 (AIF-REQ-036 M-UX-2, **P0**, Sprint 224, 6h): **Foundry-X 핸드오프 실사례 타임라인 (6 서비스 round-trip) + hover/expand 상세** — Tier-A 6 서비스(결제/환불/선물/정산/구매/예산) 핸드오프 진행 타임라인. 실 데이터 혼합 예시 데이터(RP-8). AIF-REQ-035 Phase 3 데이터 의존
+- [ ] F377 (AIF-REQ-036 M-UX-2, **P0**, Sprint 224, 4h): **Archive 실행 (5 하드 삭제 + 5 재설계 + 11 이관) + 라우트 제거** — 기존 24 페이지 → 14 이하. `_archived/` 임시 격리 디렉토리 활용. F390 선행 실측 데이터 기반
+- [ ] F378 (AIF-REQ-036 M-UX-2, **P1**, Sprint 224, 2h): **Evidence 서브메뉴 (analysis-report + org-spec + poc-report 재배치)** — 3 페이지 통합 Evidence 서브메뉴로 접근성 확보
+- [ ] F386 (AIF-REQ-036 R2 전이 S220, **P1**, Sprint 224, 2h): **Spec↔Source 규제 준수/감사 스토리 강화** — Foundry-X 타임라인에 compliance 뱃지(SOX/GDPR 등) + 감사 로그 링크. R2 DeepSeek "규제 준수 스토리 명시" 조건 해소
+- [ ] F390 (AIF-REQ-036 R2 전이 S219, **P0**, Sprint 224 선행, 1h): **Cloudflare Web Analytics 활성화 + Archive 실측 데이터 수집 시작** — `ai-foundry-web` Pages project beacon 주입. Archive 실행(F377) 전 최소 2~4주 수집. 실 우선 RP-5 완화
+- [ ] TD-41 (Sprint 223 연계, **P1**, Sprint 224): **CF Access JWT mock E2E 복원 + F374 실 분기 활성화** — Playwright `page.route()` + msw로 `CF_Authorization` cookie 주입 + `/auth/me` stub. 10 spec test.describe.skip 해제
+
+**Sprint 225 (S3 — M-UX-3 Engineer Workbench, 📋 PLANNED):**
+- [ ] F379 (AIF-REQ-036 M-UX-3, **P0**, Sprint 225, 6h): **Engineer Workbench Split View** — 좌 Spec / 우 재구성 마크다운 + section 앵커 스크롤. 원본 소스 줄 하이라이트는 Out-of-Scope(F364 별도). KPI-2 ≤ 3 클릭 목표
+- [ ] F380 (AIF-REQ-036 M-UX-3, **P0**, Sprint 225, 4h): **Provenance Inspector** — 우측 drawer + Provenance 그래프 탐색. F391 API 응답 소비
+- [ ] F381 (AIF-REQ-036 M-UX-3, **P1**, Sprint 225, 4h): **AXIS DS Tier 2 `@axis-ds/react` 8종 교체** — Button/Card/Tabs/Dialog/Input/Select/Tooltip/Badge shadcn 래퍼 교체. 교체율 ≥ 80% 목표
+- [ ] F382 (AIF-REQ-036 M-UX-3, **P0**, Sprint 225, 4h): **Admin 기본** — Users CRUD + Organization + Health + Usage Dashboard. 서비스 운영 기반
+- [ ] F387 (AIF-REQ-036 R2 전이 S220~221, **P1**, Sprint 225, 3h): **Role별 Audit Log 설계 + Admin 페이지 노출** — 역할 매트릭스(Analyst/Reviewer/Developer/Client/Executive) audit log 스키마 + 필터/검색 UI
+- [ ] F388 (AIF-REQ-036 R2 전이 S221, **P1**, Sprint 225, 2h): **Section-only Fallback 실사용자 파일럿** — 3명 인터뷰 + 체감 측정. RP-7(ChatGPT 지적) 조기 검증
+- [ ] F391 (AIF-REQ-036 M-UX-3, **P0**, Sprint 225, 3h): **`GET /skills/:id/provenance/resolve` API 신설 (svc-skill)** — R2 + D1 + spec-container path/section 1회 집약. F379/F380 백엔드
+- [ ] F392 (AIF-REQ-036 M-UX-3, **P0**, Sprint 225, 4h): **QA/E2E 자동화** — Playwright + smoke + regression. KPI-3 통과율 ≥ 95%
+
+**Sprint 226 (Should — M-UX-4, 📋 PLANNED 체력 여유 시):**
+- [ ] F383 (AIF-REQ-036 Should, **P2**, Sprint 226, 8h): **AXIS DS Tier 3: 도메인 특화 컴포넌트 3종 PR 생성** — SpecSourceSplitView/ProvenanceInspector/StageReplayer를 `IDEA-on-Action/AXIS-Design-System` 레포에 재활용 가능한 형태로 기여
+- [ ] F384 (AIF-REQ-036 Should, **P2**, Sprint 226, 4h): **Guest/Demo 모드** — 읽기 전용 데이터. 외부 데모/영업용
+
+**완료 기준 (DoD, S221 완료 시)**:
+- KPI-1 본부장 3분 테스트 PASS
+- KPI-2 Split View 클릭 ≤ 3 (10건 샘플)
+- KPI-3 QA/E2E 95% 통과
+- Legacy Feature Flag 삭제 가능 상태 (스모크 PASS)
+- Production 배포 완료 (Cloudflare Pages + Access)
+- Ambiguity 0.175 → ≤ 0.15 실행 중 해소
+- AXIS DS 핵심 컴포넌트 교체율 ≥ 80%
+- 페이지 수 40% 감축 (24 → 14 이하)
+- SPEC.md §7 AIF-REQ-036 **IN_PROGRESS → DONE** 전환
+
+**Out-of-scope (Phase 4+ 이후)**: F364 Provenance v2(sourceLineRange 스키마 확장, 2~3 Sprint) + F365 pageRef 실측 조사. 타 도메인 확장, 외부 파일럿.
+
+**실패/중단 조건**: Sprint 224 말 Executive View 3분 인사이트 도달 실패 → S3 범위 재협상. AXIS DS npm 미성숙 감지 → Tier 3 S226 유예 + Tier 1~2 shadcn 유지. Split View 복잡도 spike > 1일 → scope 축소. Archive 실측 2~4주 수집 미흡 → Archive 결정 보류 + F377 Sprint 225+ 이관.
+
+> **세션 226 Sprint 224 착수 (2026-04-21)**: Sprint 223 S1 MERGED 직후 Master에서 SPEC §6 Phase 9 신설 + F370~F392 15건 공식 등록. F370~F374/F385/F389 7건 DONE 마킹, F375/F376/F377/F378/F386/F390 6건 IN_PROGRESS 전환. TD-41(CF Access JWT mock) Sprint 224 연계 처리. Plan §7.3 "SPEC.md §6 Phase 9 (v1.3 Phase 3 UX 재편)" 트랙 공식 활성화. AIF-REQ-036 PLANNED→IN_PROGRESS 전환.
+
 ---
 
 ## 7) Requirements Backlog
@@ -653,7 +711,7 @@
 
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
-| AIF-REQ-036 | Feature | UX | P1 | **PLANNED** | **Phase 3 UX 재편 — 듀얼 트랙(Executive View + Engineer Workbench) + AXIS DS 연동** — Audience 우선순위 재정의: 본부장 + 전문 엔지니어 동등 트랙. 핵심 검증 워크플로우 = **Spec→Source 역추적 Split View**(policy/rule/skill detail 좌측 vs **재구성 마크다운 section 앵커 스크롤 우측** — 세션 221 실측 결과 원본 소스 줄 하이라이트는 Out-of-Scope로 축소). 기존 24 페이지 **사용 빈도 기반 Archive 자동 제안**. **AXIS DS Full 연동**: `@axis-ds/tokens` 적용 + `@axis-ds/react`로 shadcn 대체 + 도메인 특화 컴포넌트(`SpecSourceSplitView`, `ProvenanceInspector`, `StageReplayer`)를 `IDEA-on-Action/AXIS-Design-System` 레포에 재활용 가능한 형태로 기여. **상태**: 2026-04-21 세션 221 TRIAGED + **R1/R2 외부 AI 검토 완료 (자동 + 정직 정제 + 착수 판정)** → **TRIAGED→PLANNED** 전환. OpenRouter 3 모델(ChatGPT/Gemini/DeepSeek) 자동 호출. **R1 79/100** (Gemini Ready, ChatGPT·DeepSeek Conditional) → PRD v0.2→v0.3 패치(apply 모드 12건 유지 + 가짜 DAU 수치 2건 정직 정제 + §11.4 실측 계획 섹션 신설). **R2 71/100** (전원 Conditional, 가중 이슈 밀도 5.0→3.6/1K자 **-28% 개선** = 실질 품질 향상). **R1+R2 평균 75/100** ✅ (기준 74 통과, Phase 2 74/Phase 3 본 75.5 수준). Ambiguity 0.175(목표 0.15 근소 미달, Phase 1 선례 0.15 수준, 실행 중 해소 가능). Provenance 실측: `sourceLineRange` 스키마 부재(0% 확정) → F364 분리(Phase 4+), `pageRef` optional 유지(F365 선택적 실측). 착수 판정 근거: R3는 수렴 실패 위험 + R2 Conditional 조건 대부분이 S219 실행 영역(CF Analytics 실측·실사용자 파일럿·기술 협약). Sprint 219~221 F-item 배치 대기(F370~F384 제안). **PRD v0.3 폴더**: `docs/req-interview/decode-x-v1.3-phase-3-ux/{prd-final.md, review-history.md, review/round-1, review/round-2}`. 실측 보고서: `docs/03-analysis/features/provenance-coverage-2026-04-21.md`. **R2 Sprint 전이 항목 9건**: Section-only 실사용자 파일럿(S221), Archive 실측 1차 결정(S219~220), §12 온보딩 본문 작성(S219 초), 레거시 DEMO_USERS 마이그(S219), Role별 Audit Log 설계(S220~221), "놀교 동료" KPI 평가자 정의(S221), Spec↔Source 규제 준수 스토리(S220), AXIS DS 기술 협약(S219 선행), CF Access 공식 확인서(S219 선행). **참조**: AIF-REQ-035 Phase 3, `docs/AX-BD-MSA-Restructuring-Plan.md` §S7, `apps/app-web/src/components/Sidebar.tsx`, F364/F365 |
+| AIF-REQ-036 | Feature | UX | P1 | **IN_PROGRESS** | **Phase 3 UX 재편 — 듀얼 트랙(Executive View + Engineer Workbench) + AXIS DS 연동** — Audience 우선순위 재정의: 본부장 + 전문 엔지니어 동등 트랙. 핵심 검증 워크플로우 = **Spec→Source 역추적 Split View**(policy/rule/skill detail 좌측 vs **재구성 마크다운 section 앵커 스크롤 우측** — 세션 221 실측 결과 원본 소스 줄 하이라이트는 Out-of-Scope로 축소). 기존 24 페이지 **사용 빈도 기반 Archive 자동 제안**. **AXIS DS Full 연동**: `@axis-ds/tokens` 적용 + `@axis-ds/react`로 shadcn 대체 + 도메인 특화 컴포넌트(`SpecSourceSplitView`, `ProvenanceInspector`, `StageReplayer`)를 `IDEA-on-Action/AXIS-Design-System` 레포에 재활용 가능한 형태로 기여. **상태**: 2026-04-21 세션 221 TRIAGED + **R1/R2 외부 AI 검토 완료 (자동 + 정직 정제 + 착수 판정)** → **TRIAGED→PLANNED** 전환. OpenRouter 3 모델(ChatGPT/Gemini/DeepSeek) 자동 호출. **R1 79/100** (Gemini Ready, ChatGPT·DeepSeek Conditional) → PRD v0.2→v0.3 패치(apply 모드 12건 유지 + 가짜 DAU 수치 2건 정직 정제 + §11.4 실측 계획 섹션 신설). **R2 71/100** (전원 Conditional, 가중 이슈 밀도 5.0→3.6/1K자 **-28% 개선** = 실질 품질 향상). **R1+R2 평균 75/100** ✅ (기준 74 통과, Phase 2 74/Phase 3 본 75.5 수준). Ambiguity 0.175(목표 0.15 근소 미달, Phase 1 선례 0.15 수준, 실행 중 해소 가능). Provenance 실측: `sourceLineRange` 스키마 부재(0% 확정) → F364 분리(Phase 4+), `pageRef` optional 유지(F365 선택적 실측). 착수 판정 근거: R3는 수렴 실패 위험 + R2 Conditional 조건 대부분이 S219 실행 영역(CF Analytics 실측·실사용자 파일럿·기술 협약). Sprint 219~221 F-item 배치 대기(F370~F384 제안). **PRD v0.3 폴더**: `docs/req-interview/decode-x-v1.3-phase-3-ux/{prd-final.md, review-history.md, review/round-1, review/round-2}`. 실측 보고서: `docs/03-analysis/features/provenance-coverage-2026-04-21.md`. **R2 Sprint 전이 항목 9건**: Section-only 실사용자 파일럿(S221), Archive 실측 1차 결정(S219~220), §12 온보딩 본문 작성(S219 초), 레거시 DEMO_USERS 마이그(S219), Role별 Audit Log 설계(S220~221), "놀교 동료" KPI 평가자 정의(S221), Spec↔Source 규제 준수 스토리(S220), AXIS DS 기술 협약(S219 선행), CF Access 공식 확인서(S219 선행). **참조**: AIF-REQ-035 Phase 3, `docs/AX-BD-MSA-Restructuring-Plan.md` §S7, `apps/app-web/src/components/Sidebar.tsx`, F364/F365 |
 
 ---
 

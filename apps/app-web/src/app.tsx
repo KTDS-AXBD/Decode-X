@@ -5,10 +5,13 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { OrganizationProvider } from "./contexts/OrganizationContext";
 import { Toaster } from "./components/ui/sonner";
 import { Layout } from "./components/Layout";
+// F374: Feature Flag skeleton — ?legacy=1 듀얼 화면 롤아웃 (Executive/Engineer View는 S220+)
+import { isLegacyMode } from "./lib/feature-flag";
 
 // Pages
 const DashboardPage = lazy(() => import("./pages/dashboard"));
 const LoginPage = lazy(() => import("./pages/login"));
+const WelcomePage = lazy(() => import("./pages/welcome")); // F372
 const UploadPage = lazy(() => import("./pages/upload"));
 const AnalysisPage = lazy(() => import("./pages/analysis"));
 const HITLReviewPage = lazy(() => import("./pages/hitl"));
@@ -45,53 +48,69 @@ function LoadingFallback() {
   );
 }
 
+// F370 + F389: CF Access 인증 기반 ProtectedRoute
+// isLoading 중에는 스피너 표시 — CF JWT 확인 완료 전에 /welcome 리다이렉트 방지
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading } = useAuth();
+  if (isLoading) return <LoadingFallback />;
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/welcome" replace />;
   }
   return <>{children}</>;
+}
+
+// F374: Feature Flag 적용 — S219는 기존 페이지 구조 유지 (Executive/Engineer View는 S220+)
+// ?legacy=1 시 기존 레이아웃, 미적용 시 동일 레이아웃 (S220+ 전환 예정)
+function AppRoutes() {
+  const _legacy = isLegacyMode(); // S220부터 분기 활성화
+  return (
+    <Routes>
+      {/* Public routes */}
+      <Route path="/welcome" element={<WelcomePage />} />
+      <Route path="/login" element={<LoginPage />} />
+
+      {/* Protected routes */}
+      <Route path="/" element={<ProtectedRoute><Layout><DashboardPage /></Layout></ProtectedRoute>} />
+      <Route path="/upload" element={<ProtectedRoute><Layout><UploadPage /></Layout></ProtectedRoute>} />
+      <Route path="/analysis" element={<ProtectedRoute><Layout><AnalysisPage /></Layout></ProtectedRoute>} />
+      <Route path="/analysis-report" element={<ProtectedRoute><Layout><AnalysisReportPage /></Layout></ProtectedRoute>} />
+      <Route path="/hitl" element={<ProtectedRoute><Layout><HITLReviewPage /></Layout></ProtectedRoute>} />
+      <Route path="/ontology" element={<ProtectedRoute><Layout><OntologyPage /></Layout></ProtectedRoute>} />
+      <Route path="/skills" element={<ProtectedRoute><Layout><SkillCatalogPage /></Layout></ProtectedRoute>} />
+      <Route path="/skills/:id" element={<ProtectedRoute><Layout><SkillDetailPage /></Layout></ProtectedRoute>} />
+      <Route path="/api-console" element={<ProtectedRoute><Layout><ApiConsolePage /></Layout></ProtectedRoute>} />
+      <Route path="/guide" element={<ProtectedRoute><Layout><GuidePage /></Layout></ProtectedRoute>} />
+      <Route path="/source-upload" element={<ProtectedRoute><Layout><SourceUploadPage /></Layout></ProtectedRoute>} />
+      <Route path="/fact-check" element={<ProtectedRoute><Layout><FactCheckPage /></Layout></ProtectedRoute>} />
+      <Route path="/gap-analysis" element={<ProtectedRoute><Layout><GapAnalysisPage /></Layout></ProtectedRoute>} />
+      <Route path="/specs" element={<ProtectedRoute><Layout><SpecCatalogPage /></Layout></ProtectedRoute>} />
+      <Route path="/specs/:id" element={<ProtectedRoute><Layout><SpecDetailPage /></Layout></ProtectedRoute>} />
+      <Route path="/export" element={<ProtectedRoute><Layout><ExportCenterPage /></Layout></ProtectedRoute>} />
+      <Route path="/benchmark" element={<ProtectedRoute><Layout><BenchmarkPage /></Layout></ProtectedRoute>} />
+      <Route path="/mockup" element={<ProtectedRoute><Layout><MockupPage /></Layout></ProtectedRoute>} />
+      <Route path="/poc-report" element={<ProtectedRoute><Layout><PocReportPage /></Layout></ProtectedRoute>} />
+      <Route path="/poc/ai-ready" element={<ProtectedRoute><Layout><PocAiReadyPage /></Layout></ProtectedRoute>} />
+      <Route path="/poc-phase-2" element={<ProtectedRoute><Layout><PocPhase2ReportPage /></Layout></ProtectedRoute>} />
+      <Route path="/poc/ai-ready/:skillId" element={<ProtectedRoute><Layout><PocAiReadyDetailPage /></Layout></ProtectedRoute>} />
+      <Route path="/org-spec" element={<ProtectedRoute><Layout><OrgSpecPage /></Layout></ProtectedRoute>} />
+      <Route path="/settings" element={<ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>} />
+      <Route path="*" element={<ProtectedRoute><Layout><NotFoundPage /></Layout></ProtectedRoute>} />
+    </Routes>
+  );
 }
 
 export function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-      <OrganizationProvider>
-      <Toaster />
-      <BrowserRouter>
-        <Suspense fallback={<LoadingFallback />}>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/" element={<ProtectedRoute><Layout><DashboardPage /></Layout></ProtectedRoute>} />
-            <Route path="/upload" element={<ProtectedRoute><Layout><UploadPage /></Layout></ProtectedRoute>} />
-            <Route path="/analysis" element={<ProtectedRoute><Layout><AnalysisPage /></Layout></ProtectedRoute>} />
-            <Route path="/analysis-report" element={<ProtectedRoute><Layout><AnalysisReportPage /></Layout></ProtectedRoute>} />
-            <Route path="/hitl" element={<ProtectedRoute><Layout><HITLReviewPage /></Layout></ProtectedRoute>} />
-            <Route path="/ontology" element={<ProtectedRoute><Layout><OntologyPage /></Layout></ProtectedRoute>} />
-            <Route path="/skills" element={<ProtectedRoute><Layout><SkillCatalogPage /></Layout></ProtectedRoute>} />
-            <Route path="/skills/:id" element={<ProtectedRoute><Layout><SkillDetailPage /></Layout></ProtectedRoute>} />
-            <Route path="/api-console" element={<ProtectedRoute><Layout><ApiConsolePage /></Layout></ProtectedRoute>} />
-            <Route path="/guide" element={<ProtectedRoute><Layout><GuidePage /></Layout></ProtectedRoute>} />
-            <Route path="/source-upload" element={<ProtectedRoute><Layout><SourceUploadPage /></Layout></ProtectedRoute>} />
-            <Route path="/fact-check" element={<ProtectedRoute><Layout><FactCheckPage /></Layout></ProtectedRoute>} />
-            <Route path="/gap-analysis" element={<ProtectedRoute><Layout><GapAnalysisPage /></Layout></ProtectedRoute>} />
-            <Route path="/specs" element={<ProtectedRoute><Layout><SpecCatalogPage /></Layout></ProtectedRoute>} />
-            <Route path="/specs/:id" element={<ProtectedRoute><Layout><SpecDetailPage /></Layout></ProtectedRoute>} />
-            <Route path="/export" element={<ProtectedRoute><Layout><ExportCenterPage /></Layout></ProtectedRoute>} />
-            <Route path="/benchmark" element={<ProtectedRoute><Layout><BenchmarkPage /></Layout></ProtectedRoute>} />
-            <Route path="/mockup" element={<ProtectedRoute><Layout><MockupPage /></Layout></ProtectedRoute>} />
-            <Route path="/poc-report" element={<ProtectedRoute><Layout><PocReportPage /></Layout></ProtectedRoute>} />
-            <Route path="/poc/ai-ready" element={<ProtectedRoute><Layout><PocAiReadyPage /></Layout></ProtectedRoute>} />
-            <Route path="/poc-phase-2" element={<ProtectedRoute><Layout><PocPhase2ReportPage /></Layout></ProtectedRoute>} />
-            <Route path="/poc/ai-ready/:skillId" element={<ProtectedRoute><Layout><PocAiReadyDetailPage /></Layout></ProtectedRoute>} />
-            <Route path="/org-spec" element={<ProtectedRoute><Layout><OrgSpecPage /></Layout></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><Layout><SettingsPage /></Layout></ProtectedRoute>} />
-            <Route path="*" element={<ProtectedRoute><Layout><NotFoundPage /></Layout></ProtectedRoute>} />
-          </Routes>
-        </Suspense>
-      </BrowserRouter>
-      </OrganizationProvider>
+        <OrganizationProvider>
+          <Toaster />
+          <BrowserRouter>
+            <Suspense fallback={<LoadingFallback />}>
+              <AppRoutes />
+            </Suspense>
+          </BrowserRouter>
+        </OrganizationProvider>
       </AuthProvider>
     </ThemeProvider>
   );

@@ -15,7 +15,7 @@ export function ChatWidget() {
   const { messages, isStreaming, error, sendMessage, clearMessages } = useChatStream({
     organizationId,
     page: location.pathname,
-    role: user?.userRole,
+    role: user?.role,
   });
 
   return (

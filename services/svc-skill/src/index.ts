@@ -56,6 +56,7 @@ import {
   handleCompleteSession,
 } from "./routes/tacit-interview.js";
 import { handleGenerateHandoff, handleSubmitHandoff, handleHandoffCallback } from "./routes/handoff.js";
+import { handleGetMe } from "./routes/auth.js";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -70,6 +71,11 @@ export default {
         JSON.stringify({ status: "ok", service: env.SERVICE_NAME }),
         { status: 200, headers: { "Content-Type": "application/json" } },
       );
+    }
+
+    // F370: GET /auth/me — CF Access JWT → D1 users upsert → role response
+    if (method === "GET" && path === "/auth/me") {
+      return handleGetMe(request, env);
     }
 
     // All other routes require inter-service secret

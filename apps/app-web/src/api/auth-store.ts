@@ -1,26 +1,18 @@
-export interface DemoUser {
-  userId: string;
-  userName: string;
-  userRole: string;
-  label: string;
+// F389: DEMO_USERS 폐기 — CF Access JWT 기반 사용자 타입으로 교체
+
+export interface CfUser {
+  email: string;
+  role: "executive" | "engineer" | "admin";
+  status: "active" | "suspended";
+  displayName?: string | undefined;
 }
 
-export const DEMO_USERS: DemoUser[] = [
-  { userId: "admin-001", userName: "서민원", userRole: "Executive", label: "관리자" },
-  { userId: "exec-001", userName: "윤대범", userRole: "Executive", label: "경영진" },
-  { userId: "reviewer-001", userName: "양대진", userRole: "Reviewer", label: "정책 검토자" },
-  { userId: "analyst-001", userName: "김경임", userRole: "Analyst", label: "분석 엔지니어" },
-  { userId: "analyst-002", userName: "김기욱", userRole: "Analyst", label: "분석 엔지니어" },
-  { userId: "developer-001", userName: "김정원", userRole: "Developer", label: "스킬 개발자" },
-  { userId: "developer-002", userName: "현대영", userRole: "Developer", label: "스킬 개발자" },
-];
+let currentUser: CfUser | null = null;
 
-let currentUser: DemoUser | null = null;
-
-export function getAuthUser(): DemoUser | null {
+export function getAuthUser(): CfUser | null {
   return currentUser;
 }
 
-export function setAuthUser(user: DemoUser | null): void {
+export function setAuthUser(user: CfUser | null): void {
   currentUser = user;
 }

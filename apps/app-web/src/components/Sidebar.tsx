@@ -136,12 +136,12 @@ export const Sidebar: React.FC = () => {
   const { user, logout } = useAuth();
   const { darkMode, toggleDarkMode } = useTheme();
 
-  const userName = user?.userName ?? '게스트';
-  const userRole = user?.label ?? '미인증';
+  const userName = user?.displayName ?? user?.email ?? '게스트';
+  const userRole = user?.role ?? '미인증';
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/welcome');
   };
 
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(() => {

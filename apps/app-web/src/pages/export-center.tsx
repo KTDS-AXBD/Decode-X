@@ -75,7 +75,7 @@ function triggerBlobDownload(blob: Blob, filename: string) {
 export default function ExportCenterPage() {
   const { organizationId } = useOrganization();
   const { user } = useAuth();
-  const isPm = user?.userRole === 'Executive';
+  const isPm = user?.role === 'executive' || user?.role === 'admin';
 
   const [packages, setPackages] = useState<ExportPackage[]>([]);
   const [kpi, setKpi] = useState<FactCheckKpi | null>(null);
@@ -179,8 +179,8 @@ export default function ExportCenterPage() {
     updatePkgStatus(selectedPkg.packageId, 'pending_approval');
     addApprovalEntry(selectedPkg.packageId, {
       action: 'request',
-      userId: user?.userId ?? 'unknown',
-      userName: user?.userName ?? 'Unknown',
+      userId: user?.email ?? 'unknown',
+      userName: user?.displayName ?? user?.email ?? 'Unknown',
       comment: 'Approval requested',
       timestamp: new Date().toISOString(),
     });
@@ -193,15 +193,15 @@ export default function ExportCenterPage() {
     updatePkgStatus(selectedPkg.packageId, 'approved');
     addApprovalEntry(selectedPkg.packageId, {
       action: 'approve',
-      userId: user?.userId ?? 'unknown',
-      userName: user?.userName ?? 'Unknown',
+      userId: user?.email ?? 'unknown',
+      userName: user?.displayName ?? user?.email ?? 'Unknown',
       comment: comment || 'Approved',
       timestamp: new Date().toISOString(),
     });
     setSelectedPkg({
       ...selectedPkg,
       status: 'approved',
-      approvedBy: user?.userName ?? null,
+      approvedBy: user?.displayName ?? user?.email ?? null,
       approvedAt: new Date().toISOString(),
     });
     toast.success('Package approved');
@@ -212,8 +212,8 @@ export default function ExportCenterPage() {
     updatePkgStatus(selectedPkg.packageId, 'draft');
     addApprovalEntry(selectedPkg.packageId, {
       action: 'reject',
-      userId: user?.userId ?? 'unknown',
-      userName: user?.userName ?? 'Unknown',
+      userId: user?.email ?? 'unknown',
+      userName: user?.displayName ?? user?.email ?? 'Unknown',
       comment: comment || 'Rejected',
       timestamp: new Date().toISOString(),
     });

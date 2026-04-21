@@ -95,7 +95,7 @@ const ROLES: RoleInfo[] = [
 
 export function RoleGuide() {
   const { user } = useAuth();
-  const currentRole = user?.userRole;
+  const currentRole = user?.role;
 
   return (
     <div className="space-y-4">

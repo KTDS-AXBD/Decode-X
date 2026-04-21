@@ -1,18 +1,1 @@
-{
-  "cookies": [],
-  "origins": [
-    {
-      "origin": "http://localhost:5173",
-      "localStorage": [
-        {
-          "name": "ai-foundry-auth-user",
-          "value": "admin-001"
-        },
-        {
-          "name": "darkMode",
-          "value": "false"
-        }
-      ]
-    }
-  ]
-}
+{"cookies":[],"origins":[]}

@@ -10,8 +10,8 @@ export function buildHeaders(opts: {
   const user = getAuthUser();
   const headers: Record<string, string> = {
     "X-Internal-Secret": API_SECRET,
-    "X-User-Id": user?.userId ?? "anonymous",
-    "X-User-Role": user?.userRole ?? "Client",
+    "X-User-Id": user?.email ?? "anonymous",
+    "X-User-Role": user?.role ?? "engineer",
     "X-Organization-Id": opts.organizationId,
   };
   if (opts.contentType !== undefined) {

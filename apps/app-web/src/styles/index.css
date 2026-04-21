@@ -1,3 +1,4 @@
 @import './fonts.css';
 @import './tailwind.css';
 @import './theme.css';
+@import './axis-ds-tokens.css'; /* F373: AXIS DS Tier 1 토큰 */

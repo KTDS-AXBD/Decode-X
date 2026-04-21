@@ -50,7 +50,7 @@ export default function HITLReviewPage() {
   const handleApprove = async () => {
     if (!selectedPolicy) return;
     try {
-      const res = await approvePolicy(organizationId, selectedPolicy.policyId, { reviewerId: user?.userId ?? 'anonymous', comment });
+      const res = await approvePolicy(organizationId, selectedPolicy.policyId, { reviewerId: user?.email ?? 'anonymous', comment });
       if (res.success) {
         toast.success(`${selectedPolicy.policyCode} 승인 완료`);
         setComment('');
@@ -64,7 +64,7 @@ export default function HITLReviewPage() {
   const handleReject = async () => {
     if (!selectedPolicy) return;
     try {
-      const res = await rejectPolicy(organizationId, selectedPolicy.policyId, { reviewerId: user?.userId ?? 'anonymous', comment });
+      const res = await rejectPolicy(organizationId, selectedPolicy.policyId, { reviewerId: user?.email ?? 'anonymous', comment });
       if (res.success) {
         toast.success(`${selectedPolicy.policyCode} 반려 완료`);
         setComment('');

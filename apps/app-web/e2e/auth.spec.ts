@@ -1,16 +1,19 @@
 import { test, expect } from "@playwright/test";
 
+// TODO(S224/TD-41): DEMO_USERS 폐기(F389)로 데모 로그인 기반 테스트 전면 skip.
+// CF Access JWT mock 구현 후 재활성화.
+
 test.describe("Authentication", () => {
-  test("unauthenticated user is redirected to /login", async ({ browser }) => {
-    // Fresh context with no stored auth
+  test("unauthenticated user is redirected to /welcome", async ({ browser }) => {
+    // Fresh context with no stored auth — CF Access cookie absent in CI
     const ctx = await browser.newContext({ storageState: undefined });
     const page = await ctx.newPage();
     await page.goto("/");
-    await expect(page).toHaveURL(/\/login/);
+    await expect(page).toHaveURL(/\/welcome/);
     await ctx.close();
   });
 
-  test("login page renders demo user cards", async ({ browser }) => {
+  test.skip("login page renders demo user cards — DEMO_USERS 폐기(F389)", async ({ browser }) => {
     const ctx = await browser.newContext({ storageState: undefined });
     const page = await ctx.newPage();
     await page.goto("/login");
@@ -20,7 +23,7 @@ test.describe("Authentication", () => {
     await ctx.close();
   });
 
-  test("demo login redirects to dashboard", async ({ browser }) => {
+  test.skip("demo login redirects to dashboard — DEMO_USERS 폐기(F389)", async ({ browser }) => {
     const ctx = await browser.newContext({ storageState: undefined });
     const page = await ctx.newPage();
     await page.goto("/login");
@@ -30,12 +33,9 @@ test.describe("Authentication", () => {
     await ctx.close();
   });
 
-  test("logout returns to login page", async ({ page }) => {
-    // Uses pre-authed storageState
+  test.skip("logout returns to login page — DEMO_USERS 폐기(F389)", async ({ page }) => {
     await page.goto("/");
     await expect(page.getByRole("heading", { name: /대시보드/ })).toBeVisible();
-
-    // Click logout icon button (title="로그아웃")
     await page.locator('button[title="로그아웃"]').click();
     await expect(page).toHaveURL(/\/login/);
   });

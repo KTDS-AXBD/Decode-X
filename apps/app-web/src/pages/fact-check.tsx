@@ -43,7 +43,7 @@ function resultStatusBadge(status: string) {
 export default function FactCheckPage() {
   const { organizationId } = useOrganization();
   const { user } = useAuth();
-  const isReviewer = user?.userRole === 'Reviewer' || user?.userRole === 'Executive';
+  const isReviewer = user?.role === 'engineer' || user?.role === 'executive' || user?.role === 'admin';
 
   const [results, setResults] = useState<FactCheckResult[]>([]);
   const [summary, setSummary] = useState<FactCheckSummary | null>(null);

@@ -25,6 +25,18 @@
 
 ### 세션 229 (2026-04-21 ~ 2026-04-22)
 
+**Sprint 231 ✅ MERGED — AIF-REQ-036 Should M-UX-4 F384 Guest/Demo 모드 + Phase 9 UX 재편 100% 종결 (PR #32 `331127c`)**:
+- ✅ **F384 Guest/Demo 모드 구현**: Sprint 227 F401 `VITE_DEMO_MODE` + `?demo=1` + AuthContext 모듈 로드 시점 capture 인프라 **재활용**. `apps/app-web/src/lib/guest-access.ts` 신규 (guest role 권한 판정 + route guard 유틸). `/?demo=guest` 진입 → Executive Overview/Evidence/Skill Catalog 조회만 허용 + write 액션 차단 + "🎭 Demo Mode" 배지 + 로그인 CTA.
+- ✅ **Sprint 번호 재배치 (이관 체인)**: F384 = Sprint 227 → 229 → 231. Sprint 229는 F383로, Sprint 230은 병행 pane F356-A로 점유되어 Sprint 231로 최종 이동.
+- ✅ **autopilot 10분 자체 완결 Match 100%**: F401 자산 재활용으로 신규 구현 최소화(단일 유틸 파일 + route guard 수정). 커밋 `8cc7f71` feat.
+- ✅ **CI 3/3 SUCCESS**: Migration 6s + Typecheck/E2E **~2분** (F401 TD-41 해소 지속, 기존 45 tests 유지).
+- ⚠️ **autopilot pr-lookup 5회차 재현 (false negative 신규)**: signal STATUS=FAILED/ERROR_STEP=pr-lookup으로 표시됐으나 실 PR 생성 성공 → Master `gh pr create` 시도 → "already exists: PR #32" 확인. S217/S225/S224/S230 4회차는 실 PR 미생성이었으나 **S231은 false negative**로 진화. rules/ 승격 조건 강화.
+- 📌 **AIF-REQ-036 Phase 9 UX 재편 100% 종결**: S1 OAuth+기반 / S2 Executive View / S3 Engineer Workbench / TD-41 E2E / Should M-UX-4(F383+F384) **5 Sprint + 13 F-item 전원 DONE**. 외부 AXIS DS PR #55 OPEN(F383)은 외부 조직 merge 대기만 잔여.
+- 📌 **실 소요 ~15m** (autopilot 10m + CI 2m + cleanup 3m). Plan 예상 4h 대비 **6%** — F401 자산 재활용 효과 극명.
+- Commits: `9062178` S231 IN_PROGRESS → `8cc7f71` autopilot → **`331127c`** (#32 squash).
+
+---
+
 **Sprint 229 ✅ MERGED — AIF-REQ-036 Should M-UX-4 F383 AXIS DS Tier 3 외부 레포 기여 (PR #30 `3ad1b73`, 외부 PR #55 OPEN)**:
 - ✅ **F383 외부 조직 기여 첫 선례**: `IDEA-on-Action/AXIS-Design-System` federation registry에 `decode-x-kit-resources.json` 추가. 3 컴포넌트(`SpecSourceSplitView`/`ProvenanceInspector`/`StageReplayer`) `agentic` category 등록. fork `AXBD-Team/AXIS-Design-System` `feat/decode-x-kit-resources` 브랜치 → **외부 PR #55 OPEN** (https://github.com/IDEA-on-Action/AXIS-Design-System/pull/55).
 - ✅ **autopilot 8분 자체 완결 Match 95%**: 기존 Sprint 226/227(각 20분) 대비 훨씬 짧음 — 외부 org 실 merge 불요 + UI 변경 없음(컴포넌트 추출만). 커밋 `e71a468` feat + pr skeleton.

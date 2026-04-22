@@ -87,6 +87,7 @@ jobs:
         working-directory: apps/app-web
         env:
           VITE_ENVIRONMENT: ${{ needs.prepare.outputs.environment }}
+          CF_BEACON_TOKEN: ${{ secrets.CF_BEACON_TOKEN }}
 
       - name: Deploy to Cloudflare Pages (staging)
         if: needs.prepare.outputs.environment == 'staging'

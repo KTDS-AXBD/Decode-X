@@ -4,13 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Foundry</title>
-    <!-- F390: Cloudflare Web Analytics — token은 CF Pages env에서 CF_BEACON_TOKEN으로 주입.
-         실측 데이터 수집 시작: F377 Archive 실행 전 2주 수집 목표. -->
+    <!-- CF_BEACON_START -->
+    <!-- F390: Cloudflare Web Analytics — token은 CF Pages env에서 CF_BEACON_TOKEN으로 주입. -->
     <script
       defer
       src="https://static.cloudflareinsights.com/beacon.min.js"
       data-cf-beacon='{"token": "__CF_BEACON_TOKEN__"}'
     ></script>
+    <!-- CF_BEACON_END -->
   </head>
   <body>
     <div id="root"></div>

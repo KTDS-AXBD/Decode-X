@@ -78,8 +78,9 @@ function buildProxy(mode: string) {
   return proxy;
 }
 
-// F390: CF Web Analytics token replacement — dev/staging: token placeholder, prod: real token via CF_BEACON_TOKEN env
-const cfBeaconToken = process.env["CF_BEACON_TOKEN"] ?? "PLACEHOLDER_DEV";
+// F390/F404: CF Web Analytics token — real token via CF_BEACON_TOKEN env; strip beacon block when absent
+const cfBeaconToken = process.env["CF_BEACON_TOKEN"] ?? "";
+const BEACON_BLOCK_RE = /<!-- CF_BEACON_START -->[\s\S]*?<!-- CF_BEACON_END -->/;
 
 export default defineConfig({
   plugins: [
@@ -88,6 +89,9 @@ export default defineConfig({
     {
       name: "cf-beacon-token",
       transformIndexHtml(html) {
+        if (!cfBeaconToken || cfBeaconToken === "PLACEHOLDER_DEV") {
+          return html.replace(BEACON_BLOCK_RE, "<!-- CF Web Analytics disabled (no token) -->");
+        }
         return html.replace("__CF_BEACON_TOKEN__", cfBeaconToken);
       },
     },

@@ -89,20 +89,20 @@ jobs:
           VITE_ENVIRONMENT: ${{ needs.prepare.outputs.environment }}
           CF_BEACON_TOKEN: ${{ secrets.CF_BEACON_TOKEN }}
 
-      - name: Deploy to Cloudflare Pages (staging)
+      - name: Deploy to Cloudflare Workers (preview/staging)
         if: needs.prepare.outputs.environment == 'staging'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: "pages deploy dist --project-name=ai-foundry-web --branch=staging"
+          command: "deploy --env preview"
           workingDirectory: apps/app-web
 
-      - name: Deploy to Cloudflare Pages (production)
+      - name: Deploy to Cloudflare Workers (production)
         if: needs.prepare.outputs.environment == 'production'
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: "pages deploy dist --project-name=ai-foundry-web --branch=main"
+          command: "deploy --env production"
           workingDirectory: apps/app-web

@@ -16,3 +16,4 @@ export * from "./prototype.js";
 export * from "./extraction.js";
 export * from "./reconcile.js";
 export * from "./users.js";
+export * from "./ai-ready.js";

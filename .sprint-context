@@ -1,15 +1,11 @@
-SPRINT_NUM=227
+SPRINT_NUM=230
 PROJECT=Decode-X
-BRANCH=sprint/227
-F_ITEMS=F401+F384+F383
-MILESTONE=M-UX-4 Should + TD-41 완전 해소
-WAVE_ORDER=F401(P1 선행, ~3h 30min) → F384(P2 Guest/Demo, 4h) → F383(P2 AXIS DS Tier 3 기여, 8h 선택)
-PLAN_DOC=docs/01-plan/features/AIF-REQ-036.plan.md §11.7 F401 PoC 설계
-F401_APPROACH=옵션 A: ?demo=1 bypass endpoint + CI DEMO_MODE env flag (세션 229 AskUserQuestion 확정)
-F401_DOD=CI E2E pass count 1→45 복원 + Production smoke fail-on-leak (DEMO_MODE 미정의 확인)
-KPI_TARGETS=F401: KPI-3 ≥95% 통과율 달성 + 보안 smoke / F384: 읽기전용 데이터 모드 / F383: 외부 레포 PR skeleton
-SECURITY_RULE=wrangler.toml production/staging env.vars에 DEMO_MODE 키 절대 미정의 (env flag 2중 가드)
+BRANCH=sprint/230
+F_ITEMS=F356-A
+MILESTONE=G-3 Phase 1 AI-Ready PoC 80건
 CHECKPOINT=design
 CHECKPOINT=implement
+TEST_RESULT=pass
+MATCH_RATE=
 CHECKPOINT=analyze
-MATCH_RATE=100
+MATCH_RATE=97

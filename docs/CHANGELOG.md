@@ -2,6 +2,17 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 231 (2026-04-22)
+
+**Sprint 230 ✅ MERGED + TD-42 발견(F356-A 재작 필요) + rules/ 승격 2건 + /ax:req-integrity 정합성 보정 (PR #31 `b35d514`)**:
+- ✅ **Sprint 230 ✅ MERGED**: AIF-REQ-035 Phase 3 S-1 Phase 1 F356-A AI-Ready 채점기 Phase 1 PoC **인프라 완결**. 4 Step 구현(스키마/프롬프트/PoC CLI/샘플러) 27 테스트 PASS + CI 3/3 SUCCESS + autopilot Match **97%**. 실 소요 **~1h 15m** (Plan 8h 대비 **16%**). autopilot session-end pr-lookup 실패 4회차 재현 → Master 수동 `gh pr create` + `.sprint-context` merge conflict 해소 + push → CI green → squash merge.
+- ⚠️ **TD-42 발견** (P1): F356-A 실 실행 시도 중 3중 데이터 소스 gap 판명 — (1) `/skills/:id` production 응답 = `{skillId, metadata, r2Key}` 메타만 (autopilot이 가정한 source_code/rules/contracts 필드 부재), (2) `.decode-x/spec-containers/lpon-*/`는 markdown rules + yaml contracts/runbooks만 (Java 소스 없음), (3) 실 Java Working Prototype은 Foundry-X handoff 후 산출 (Decode-X 단독 실행 불가). **실행 blocked** → Sprint 231 F402 전면 재작 scope 등록 (spec-containers 직접 읽기 + 프롬프트 markdown/yaml 재설계 + 샘플 80→7 축소, 예상 4~6h).
+- ✅ **rules/ 승격 2건** (ax-config `492a8f6`): (1) `feedback_autopilot_pr_lookup.md` (4회 재현 S217/S225/S224/S230) → `~/.claude/rules/development-workflow.md` §"Autopilot session-end pr-lookup fallback" 섹션 신규 (표준 복구 5단계 명문화). (2) `feedback_autopilot_production_smoke.md` (5회 재현 S215/S219/S220/S228/S230) → 동일 파일 §"Autopilot Production Smoke Test" 섹션 신규 (5단 점검 + "Match % ≠ Production 증명" 메타 원칙). feedback memory는 Option 1(유지 + promoted marker)로 이력 보존.
+- ✅ **/ax:req-integrity 6축 검증 + 보정** (`d97d3b1`): Step 4 MEMORY↔SPEC 불일치 1건 발견 — SPEC.md §1 "Current Phase" = "Phase 2 PRD Ready" (세션 216, 2026-04-19) stale → Phase 3 본 개발 완결(Sprint 218~230)로 갱신. 추가로 F355b/F362(원 M-2b/M-2c P0)를 Sprint 228 F397/F398 superseded 마킹 (Service Binding + CLI 대체 구현 인정).
+- 📌 **교훈 4종**: (a) **autopilot Match % vs Production 실 동작 gap** — 설계↔코드 매칭 97%여도 production API shape/secrets/data 호환성은 별도 검증 필수 (5회 연속 재현 → rules/ 승격). (b) **autopilot pr-lookup 실패 4회차 재현** — 예외 아닌 정상 fallback 패턴, Master 수동 복구 경로 신뢰 가능 (→ rules/ 승격). (c) **병행 pane 동시 진행 정상화 5회째** — Sprint 230 setup 도중 Sprint 229 MERGED 완주, main 2커밋 앞섬 fast-forward 수용. (d) **F356-A 재작 = Sprint 231 scope** — autopilot 인프라(schema/CLI/비용 가드) 재활용, 프롬프트+loader만 데이터 현실 정합 재설계.
+- 📌 **다음 P0**: Sprint 231 F402 F356-A 재작 (4~6h) → 실 PoC 실행 → Phase 2 (F356-B) GO/NO-GO 판정.
+- Commits: `d077cfc` Sprint 230 착수 + Plan/Design → `b35d514` (PR #31 squash) → `d97d3b1` integrity 보정 → `831cf07` Sprint 230 MERGED 기록 → `7126881` TD-42 + Sprint 231 등록 → 세션-end 최종 push.
+
 ### 세션 230 (2026-04-22)
 
 **Sprint 228 ✅ MERGED — AIF-PLAN-037 G-1 Phase 3 완료 보고서 갱신 + CHANGELOG + MEMORY 동기화 (PR #29 `7b396872`, M-2 Production E2E 7/7 달성)**:

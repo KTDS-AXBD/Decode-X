@@ -19,15 +19,21 @@ function makeCandidate(overrides: Partial<PolicyCandidate> = {}): PolicyCandidat
 }
 
 function llmSuccess(content: string): Response {
+  // OpenRouter chat-completions response (TD-44 Phase 1: svc-llm-router decommissioned)
   return new Response(
-    JSON.stringify({ success: true, data: { content, provider: "anthropic", model: "opus" } }),
+    JSON.stringify({
+      id: "chatcmpl-test",
+      model: "anthropic/claude-opus-4-5",
+      choices: [{ message: { role: "assistant", content }, finish_reason: "stop" }],
+      usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+    }),
     { status: 200, headers: { "Content-Type": "application/json" } },
   );
 }
 
 function llmFailure(status = 500): Response {
   return new Response(
-    JSON.stringify({ success: false, error: { message: "Internal error" } }),
+    JSON.stringify({ error: { message: "Internal error", code: "upstream_error" } }),
     { status, headers: { "Content-Type": "application/json" } },
   );
 }

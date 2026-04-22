@@ -18,10 +18,15 @@ function makeCandidate(overrides?: Partial<PolicyCandidate>): PolicyCandidate {
 }
 
 function makeLlmResponse(dimensions: Record<string, number>): Response {
+  // OpenRouter chat-completions response (TD-44 Phase 1: svc-llm-router decommissioned)
   return new Response(
     JSON.stringify({
-      success: true,
-      data: { content: JSON.stringify(dimensions), provider: "anthropic", model: "sonnet" },
+      id: "chatcmpl-test",
+      model: "anthropic/claude-sonnet-4-5",
+      choices: [
+        { message: { role: "assistant", content: JSON.stringify(dimensions) }, finish_reason: "stop" },
+      ],
+      usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
     }),
     { status: 200 },
   );
@@ -170,8 +175,8 @@ describe("SemanticEvaluator", () => {
     await evaluator.evaluate(candidate, env);
 
     expect(capturedBody).toBeDefined();
-    const parsed = JSON.parse(capturedBody!) as { messages: Array<{ content: string }> };
-    const userContent = parsed.messages[0]?.content ?? "";
+    const parsed = JSON.parse(capturedBody!) as { messages: Array<{ role: string; content: string }> };
+    const userContent = parsed.messages.find((m) => m.role === "user")?.content ?? "";
     expect(userContent).toContain(candidate.policyCode);
     expect(userContent).toContain(candidate.title);
     expect(userContent).toContain(candidate.condition);

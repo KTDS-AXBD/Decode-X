@@ -2,6 +2,20 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 235 (2026-04-22)
+
+**2차 rubric 튜닝 완결 + 7 lpon-* 전수 재측정 + F356-B GO 신뢰도 상향 (Master pane 연장, 커밋 `86b3126`)**:
+- ✅ **2차 rubric 튜닝 적용** (`services/svc-skill/src/ai-ready/prompts.ts` source_consistency): 세션 234 후반에서 도출된 2차 튜닝 후보를 실제 적용. 0.9+ 구간에 2개 신규 gate 추가 — (a) **ID 문자열 일치 필수**(provenance.businessRules BL-XXX ↔ originalRules 표 ID 컬럼 문자 그대로, 표기 변동 불가 예시 "BL-1 / BL001 / rule-001 형태 불가"), (b) **exception 열 완결성 필수**(모든 행 실내용 또는 "—"(예외 없음 명시) 표기, 빈칸·null 불가). 0.75~0.9 구간 재정의: "ID 표기에 1개 minor 변동 또는 exception 열 1~2개 빈칸" 수용으로 상세화. 0.5~0.75 구간: "ID 명시 부재(본문 내용으로만 매핑 가능)"도 명시 포함.
+- ✅ **수기 재채점 6/6 = 100% 정확도 달성**: lpon-charge 단일 재측정(6 calls via OpenRouter `anthropic/claude-haiku-4-5`, $0.0428, ~40초). LLM 0.92 유지 — 2차 rubric의 4개 gate를 rationale에서 하나씩 validate("ID 문자열 일치(BL-XXX 형식) / exception 열 모든 행 실내용 또는 명시적 '—' 완결 / ES 참조 BL 전원 존재"). 수기 재평가 0.80→0.90 수렴 → **|diff|=0.02**, 정확도 83.3%→**100%**, ≥95% 목표 초과. 다른 5 기준 무변동(|diff|≤0.03 1차에서 이미 수렴).
+- ✅ **7 lpon-* 전수 재측정** (42 calls, $0.1628, 5분): source_consistency 분포 **0.62~0.92 range 0.30, 5단계 연속 차등** (lpon-refund 0.62 / lpon-gift 0.72 / lpon-payment 0.78 / lpon-budget 0.82 / lpon-charge=lpon-purchase=lpon-settlement 0.92). **3/7만 0.9+ gate 통과** — 2차 rubric이 "강제 고득점" 편향 없이 정상 차등화. 평균 totalScore 0.720→0.735(+0.015), lpon-charge 단일에서 +0.083(다른 6개는 ±0.024 이내) → **rubric 효과가 정확히 "1차에서 과소평가된 Gap"만 정정, 전역 인플레이션 없음**. PASS rate 1/7 유지(lpon-settlement 0.820 5/6 PASS, 나머지 threshold 0.75 미달).
+- ✅ **문서 자산**: `reports/ai-ready-poc-accuracy-2026-04-22.md` **Appendix C 추가**(2차 rubric 변경 범위 + lpon-charge 6/6 정확도 + F356-B 착수 조건) + **Appendix C.1 추가**(7 container 전수 분포 표 + 핵심 관찰 4건 + F356-B GO 최종 의사결정). `reports/ai-ready-rubric-v2-lpon-charge-2026-04-22.json` + `reports/ai-ready-rubric-v2-full-2026-04-22.json` 실 측정 증빙 JSON 2건. SPEC §8 TD-43 Extension(세션 235 후속 검증 (f)~(i) 추가, 2차 rubric이 accuracy 83.3→100% 상향 명시).
+- 📌 **핵심 판정**: **F356-B GO 신뢰도 상향** — 정확도 100%(lpon-charge 수기 검증) + 7 container 전수 실측 분포 선확보 + rubric 전역 인플레이션 없음 확인. 전수 배치 진입 전 불확실성 제거. 단일 container 측정의 한계는 F356-B 초반에 샘플 1~2건 추가 수기 검증으로 보완 권장.
+- 📌 **교훈 3종**: (a) **Rubric은 채점기이자 수기 평가자 모두의 기준** — 2차 튜닝에서 LLM 점수는 0.92로 동일하게 유지됐으나 "수기 평가자의 모호성 해소"가 본질이었음. Gate 구체화는 양쪽 평가자를 같은 답으로 수렴시킴. 정확도 83.3%→100% 개선은 "LLM을 바꾸는 것"이 아닌 "수기 판단 편차 해소"였다는 메타 인사이트. (b) **LLM rationale 품질은 rubric 상세도의 직접 함수** — 2차 측정 rationale이 4 gate를 하나씩 명시 인용("ID 문자열 일치(BL-XXX 형식) / exception 열 모든 행 완결 / ES 참조 BL 전원 존재")하여 rubric이 채점 가능 수준으로 구체화됐다는 증거. (c) **차등 능력 보존 확인** — 2차 rubric이 7 container에서 source_consistency 0.62~0.92 range 0.30 5단계 연속 분포 유지 → "rubric 강화 시 모든 container가 똑같이 떨어지거나 똑같이 오르지 않음"을 실측으로 증명. 본부장 리뷰 정량 증거로서 spec quality 서열화 능력 확보.
+- 📌 **실 소요 ~22분** (SPEC/MEMORY 리뷰 3m + rubric 설계 + AskUserQuestion 5m + prompts.ts edit 2m + typecheck/test 1m + OpenRouter 재측정 40s + Appendix C 작성 10m + 7전수 재측정 5m + Appendix C.1 확장 + 커밋 준비 2m). 당초 예상 30분 대비 8분 단축.
+- 📌 **다음 P0 후보**: (1) **F356-B Sprint 설계** (API endpoint + D1 스키마 0011 + 859 skill 전수 + KPI 집계 1 Sprint ~8h) — TD-44 복구 선결 여부 판단 필요. (2) **TD-44 svc-llm-router 502 복구** (AI Foundry 포털 리포 접근, CF AI Gateway secret 재주입, P1) — F356-B 전신 경로 복구. (3) **F403 Phase 9 E2E 커버리지 보강** (병행 pane F405/F406 CF Access 관련 작업과 연동 가능).
+- ⚠️ **보안 노트**: OPENROUTER_API_KEY 실값이 세션 중 대화 로그에 노출됨(`sk-or-v1-ade1...e465e`). 세션 종료 후 OpenRouter Dashboard → Keys → revoke + 새 키 발급 **필수**. `.env` 하드코딩 미수행 확인(grep -c `OPENROUTER` .env = 0) → 리포 누출은 없음.
+- Commits: `86b3126` feat(ai-ready) 2차 rubric 튜닝 — source_consistency 0.9+ gate 강화 + 전수 검증 (7 files +623 -4).
+
 ### 세션 234 (2026-04-22)
 
 **TD-43 해소 — F402 DoD 실 실행 완결 + Phase 2 F356-B GO 판정 (Master pane %9, 커밋 `f771380`)**:

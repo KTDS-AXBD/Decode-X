@@ -18,7 +18,7 @@ export const ALL_AI_READY_CRITERIA = AIReadyCriterion.options;
 export const AIReadyScoreSchema = z.object({
   criterion: AIReadyCriterion,
   score: z.number().min(0).max(1),
-  rationale: z.string().min(20).max(800),
+  rationale: z.string().min(20).max(2000),
   passThreshold: z.literal(0.75).default(0.75),
   passed: z.boolean(),
 });

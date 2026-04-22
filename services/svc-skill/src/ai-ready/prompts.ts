@@ -2,11 +2,13 @@ import type { AIReadyCriterion } from "@ai-foundry/types";
 
 // Spec-container content loaded from .decode-x/spec-containers/lpon-*/
 export interface SpecContent {
-  rules: string[];        // rules/*.md — condition-criteria-outcome-exception blocks
-  runbooks: string[];     // runbooks/*.md — operational guides per rule
-  tests: string[];        // tests/*.yaml — given/when/then scenarios
-  contractYaml: string;   // tests/contract/*.yaml — business contract scenarios
-  provenanceYaml: string; // provenance.yaml — sources, inputCompleteness, confidence
+  rules: string[];              // rules/*.md (전체) — originalRules + emptySlotRules 합집합, 기존 호환성 유지
+  originalRules?: string[];     // rules/{skill}-rules.md — provenance businessRules 원본 표 (BL-XXX). 분리 로더에서 제공.
+  emptySlotRules?: string[];    // rules/ES-*.md — Empty Slot 보완 규칙 (condition-criteria-outcome-exception). 분리 로더에서 제공.
+  runbooks: string[];           // runbooks/*.md — operational guides per rule
+  tests: string[];              // tests/*.yaml — given/when/then scenarios
+  contractYaml: string;         // tests/contract/*.yaml — business contract scenarios
+  provenanceYaml: string;       // provenance.yaml — sources, inputCompleteness, confidence
 }
 
 export interface PromptInput {
@@ -24,11 +26,12 @@ const CRITERION_DEFS: Record<AIReadyCriterion, CriterionDef> = {
   source_consistency: {
     korean: "소스코드 정합성",
     definition:
-      "spec-container의 rules/*.md에 정의된 condition-criteria-outcome이 provenance.yaml의 businessRules 목록과 1:1로 매핑되며 내용이 일치하는가.",
-    rubric: `- 0.9+: 모든 businessRule(BL-XXX)이 rules/*.md에 condition-criteria-outcome으로 완전히 구현됨. 드리프트 없음.
-- 0.75~0.9: 1~2개 minor 불일치 (표현 차이, 설명 누락 수준). 기능 의미 동일.
-- 0.5~0.75: 3~5개 불일치 또는 1개 기능 드리프트 (조건 누락, outcome 변경).
-- <0.5: 다수 BL 누락 또는 rules 내용이 provenance 출처와 구조적으로 불일치.`,
+      "spec-container의 originalRules(`{skill}-rules.md`의 BL-XXX 원본 표)가 provenance.yaml의 businessRules 목록과 1:1로 매핑되며 내용이 일치하는가. Empty Slot 보완 규칙(`ES-*.md`)은 원본 BL의 빈 슬롯을 채우는 **추가분**이므로 정합성 판정 기준이 아니라 **참고 맥락**으로만 활용한다.",
+    rubric: `**평가 대상 분리 원칙**: originalRules(BL 원본)만 provenance.businessRules와 대조한다. emptySlotRules(ES-XXX)는 BL 원본에 없는 예외/엣지 케이스 보완이므로 "BL에 없어도" 불일치가 아니다. 각 ES 규칙 본문의 "빈 슬롯 설명" 섹션이 참조하는 BL-XXX가 originalRules에 존재하면 정합.
+- 0.9+: provenance의 모든 BL이 originalRules 표에 condition-criteria-outcome-exception으로 완전히 존재. 표기 변동 없음. ES 규칙들이 참조하는 BL이 모두 originalRules에 존재.
+- 0.75~0.9: 1~2개 minor 불일치 (표현 차이, exception 열 공란 수준). BL 누락 0건.
+- 0.5~0.75: 3~5개 불일치 또는 1개 BL 누락/드리프트 (조건 누락, outcome 변경). 또는 ES가 참조하는 BL 1건이 원본에 없음.
+- <0.5: 다수 BL 누락 또는 originalRules 내용이 provenance 출처와 구조적으로 불일치. originalRules 자체 부재.`,
   },
   comment_doc_alignment: {
     korean: "주석·문서 일치",
@@ -85,7 +88,14 @@ export function buildPrompt(criterion: AIReadyCriterion, input: PromptInput): st
   const def = CRITERION_DEFS[criterion];
   const { specContent, skillName } = input;
 
-  const rulesText = specContent.rules.join("\n\n---\n\n");
+  const originalRulesText =
+    specContent.originalRules && specContent.originalRules.length > 0
+      ? specContent.originalRules.join("\n\n---\n\n")
+      : "(제공되지 않음)";
+  const emptySlotRulesText =
+    specContent.emptySlotRules && specContent.emptySlotRules.length > 0
+      ? specContent.emptySlotRules.join("\n\n---\n\n")
+      : "(Empty Slot 규칙 없음)";
   const runbooksText = specContent.runbooks.join("\n\n---\n\n");
   const testsText = specContent.tests.join("\n\n---\n\n");
 
@@ -99,11 +109,14 @@ ${def.rubric}
 
 ## 평가 대상 Skill: ${skillName}
 
-### Provenance (출처 메타데이터)
+### Provenance (출처 메타데이터 — businessRules 선언 포함)
 ${specContent.provenanceYaml}
 
-### Rules (업무 규칙 — condition-criteria-outcome-exception)
-${rulesText}
+### Original Rules (BL 원본 표 — provenance.businessRules와 1:1 대응)
+${originalRulesText}
+
+### Empty Slot Rules (ES-* — BL이 정의하지 않은 예외/엣지 케이스 보완)
+${emptySlotRulesText}
 
 ### Runbooks (운영 가이드)
 ${runbooksText}

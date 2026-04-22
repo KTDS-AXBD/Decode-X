@@ -23,6 +23,22 @@ async function readMarkdownFiles(dir: string): Promise<string[]> {
   return Promise.all(files.map((f) => readFile(join(dir, f), "utf-8")));
 }
 
+/**
+ * rules/ 디렉토리를 BL 원본(`{skill}-rules.md`)과 Empty Slot 보완(`ES-*.md`)로 분리.
+ * 7 lpon-* container 컨벤션에 따라 파일명 패턴으로 분류한다.
+ */
+async function readRulesSplit(dir: string): Promise<{ originalRules: string[]; emptySlotRules: string[] }> {
+  if (!existsSync(dir)) return { originalRules: [], emptySlotRules: [] };
+  const files = (await readdir(dir)).filter((f) => f.endsWith(".md")).sort();
+  const originalFiles = files.filter((f) => !f.startsWith("ES-"));
+  const emptySlotFiles = files.filter((f) => f.startsWith("ES-"));
+  const [originalRules, emptySlotRules] = await Promise.all([
+    Promise.all(originalFiles.map((f) => readFile(join(dir, f), "utf-8"))),
+    Promise.all(emptySlotFiles.map((f) => readFile(join(dir, f), "utf-8"))),
+  ]);
+  return { originalRules, emptySlotRules };
+}
+
 async function readYamlFiles(dir: string): Promise<string[]> {
   if (!existsSync(dir)) return [];
   const files = (await readdir(dir)).filter((f) => f.endsWith(".yaml") || f.endsWith(".yml")).sort();
@@ -41,18 +57,21 @@ async function readContractYaml(testsDir: string): Promise<string> {
 async function loadContainer(containerDir: string): Promise<SkillMeta> {
   const name = containerDir.split("/").at(-1) ?? containerDir;
 
-  const [provenanceYaml, rules, runbooks, tests, contractYaml] = await Promise.all([
+  const [provenanceYaml, rulesSplit, runbooks, tests, contractYaml] = await Promise.all([
     readFile(join(containerDir, "provenance.yaml"), "utf-8").catch(() => ""),
-    readMarkdownFiles(join(containerDir, "rules")),
+    readRulesSplit(join(containerDir, "rules")),
     readMarkdownFiles(join(containerDir, "runbooks")),
     readYamlFiles(join(containerDir, "tests")),
     readContractYaml(join(containerDir, "tests")),
   ]);
 
+  const { originalRules, emptySlotRules } = rulesSplit;
+  const rules = [...originalRules, ...emptySlotRules];
+
   return {
     id: name,
     name,
-    specContent: { rules, runbooks, tests, contractYaml, provenanceYaml },
+    specContent: { rules, originalRules, emptySlotRules, runbooks, tests, contractYaml, provenanceYaml },
   };
 }
 

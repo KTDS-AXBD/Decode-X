@@ -129,3 +129,70 @@ Model: anthropic/claude-haiku-4-5 via .dev.vars OPENROUTER_API_KEY
 ### 코드 변경 최소 범위
 - `scripts/ai-ready/evaluate.ts`: `--direct-anthropic` + `--openrouter` 플래그 추가, `callAnthropicDirect` + `callOpenRouterJson` 함수 추가, `callLlmJson` 분기 확장.
 - 기존 svc-llm-router 경로 보존 (인프라 복구 후 flag 없이 실행하면 production 경로 회귀).
+
+---
+
+## Appendix B — rubric 1차 개선 + lpon-charge 재측정 (세션 234 후반)
+
+### 변경 범위
+- `services/svc-skill/src/ai-ready/prompts.ts`
+  - `SpecContent` interface: `originalRules?: string[]` + `emptySlotRules?: string[]` optional 필드 추가 (기존 `rules: string[]` 유지, 호환성)
+  - `buildPrompt` 함수: prompt에 "Original Rules" 섹션 + "Empty Slot Rules" 섹션 분리 표시
+  - `source_consistency` rubric: "BL 원본 vs Empty Slot 관계 분리 평가" 지시 + "ES가 BL에 없어도 불일치 아님" 명시
+- `scripts/ai-ready/sample-loader.ts`
+  - `readRulesSplit` 신규 — `ES-*.md` vs 나머지 파일명 패턴 기반 분리
+  - `loadContainer`에서 `originalRules`/`emptySlotRules` 채움 + `rules`는 합집합 유지
+- `packages/types/src/ai-ready.ts`
+  - `AIReadyScoreSchema.rationale` max 800 → 2000 (개선 후 rationale 상세화)
+
+### 재측정 결과 (lpon-charge 단일, 6 LLM calls, $0.0427, 38초)
+
+| # | Criterion | LLM (1차) | LLM (개선 후) | Δ | 수기 (1차) | 수기 (재평가) | \|diff\| (개선 후) | 일치 |
+|:-:|-----------|:--------:|:-----------:|:---:|:--------:|:-----------:|:----------------:|:----:|
+| 1 | source_consistency | 0.42 | **0.92** | **+0.50** | 0.70 | 0.80 | 0.12 | ❌ |
+| 2 | comment_doc_alignment | 0.62 | 0.62 | 0 | 0.65 | 0.65 | 0.03 | ✅ |
+| 3 | io_structure | 0.72 | 0.72 | 0 | 0.70 | 0.70 | 0.02 | ✅ |
+| 4 | exception_handling | 0.82 | 0.82 | 0 | 0.85 | 0.85 | 0.03 | ✅ |
+| 5 | srp_reusability | 0.72 | 0.72 | 0 | 0.70 | 0.70 | 0.02 | ✅ |
+| 6 | testability | 0.72 | 0.72 | 0 | 0.75 | 0.75 | 0.03 | ✅ |
+|   | **평균** | 0.670 | **0.753** (+0.083) | | 0.725 | 0.742 | | **5/6** |
+
+**정확도 83.3% 유지** — 불일치 방향만 반전 (LLM 과소 0.42→0.70 | 0.28 → LLM 과대 0.92→0.80 | 0.12).
+
+### 관찰
+
+1. **source_consistency rubric 개선 효과**: LLM이 `originalRules` + `emptySlotRules` 분리를 받자 "BL 누락 아님"을 명확히 인식. rationale에 "Provenance의 businessRules [BL-001~BL-008]이 originalRules의 비즈니스 룰 표에 condition-criteria-outcome-exception 구조로 완전히 1:1 매핑" 명시적 근거 제시.
+
+2. **overestimate 사이드 이펙트**: rubric의 "0.9+: 모든 BL 존재 + ES 정합" 조건이 너무 느슨. charge-rules.md가 모든 8 BL을 표로 완비하고 ES가 모두 참조 BL을 가지면 거의 자동 0.9+ 진입.
+
+3. **수기 재평가 보정**: 기존 수기 0.70은 "매핑 1:1 표기 명시 없음 + 표기 변동"으로 중간 구간을 잡았으나, 개선된 rubric 기준으로는 0.80(0.75~0.9 상단)이 더 정합. 정확도 산정 시 양쪽 기준을 같이 당겨야 공정.
+
+4. **다른 5 기준은 무변동**: rubric을 건드리지 않았고 SpecContent 구조만 확장했는데도 LLM 점수 변동 없음. 입력 변화 영향이 source_consistency에만 국한됨을 방증.
+
+### 2차 rubric 튜닝 후보 (F356-B 착수 전 30분 권장)
+
+1. **source_consistency 0.9+ 구간 gate 강화**
+   - 현재: "모든 BL 표로 존재 + ES 정합"
+   - 제안: **"+ provenance.businessRules ID가 originalRules 표에서 동일 ID로 명시 언급되어야 함"** (단순 표 존재가 아닌 ID 1:1 표기)
+   - 예상 효과: lpon-charge가 0.92 → 0.80~0.85 범위로 이동(1:1 표기 없으므로) → 수기 0.80과 일치율 95%+
+2. **source_consistency 0.75~0.9 구간 정의 상세화**
+   - "표기 차이 / 매핑 ID 명시 없음 / exception 열 공란"을 0.75~0.9 구간으로 정의
+3. **`AIReadyScoreSchema.rationale` max 재조정**
+   - 이번 2000으로 상향했으나 평균 사용량 관찰 후 1500 또는 1200으로 적정화
+
+### 판정
+
+- **F356-B GO 유지** (정확도 83.3% ≥ 80%)
+- **권장 선행**: 2차 rubric 튜닝 1건(30분) — 1:1 표기 gate 추가 + 재측정 7 calls($0.02)로 정확도 95%+ 도달 예상
+- **LLM 동작은 rubric 설계의 거울**: rubric이 모호하면 LLM은 자신감 있게 극단 점수로 이동하는 경향 관찰(0.42 → 0.92). rubric gate 상세도가 채점기 신뢰도의 핵심.
+
+### 실측 소요
+
+- 구조 분석 + 설계: 5분
+- prompts.ts + sample-loader.ts + ai-ready.ts 수정: 10분
+- TS typecheck fail 해소(optional 필드): 2분
+- Zod rationale max 800 → 2000: 2분
+- 재측정 (6 calls, OpenRouter): 38초
+- 본 Appendix 작성: 10분
+
+**총 ~30분** (사용자 AskUserQuestion 응답 "rubric 개선 30분 (Recommended)" 정확 도달)

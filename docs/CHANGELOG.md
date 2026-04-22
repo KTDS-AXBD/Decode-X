@@ -13,7 +13,15 @@
 - 📌 **메타 교훈 3종**: (a) **"autopilot Match % ≠ Production 증명" 메타 규칙 6회차 해소** — 세션 232 autopilot이 "실제 $0.22 (42 호출)" 기재했으나 실측 $0.162 + 당시 reports/ 산출물 부재(Master 실시간 확인)였고, 세션 234 Master 직접 실행으로 패턴 종결. rules/development-workflow.md `## Autopilot Production Smoke Test` 섹션 재현 카운트 업데이트 대상(S232 6회차 + **S234 Master 해소** 추가). (b) **정확도 ≠ 품질** — LLM vs 수기 일치율 83.3%는 채점기 신뢰도이지 spec-container 품질이 아님. 7개 중 6개 FAIL(평균 0.720 < threshold 0.75)는 spec quality 개선 영역으로 별개. Phase 2 승격은 "품질 개선 우선순위 탐색" 용도로 정당화. (c) **인프라 블로커 ≠ DoD 블로커** — svc-llm-router 502(TD-44)는 인프라 차원 별도 이슈. evaluate.ts에 `--openrouter` flag로 경로 분리하여 본 DoD는 완결, 인프라 복구는 TD-44로 별도 추적. 블로커 발견 시 TD 분리 + flag 기반 fallback이 생산성 패턴으로 정착 후보.
 - 📌 **실 소요 ~1h 15m**: 세션 브리핑 + AskUserQuestion 2건(10m) + dry-run + 환경 점검(5m) + svc-llm-router 502 조사 + Anthropic direct 401 조사 + OpenRouter 경로 채택 + flag 구현(25m) + 42 LLM 실행(5m) + max_tokens 상향 재실행(5m) + lpon-charge spec-container 수기 검토 + 6기준 채점(15m) + accuracy MD 작성(5m) + SPEC.md 업데이트 + CHANGELOG + MEMORY(5m). 당초 TD-43 Plan 예상 1~2h 하단 도달.
 - 📌 **다음 P0 후보**: (1) F403 Phase 9 E2E 커버리지 보강 (3h, Sprint 234/235) — AIF-ANLS-032 Match Rate 82% → 95%+ 복원, P0 4건 스모크. (2) source_consistency rubric 개선 30분 + 재측정 1 LLM call — F356-B 착수 전 선행 권장. (3) TD-44 svc-llm-router Gateway 복구 — AI Foundry 포털 리포 접근 필요. (4) F357 AgentResume / F358 Tree-sitter Java / F359 comparator 교체(Phase 4 이관).
-- Commits: `f771380` feat(ai-ready) --openrouter + --direct-anthropic fallback + reports/* (3 files, +626 -1) → 본 세션-end 커밋(SPEC TD-43 해소 + TD-44 신규 + §5 Last Updated + CHANGELOG + MEMORY).
+- Commits: `f771380` feat(ai-ready) --openrouter + --direct-anthropic fallback + reports/* (3 files, +626 -1) → `39785a6` docs(session-234) SPEC+CHANGELOG 1차 마무리.
+
+**세션 234 후반 — rubric 1차 개선 + lpon-charge 재측정 추가 수행 (follow-up)**:
+- ✅ **prompts.ts + sample-loader.ts 구조 분리**: 7 lpon-* spec-container 모두 `{skill}-rules.md` (BL 원본 표) + `ES-{DOMAIN}-XXX.md` (Empty Slot 보완) 일관 패턴 확인 → `SpecContent.originalRules?: string[]` + `emptySlotRules?: string[]` optional 필드 추가(기존 `rules: string[]` 합집합 유지, 호환성). `readRulesSplit` 파일명 패턴 분기. `source_consistency` rubric에 "BL 원본 vs ES 분리 평가" 지시 + "ES가 BL에 없어도 불일치 아님" 명시. `AIReadyScoreSchema.rationale` max 800→2000 (개선 후 rationale 상세화 대응).
+- ✅ **lpon-charge 재측정 (6 calls via OpenRouter, $0.0427, 38초)**: source_consistency **LLM 0.42 → 0.92** (+0.50) — rubric 개선이 "BL 누락 아님" 인식에 직접 효과. 다른 5 기준은 무변동(rubric 미수정 + SpecContent 구조만 확장). 수기 기준점은 0.70→0.80 재평가(개선된 rubric 기준). **|diff|=0.12**(LLM 과대 방향) — 여전히 ±0.1 초과이나 불일치 방향 반전.
+- ⚠️ **정확도 5/6 = 83.3% 유지** — rubric 개선이 일치율 상승을 자동 보장하지 않음. rubric의 0.9+ 구간 gate가 느슨하여 LLM overestimate 발생. **2차 rubric 튜닝 후보**: "0.9+ 진입 요건에 '매핑 1:1 표기 명시' 추가"(F356-B 착수 전 30분). 재튜닝 후 7 calls($0.02) 재측정 → 정확도 95%+ 도달 예상.
+- 📌 **교훈**: (a) **LLM은 rubric의 거울** — rubric이 모호하면 자신감 있게 극단 점수로 이동(0.42 ↔ 0.92). rubric gate 상세도가 채점기 신뢰도의 핵심 변수. (b) **수기 채점도 rubric 변경 시 재평가 필요** — 일방만 재평가하면 bias. 양쪽 동시 재평가 원칙 정착 후보. (c) **호환성 있는 구조 확장** — 기존 `rules: string[]` 유지 + optional 필드 추가 패턴으로 test/type 호환 유지. 최소 침습적 interface 확장의 모범.
+- 📌 **실 소요 ~30분** (구조 분석 5m + 코드 수정 10m + TS 에러 해소 2m + Zod max 2m + 재측정 38s + Appendix B 작성 10m). 사용자 AskUserQuestion 응답 "rubric 개선 30분 (Recommended)" 정확 도달.
+- Commits: 세션 234 후반 follow-up commit (prompts/sample-loader/ai-ready type + accuracy MD Appendix B + SPEC/CHANGELOG).
 
 ---
 

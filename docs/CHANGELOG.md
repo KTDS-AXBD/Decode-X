@@ -14,6 +14,20 @@
 
 ### 세션 229 (2026-04-21 ~ 2026-04-22)
 
+**Sprint 229 ✅ MERGED — AIF-REQ-036 Should M-UX-4 F383 AXIS DS Tier 3 외부 레포 기여 (PR #30 `3ad1b73`, 외부 PR #55 OPEN)**:
+- ✅ **F383 외부 조직 기여 첫 선례**: `IDEA-on-Action/AXIS-Design-System` federation registry에 `decode-x-kit-resources.json` 추가. 3 컴포넌트(`SpecSourceSplitView`/`ProvenanceInspector`/`StageReplayer`) `agentic` category 등록. fork `AXBD-Team/AXIS-Design-System` `feat/decode-x-kit-resources` 브랜치 → **외부 PR #55 OPEN** (https://github.com/IDEA-on-Action/AXIS-Design-System/pull/55).
+- ✅ **autopilot 8분 자체 완결 Match 95%**: 기존 Sprint 226/227(각 20분) 대비 훨씬 짧음 — 외부 org 실 merge 불요 + UI 변경 없음(컴포넌트 추출만). 커밋 `e71a468` feat + pr skeleton.
+- ✅ **CI 3/3 SUCCESS**: Migration + Typecheck + **E2E 45/45 PASS** (F401 fix 효과 Sprint 229에서도 지속, 2 sprint 연속 45/45 green).
+- ✅ **컴포넌트 추출 구조**: `apps/app-web/src/components/engineer/decode-x-kit-types.ts` generic props (PolicyItem/SourceItem 등) + `SpecSourceSplitView.tsx` + `ProvenanceInspector.tsx` 추출. Decode-X 본체는 re-import로 회귀 없음.
+- ✅ **Squash merge + cleanup**: `gh pr merge 30 --squash --delete-branch` → `3ad1b73`. tmux kill + WT remove + local branch 삭제 + signal archive.
+- 📌 **task-daemon 5분 timeout 패턴 3회째 재현** (Sprint 226 F392 / 227 F401 / **229 F383**): E2E 5분 넘으면 signal FAILED 오판 but 실 CI green. Master Monitor가 PR checks rollup 직접 관찰로 우회 — 안정 패턴화.
+- 📌 **AIF-REQ-036 Phase 9 UX 재편 Should 완결**: S1 OAuth+기반 / S2 Executive View / S3 Engineer Workbench / TD-41 E2E / **Should M-UX-4 외부 기여** 5 Sprint 전부 MERGED. F384 Guest/Demo는 Sprint 230+로 이관 (체력 여유 시).
+- 📌 **Sprint 229가 세션 229 내 4 Sprint째 MERGED** (Sprint 226 → 227 → 229). 병행 pane %9 Sprint 225/228/230 포함하면 세션 229 내 7 Sprint 동시 진행 (2 pane 병렬).
+- 📌 **실 소요 ~15m** (autopilot 8m + CI 5m + cleanup 2m). Plan 예상 6~8h 대비 **3~4%** — 외부 기여가 "fork+PR skeleton"으로 범위 축소된 효과.
+- Commits: `696a840` S229 IN_PROGRESS → `e71a468` autopilot → **`3ad1b73`** (#30 squash).
+
+---
+
 **Sprint 227 ✅ MERGED — AIF-REQ-036 F401 TD-41 완전 해소 (PR #28 `34d49c6`, CI E2E 45/45 PASS + 4연속 패턴 종결)**:
 - ✅ **F401 PoC 설계**: Sprint 226 F392 미완 TD-41을 AskUserQuestion 3 후보(A. `?demo=1` bypass / B. Playwright addCookies + server bypass / C. auth.setup 토큰 발급 endpoint) 중 **옵션 A** 확정. 최단 구현 시간 + Production 가드 2중(env flag + wrangler.toml 미정의).
 - ✅ **Sprint 227 WT 생성 + autopilot 20분 완결**: F401 + F383 + F384 지시. autopilot Match 100% self + TEST=pass + PR #28 자동 생성 (pr-lookup 실패 패턴 회피 2회째).

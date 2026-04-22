@@ -9,7 +9,7 @@ function createMockEnv(fetchResponses: Map<string, unknown>): Env {
   return {
     DB_EXTRACTION: {} as D1Database,
     QUEUE_PIPELINE: { send: vi.fn() } as unknown as Queue,
-    LLM_ROUTER_URL: "http://test-llm-router",
+    CLOUDFLARE_AI_GATEWAY_URL: "http://test-gateway", OPENROUTER_API_KEY: "test-openrouter-key",
     SVC_INGESTION: {
       fetch: vi.fn().mockImplementation((url: string) => {
         // Match URL pattern against registered responses

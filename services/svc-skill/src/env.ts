@@ -12,7 +12,6 @@ export interface Env {
   QUEUE_PIPELINE: Queue;
 
   // External service URLs (HTTP, no service bindings)
-  LLM_ROUTER_URL: string;
   FOUNDRY_X_URL: string;
   SVC_POLICY: Fetcher;
   SVC_ONTOLOGY: Fetcher;
@@ -27,9 +26,8 @@ export interface Env {
   SERVICE_NAME: string;
 
   // Secrets (set via `wrangler secret put`)
-  INTERNAL_API_SECRET: string;
+  INTERNAL_API_SECRET: string;             // inter-service auth (X-Internal-Secret)
   FOUNDRY_X_SECRET: string;
-
-  // Optional secrets — LLM enhancement skipped if absent
-  OPENROUTER_API_KEY?: string | undefined;
+  CLOUDFLARE_AI_GATEWAY_URL: string;       // full URL to OpenRouter chat-completions via CF AI Gateway
+  OPENROUTER_API_KEY: string;              // OpenRouter bearer token
 }

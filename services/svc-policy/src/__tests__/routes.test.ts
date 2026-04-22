@@ -27,7 +27,7 @@ function mockEnv(dbOverrides?: Parameters<typeof mockDb>[0]): Env {
   return {
     DB_POLICY: mockDb(dbOverrides),
     SVC_EXTRACTION: { fetch: vi.fn() } as unknown as Fetcher,
-    LLM_ROUTER_URL: "http://test-llm-router",
+    CLOUDFLARE_AI_GATEWAY_URL: "http://test-gateway", OPENROUTER_API_KEY: "test-openrouter-key",
     QUEUE_PIPELINE: {
       send: vi.fn().mockResolvedValue(undefined),
     } as unknown as Queue,

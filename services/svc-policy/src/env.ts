@@ -5,9 +5,6 @@ export interface Env {
   // Service bindings
   SVC_EXTRACTION: Fetcher;
 
-  // External service URLs
-  LLM_ROUTER_URL: string;
-
   // Queue producer for pipeline events
   QUEUE_PIPELINE: Queue;
 
@@ -19,5 +16,7 @@ export interface Env {
   SERVICE_NAME: string;
 
   // Secrets (set via `wrangler secret put`)
-  INTERNAL_API_SECRET: string;
+  INTERNAL_API_SECRET: string;             // inter-service auth (X-Internal-Secret)
+  CLOUDFLARE_AI_GATEWAY_URL: string;       // full URL to OpenRouter chat-completions via CF AI Gateway
+  OPENROUTER_API_KEY: string;              // OpenRouter bearer token
 }

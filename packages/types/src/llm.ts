@@ -4,7 +4,7 @@ export const LlmTierSchema = z.enum([
   "opus",     // Tier 1: complexity > 0.7 — Stage 3 policy inference (svc-policy only)
   "sonnet",   // Tier 2: complexity 0.4–0.7 — Stages 2, 4, 5
   "haiku",    // Tier 2: complexity < 0.4 — lightweight tasks
-  "workers",  // Tier 3: embeddings, classification, similarity
+  "workers",  // Tier 3: embeddings, classification, similarity — NOT routed through OpenRouter
 ]);
 
 export type LlmTier = z.infer<typeof LlmTierSchema>;
@@ -14,20 +14,26 @@ export const LlmProviderSchema = z.enum([
   "openai",
   "google",
   "workers-ai",
+  "openrouter",
 ]);
 
 export type LlmProvider = z.infer<typeof LlmProviderSchema>;
 
-// Model IDs per tier (Anthropic-only, kept for backward compatibility)
-export const TIER_MODELS: Record<LlmTier, string> = {
-  opus: "claude-opus-4-7",
-  sonnet: "claude-sonnet-4-6",
-  haiku: "claude-haiku-4-5-20251001",
-  workers: "@cf/baai/bge-m3",
+// OpenRouter model slugs per tier (TD-44, 2026-04-23: svc-llm-router → OpenRouter via CF Gateway)
+// tier "workers"는 OpenRouter chat-completions에서 미지원 → Workers AI 바인딩 직접 사용 권장
+export const TIER_MODELS: Record<Exclude<LlmTier, "workers">, string> = {
+  opus: "anthropic/claude-opus-4-5",
+  sonnet: "anthropic/claude-sonnet-4-5",
+  haiku: "anthropic/claude-haiku-4-5",
 };
 
-// Per-provider tier→model mapping (workers-ai has no opus equivalent)
+// Per-provider tier→model mapping (legacy; provider 분기 제거됨. 호환을 위해 유지)
 export const PROVIDER_TIER_MODELS: Record<LlmProvider, Partial<Record<LlmTier, string>>> = {
+  openrouter: {
+    opus: "anthropic/claude-opus-4-5",
+    sonnet: "anthropic/claude-sonnet-4-5",
+    haiku: "anthropic/claude-haiku-4-5",
+  },
   anthropic: {
     opus: "claude-opus-4-7",
     sonnet: "claude-sonnet-4-6",

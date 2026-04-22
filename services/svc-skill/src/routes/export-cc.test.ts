@@ -60,7 +60,7 @@ function makeEnv(overrides?: {
     },
     KV_SKILL_CACHE: { get: vi.fn(), put: vi.fn() },
     QUEUE_PIPELINE: {} as Queue,
-    LLM_ROUTER_URL: "http://test-llm-router",
+    CLOUDFLARE_AI_GATEWAY_URL: "http://test-gateway", OPENROUTER_API_KEY: "test-openrouter-key",
     SVC_POLICY: {} as Fetcher,
     SVC_ONTOLOGY: {} as Fetcher,
     ENVIRONMENT: "test",

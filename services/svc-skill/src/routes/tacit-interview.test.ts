@@ -36,7 +36,7 @@ function stubLlmSuccess(content: string) {
 }
 
 function makeEnv(db: D1Database): Env {
-  return { DB_SKILL: db, LLM_ROUTER_URL: "https://llm.test" } as unknown as Env;
+  return { DB_SKILL: db, CLOUDFLARE_AI_GATEWAY_URL: "http://test-gateway", OPENROUTER_API_KEY: "test-openrouter-key" } as unknown as Env;
 }
 
 function makeRequest(path: string, body: unknown): Request {

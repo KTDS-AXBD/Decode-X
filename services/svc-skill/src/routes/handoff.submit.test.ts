@@ -108,7 +108,7 @@ function makeEnv(overrides?: Partial<Env>): Env {
     } as unknown as R2Bucket,
     KV_SKILL_CACHE: {} as KVNamespace,
     QUEUE_PIPELINE: {} as Queue,
-    LLM_ROUTER_URL: "http://localhost:8706",
+    CLOUDFLARE_AI_GATEWAY_URL: "http://test-gateway", OPENROUTER_API_KEY: "test-openrouter-key",
     FOUNDRY_X_URL: "http://localhost:8710",
     SVC_POLICY: {} as unknown as Fetcher,
     SVC_ONTOLOGY: {} as unknown as Fetcher,

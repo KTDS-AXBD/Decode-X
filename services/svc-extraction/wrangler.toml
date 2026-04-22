@@ -31,15 +31,16 @@ bucket_name = "ai-foundry-skill-packages"
 [vars]
 ENVIRONMENT = "development"
 SERVICE_NAME = "svc-extraction"
-LLM_ROUTER_URL = "http://localhost:8706"
 # Secrets (set via `wrangler secret put`):
-# INTERNAL_API_SECRET
+# INTERNAL_API_SECRET            — inter-service auth (X-Internal-Secret)
+# CLOUDFLARE_AI_GATEWAY_URL      — full OpenRouter URL via CF AI Gateway (TD-44)
+# OPENROUTER_API_KEY             — OpenRouter bearer token (TD-44)
 
 # ---------------------------------------------------------------------------
 # Staging environment
 # ---------------------------------------------------------------------------
 [env.staging]
-vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-extraction", LLM_ROUTER_URL = "https://svc-llm-router-staging.ktds-axbd.workers.dev" }
+vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-extraction" }
 
 [[env.staging.d1_databases]]
 binding = "DB_EXTRACTION"
@@ -63,7 +64,7 @@ bucket_name = "ai-foundry-skill-packages-staging"
 # Production environment
 # ---------------------------------------------------------------------------
 [env.production]
-vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-extraction", LLM_ROUTER_URL = "https://svc-llm-router-production.ktds-axbd.workers.dev" }
+vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-extraction" }
 
 [[env.production.d1_databases]]
 binding = "DB_EXTRACTION"

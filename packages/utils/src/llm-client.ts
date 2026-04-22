@@ -1,15 +1,20 @@
 /**
- * LLM Router HTTP Client — replaces service binding calls to svc-llm-router.
+ * LLM Router HTTP Client — OpenRouter via Cloudflare AI Gateway.
  *
- * After MSA restructuring, svc-llm-router runs as an independent Worker.
- * Pipeline services call it over HTTP instead of Cloudflare service bindings.
+ * TD-44 (2026-04-23): svc-llm-router Worker를 decommission하고,
+ * 모든 pipeline 서비스가 OpenRouter chat-completions API(Gateway 경유)를 직접 호출하도록 전환.
+ * 함수명/시그니처는 유지하여 consumer(svc-policy/skill/extraction/ontology) 호환성 보존.
  */
 
-import type { LlmResponse, LlmTier, LlmProvider, ApiResponse } from "@ai-foundry/types";
+import { TIER_MODELS, type LlmTier, type LlmProvider } from "@ai-foundry/types";
 
 export interface LlmClientEnv {
-  LLM_ROUTER_URL: string;
-  INTERNAL_API_SECRET: string;
+  /**
+   * Cloudflare AI Gateway의 OpenRouter chat-completions 엔드포인트 (전체 URL).
+   * 예: https://gateway.ai.cloudflare.com/v1/{account_id}/{gateway_id}/openrouter/api/v1/chat/completions
+   */
+  CLOUDFLARE_AI_GATEWAY_URL: string;
+  OPENROUTER_API_KEY: string;
 }
 
 export interface LlmCallResult {
@@ -23,11 +28,46 @@ export interface LlmCallOptions {
   maxTokens?: number;
   temperature?: number;
   seed?: number;
+  /**
+   * Deprecated: OpenRouter는 단일 경로로 모델이 지정되므로 provider override는 무시된다.
+   * 호환을 위해 optional 유지.
+   */
   provider?: LlmProvider;
 }
 
+interface OpenRouterChatResponse {
+  id?: string;
+  model?: string;
+  choices?: Array<{
+    message?: { role?: string; content?: string };
+    finish_reason?: string;
+  }>;
+  usage?: {
+    prompt_tokens?: number;
+    completion_tokens?: number;
+    total_tokens?: number;
+  };
+  error?: { message?: string; code?: string | number };
+}
+
 /**
- * Call svc-llm-router /complete via HTTP. Returns the content string.
+ * tier → OpenRouter 모델 slug 매핑. workers tier는 OpenRouter chat-completions에서 미지원.
+ */
+function resolveModel(tier: LlmTier): string {
+  if (tier === "workers") {
+    throw new Error(
+      `LLM tier "workers" is no longer routed through OpenRouter. Use Workers AI binding directly if needed.`,
+    );
+  }
+  const model = TIER_MODELS[tier];
+  if (!model) {
+    throw new Error(`Unknown LLM tier: ${tier}`);
+  }
+  return model;
+}
+
+/**
+ * Call OpenRouter chat-completions via Cloudflare AI Gateway. Returns the content string.
  */
 export async function callLlmRouter(
   env: LlmClientEnv,
@@ -41,7 +81,7 @@ export async function callLlmRouter(
 }
 
 /**
- * Call svc-llm-router /complete via HTTP. Returns content + provider/model metadata.
+ * Call OpenRouter chat-completions via Cloudflare AI Gateway. Returns content + model metadata.
  */
 export async function callLlmRouterWithMeta(
   env: LlmClientEnv,
@@ -50,39 +90,49 @@ export async function callLlmRouterWithMeta(
   prompt: string,
   options?: LlmCallOptions,
 ): Promise<LlmCallResult> {
-  const body: Record<string, unknown> = {
-    tier,
-    messages: [{ role: "user", content: prompt }],
-    callerService,
-    maxTokens: options?.maxTokens ?? 2048,
-  };
-  if (options?.system) body["system"] = options.system;
-  if (options?.temperature !== undefined) body["temperature"] = options.temperature;
-  if (options?.seed !== undefined) body["seed"] = options.seed;
-  if (options?.provider) body["provider"] = options.provider;
+  const model = resolveModel(tier);
 
-  const response = await fetch(`${env.LLM_ROUTER_URL}/complete`, {
+  const messages: Array<{ role: string; content: string }> = [];
+  if (options?.system) {
+    messages.push({ role: "system", content: options.system });
+  }
+  messages.push({ role: "user", content: prompt });
+
+  const body: Record<string, unknown> = {
+    model,
+    messages,
+    max_tokens: options?.maxTokens ?? 2048,
+    temperature: options?.temperature ?? 0.3,
+  };
+  if (options?.seed !== undefined) body["seed"] = options.seed;
+
+  const response = await fetch(env.CLOUDFLARE_AI_GATEWAY_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-Internal-Secret": env.INTERNAL_API_SECRET,
+      "Authorization": `Bearer ${env.OPENROUTER_API_KEY}`,
+      "HTTP-Referer": "https://decode-x.ktds-axbd.workers.dev",
+      "X-Title": `Decode-X/${callerService}`,
     },
     body: JSON.stringify(body),
   });
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`LLM Router error ${response.status}: ${text}`);
+    throw new Error(`LLM Router (OpenRouter) error ${response.status}: ${text}`);
   }
 
-  const json = (await response.json()) as ApiResponse<LlmResponse>;
-  if (!json.success) {
-    throw new Error(`LLM Router returned failure: ${json.error.message}`);
+  const json = (await response.json()) as OpenRouterChatResponse;
+  if (json.error) {
+    throw new Error(`LLM Router returned failure: ${json.error.message ?? "unknown"}`);
   }
+
+  const content = json.choices?.[0]?.message?.content ?? "";
+  const returnedModel = json.model ?? model;
 
   return {
-    content: json.data.content,
-    provider: json.data.provider ?? "unknown",
-    model: json.data.model ?? "unknown",
+    content,
+    provider: "openrouter",
+    model: returnedModel,
   };
 }

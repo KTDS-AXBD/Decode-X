@@ -62,7 +62,7 @@ function mockEnv(): Env {
         new Response(JSON.stringify(MOCK_EXTRACTION_RESPONSE), { status: 200 }),
       ),
     } as unknown as Fetcher,
-    LLM_ROUTER_URL: "http://test-llm-router",
+    CLOUDFLARE_AI_GATEWAY_URL: "http://test-gateway", OPENROUTER_API_KEY: "test-openrouter-key",
     QUEUE_PIPELINE: { send: vi.fn().mockResolvedValue(undefined) } as unknown as Queue,
     HITL_SESSION: {
       idFromName: vi.fn().mockReturnValue({ toString: () => "do-id-1" }),

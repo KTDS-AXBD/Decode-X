@@ -114,7 +114,7 @@ function makeEnv(overrides?: Partial<Env>): Env {
   return {
     DB_SKILL: mockDb({ r2_key: "skill-packages/sk-001.skill.json", domain: "퇴직연금" }),
     R2_SKILL_PACKAGES: mockR2(sampleSkillPackage),
-    LLM_ROUTER_URL: "http://test-llm-router",
+    CLOUDFLARE_AI_GATEWAY_URL: "http://test-gateway", OPENROUTER_API_KEY: "test-openrouter-key",
     SVC_POLICY: { fetch: vi.fn() } as unknown as Fetcher,
     SVC_ONTOLOGY: { fetch: vi.fn() } as unknown as Fetcher,
     SVC_EXTRACTION: { fetch: vi.fn() } as unknown as Fetcher,

@@ -22,7 +22,7 @@ function mockEnv(overrides?: {
   return {
     DB_EXTRACTION: {} as D1Database,
     QUEUE_PIPELINE: { send: vi.fn() } as unknown as Queue,
-    LLM_ROUTER_URL: "http://test-llm-router",
+    CLOUDFLARE_AI_GATEWAY_URL: "http://test-gateway", OPENROUTER_API_KEY: "test-openrouter-key",
     SVC_INGESTION: {
       fetch: vi.fn().mockImplementation((url: string) => {
         const urlObj = new URL(url);

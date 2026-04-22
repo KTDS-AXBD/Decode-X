@@ -2,6 +2,47 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 238 (2026-04-23)
+
+**TD-44 Phase 1 해소: svc-llm-router decommission + llm-client.ts OpenRouter via CF AI Gateway 전환 (Master pane %9)**:
+- ⚡ **방향 결정**: TD-44 "svc-llm-router 502 secret 회전" 경로 포기 → **Worker 자체 decommission + `packages/utils/src/llm-client.ts`를 OpenRouter chat-completions via CF AI Gateway 직접 호출로 전면 교체**. 사용자 AskUserQuestion 7회 수렴.
+- 🔎 **근거 3종**: (1) svc-llm-router 소스 이관처 실종 — Sprint 1 MSA 재조정(`3da6e70`)에서 Decode-X에서 삭제됐고 Foundry-X/Discovery-X/ax-discovery-portal 전부 부재, Worker만 배포 상태(`/health` 200) + `/complete` 502 지속. (2) evaluate.ts `--openrouter` 경로 세션 234/235 실측 성공($0.162/42 calls/4m17s 기록). (3) CF AI Gateway가 OpenRouter provider 지원 → logging/caching/비용 추적 유지 가능.
+- ✅ **구현 완결 (6단계)**:
+  1. `packages/utils/src/llm-client.ts` 재작성 — `callLlmRouter`/`callLlmRouterWithMeta` 시그니처 유지(consumer 14 파일 수정 0), URL `CLOUDFLARE_AI_GATEWAY_URL` 직접 사용 + `Authorization: Bearer OPENROUTER_API_KEY` + OpenAI 호환 chat-completions body + `X-Title: Decode-X/{callerService}` 헤더. tier="workers" 호출 시 에러 throw(실사용 0건 grep 확인).
+  2. `packages/types/src/llm.ts` TIER_MODELS OpenRouter slug 교체(opus→`anthropic/claude-opus-4-5`, sonnet→`anthropic/claude-sonnet-4-5`, haiku→`anthropic/claude-haiku-4-5`) + LlmProvider enum에 `openrouter` 추가.
+  3. 4 서비스 env.ts — svc-policy/skill/extraction/ontology에서 `LLM_ROUTER_URL` 제거 + `CLOUDFLARE_AI_GATEWAY_URL`+`OPENROUTER_API_KEY` 추가. `INTERNAL_API_SECRET`는 inter-service auth(X-Internal-Secret)용으로 유지.
+  4. 4 wrangler.toml — `LLM_ROUTER_URL` vars dev/staging/prod 모두 제거. Secrets 주석에 신규 2종 + 용도 명시.
+  5. 29 테스트 mock sed 일괄 치환: `LLM_ROUTER_URL: "..."` → `CLOUDFLARE_AI_GATEWAY_URL: "http://test-gateway", OPENROUTER_API_KEY: "test-openrouter-key"` + 6 LlmClientEnv 사용 파일에서 INTERNAL_API_SECRET 라인 제거(sed `/OPENROUTER.../{n;/INTERNAL.../d;}`).
+  6. svc-policy/skill `llm/caller.test.ts` 2개 OpenRouter 포맷으로 재작성 — URL assertion, Authorization Bearer, `{choices:[{message:{content}}]}` body, 에러 메시지 "LLM Router (OpenRouter) error {code}" → **8/8 PASS**.
+- 📊 **품질**: typecheck 14/14 ✅ + lint 9/9 ✅. 핵심 3 패키지(utils/types) + 4 서비스 소스 모두 clean.
+- 🟥 **미완결 (Phase 2 사용자 수행 대기)**: (a) 4 서비스 × prod+staging × 2 secret = 16회 `wrangler secret put` 주입 — 값 Claude 로그 미노출 원칙 준수 필요, (b) `wrangler delete svc-llm-router [--env staging]` Worker decommission(2회), (c) evaluate.ts 소수 smoke + consumer 서비스 smoke 호출, (d) 40+ 테스트 fetch mock response body 재작성(별도 F-item 신설 후보).
+- 🟡 **S228 account 오염 재관찰**: `wrangler whoami` token account = `b6c06059b413892a92f150e5ca496236` (ktds.axbd@gmail.com's Account) ≠ 사용자 쉘 `CLOUDFLARE_ACCOUNT_ID=02ae9a2bead25d99caa8f3258b81f568` (MCP가 보는 IDEA on Action account). secret put 작업은 `--name` 지정으로 영향 없음이나 향후 `wrangler deploy` 시 account 정렬 주의 필요(세션 228 교훈 재현).
+- ⚠️ **보안 노트**: 세션 235 OPENROUTER_API_KEY 대화 로그 노출 건 rotate 아직 미수행. 이번 Phase 2 secret 주입도 사용자 본인 터미널 수행 원칙 재확인.
+- 📌 **사용자 답변 7건 (AskUserQuestion)**: (1) "Foundry-X 내부" → 실제 부재 확인 후, (2) "svc-llm-router decommission + llm-client.ts 교체" 방향 재전환, (3) "OpenRouter 직접 + CF Gateway 포함", (4) "KTDS account + token 준비됨", (5) "wrangler login 재수행" → 실제 CLOUDFLARE_API_TOKEN 환경 이슈로, (6) "사용자 터미널 직접 실행" 전환, (7) "핵심 2개만 재작성 + 나머지는 별도 Sprint".
+- 📌 **실 소요 ~2h**: 정찰/설계 30m + 구현 45m + 테스트 mock 일괄 치환 15m + caller.test 재작성 + 8/8 PASS 확인 15m + SPEC/CHANGELOG 15m.
+- 📌 **다음 action**: 사용자 Phase 2 수행 → 최종 커밋 보강 → 세션 238 종료.
+
+### 세션 237 계속 (2026-04-23)
+
+**B-02 해결 경로 (a) 재확정 + F407 IN_PROGRESS 착수 (Master pane %6)**:
+- ⚡ **방향 전환**: 전일 세션 237 1차 결정 (c) 신규 zone 구입 → 사용자 "minu.best를 ktds.axbd@gmail.com으로 옮기는 작업 착수" 지시 → **(a) zone 이관 재확정**.
+- 🔎 **근거 재확인**: 세션 236 F406 로그의 "Pages는 cross-account custom domain 지원, Workers 미지원" 규칙이 결정적. zone을 KTDS로 이관해도 개인 계정 minu-web Pages(www/app.minu.best)는 DNS re-verify만으로 custom domain 유지 가능 → 초기 평가 역전. (a) 비용·브랜딩·시간 모두 (c) 대비 우위.
+- 🔎 **DNS 전체 베이스라인 재덤프** (dig + curl 30+): 4 proxied subdomain 확인(**www/app/rx/api**.minu.best) + CAA 10건(letsencrypt/digicert/ssl.com/comodoca/pki.goog/issuewild 조합) + SPF(AWS SES) + MX/DMARC/DKIM **없음** ✅. `api.minu.best /health` = HTTP 200 `{"status":"healthy","environment":"production"}`, CORS whitelist=`https://minu.best` 전용 → 활성 API(Cloudflare Worker 또는 Pages Functions 추정).
+- 📋 **F407 plan v2 재작성 (AIF-PLAN-039)**: 8 Phase runbook — (P0 선행 조사 완료), (P1) 사전 준비 10~20min(개인 계정 DNS export + 영향 조사 + registrar 확인 + downtime 창 합의), (P2) Delete+Readd 5min(개인 계정 삭제 → KTDS 계정 Add Site → 레코드 재입력), (P3) Registrar NS 전환 5min + 전파 5~30min, (P4) F406 코드 `afa061e` cherry-pick 20min + CI 5min(wrangler.toml Workers + src/worker.ts + deploy-pages.yml), (P5) rx.minu.best Workers Custom Domain 연결 5min(이제 동일 account), (P6) Zero Trust 2 Application 재구성/드리프트 복구 15min, (P7) Master 13/13 curl + 시크릿 창 login flow 5min, (P8) 마무리 15min. 추정 순소요 ~80min + 전파 30min = **~2h**.
+- 📝 **문서 갱신**: `docs/01-plan/features/F407.plan.md` v2 전면 재작성((c)→(a) 전환, DNS 베이스라인 섹션 추가, 위험/롤백 matrix 갱신). SPEC.md §5 Last Updated(세션 237 계속) + §6 Sprint 237 블록 갱신(F407 IN_PROGRESS + 8 Phase) + §8 B-02 row 갱신(🚨 OPEN → 🔧 IN_PROGRESS + (a) 재확정 근거).
+- 📌 **다음 action**: Phase 1 사용자 실행 — 개인 계정 Dashboard에서 minu.best DNS export + 영향 서비스 확인 + registrar 확인 + 야간 downtime 창 합의. 이후 Phase 2~7 순차 실행.
+
+### 세션 237 (2026-04-22)
+
+**B-02 해결 경로 (c) 확정 + F407 PLANNED (Master pane %6)**:
+- 🔍 **Zero Trust 재측정 0/6 PASS**: `curl -I https://rx.minu.best/ | /welcome | /executive | /favicon.ico | /_routes.json` 전원 **HTTP 403 + content-length:16 + text/plain** = CF Access Forbidden 고정. 세션 236 9/13 대비 완전 악화. `/cdn-cgi/access/authorized` 404 지속. 원인: `Decode-X (Public)` Bypass 정책 대시보드 드리프트 또는 Application order 역전 유력.
+- ⚡ **AskUserQuestion 4건 옵션 수렴**: (1) 미봉책(9/13 복원) skip — `/cdn-cgi/access/*` 404 구조적 한계로 login flow 불능은 유지 → 시간 낭비, (2) 옵션 (a) minu.best zone KTDS 이관 초기 선택, (3) DNS 실상 조사 결과 제시 후 (a) 철회, (4) **(c) KTDS 자체 zone 확보 + decode-x.* subdomain 확정**.
+- 🔎 **DNS 실상 조사 (dig + curl)**: `minu.best` = Cloudflare Free (NS=sunny+bill), **MX 없음 ✅** (이메일 수신 없음, SPF만 AWS SES), SOA serial `2402340538`. 발견 subdomain 3개: **`www.minu.best` = Next.js App Router 한국어 개인 사이트**(`x-nextjs-prerender: 1`, HTTP 200 정상) + **`api.minu.best` = JSON API**(HTTP 404 Route 구조, `/health` 200, CORS whitelist=`https://minu.best` 전용, 즉 Next.js 앱 전용 백엔드) + `rx.minu.best`. 즉 zone 이관 시 **작동 중인 개인 Next.js 앱 + 전용 백엔드 쌍**이 custom domain 상실 — 개인 소유 서비스의 KTDS 귀속 이슈 큼 → (a) 철회.
+- 📋 **F407 PLANNED (AIF-PLAN-039)**: 6 Phase 플랜 — (1) 도메인 확보(Cloudflare Registrar 권장, 사용자 30min+2h 전파), (2) F406 코드(`afa061e`) cherry-pick 재적용(wrangler.toml Workers 전환 + src/worker.ts + deploy-pages.yml), (3) Workers Custom Domain `decode-x.{root}` 연결(동일 account 보장), (4) Zero Trust Application 2건 재생성(Public Bypass + Protected Allow @kt.com), (5) Master 실측 13/13 + 시크릿 창 login flow 완주, (6) SPEC/CLAUDE/README 신규 URL 전파 + rx.minu.best cleanup. 추정 ~3~4h + 도메인 전파 대기. 단일 Sprint 237.
+- 🔧 **KTDS 후보 도메인 조사**: `ktds-axbd.com`/`ktdsaxbd.com`/`axconsulting.com` 모두 미등록 또는 parked (dig 응답 없음/afternic parking). 신규 구입 필요 — **사전 결정 필요**: 루트 도메인 최종 후보 + 예산 승인(~$10~30/yr) + registrar 선택(Cloudflare Registrar 선호, 즉시 zone 활성 + NS 자동).
+- 📝 **문서 갱신**: `docs/01-plan/features/F407.plan.md` 신규(AIF-PLAN-039, 6 Phase runbook + 위험·롤백 matrix), SPEC.md §5 Last Updated + §6 Sprint 237 블록 신설 + §8 B-02 row 갱신(0/6 회귀 기록 + DNS 실상 조사 결과 + 해결 경로 (c) 확정 + F407 링크).
+- 📌 **다음 action**: 루트 도메인 확정 + 도메인 구입 → Phase 2~6 실행 (차기 세션).
+
 ### 세션 236 (2026-04-22)
 
 **Sprint 234 🟡 PARTIAL — F405 🟡 부분 완결 + F406 ⏸️ 롤백 (Cloudflare Pages+Access+Custom Domain cross-account 구조적 한계 도달) + B-02 신규 등록 (Master pane)**:

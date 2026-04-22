@@ -69,7 +69,7 @@ function stubGlobalFetchForLlm(shouldFail = false) {
 /** R2 put은 vi.fn(), D1 prepare→bind→all/run 체이닝 */
 function makeEnv(): Env {
   return {
-    LLM_ROUTER_URL: "http://test-llm-router",
+    CLOUDFLARE_AI_GATEWAY_URL: "http://test-gateway", OPENROUTER_API_KEY: "test-openrouter-key",
     DB_SKILL: {
       prepare: vi.fn().mockReturnValue({
         bind: vi.fn().mockReturnValue({

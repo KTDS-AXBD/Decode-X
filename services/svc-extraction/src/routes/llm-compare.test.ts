@@ -75,7 +75,7 @@ function mockEnv(overrides?: Partial<Env>): Env {
   return {
     DB_EXTRACTION: mockDb(),
     QUEUE_PIPELINE: {} as Queue,
-    LLM_ROUTER_URL: "http://test-llm-router",
+    CLOUDFLARE_AI_GATEWAY_URL: "http://test-gateway", OPENROUTER_API_KEY: "test-openrouter-key",
     SVC_INGESTION: overrides?.SVC_INGESTION ?? mockFetcher({ success: true, data: { chunks: mockChunks() } }),
     ENVIRONMENT: "development",
     SERVICE_NAME: "svc-extraction",

@@ -30,8 +30,7 @@ function makeLlmResponse(dimensions: Record<string, number>): Response {
 function makeEnv(fetchFn: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>): SemanticEvalEnv {
   vi.stubGlobal("fetch", fetchFn);
   return {
-    LLM_ROUTER_URL: "http://test-llm-router",
-    INTERNAL_API_SECRET: "test-secret",
+    CLOUDFLARE_AI_GATEWAY_URL: "http://test-gateway", OPENROUTER_API_KEY: "test-openrouter-key",
   };
 }
 

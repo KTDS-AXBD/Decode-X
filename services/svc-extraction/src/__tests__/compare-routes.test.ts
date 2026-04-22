@@ -117,7 +117,7 @@ function mockEnv(db?: D1Database): Env {
   return {
     DB_EXTRACTION: db ?? createDb(),
     QUEUE_PIPELINE: { send: vi.fn().mockResolvedValue(undefined) } as unknown as Queue,
-    LLM_ROUTER_URL: "http://test-llm-router",
+    CLOUDFLARE_AI_GATEWAY_URL: "http://test-gateway", OPENROUTER_API_KEY: "test-openrouter-key",
     SVC_INGESTION: {
       fetch: vi.fn().mockResolvedValue(
         new Response(JSON.stringify({ chunks: [] }), { status: 200 }),

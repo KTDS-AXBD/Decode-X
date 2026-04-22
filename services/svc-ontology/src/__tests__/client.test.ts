@@ -13,7 +13,7 @@ function mockEnv(overrides?: Partial<Env>): Env {
     ENVIRONMENT: "development",
     SERVICE_NAME: "svc-ontology",
     INTERNAL_API_SECRET: "test-secret",
-    LLM_ROUTER_URL: "https://svc-llm-router.test",
+    CLOUDFLARE_AI_GATEWAY_URL: "http://test-gateway", OPENROUTER_API_KEY: "test-openrouter-key",
     NEO4J_URI: "https://test-instance.databases.neo4j.io",
     NEO4J_USERNAME: "neo4j-user",
     NEO4J_PASSWORD: "neo4j-pass",

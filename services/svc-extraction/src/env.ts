@@ -8,9 +8,6 @@ export interface Env {
   // Service bindings
   SVC_INGESTION: Fetcher;
 
-  // External service URLs
-  LLM_ROUTER_URL: string;
-
   // Vars
   ENVIRONMENT: string;
   SERVICE_NAME: string;
@@ -19,5 +16,7 @@ export interface Env {
   R2_SPEC_PACKAGES: R2Bucket;
 
   // Secrets (set via `wrangler secret put`)
-  INTERNAL_API_SECRET: string;
+  INTERNAL_API_SECRET: string;             // inter-service auth (X-Internal-Secret)
+  CLOUDFLARE_AI_GATEWAY_URL: string;       // full URL to OpenRouter chat-completions via CF AI Gateway
+  OPENROUTER_API_KEY: string;              // OpenRouter bearer token
 }

@@ -22,8 +22,7 @@ describe("callLlm", () => {
 
   function mockEnv(): LlmClientEnv {
     return {
-      LLM_ROUTER_URL: "http://test-llm-router",
-      INTERNAL_API_SECRET: "my-secret",
+      CLOUDFLARE_AI_GATEWAY_URL: "http://test-gateway", OPENROUTER_API_KEY: "test-openrouter-key",
     };
   }
 

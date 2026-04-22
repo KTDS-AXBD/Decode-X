@@ -16,7 +16,7 @@ function makePolicies(count: number): PolicyInput[] {
 function mockEnv(fetchFn: ReturnType<typeof vi.fn>): Env {
   vi.stubGlobal("fetch", fetchFn);
   return {
-    LLM_ROUTER_URL: "http://test-llm-router",
+    CLOUDFLARE_AI_GATEWAY_URL: "http://test-gateway", OPENROUTER_API_KEY: "test-openrouter-key",
     INTERNAL_API_SECRET: "test-secret",
   } as unknown as Env;
 }

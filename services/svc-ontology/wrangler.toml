@@ -27,9 +27,10 @@ queue = "ai-foundry-pipeline"
 [vars]
 ENVIRONMENT = "development"
 SERVICE_NAME = "svc-ontology"
-LLM_ROUTER_URL = "http://localhost:8706"
 # Secrets (set via `wrangler secret put`):
-# INTERNAL_API_SECRET
+# INTERNAL_API_SECRET            — inter-service auth (X-Internal-Secret)
+# CLOUDFLARE_AI_GATEWAY_URL      — full OpenRouter URL via CF AI Gateway (TD-44)
+# OPENROUTER_API_KEY             — OpenRouter bearer token (TD-44)
 # NEO4J_URI        — HTTPS endpoint (e.g. https://xxx.databases.neo4j.io) — NO port!
 # NEO4J_USERNAME   — Aura instance username
 # NEO4J_PASSWORD   — Aura instance password
@@ -39,7 +40,7 @@ LLM_ROUTER_URL = "http://localhost:8706"
 # Staging environment
 # ---------------------------------------------------------------------------
 [env.staging]
-vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-ontology", LLM_ROUTER_URL = "https://svc-llm-router-staging.ktds-axbd.workers.dev" }
+vars = { ENVIRONMENT = "staging", SERVICE_NAME = "svc-ontology" }
 
 [[env.staging.d1_databases]]
 binding = "DB_ONTOLOGY"
@@ -59,7 +60,7 @@ queue = "ai-foundry-pipeline-staging"
 # Production environment
 # ---------------------------------------------------------------------------
 [env.production]
-vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-ontology", LLM_ROUTER_URL = "https://svc-llm-router-production.ktds-axbd.workers.dev" }
+vars = { ENVIRONMENT = "production", SERVICE_NAME = "svc-ontology" }
 
 [[env.production.d1_databases]]
 binding = "DB_ONTOLOGY"

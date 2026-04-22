@@ -12,5 +12,7 @@ F402_DOD=reports/ai-ready-poc-2026-04-22.json (7 × 6 = 42 점수) + reports/ai-
 COST_GUARD=일 $30 비용 가드 3단계 (사전 usage 체크 + 초과 시 AskUserQuestion + 하드 상한) — 기존 F356-A evaluate.ts 로직 재활용. 7 × 6 = 42 호출 예상 비용 < $5 (Sonnet 기준)
 EXISTING_ASSETS=packages/types/src/ai-ready.ts, services/svc-skill/src/ai-ready/prompts.ts, scripts/ai-ready/evaluate.ts, scripts/ai-ready/sample-loader.ts (재설계 대상), .decode-x/spec-containers/lpon-{budget,charge,gift,payment,purchase,refund,settlement}/ (7 production containers 실측 가능)
 PRODUCTION_SMOKE_RULE=rules/development-workflow.md "Autopilot Production Smoke Test" 5회차 재현 방지 필수 — Match% + CI pass ≠ Production 동작. 실 R2 fetch 또는 fs 읽기로 실 데이터 1건 수동 확인 후 evaluate.ts 전수 실행
-CHECKPOINT=implement
+MATCH_RATE=98
+TEST_RESULT=pass
+CHECKPOINT=report
 ESTIMATED_HOURS=4-6

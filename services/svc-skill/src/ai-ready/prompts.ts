@@ -28,9 +28,9 @@ const CRITERION_DEFS: Record<AIReadyCriterion, CriterionDef> = {
     definition:
       "spec-container의 originalRules(`{skill}-rules.md`의 BL-XXX 원본 표)가 provenance.yaml의 businessRules 목록과 1:1로 매핑되며 내용이 일치하는가. Empty Slot 보완 규칙(`ES-*.md`)은 원본 BL의 빈 슬롯을 채우는 **추가분**이므로 정합성 판정 기준이 아니라 **참고 맥락**으로만 활용한다.",
     rubric: `**평가 대상 분리 원칙**: originalRules(BL 원본)만 provenance.businessRules와 대조한다. emptySlotRules(ES-XXX)는 BL 원본에 없는 예외/엣지 케이스 보완이므로 "BL에 없어도" 불일치가 아니다. 각 ES 규칙 본문의 "빈 슬롯 설명" 섹션이 참조하는 BL-XXX가 originalRules에 존재하면 정합.
-- 0.9+: provenance의 모든 BL이 originalRules 표에 condition-criteria-outcome-exception으로 완전히 존재. 표기 변동 없음. ES 규칙들이 참조하는 BL이 모두 originalRules에 존재.
-- 0.75~0.9: 1~2개 minor 불일치 (표현 차이, exception 열 공란 수준). BL 누락 0건.
-- 0.5~0.75: 3~5개 불일치 또는 1개 BL 누락/드리프트 (조건 누락, outcome 변경). 또는 ES가 참조하는 BL 1건이 원본에 없음.
+- 0.9+: provenance의 모든 BL이 originalRules 표에 condition-criteria-outcome-exception으로 완전히 존재. **ID 문자열 일치 필수**: provenance.businessRules의 BL-XXX가 originalRules 표 ID 컬럼에 문자 그대로 존재해야 함 (표기 변동 불가 — BL-1 / BL001 / rule-001 형태 불가). **exception 열 완결성 필수**: 모든 행의 exception 컬럼이 실내용 또는 "—"(예외 없음의 명시) 표기여야 함. 빈칸·null 불가. ES 규칙들이 참조하는 BL이 모두 originalRules에 존재.
+- 0.75~0.9: ID 문자열 + condition/criteria/outcome 매핑은 완결되었으나, exception 열에 1~2개 빈칸/null 또는 ID 표기에 1개 minor 변동(BL-1 vs BL-001 류). BL 누락 0건.
+- 0.5~0.75: 3~5개 불일치, 또는 1개 BL 누락/드리프트 (조건 누락, outcome 변경), 또는 ID 명시 부재(본문 내용으로만 매핑 가능), 또는 ES가 참조하는 BL 1건이 원본에 없음.
 - <0.5: 다수 BL 누락 또는 originalRules 내용이 provenance 출처와 구조적으로 불일치. originalRules 자체 부재.`,
   },
   comment_doc_alignment: {

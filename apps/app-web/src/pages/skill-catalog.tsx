@@ -16,6 +16,9 @@ import { toast } from 'sonner';
 import { fetchSkills, fetchSkillStats, downloadSkill } from '@/api/skill';
 import type { SkillRow, SkillStats } from '@/api/skill';
 import { useOrganization } from '@/contexts/OrganizationContext';
+// F384: guest 데모 모드 시드 데이터
+import { isDemoGuest } from '@/lib/guest-access';
+import { DEMO_SEED_SKILLS, DEMO_SEED_STATS } from '@/lib/demo-seed';
 
 const TRUST_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   unreviewed: { label: '미검토', color: '#9CA3AF', bg: 'rgba(156, 163, 175, 0.1)' },
@@ -74,14 +77,27 @@ export default function SkillCatalogPage() {
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
   const [sortKey, setSortKey] = useState<SortKey>('depth');
 
-  // Load global stats once
+  const isGuest = isDemoGuest();
+
+  // Load global stats once (F384: guest 모드 시 시드 데이터)
   useEffect(() => {
+    if (isGuest) {
+      setStats(DEMO_SEED_STATS);
+      return;
+    }
     void fetchSkillStats(organizationId).then((res) => {
       if (res.success) setStats(res.data);
     });
-  }, [organizationId]);
+  }, [organizationId, isGuest]);
 
   const loadSkills = useCallback(() => {
+    // F384: guest 모드 시 시드 데이터 직접 사용
+    if (isGuest) {
+      setSkills(DEMO_SEED_SKILLS);
+      setTotal(DEMO_SEED_SKILLS.length);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const params: Parameters<typeof fetchSkills>[1] = {
       limit: 100,
@@ -100,7 +116,7 @@ export default function SkillCatalogPage() {
       })
       .catch(() => toast.error('Skill 목록을 불러올 수 없습니다'))
       .finally(() => setLoading(false));
-  }, [organizationId, trustFilter, depthFilter, sortKey]);
+  }, [organizationId, trustFilter, depthFilter, sortKey, isGuest]);
 
   useEffect(() => { loadSkills(); }, [loadSkills]);
 

@@ -7,6 +7,9 @@ import { Toaster } from "./components/ui/sonner";
 import { Layout } from "./components/Layout";
 // F374: Feature Flag — ?legacy=1 시 기존 대시보드 라우트 유지, 기본은 Executive View (S220 활성화)
 import { isLegacyMode } from "./lib/feature-flag";
+// F384: Guest 차단 가드
+import { isGuestBlockedRoute } from "./lib/guest-access";
+import { GuestBlockedView } from "./components/GuestBlockedView";
 
 // === S220 Executive View (F375, F376, F378) ===
 const ExecutiveOverviewPage = lazy(() => import("./pages/executive/overview"));
@@ -74,6 +77,25 @@ function P({ children }: { children: React.ReactNode }) {
   );
 }
 
+// F384: Guest 차단 라우트 — guest 역할이면 GuestBlockedView, 아니면 정상 렌더
+function GuestGuard({ children }: { children: React.ReactNode }) {
+  const { user } = useAuth();
+  if (user?.role === 'guest' && isGuestBlockedRoute(window.location.pathname)) {
+    return <GuestBlockedView />;
+  }
+  return <>{children}</>;
+}
+
+function PG({ children }: { children: React.ReactNode }) {
+  return (
+    <ProtectedRoute>
+      <Layout>
+        <GuestGuard>{children}</GuestGuard>
+      </Layout>
+    </ProtectedRoute>
+  );
+}
+
 // F374: Feature Flag 실 분기 활성화 (S220)
 // ?legacy=1: 기존 대시보드 루트 / 기본: Executive Overview 루트
 function AppRoutes() {
@@ -105,28 +127,29 @@ function AppRoutes() {
       {/* F379 Split View, F380 Provenance Inspector는 S221(Sprint 225)에서 구현 */}
 
       {/* === Preserved functional pages === */}
-      <Route path="/upload" element={<P><UploadPage /></P>} />
-      <Route path="/source-upload" element={<P><SourceUploadPage /></P>} />
-      <Route path="/hitl" element={<P><HITLReviewPage /></P>} />
+      {/* F384: write 라우트는 PG(GuestGuard 포함), read 라우트는 P */}
+      <Route path="/upload" element={<PG><UploadPage /></PG>} />
+      <Route path="/source-upload" element={<PG><SourceUploadPage /></PG>} />
+      <Route path="/hitl" element={<PG><HITLReviewPage /></PG>} />
       <Route path="/ontology" element={<P><OntologyPage /></P>} />
       <Route path="/skills" element={<P><SkillCatalogPage /></P>} />
       <Route path="/skills/:id" element={<P><SkillDetailPage /></P>} />
-      <Route path="/api-console" element={<P><ApiConsolePage /></P>} />
+      <Route path="/api-console" element={<PG><ApiConsolePage /></PG>} />
       <Route path="/guide" element={<P><GuidePage /></P>} />
-      <Route path="/fact-check" element={<P><FactCheckPage /></P>} />
-      <Route path="/gap-analysis" element={<P><GapAnalysisPage /></P>} />
+      <Route path="/fact-check" element={<PG><FactCheckPage /></PG>} />
+      <Route path="/gap-analysis" element={<PG><GapAnalysisPage /></PG>} />
       <Route path="/specs" element={<P><SpecCatalogPage /></P>} />
       <Route path="/specs/:id" element={<P><SpecDetailPage /></P>} />
       <Route path="/export" element={<P><ExportCenterPage /></P>} />
       <Route path="/mockup" element={<P><MockupPage /></P>} />
       <Route path="/settings" element={<P><SettingsPage /></P>} />
 
-      {/* F379/F380: Engineer Workbench */}
-      <Route path="/engineer/workbench" element={<P><EngineerWorkbenchPage /></P>} />
-      <Route path="/engineer/workbench/:id" element={<P><EngineerWorkbenchPage /></P>} />
+      {/* F379/F380: Engineer Workbench — write, guest 차단 */}
+      <Route path="/engineer/workbench" element={<PG><EngineerWorkbenchPage /></PG>} />
+      <Route path="/engineer/workbench/:id" element={<PG><EngineerWorkbenchPage /></PG>} />
 
-      {/* F382/F387: Admin */}
-      <Route path="/admin" element={<P><AdminPage /></P>} />
+      {/* F382/F387: Admin — guest 차단 */}
+      <Route path="/admin" element={<PG><AdminPage /></PG>} />
 
       {/* F378: 기존 evidence 페이지 경로 → /executive/evidence redirect (북마크 보호) */}
       <Route path="/analysis-report" element={<P><AnalysisReportPage /></P>} />

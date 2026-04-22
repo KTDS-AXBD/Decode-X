@@ -29,6 +29,7 @@ import {
   ScanSearch,
   Sparkles,
   MonitorPlay,
+  LogIn,
 } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -147,6 +148,7 @@ export const Sidebar: React.FC = () => {
 
   const userName = user?.displayName ?? user?.email ?? '게스트';
   const userRole = user?.role ?? '미인증';
+  const isGuest = user?.role === 'guest';
 
   const handleLogout = () => {
     logout();
@@ -357,6 +359,23 @@ export const Sidebar: React.FC = () => {
 
       {/* User Profile */}
       <div className="p-3 border-t" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+        {/* F384: Guest Demo Mode 배지 + 로그인 CTA */}
+        {isGuest && (
+          <div className="mb-2 px-2 py-1.5 rounded-lg" style={{ backgroundColor: 'rgba(246, 173, 85, 0.12)', border: '1px solid rgba(246, 173, 85, 0.3)' }}>
+            <div className="flex items-center gap-1.5 mb-1">
+              <span className="text-xs">🎭</span>
+              <span className="text-xs font-semibold" style={{ color: 'var(--accent)' }}>Demo Mode</span>
+            </div>
+            <Link
+              to="/welcome"
+              className="flex items-center gap-1 text-[11px] transition-opacity hover:opacity-80"
+              style={{ color: 'rgba(255, 255, 255, 0.7)' }}
+            >
+              <LogIn className="w-3 h-3" />
+              <span>로그인하기</span>
+            </Link>
+          </div>
+        )}
         <div
           className="flex items-center gap-2.5 p-2.5 rounded-lg transition-all duration-200 hover:bg-white/5"
           style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
@@ -373,21 +392,23 @@ export const Sidebar: React.FC = () => {
             <Badge
               className="mt-0.5 text-[10px] px-1.5 py-0"
               style={{
-                backgroundColor: 'rgba(246, 173, 85, 0.2)',
+                backgroundColor: isGuest ? 'rgba(246, 173, 85, 0.1)' : 'rgba(246, 173, 85, 0.2)',
                 color: 'var(--accent)',
                 border: '1px solid var(--accent)',
               }}
             >
-              {userRole}
+              {isGuest ? '🎭 Demo' : userRole}
             </Badge>
           </div>
-          <button
-            onClick={handleLogout}
-            className="p-1.5 rounded-md transition-colors hover:bg-white/10"
-            title="로그아웃"
-          >
-            <LogOut className="w-3.5 h-3.5" style={{ color: 'rgba(255, 255, 255, 0.5)' }} />
-          </button>
+          {!isGuest && (
+            <button
+              onClick={handleLogout}
+              className="p-1.5 rounded-md transition-colors hover:bg-white/10"
+              title="로그아웃"
+            >
+              <LogOut className="w-3.5 h-3.5" style={{ color: 'rgba(255, 255, 255, 0.5)' }} />
+            </button>
+          )}
         </div>
       </div>
 

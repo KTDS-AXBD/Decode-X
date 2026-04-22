@@ -12,14 +12,17 @@ const API_BASE = import.meta.env['VITE_API_BASE_URL'] ?? "http://localhost:8705"
 const VITE_DEMO_MODE = (import.meta.env as Record<string, string>)['VITE_DEMO_MODE'];
 const DEMO_STORAGE_KEY = '__demo_user__';
 
-// F401 fix (Sprint 227 follow-up): module-level ?demo=1 capture.
-// Root `/?demo=1` → `<Navigate to="/executive/overview" replace />` drops the query string
-// before AuthProvider mounts. Set localStorage here so loadUser() finds the stub user.
+// F401 + F384: module-level demo param capture before React-Router Navigate drops the query string.
 if (typeof window !== 'undefined' && VITE_DEMO_MODE === '1') {
   const demoParam = new URLSearchParams(window.location.search).get('demo');
   if (demoParam === '1' && !window.localStorage.getItem(DEMO_STORAGE_KEY)) {
     const stubUser: CfUser = { email: 'e2e@test', role: 'engineer', status: 'active' };
     window.localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify(stubUser));
+  }
+  // F384: guest demo mode — external demo/sales
+  if (demoParam === 'guest' && !window.localStorage.getItem(DEMO_STORAGE_KEY)) {
+    const guestUser: CfUser = { email: 'demo@decode-x.ai', role: 'guest', status: 'active', displayName: 'Demo Guest' };
+    window.localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify(guestUser));
   }
 }
 
@@ -55,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loadUser = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Demo mode (CI E2E): VITE_DEMO_MODE=1 + ?demo=1 init OR localStorage session
+      // Demo mode (F401 CI E2E + F384 Guest): VITE_DEMO_MODE=1 + ?demo param OR localStorage session
       if (VITE_DEMO_MODE === '1') {
         const stored = localStorage.getItem(DEMO_STORAGE_KEY);
         if (stored) {
@@ -64,12 +67,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setAuthUser(parsed);
           return;
         }
-        const isDemoInit = new URLSearchParams(window.location.search).get('demo') === '1';
-        if (isDemoInit) {
+        const demoParam = new URLSearchParams(window.location.search).get('demo');
+        if (demoParam === '1') {
           const stubUser: CfUser = { email: 'e2e@test', role: 'engineer', status: 'active' };
           localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify(stubUser));
           setUser(stubUser);
           setAuthUser(stubUser);
+          return;
+        }
+        // F384: guest demo mode
+        if (demoParam === 'guest') {
+          const guestUser: CfUser = { email: 'demo@decode-x.ai', role: 'guest', status: 'active', displayName: 'Demo Guest' };
+          localStorage.setItem(DEMO_STORAGE_KEY, JSON.stringify(guestUser));
+          setUser(guestUser);
+          setAuthUser(guestUser);
           return;
         }
       }

@@ -8,7 +8,6 @@ import {
   createLogger,
   ok,
   notFound,
-  errFromUnknown,
 } from "@ai-foundry/utils";
 import type { Env } from "../env.js";
 import type { SkillRow } from "./skills.js";

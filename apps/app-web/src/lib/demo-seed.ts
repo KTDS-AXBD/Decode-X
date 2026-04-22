@@ -1,0 +1,91 @@
+// F384: Skill Catalog 시드 데이터 — guest 데모 모드 전용
+import type { SkillRow, SkillStats } from '@/api/skill';
+
+export const DEMO_SEED_SKILLS: SkillRow[] = [
+  {
+    skillId: 'demo-skill-001',
+    metadata: {
+      domain: 'pension',
+      subdomain: 'withdrawal',
+      language: 'ko',
+      version: '1.2.0',
+      createdAt: '2026-03-15T09:00:00Z',
+      updatedAt: '2026-04-10T14:30:00Z',
+      author: 'AI Foundry',
+      tags: ['퇴직연금', '중도인출', '주택구입'],
+    },
+    trust: { level: 'validated', score: 0.94 },
+    policyCount: 23,
+    r2Key: 'skill-packages/demo-skill-001.skill.json',
+    status: 'published',
+    contentDepth: 210,
+  },
+  {
+    skillId: 'demo-skill-002',
+    metadata: {
+      domain: 'pension',
+      subdomain: 'transfer',
+      language: 'ko',
+      version: '1.0.1',
+      createdAt: '2026-03-20T11:00:00Z',
+      updatedAt: '2026-04-05T10:00:00Z',
+      author: 'AI Foundry',
+      tags: ['퇴직연금', '이전', 'DB형', 'DC형'],
+    },
+    trust: { level: 'reviewed', score: 0.81 },
+    policyCount: 15,
+    r2Key: 'skill-packages/demo-skill-002.skill.json',
+    status: 'published',
+    contentDepth: 130,
+  },
+  {
+    skillId: 'demo-skill-003',
+    metadata: {
+      domain: 'gift-certificate',
+      subdomain: 'issuance',
+      language: 'ko',
+      version: '0.9.0',
+      createdAt: '2026-04-01T08:00:00Z',
+      updatedAt: '2026-04-18T16:00:00Z',
+      author: 'AI Foundry',
+      tags: ['온누리상품권', '발행', '유효기간'],
+    },
+    trust: { level: 'reviewed', score: 0.76 },
+    policyCount: 11,
+    r2Key: 'skill-packages/demo-skill-003.skill.json',
+    status: 'published',
+    contentDepth: 90,
+  },
+  {
+    skillId: 'demo-skill-004',
+    metadata: {
+      domain: 'pension',
+      subdomain: 'eligibility',
+      language: 'ko',
+      version: '1.1.0',
+      createdAt: '2026-02-28T09:00:00Z',
+      updatedAt: '2026-03-30T12:00:00Z',
+      author: 'AI Foundry',
+      tags: ['퇴직연금', '수급자격', '가입기간'],
+    },
+    trust: { level: 'unreviewed', score: 0.62 },
+    policyCount: 8,
+    r2Key: 'skill-packages/demo-skill-004.skill.json',
+    status: 'draft',
+    contentDepth: 55,
+  },
+];
+
+export const DEMO_SEED_STATS: SkillStats = {
+  totalSkills: 4,
+  totalPolicies: 57,
+  byTrustLevel: { validated: 1, reviewed: 2, unreviewed: 1 },
+  byDomain: { pension: 3, 'gift-certificate': 1 },
+  byContentDepth: { rich: 1, medium: 2, thin: 1 },
+  topTags: [
+    { tag: '퇴직연금', count: 3 },
+    { tag: 'DB형', count: 1 },
+    { tag: 'DC형', count: 1 },
+    { tag: '온누리상품권', count: 1 },
+  ],
+};

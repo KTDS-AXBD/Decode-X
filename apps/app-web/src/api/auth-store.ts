@@ -2,7 +2,7 @@
 
 export interface CfUser {
   email: string;
-  role: "executive" | "engineer" | "admin";
+  role: "executive" | "engineer" | "admin" | "guest";
   status: "active" | "suspended";
   displayName?: string | undefined;
 }

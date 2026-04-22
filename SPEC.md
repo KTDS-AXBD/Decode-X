@@ -577,9 +577,9 @@
 **Sprint 230 (AIF-PLAN-037 G-3 Phase 1 — AI-Ready 채점기 PoC 80건, ✅ MERGED PR #31 `b35d514` 세션 231 2026-04-22, ⚠️ 실행 blocked → Sprint 232 F402 재작):**
 > **결과**: PoC 인프라 완전 구축(Zod 스키마 + 6기준 프롬프트 + CLI + 샘플러 + 비용 가드). 27 테스트 PASS, autopilot Match 97%, CI 3/3 SUCCESS. **실 실행 blocked** — 세션 231 실측에서 TD-42 데이터 소스 gap 발견(autopilot이 Java 소스 + `/skills` 필드를 가정했으나 production은 R2 메타 + markdown rules/yaml만 반환). Phase 2 판정은 Sprint 231 F402 전면 재작 후 실측.
 
-**Sprint 232 (AIF-PLAN-037 G-3 Phase 1 재작 — 데이터 소스 정합 + 실 실행, 📋 PLANNED 세션 231 2026-04-22, Sprint 231 F384 점유로 번호 shift):**
+**Sprint 232 (AIF-PLAN-037 G-3 Phase 1 재작 — 데이터 소스 정합 + 실 실행, 🔧 IN_PROGRESS 세션 232 2026-04-22, Sprint 231 F384 점유로 번호 shift):**
 > **목표**: TD-42 해소 — F356-A PoC 스크립트를 production 데이터 현실에 정합시켜 실 실행 가능하게 만듦. 기존 인프라(AIReadyScoreSchema + 6기준 프롬프트 뼈대 + CLI + 비용 가드)는 재활용.
-- [ ] F402 (AIF-REQ-035 Phase 3 S-1 Phase 1 재작, **P1**, Sprint 232): **F356-A sample-loader + 프롬프트 재설계** — (a) sample-loader를 **spec-containers 직접 읽기**(fs-based 7 lpon-*)로 전환 또는 R2 `.skill.json` 직접 fetch, (b) 6기준 프롬프트를 **markdown rules + yaml contracts + runbooks/tests 기준** 재설계 (또는 Foundry-X prototype_jobs Java 소스 연계), (c) 샘플 규모 80건 → 현실적 7 spec-containers로 축소, (d) evaluate.ts 실 실행 + 42 LLM 호출(7 × 6) + 수기 검증 10%(1건) 재채점 + 정확도 리포트. 예상 4~6h (재설계 2h + 실 실행 1h + 수기 검증 1h + 리포트 1h). **DoD**: `reports/ai-ready-poc-2026-04-XX.json` + accuracy MD + Phase 2 (F356-B) GO/NO-GO 판정
+- [ ] F402 (AIF-REQ-035 Phase 3 S-1 Phase 1 재작, **P1**, Sprint 232, 🔧 IN_PROGRESS 세션 232 착수): **F356-A sample-loader + 프롬프트 재설계** — (a) sample-loader를 **spec-containers 직접 읽기**(fs-based 7 lpon-*)로 전환 또는 R2 `.skill.json` 직접 fetch, (b) 6기준 프롬프트를 **markdown rules + yaml contracts + runbooks/tests 기준** 재설계 (또는 Foundry-X prototype_jobs Java 소스 연계), (c) 샘플 규모 80건 → 현실적 7 spec-containers로 축소, (d) evaluate.ts 실 실행 + 42 LLM 호출(7 × 6) + 수기 검증 10%(1건) 재채점 + 정확도 리포트. 예상 4~6h (재설계 2h + 실 실행 1h + 수기 검증 1h + 리포트 1h). **DoD**: `reports/ai-ready-poc-2026-04-XX.json` + accuracy MD + Phase 2 (F356-B) GO/NO-GO 판정
 > **재작 근거**: TD-42 참조. autopilot Match 97%는 설계↔코드 기준이었고 production 호환 미검증 — `feedback_autopilot_production_smoke` 패턴 5회차 (S215/S219/S220/S228/S230)
 > **목표**: LPON 80 skill × 6기준 = 480 점수 PoC. LLM vs 수기 재채점 정확도 ≥ 80% 달성 시 Phase 2 (F356-B, 전수 5,214) 승격 판정. Sprint 229(F383)와 병렬 독립 진행.
 > **Plan**: `docs/01-plan/features/F356-A.plan.md`

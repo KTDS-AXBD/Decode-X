@@ -2,6 +2,38 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 238 계속 2 (2026-04-24) — parallel to 세션 239
+
+**Sprint 238 ✅ MERGED PR #35 `fb5c8e2` — F356-B AI-Ready 채점기 Phase 2 (API + Queue + D1) (Master pane %9)**:
+- ✅ **세션 시작부 Plan/Design 신규 작성**: `docs/01-plan/features/F356-B.plan.md` (AIF-PLAN-040, 4 Step × 2h) + `docs/02-design/features/F356-B.design.md` (AIF-DSGN-040, 13 section). SPEC.md §5 Last Updated prepend + §6 Sprint 238 블록 신설 + F356-B 🔧 IN_PROGRESS 전환. 커밋 `454fbb8` push.
+- ✅ **Sprint 238 WT + autopilot 주입**: `bash -i -c "sprint 238"` WT 생성 + wt.exe 탭 오픈(tmux session `sprint-238 F402 ` — F402는 SPEC.md 테이블 기반 fallback 파싱 잔재, 기능 영향 없음). `.sprint-context` 전면 재작성(stale Sprint 232 F402 → F356-B 전체 scope/DoD/모델 전략). 신호 `F_ITEMS=F402 → F356-B` 교정. pane %55 ccs + `/ax:sprint-autopilot` 주입.
+- ✅ **autopilot 19분 27초 자체 완결 Match 96%**: 20 files/2,161 insertions. (a) `infra/migrations/db-skill/0012_ai_ready_scores.sql` (ai_ready_scores + ai_ready_batches + 3 indexes), (b) `packages/types/src/ai-ready.ts` +44 + `rbac.ts` +7 (ai_ready resource), (c) `services/svc-skill/src/routes/ai-ready.ts` 353줄 4 endpoints(evaluate/batch/evaluations/batches), (d) `ai-ready/evaluator.ts` 168줄 + `repository.ts` 237줄, (e) `queue/ai-ready-consumer.ts` 151줄 concurrency 10 + DLQ + cross-check auto-trigger, (f) wrangler.toml Queue 3환경, (g) `scripts/ai-ready/batch-evaluate.ts` 316줄 + sample-loader API 모드, (h) 19 tests(routes 8 + evaluator 6 + repository 5) → **402 tests ALL PASS** + typecheck clean.
+- ⚠️ **CI 2/3 green + E2E 1 fail**: Migration Sequence ✅ + Typecheck & Test ✅ + E2E Tests ❌ `e2e/poc-spec.spec.ts:29 "Org Spec — Business 탭 로딩"` locator not found 10s timeout. main 직전 4 run 연속 FAIL 확인 → **pre-existing(Sprint 209~210 legacy), F356-B 변경 영역 밖**으로 확정.
+- 🔧 **B-02 우회 admin squash merge 결정**: 사용자 세션 시작 시 "E2E fail은 B-02 해소 후 재검증" 지시했으나, B-02(CF Access 장애)가 **29시간+ CF Status update 0건** 지속 + monitor 2h 타임아웃 자동 종료(iter 60/60, 09:41 KST)로 대기 경로 막힘. AskUserQuestion 2축 결정: (a) B-02 우회 admin merge, (b) pane idle 유지. `gh pr merge 35 --squash --delete-branch --admin` 성공 → merge commit `fb5c8e26` (2026-04-24T02:49:25Z).
+- 📌 **TD-46 신규 등록**: `apps/app-web/e2e/poc-spec.spec.ts:29` "Org Spec — Business 탭 로딩" pre-existing 실패 분리 추적. 원인 후보 (a) AIF-REQ-036 Phase 9 UX 재편 이후 `/org-spec` DOM 변경, (b) AuthContext/demo-guard unauth redirect. B-02 해소 후 Master E2E 재실측과 함께 일괄 처리. P2.
+- 📊 **Deploy + smoke 후속**: CI + Deploy Workers + Deploy Pages 3 workflow 동시 실행(run `fb5c8e2`). 배포 완료 후 Master 독립 curl smoke(POST /skills/:id/ai-ready/evaluate HTTP 200) + 사용자 터미널 `batch-evaluate.ts --env production --model haiku --cross-check 100 --organization LPON` 1회 실행 → reports/ai-ready-full-{date}.{json,md} + D1 5,154 row.
+- 📌 **실 소요 ~1h 30m**: session-start 복원 5m + Plan/Design 작성 30m + SPEC §6 Sprint 238 블록 + 커밋/push 10m + WT autopilot 주입 10m + autopilot 자체 실행 20m + 점검/merge 판단 AskUserQuestion 10m + admin merge + cleanup 5m.
+- 📌 **교훈 3종**:
+  (a) **CF incident long-tail 대기 중 "변경분 무관 fail" 우회 경로 정립** — pre-existing fail에 새 기능 PR을 묶는 건 진행 비용 급증. main CI history로 regression vs legacy 판정 후 admin merge + 분리 TD 추적이 단일 경로. B-02 해소 시 일괄 처리 원칙 유지.
+  (b) **sprint() 함수 F-item 파싱은 SPEC.md 테이블 포맷 한정** — 본 Sprint 238 블록은 텍스트 단락 형식이라 fallback으로 F402가 잡힘. tmux session name/signal 수동 교정 필요. ax-config 개선 후보(feedback 승격 보류, 2회 재현 시 승격).
+  (c) **autopilot Match 96% + CI 2/3 green 판정 신뢰성** — Signal STATUS=FAILED는 기계적 판정(`ERROR_STEP=ci-checks` + `PR state=OPEN`)이나 실체는 예견된 1 E2E fail. Master 독립 CI status 조회로 해체 평가 가능. Sprint 224/225/228 이후 5회차 autopilot Match Rate 메타 교차검증 패턴 정착.
+- 📌 **다음 action**: (1) Deploy Workers 완료 확인 → Master `curl -X POST https://svc-skill.ktds-axbd.workers.dev/skills/{id}/ai-ready/evaluate -H 'X-Internal-Secret: …' -d '{"model":"haiku"}'` HTTP 200 확인, (2) `GET /skills/ai-ready/batches/{batchId}` 응답 shape 확인, (3) 사용자 터미널 전수 배치 실행(사용자 직접, $~48 + 30~40분), (4) reports/ + D1 row 확인 후 SPEC §6 Sprint 238 DoD 전항목 체크 + session-end.
+
+### 세션 239 (2026-04-24)
+
+**F407 리포트 선작성 + B-02 CF Access 복구 점검 + Monitor 만료 (Master pane %6)**:
+- ✅ **AIF-RPRT-040 신규 선작성**: `docs/04-report/features/sprint-237-F407.report.md` (365 lines, `1.0-draft`) — Phase 1~6 완결 내용 + Phase 7~8 CF Access 공식 장애 대기 상태 기록. 복구 감지 시 `1.0` 승격 경로 명시 (§3.1/§4/§9 갱신 지점 지정). 커밋 `5615ea1` push 완료.
+- 🔍 **B-02 복구 점검 3회 + Monitor 자동 만료**: 08:26/08:31/09:11/11:37 KST 4차례 수동 + Monitor PID 123540 iter 60/60 **09:41 자동 종료**. RECOVERY 감지 0건. CF Status incident `identified/minor`는 ~38시간 무갱신(2026-04-23 21:05 UTC 이후 업데이트 0건). 13경로 전수 측정 결과 **불변 상태 지속**. Workers 서빙 층(우리 책임) HTTP 200 정상, Access 층(CF 책임) `/cdn-cgi/access/authorized` 400 + `/login` 404 고정.
+- 📊 **진단 재해석 반영 (Insight Review)**: 초기 "Access 완전 죽음" 단순 판정 → 재검토로 부정확 식별 + **경로별 3축 분리 진단**으로 교체. `/cdn-cgi/access/logout=200`은 `wrangler.toml not_found_handling="single-page-application"` 설정에 의한 **Workers SPA fallback**(ASSETS에 없는 경로가 `/index.html`로 수렴)이 정확한 원인. 실제 장애 지점은 (a) **CF Access login dispatcher 불능**(`/login` 404) + (b) **middleware response validator 오류**(`authorized/callback` 400, 이전 404→400은 middleware 일부 복구 진행 신호) + (c) middleware intercept 안 하는 경로는 Workers가 SPA shell 200 서빙. UX 부수 관측: 보호 경로 `/`, `/executive`가 Access 우회로 UI shell 노출(API는 Zero Trust 적용이라 데이터 유출 리스크 낮음). 리포트 §2.4 Check 재작성 + §3.3.4 "Access middleware 진단 matrix 패턴" 신규 + §5.1.5 "Insight 재검토 교훈" 신규 3곳 반영.
+- 📌 **부수 관측 (B-02 영역 외)**: `api.minu.best/health` 11:37 측정에서 **403 회귀** (세션 237-cont2 시점 200). 해석: 개인 계정 Pages A 레코드 cross-account 제약 심화 가능. 별도 이슈로 분리 유지, 본건과 무관.
+- 📌 **병행 pane 발견**: `454fbb8 docs(f356-b): AIF-PLAN-040/AIF-DSGN-040 + Sprint 238 SPEC sync` 08:37 KST 커밋 감지 — F356-B Sprint 238이 병행 세션에서 이미 IN_PROGRESS 착수됨(AI-Ready Phase 2, 859 × 6 전수 + API 4종 + D1 ai_ready_scores + Queue). 본 세션 원래 "다음 action: F356-B 설계 착수"는 병행 pane이 선행.
+- 📌 **실 소요 ~3h** (session-start 복원 10m + 리포트 작성 30m + Insight 재해석 + 3곳 반영 20m + 복구 점검 4회 15m + 커밋/push/session-end 10m + 대기 + 분석 대화 ~90m).
+- 📌 **교훈 3종**:
+  (a) **진단은 경로별 응답 matrix로 층별 분리** — HTTP 상태 코드 동일해도(200) 원인 다를 수 있음(Access 작동 / Workers SPA fallback). 이진 판정("완전 죽음" vs "살아있음") 대신 3축 분리(dispatcher / middleware / intercept) 진단 패턴 정립.
+  (b) **`not_found_handling="single-page-application"` 부작용** — Access middleware와 의도치 않게 상호작용: Access가 intercept하지 않는 경로는 무조건 index.html 200으로 수렴하여 "정상"처럼 보임. 진단 시 설정 효과를 반드시 분리.
+  (c) **CF `minor` incident는 장기 대기 가능성** — SLA 보장 외 대응이 흔함. 2h monitor 한도는 짧은 장애 가정. 일 단위 수동 재점검이 고정 monitor 재기동보다 효율적. 별건 작업 착수로 컨텍스트 스위칭 후 다음 세션 시작 시 재확인이 기대 효용 높음.
+- 📌 **다음 action**: **일 단위 수동 재점검** (차기 세션에서 `curl` 4경로 + `cloudflarestatus.com` 업데이트 확인). 복구 감지 시: (1) 13경로 전수 PASS → (2) Google login flow 수동 완주 → (3) SPEC §8 B-02 ✅ DONE → (4) 리포트 `1.0-draft` → `1.0` 승격 → (5) session-end. 대안 작업 후보: api.minu.best 403 조사 / F356-B는 병행 pane 진행 중이라 간섭 주의.
+
 ### 세션 237 계속 2 (2026-04-24)
 
 **B-02 F407 Phase 1~6 DONE + Phase 7~8 CF Access 공식 장애 대기 (Master pane %6)**:

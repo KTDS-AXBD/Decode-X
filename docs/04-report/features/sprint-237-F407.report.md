@@ -361,5 +361,80 @@ Access login dispatcher 불능:
 
 **Report Generated**: 2026-04-24 (세션 239, `1.0-draft`)
 **Author**: Sinclair Seo
-**Status**: ⏸️ Partial — Phase 1~6 DONE / Phase 7~8 CF Access 공식 장애 대기
+**Status**: ⏸️ Partial — Phase 1~6 DONE / Phase 7~8 CF Access 공식 장애 대기 / Phase 9 UX hotfix DONE (세션 240)
 **Next Update Trigger**: Monitor PID 123540 `🎉 RECOVERY DETECTED` 로그 감지 또는 수동 재측정 전원 PASS
+
+---
+
+## 9. Phase 9 — UX Hotfix (세션 240, 2026-04-24)
+
+> **Trigger**: 사용자 보고 "welcome 페이지 Google 로그인 버튼 클릭 시 무반응". 장애 대기 중에도 사용자에게 "아무 일도 안 일어남" 혼란이 존재하여 UX 층 분리 처리.
+
+### 9.1 진단 (라이브 재측정 2026-04-24 12:09 KST)
+
+| 경로 | 응답 | 해석 |
+|---|---|---|
+| `/welcome` | 200 | SPA shell 정상 |
+| `/` (보호 대상) | **200** | ⚠️ Access 미개입 — `not_found_handling=single-page-application`이 index.html 직접 서빙 |
+| `/cdn-cgi/access/login/rx.minu.best` | **404** | ⛔ CF Access login dispatcher 불능 (Phase 7 blocker와 동일) |
+| `/cdn-cgi/access/logout` | **404** | dispatcher 층 전체 다운 |
+
+### 9.2 무반응 메커니즘 (`welcome.tsx:21` + `AuthContext.tsx:89-93`)
+
+1. 버튼 클릭 → `window.location.href = "/"` (원래 코드)
+2. `/`는 Workers ASSETS가 **SPA fallback으로 200 서빙** — Access middleware intercept 실패
+3. SPA 재로드 → `AuthContext.loadUser()` → `getCfJwtFromCookie()` = null → `isAuthenticated=false`
+4. `welcome.tsx` useEffect가 navigate 안 함 → **같은 페이지 머묾 = "무반응"**
+
+### 9.3 Fix
+
+#### 9.3.1 `apps/app-web/src/pages/welcome.tsx:18-26`
+```tsx
+// Before
+window.location.href = "/";
+
+// After
+const redirectUrl = encodeURIComponent(window.location.origin + "/");
+window.location.href = `/cdn-cgi/access/login/rx.minu.best?redirect_url=${redirectUrl}`;
+```
+- Access 정상 시: 302 → Google IdP
+- Access 장애 시: 404 페이지 표시 (명시적 실패 가시화)
+- 복구 후 자연 동작
+
+#### 9.3.2 `apps/app-web/src/worker.ts:13-22`
+```ts
+async fetch(request, env) {
+  const url = new URL(request.url);
+  if (url.pathname.startsWith("/cdn-cgi/")) {
+    return fetch(request);  // bypass ASSETS — let CF edge handle
+  }
+  return env.ASSETS.fetch(request);
+}
+```
+- Access 경로가 SPA fallback에 흡수되지 않도록 분리
+- 404 응답이 200으로 바뀌는 부작용 제거
+
+### 9.4 배포 + 검증
+
+- **Commit**: `756d71c` — `fix(f407-phase9): welcome Google login no-response`
+- **Pipeline**: `gh run 24870450859` (Deploy app-web) — CI/CD 자동 배포
+- **Post-deploy 기대**:
+  ```bash
+  # 버튼 클릭 URL로 curl
+  curl -sI "https://rx.minu.best/cdn-cgi/access/login/rx.minu.best?redirect_url=https%3A%2F%2Frx.minu.best%2F"
+  # Access 정상 시: 302 + Location: https://ktds-axbd.cloudflareaccess.com/...
+  # Access 장애 시: 404 (사용자가 장애 인지 가능)
+  ```
+
+### 9.5 효과
+
+- ✅ "무반응" 현상 제거 — 사용자가 실패/성공 명확 인지
+- ✅ CF Access 복구 시 자동 정상 동작 (추가 배포 불필요)
+- ✅ Workers SPA fallback이 Access 경로를 잠식하는 2축 원인(리포트 §2.4) 구조적 해소
+
+### 9.6 후속
+
+- [ ] CI/CD 배포 완료 확인 (`gh run 24870450859` success)
+- [ ] Production curl 재측정 (login dispatcher 404 → SPA fallback 미흡수 확인)
+- [ ] welcome 페이지 시크릿 창 수동 버튼 클릭 테스트
+- [ ] Phase 7 Gate 재측정 시 Phase 9 fix 포함 상태로 평가

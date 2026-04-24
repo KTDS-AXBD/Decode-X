@@ -58,6 +58,13 @@ import {
 import { handleGenerateHandoff, handleSubmitHandoff, handleHandoffCallback } from "./routes/handoff.js";
 import { handleGetMe } from "./routes/auth.js";
 import { handleProvenanceResolve } from "./routes/provenance.js";
+import {
+  handleAiReadyEvaluateSingle,
+  handleAiReadyBatchTrigger,
+  handleAiReadyListEvaluations,
+  handleAiReadyGetBatch,
+} from "./routes/ai-ready.js";
+import { handleAIReadyMessage } from "./queue/ai-ready-consumer.js";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -120,6 +127,37 @@ export default {
       // POST /admin/score-ai-ready — AIF-REQ-034 AI-Ready 6기준 일괄 채점
       if (method === "POST" && path === "/admin/score-ai-ready") {
         return await handleScoreAiReady(request, env);
+      }
+
+      // ── F356-B: AI-Ready evaluation API ────────────────────────────
+
+      // POST /skills/ai-ready/batch — async batch trigger (Developer+)
+      if (method === "POST" && path === "/skills/ai-ready/batch") {
+        return await handleAiReadyBatchTrigger(request, env);
+      }
+
+      // GET /skills/ai-ready/batches/:batchId — batch status (All)
+      const aiReadyBatchMatch = path.match(/^\/skills\/ai-ready\/batches\/([^/]+)$/);
+      if (method === "GET" && aiReadyBatchMatch) {
+        const batchId = aiReadyBatchMatch[1];
+        if (!batchId) return new Response("Not Found", { status: 404 });
+        return await handleAiReadyGetBatch(request, env, batchId);
+      }
+
+      // POST /skills/:id/ai-ready/evaluate — single sync eval (Analyst+)
+      const aiReadyEvalMatch = path.match(/^\/skills\/([^/]+)\/ai-ready\/evaluate$/);
+      if (method === "POST" && aiReadyEvalMatch) {
+        const evalSkillId = aiReadyEvalMatch[1];
+        if (!evalSkillId) return new Response("Not Found", { status: 404 });
+        return await handleAiReadyEvaluateSingle(request, env, evalSkillId);
+      }
+
+      // GET /skills/:id/ai-ready/evaluations — eval history (All)
+      const aiReadyHistoryMatch = path.match(/^\/skills\/([^/]+)\/ai-ready\/evaluations$/);
+      if (method === "GET" && aiReadyHistoryMatch) {
+        const histSkillId = aiReadyHistoryMatch[1];
+        if (!histSkillId) return new Response("Not Found", { status: 404 });
+        return await handleAiReadyListEvaluations(request, env, histSkillId);
       }
 
       // GET /admin/skill-detail/:skillId — AI-Ready B/T/Q drill-down
@@ -438,6 +476,15 @@ export default {
     } catch (e) {
       logger.error("Unhandled error", { error: String(e), path, method });
       return errFromUnknown(e);
+    }
+  },
+  async queue(batch: MessageBatch<unknown>, env: Env, ctx: ExecutionContext): Promise<void> {
+    if (batch.queue === "ai-ready-queue") {
+      await handleAIReadyMessage(
+        batch.messages as MessageBatch<import("./queue/ai-ready-consumer.js").AIReadyQueueMessage>["messages"],
+        env,
+        ctx,
+      );
     }
   },
 } satisfies ExportedHandler<Env>;

@@ -48,6 +48,23 @@ service = "foundry-x-api"
 binding = "QUEUE_PIPELINE"
 queue = "ai-foundry-pipeline"
 
+# F356-B: AI-Ready evaluation queue
+[[queues.producers]]
+binding = "AI_READY_QUEUE"
+queue = "ai-ready-queue"
+
+[[queues.consumers]]
+queue = "ai-ready-queue"
+max_batch_size = 1
+max_batch_timeout = 1
+max_concurrency = 10
+max_retries = 3
+dead_letter_queue = "ai-ready-dlq"
+
+[[queues.producers]]
+binding = "AI_READY_DLQ"
+queue = "ai-ready-dlq"
+
 [vars]
 ENVIRONMENT = "development"
 SERVICE_NAME = "svc-skill"
@@ -102,6 +119,22 @@ service = "foundry-x-api-staging"
 binding = "QUEUE_PIPELINE"
 queue = "ai-foundry-pipeline-staging"
 
+[[env.staging.queues.producers]]
+binding = "AI_READY_QUEUE"
+queue = "ai-ready-queue-staging"
+
+[[env.staging.queues.consumers]]
+queue = "ai-ready-queue-staging"
+max_batch_size = 1
+max_batch_timeout = 1
+max_concurrency = 10
+max_retries = 3
+dead_letter_queue = "ai-ready-dlq-staging"
+
+[[env.staging.queues.producers]]
+binding = "AI_READY_DLQ"
+queue = "ai-ready-dlq-staging"
+
 # ---------------------------------------------------------------------------
 # Production environment
 # ---------------------------------------------------------------------------
@@ -145,3 +178,19 @@ service = "foundry-x-api"
 [[env.production.queues.producers]]
 binding = "QUEUE_PIPELINE"
 queue = "ai-foundry-pipeline"
+
+[[env.production.queues.producers]]
+binding = "AI_READY_QUEUE"
+queue = "ai-ready-queue"
+
+[[env.production.queues.consumers]]
+queue = "ai-ready-queue"
+max_batch_size = 1
+max_batch_timeout = 1
+max_concurrency = 10
+max_retries = 3
+dead_letter_queue = "ai-ready-dlq"
+
+[[env.production.queues.producers]]
+binding = "AI_READY_DLQ"
+queue = "ai-ready-dlq"

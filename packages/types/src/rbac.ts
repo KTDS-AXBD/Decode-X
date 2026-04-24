@@ -22,6 +22,7 @@ export const ResourceSchema = z.enum([
   "analytics",
   "notification",
   "user",
+  "ai_ready",
 ]);
 
 export type Resource = z.infer<typeof ResourceSchema>;
@@ -55,7 +56,7 @@ export type AuthContext = z.infer<typeof AuthContextSchema>;
 // All resources — used to grant universal read access in demo mode
 const ALL_RESOURCES: Resource[] = [
   "document", "extraction", "policy", "ontology", "skill",
-  "audit", "governance", "analytics", "notification", "user",
+  "audit", "governance", "analytics", "notification", "user", "ai_ready",
 ];
 
 const ALL_READ: Partial<Record<Resource, Action[]>> = Object.fromEntries(
@@ -77,22 +78,26 @@ export const PERMISSIONS: Record<Role, Partial<Record<Resource, Action[]>>> = {
     analytics: ["create", "read", "update", "delete"],
     notification: ["read", "update", "delete"],
     user: ["create", "read", "update", "delete"],
+    ai_ready: ["read", "execute", "create"],
   },
   Analyst: {
     ...ALL_READ,
     document: ["create", "read", "update", "upload", "download"],
     extraction: ["read", "execute"],
     notification: ["read", "update"],
+    ai_ready: ["read", "execute"],
   },
   Reviewer: {
     ...ALL_READ,
     policy: ["read", "approve", "reject", "update"],
     notification: ["read", "update"],
+    ai_ready: ["read", "execute", "create"],
   },
   Developer: {
     ...ALL_READ,
     skill: ["read", "download"],
     notification: ["read", "update"],
+    ai_ready: ["read", "create"],
   },
   Client: {
     ...ALL_READ,

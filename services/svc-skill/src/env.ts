@@ -11,6 +11,10 @@ export interface Env {
   // Queue producer for pipeline events
   QUEUE_PIPELINE: Queue;
 
+  // F356-B: AI-Ready evaluation queue + DLQ
+  AI_READY_QUEUE: Queue;
+  AI_READY_DLQ: Queue;
+
   // External service URLs (HTTP, no service bindings)
   FOUNDRY_X_URL: string;
   SVC_POLICY: Fetcher;

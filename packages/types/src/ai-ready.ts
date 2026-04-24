@@ -45,3 +45,47 @@ export const AIReadyBatchReportSchema = z.object({
   evaluations: z.array(AIReadyEvaluationSchema),
 });
 export type AIReadyBatchReport = z.infer<typeof AIReadyBatchReportSchema>;
+
+// ── F356-B: API request/response schemas ──────────────────────────────
+
+export const AIReadyModelSchema = z.enum(["haiku", "opus", "sonnet"]);
+export type AIReadyModel = z.infer<typeof AIReadyModelSchema>;
+
+export const AIReadySingleEvalRequestSchema = z.object({
+  model: AIReadyModelSchema,
+  force: z.boolean().default(false),
+});
+export type AIReadySingleEvalRequest = z.infer<typeof AIReadySingleEvalRequestSchema>;
+
+export const AIReadyBatchTriggerRequestSchema = z.object({
+  model: AIReadyModelSchema,
+  organizationId: z.string().min(1),
+  crossCheckSampleSize: z.number().int().nonnegative().default(0),
+  dryRun: z.boolean().default(false),
+});
+export type AIReadyBatchTriggerRequest = z.infer<typeof AIReadyBatchTriggerRequestSchema>;
+
+export const AIReadyBatchStatusSchema = z.object({
+  batchId: z.string(),
+  status: z.enum(["queued", "running", "completed", "failed", "partial"]),
+  totalSkills: z.number().int(),
+  completedSkills: z.number().int(),
+  failedSkills: z.number().int(),
+  progressPct: z.number(),
+  totalCostUsd: z.number(),
+  startedAt: z.string(),
+  completedAt: z.string().nullable(),
+  childBatchId: z.string().nullable(),
+  avgScore: z.number().nullable(),
+});
+export type AIReadyBatchStatus = z.infer<typeof AIReadyBatchStatusSchema>;
+
+export const AIReadyBatchTriggerResponseSchema = z.object({
+  batchId: z.string(),
+  totalSkills: z.number().int(),
+  estimatedCostUsd: z.number(),
+  estimatedDurationMinutes: z.number(),
+  crossCheckBatchId: z.string().nullable(),
+  status: z.literal("queued"),
+});
+export type AIReadyBatchTriggerResponse = z.infer<typeof AIReadyBatchTriggerResponseSchema>;

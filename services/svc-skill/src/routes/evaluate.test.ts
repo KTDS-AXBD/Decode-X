@@ -130,6 +130,8 @@ function makeEnv(overrides?: Partial<Env>): Env {
       put: vi.fn().mockResolvedValue(undefined),
     } as unknown as KVNamespace,
     QUEUE_PIPELINE: {} as unknown as Queue,
+    AI_READY_QUEUE: {} as unknown as Queue,
+    AI_READY_DLQ: {} as unknown as Queue,
     ENVIRONMENT: "test",
     SERVICE_NAME: "svc-skill",
     INTERNAL_API_SECRET: "test-secret",

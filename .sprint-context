@@ -1,18 +1,33 @@
-SPRINT_NUM=232
+SPRINT_NUM=238
 PROJECT=Decode-X
-BRANCH=sprint/232
-F_ITEMS=F402
-MILESTONE=AIF-PLAN-037 G-3 Phase 1 재작 — 데이터 소스 정합 + 실 실행 (TD-42 해소)
-PLAN_DOC=docs/01-plan/features/F356-A.plan.md (AIF-PLAN-038 재활용 — F402는 F356-A 재작)
-DESIGN_DOC=docs/02-design/features/F356-A.design.md (AIF-DSGN-038 재활용)
-F402_BASE=Sprint 230 F356-A PoC 인프라 재활용 (packages/types/src/ai-ready.ts + services/svc-skill/src/ai-ready/prompts.ts + scripts/ai-ready/evaluate.ts + scripts/ai-ready/sample-loader.ts). 27 테스트 PASS, typecheck clean, CI 3/3. 실 실행은 blocked.
-F402_GAP_ROOT_CAUSE=TD-42 — autopilot 구현이 Java 소스 + /skills API 필드(id/source_code/rules/contracts/provenance)를 가정했으나 production 현실과 불일치: (1) /skills/:id 응답은 메타만 반환 (skillId/metadata/r2Key/policyCount만), 실 content는 R2 .skill.json, (2) .decode-x/spec-containers/lpon-*/는 markdown rules + yaml contracts + runbooks/tests 구성, Java 소스 없음, (3) 실 Java Working Prototype은 Foundry-X repo handoff 후 산출되므로 Decode-X 단독 실행 불가
-F402_SCOPE=(a) sample-loader를 spec-containers 직접 읽기(fs-based 7 lpon-*)로 전환 또는 R2 .skill.json 직접 fetch, (b) 6기준 프롬프트를 markdown rules + yaml contracts + runbooks/tests 기준 재설계 (또는 Foundry-X prototype_jobs Java 소스 연계), (c) 샘플 80건 → 현실적 7 spec-containers로 축소, (d) evaluate.ts 실 실행 + 42 LLM 호출(7 × 6) + 수기 검증 10%(1건 또는 소수) 재채점 + 정확도 리포트
-F402_DOD=reports/ai-ready-poc-2026-04-22.json (7 × 6 = 42 점수) + reports/ai-ready-poc-accuracy-2026-04-22.md (정확도 ≥ 80% 판정) + Phase 2 (F356-B) GO/NO-GO 판정
-COST_GUARD=일 $30 비용 가드 3단계 (사전 usage 체크 + 초과 시 AskUserQuestion + 하드 상한) — 기존 F356-A evaluate.ts 로직 재활용. 7 × 6 = 42 호출 예상 비용 < $5 (Sonnet 기준)
-EXISTING_ASSETS=packages/types/src/ai-ready.ts, services/svc-skill/src/ai-ready/prompts.ts, scripts/ai-ready/evaluate.ts, scripts/ai-ready/sample-loader.ts (재설계 대상), .decode-x/spec-containers/lpon-{budget,charge,gift,payment,purchase,refund,settlement}/ (7 production containers 실측 가능)
-PRODUCTION_SMOKE_RULE=rules/development-workflow.md "Autopilot Production Smoke Test" 5회차 재현 방지 필수 — Match% + CI pass ≠ Production 동작. 실 R2 fetch 또는 fs 읽기로 실 데이터 1건 수동 확인 후 evaluate.ts 전수 실행
-MATCH_RATE=98
+BRANCH=sprint/238
+F_ITEMS=F356-B
+MILESTONE=AIF-REQ-035 Phase 3 S-1 Phase 2 — F356-B AI-Ready 채점기 전수 배치 + API + D1
+PLAN_DOC=docs/01-plan/features/F356-B.plan.md (AIF-PLAN-040)
+DESIGN_DOC=docs/02-design/features/F356-B.design.md (AIF-DSGN-040)
+SPEC_BLOCK=SPEC.md §6 "Sprint 238 (AIF-REQ-035 Phase 3 S-1 Phase 2 — F356-B 전수 배치 + API + D1)"
+
+F356B_SCOPE=(1) D1 migration 0012_ai_ready_scores.sql — ai_ready_scores + ai_ready_batches + 3 indexes (FK skills). (2) packages/types/src/ai-ready.ts 확장 — AIReadyBatchSchema + API I/O schemas. (3) svc-skill routes/ai-ready.ts 신규 — 4 endpoint: POST /skills/:id/ai-ready/evaluate (단건 sync), POST /skills/ai-ready/batch (비동기), GET /skills/:id/ai-ready/evaluations (이력), GET /skills/ai-ready/batches/:batchId (진행). (4) svc-skill/ai-ready/{evaluator,repository}.ts + queue/ai-ready-consumer.ts. (5) wrangler.toml queues.consumers ai-ready-queue (max_concurrency 10 + DLQ ai-ready-dlq). (6) scripts/ai-ready/batch-evaluate.ts 전수 배치 CLI + sample-loader API 모드 확장. (7) 라우트 테스트 8건 + evaluator/repository 테스트 9건.
+
+F356B_DOD=(a) reports/ai-ready-full-{date}.json (5,754 점수 = Haiku 5,154 + Opus 600 cross-check), (b) reports/ai-ready-full-{date}.md KPI 리포트 (분포 + PASS rate + Haiku/Opus |diff|), (c) D1 production ai_ready_scores 5,154 row + ai_ready_batches 2 row, (d) API 4종 production smoke HTTP 200 (Master 독립 실측), (e) Match Rate ≥ 90%, (f) CI 3/3 green + typecheck/lint/test PASS
+
+EXECUTION_STEPS=Step 1 (2h) D1 스키마 + 타입 확장 / Step 2 (2h) API 엔드포인트 4종 + 테스트 8건 / Step 3 (2h) Queue consumer + 배치 CLI + sample-loader 확장 / Step 4 (2h) 전수 배치 실행(사용자 터미널) + KPI 리포트
+
+MODEL_STRATEGY=Haiku 859 전수 + Opus 100건 무작위 sampling 교차검증 (parent_batch_id 참조). 예상 비용 $48 (Haiku $20 + Opus $28). 예상 소요 30~40분 (concurrency 10).
+
+COST_GUARD=API 레이어 비용 가드 — ai_ready_batches.total_cost_usd 실시간 집계, 예상 $50 초과 시 API 레이어 429 차단 + CLI AskUserQuestion (계속/중단/sampling 전환)
+
+SELECTIVELY_REUSE=F356-A 인프라 재활용 원칙: packages/types/src/ai-ready.ts (AIReadyCriterion + AIReadyScoreSchema + AIReadyEvaluationSchema 확장만) + services/svc-skill/src/ai-ready/prompts.ts (rubric v2 100% 검증 완료, 수정 금지) + scripts/ai-ready/sample-loader.ts (fs 모드 유지 + API 모드 추가) + scripts/ai-ready/evaluate.ts (로직 참조, Worker 버전은 신규)
+
+BLOCKED_BY_NONE=B-02 CF Access 장애는 F356-B와 영역 상이 (CF Access edge vs 내부 API). E2E fail 1건(Org Spec Business 탭)은 B-02 해소 후 별도 재검증(F356-B 영향 없음).
+
+PRODUCTION_SMOKE_RULE=rules/development-workflow.md "Autopilot Production Smoke Test" 준수 필수 — Match % + CI pass != Production 동작. Sprint MERGED 직후 Master가 독립 curl 실측: (a) POST /skills/{id}/ai-ready/evaluate HTTP 200, (b) POST /skills/ai-ready/batch 202 + batchId 반환, (c) GET /skills/ai-ready/batches/{batchId} status 응답, (d) D1 ai_ready_scores row 실 insert 확인.
+
+MIGRATION_NUMBER=0012 (0011_users.sql 이미 존재, 0012가 안전)
+
+PREDECESSOR_SPRINT_DONE=Sprint 230 (F356-A PoC 인프라 MERGED PR #31 b35d514) + Sprint 232 (F402 TD-42 해소 MERGED PR #33 425c3e83) + 세션 234 (TD-43 evaluate.ts 실 실행 + 정확도 83.3% Phase 2 GO) + 세션 235 (rubric v2 정확도 100% 전수 재검증) + 세션 238 (TD-44 Phase 1 svc-llm-router decommission) + 세션 238 계속 (TD-44/45 완전 해소, 114 test files PASS)
+
+MATCH_RATE=96
 TEST_RESULT=pass
 CHECKPOINT=report
-ESTIMATED_HOURS=4-6
+ESTIMATED_HOURS=8

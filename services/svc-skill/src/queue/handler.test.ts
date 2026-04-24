@@ -74,6 +74,8 @@ function mockEnv(): Env {
       put: vi.fn().mockResolvedValue(undefined),
     } as unknown as R2Bucket,
     QUEUE_PIPELINE: { send: vi.fn().mockResolvedValue(undefined) } as unknown as Queue,
+    AI_READY_QUEUE: { send: vi.fn().mockResolvedValue(undefined) } as unknown as Queue,
+    AI_READY_DLQ: { send: vi.fn().mockResolvedValue(undefined) } as unknown as Queue,
     CLOUDFLARE_AI_GATEWAY_URL: "http://test-gateway", OPENROUTER_API_KEY: "test-openrouter-key",
     SVC_POLICY: {
       fetch: vi.fn().mockResolvedValue(

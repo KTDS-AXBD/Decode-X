@@ -151,6 +151,8 @@ function mockEnv(dbOverrides?: { changes?: number }): Env {
     R2_SKILL_PACKAGES: {} as unknown as R2Bucket,
     KV_SKILL_CACHE: { get: vi.fn(), put: vi.fn() } as unknown as KVNamespace,
     QUEUE_PIPELINE: {} as unknown as Queue,
+    AI_READY_QUEUE: {} as unknown as Queue,
+    AI_READY_DLQ: {} as unknown as Queue,
     CLOUDFLARE_AI_GATEWAY_URL: "http://test-gateway", OPENROUTER_API_KEY: "test-openrouter-key",
     SVC_POLICY: {} as unknown as Fetcher,
     SVC_ONTOLOGY: {} as unknown as Fetcher,

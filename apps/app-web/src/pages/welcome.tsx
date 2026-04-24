@@ -16,9 +16,13 @@ export default function WelcomePage() {
   }, [isAuthenticated, navigate]);
 
   const handleGoogleLogin = () => {
-    // CF Access intercepts unauthenticated requests and redirects to Google IdP.
-    // Navigating to any protected route triggers the CF Access login flow.
-    window.location.href = "/";
+    // F407 Phase 9: navigate directly to CF Access login dispatcher so the
+    // outcome is visible — dispatcher returns 302→Google IdP on success or
+    // 404 on platform outage. Previous `href="/"` was absorbed by Workers
+    // SPA fallback (`not_found_handling=single-page-application`) and looked
+    // like nothing happened.
+    const redirectUrl = encodeURIComponent(window.location.origin + "/");
+    window.location.href = `/cdn-cgi/access/login/rx.minu.best?redirect_url=${redirectUrl}`;
   };
 
   return (

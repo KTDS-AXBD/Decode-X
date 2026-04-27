@@ -36,5 +36,10 @@ export default defineConfig({
     url: "http://localhost:5173",
     reuseExistingServer: !process.env["CI"],
     timeout: 30_000,
+    // F401 demo bypass — CI는 .github/workflows/ci.yml의 env 블록으로 동일 값을 주입.
+    // 로컬에서는 이 env 블록이 dev 서버에 VITE_DEMO_MODE를 전달해 ?demo=1 우회를 활성화한다.
+    env: {
+      VITE_DEMO_MODE: "1",
+    },
   },
 });

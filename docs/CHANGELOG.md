@@ -2,6 +2,38 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 240 (2026-04-28) — daily-check + selfcheck + todo plan: Sprint 239~241 등록 + 정비
+
+**Master pane %21 — plan-only 세션 (코드 변경 0). Pipeline 등록 + 메타 정비 5축**:
+
+- ✅ **daily-check (full)**: D1 drift 1건 자동 보정 (SPEC.md `26 → 27 migrations`, `0011_users → 0012_ai_ready_scores`). 9/9 항목 PASS. Sonnet alias 실측 = `claude-sonnet-4-6` ($0.181, model-defaults SSOT 후보 일치 확인).
+- ✅ **부가 관찰 조치 4건**:
+  (1) 원격 stale sprint 브랜치 4건 일괄 삭제 (`origin/sprint/{224,226,227,229}`, 모두 PR MERGED 확인 후) + GitHub repo `delete_branch_on_merge=true` 활성화로 재발 방지 (`gh api -X PATCH repos/KTDS-AXBD/Decode-X`).
+  (2) **모델 SSOT Decode-X 도입** — Foundry-X `packages/shared/src/model-defaults.ts` 패턴 이식. 신규 `packages/types/src/model-defaults.ts` (`MODEL_OPUS/SONNET/HAIKU` + `OR_MODEL_*` 6 export). `llm.ts` `TIER_MODELS` + `PROVIDER_TIER_MODELS.{openrouter,anthropic}` hardcoded → SSOT 상수 참조. `openrouter-client.ts:25` `DEFAULT_MODEL` → `TIER_MODELS.haiku`. typecheck 14/14 PASS. Foundry-X와 동일 값 유지로 handoff 호환 보장.
+  (3) Sonnet alias 호환성 확인 — CLI `claude --model sonnet` 실측 = `claude-sonnet-4-6` ↔ Decode-X `MODEL_SONNET` ↔ Foundry-X `MODEL_SONNET` 3축 일치.
+  (4) `wip/pipeline-hardening` 8주 stale 브랜치 삭제 — 핵심 파일 4종(validator.ts/unstructured.ts/hitl-session.ts/0003 migration) 모두 main에 흡수 + main이 더 발전된 버전 확인 후 안전 삭제.
+- ✅ **infra-selfcheck 9/9 PASS** (자동 보정 1건 포함):
+  - C1 Plugin Skills frontmatter 25/25 정상.
+  - C3 Standards INDEX.md 20/20 매핑 (15 GOV md + 5 utility sh).
+  - **C8 Project Hygiene 자동 보정**: `docs/03-analysis/sprint-232.analysis.md` → `features/sprint-232.analysis.md` (`git mv`, frontmatter `code: AIF-ANLS-039`로 다른 sprint analysis 파일과 동일 패턴). 구 경로 참조 4건 일괄 갱신(SPEC.md 1 + sprint-232-F402.report.md 3).
+  - C9 Plugin Cache Drift 0건 (ax v1.1.0 source ↔ cache 완벽 동기화).
+- ✅ **`/ax:todo plan` Pipeline 구성**:
+  - Marker.io 0건, GitHub Issues 0건, Projects Board 미적용 (`scripts/board/board-list.sh` 부재) → 단일 SSOT(SPEC.md) 기반.
+  - **F408 신규 등록 (P1, AIF-REQ-035 Phase 3 S-1 Phase 2 후속)** — TD-47 해소: `evaluator.loadSpecContent` R2 경로를 `skill-packages/{id}.skill.json` 직접 파싱으로 교체 (옵션 B 채택, 859 skill 전수 커버, ~3h).
+  - **Sprint 239** PLANNED — F408 (TD-47 해소).
+  - **Sprint 240** PLANNED — F356-B 운영 실행 (전수 5,154 + reports/ 2종, $48 / 30~40m, Sprint 239 의존).
+  - **Sprint 241** PLANNED — F403 + TD-46 (Phase 9 E2E 4 spec + poc-spec Business 탭 fix, e2e/ 영역 합침).
+  - 전부 순차 실행 결정 (병렬 시 main churn 위험). F407 B-02는 Pipeline 외 (CF Status 38h+ 무업데이트, 일 단위 수동 재점검 유지).
+  - 사용자 답변 4건 (AskUserQuestion): TD-47 옵션 (B), Sprint 239→240→241 순차, 전부 순차 실행, F407 별도 수동.
+- ✅ **`.gitignore` monorepo 패턴 보강**: root `e2e/.auth/` (root 기준 매칭만)에 `**/e2e/.auth/` 추가 → `apps/app-web/e2e/.auth/user.json` untrack (`git rm --cached`). Playwright auth storage state 변경이 더 이상 git status에 노출 안 됨. 다른 monorepo 패키지(`apps/app-mockup/e2e/.auth/`)도 자동 ignore 적용.
+- 📌 **병행 pane 작업 흡수** (이번 세션 진행 중 main에 push됨): `b26419b` Playwright `webServer.env: { VITE_DEMO_MODE: "1" }` (F401 demo bypass, ci.yml과 동일 값) + `b531716` `e2e/poc-spec.spec.ts:29` skip + AIF-REQ-037 등록 (TD-46 별도 처리, F403와 분리) + `f574a5d` Sprint 242 F409 등록 (AIF-REQ-037 production /api/* proxy 진단).
+- 📌 **커밋 5건 push 완료**: `a3cfc74` chore(session-240) + `2082ac1` chore(gitignore) + 병행 pane 3건 (`b26419b`/`b531716`/`f574a5d`). 모두 `origin main` 머지.
+- 📌 **차기 세션 액션**: `/ax:sprint 239` 또는 `sprint-autopilot` 호출로 F408 Plan/Design 자동 작성 + 구현 + Match Rate 검증 + PR.
+- 📌 **교훈 3종**:
+  (a) **monorepo .gitignore 패턴 함정** — root `.gitignore`의 상대 경로 패턴(`e2e/.auth/`)은 root 기준만 매칭. subpath에 적용하려면 `**/` prefix 필수. `git check-ignore -v` 검증이 필수.
+  (b) **모델 SSOT 통합의 핸드오프 보호 효과** — Decode-X와 Foundry-X가 동일 SSOT 값 유지하면 LLM call 결과의 model field도 일치 → handoff 시 Foundry-X 측 verification에서 model mismatch 차단 회피.
+  (c) **plan-only 세션의 가치 검증** — daily-check + selfcheck + todo plan을 한 세션에 묶으면 메타 정비와 다음 작업 등록을 한꺼번에 완결 가능. 코드 변경 0이지만 누적 7건 commit + working tree clean.
+
 ### 세션 238 계속 2 후반 (2026-04-24) — post-MERGE deploy + smoke + TD-47
 
 **Sprint 238 F356-B 배포 완결 + Production Smoke 실측 gap 발견 (Master pane %9)**:

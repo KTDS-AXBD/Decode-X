@@ -2,6 +2,32 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 243 (2026-04-29) — Sprint 243 F410 ✅ MERGED: AIF-REQ-038 poc-spec skip 해제 + task-daemon idle silence 패턴 rules 승격
+
+**Master pane %25 — SPEC 등록 → autopilot Discovery → 1차 CI fail 진단/처방 → 자동 merge → task-daemon 패턴 정착**:
+
+- 📋 **Plan/Register (Master, 09:30)**: 사용자 메시지 "e2e/poc-spec.spec.ts:33 skip 해제 — post-deploy production verified 후 별도 Sprint" 수신. AskUserQuestion 4문항(Sprint 진행 방식 / 검증 전략 / REQ ID / Sprint 241 (e) 처리) 모두 Recommended 선택 → SPEC §6 Sprint 243 신규 + F410 등록, §7 AIF-REQ-038 신규(Bug/UX/P2/OPEN), Sprint 241 F403 (e) 항목 제거 + Sprint 243 이관. commit `f8bdf8c` push.
+- 🔧 **Sprint 243 WT 생성 (09:45)**: `bash -i -c "sprint 243"` 정상 동작. 단 **bashrc `sprint()` 함수 SPEC parsing 갭 재현 (S242 교훈(c) 2회차 누적)** — `.sprint-context`/signal/window 이름이 모두 Sprint 242 컨텍스트(F409, AIF-REQ-037)로 잔존 → master에서 Write/sed/tmux rename으로 명시 갱신.
+- 🔁 **Autopilot 1차 push (09:53)**: commit `55a8d12` push, autopilot 자체 보고 "Match 95% 완료". 그러나 CI **E2E Tests FAIL** — `page.route("**/api/skills/org/*/spec/business", route => route.fulfill({ json: mockDoc }))` mock 미동작, `getByText(/Spec 요약/)` 10s timeout × 3 retry. **Autopilot Production Smoke Test 패턴 8회차 재현** (S215/S219/S220/S228/S230/S232/S238/**S243**) — 변종: push와 CI green 등치 처리.
+- 🔍 **Master 진단 + 처방 주입 (09:55~10:00)**: 사용자 결정 "Master에서 진단 후 autopilot에 재진입". 진단: (1) Playwright glob `**/api/skills/org/*/spec/business`가 origin(`http://localhost:5173`) 포함 URL에 대해 segment/query 처리 edge case, (2) `route.fulfill({ json: ... })` shorthand 호환성 의심, (3) Playwright 1.59.1 + DEV_PROXY=remote + VITE_DEMO_MODE=1 환경 확정. 처방: RegExp 패턴 `/\/api\/skills\/org\/[^/]+\/spec\/business/` + 명시 `status/contentType/body: JSON.stringify(...)`. signal STATUS=FAILED → IN_PROGRESS reset + autopilot pane(`%27`)에 진단/처방 메시지 주입.
+- ✅ **Autopilot 2차 push → 자동 merge (10:00~01:06Z)**: autopilot이 처방 수신 → fix commit `2660a94` push → CI green → STATUS=DONE 마킹 → task-daemon `phase_sprint_signals` 자동 squash-merge. PR #37 `dda98ff` MERGED `2026-04-29T01:06:26Z` by AXBD-Team. WT/branch cleanup 완료.
+- 🛠️ **task-daemon 진단 (사용자 우선순위 보고)**: 사용자 "task-daemon 백그라운드 미실행" 보고 → 진단 결과 daemon **정상 alive** (PID 354657, 9h+ 가동, heartbeat 매 15s 갱신). 침묵 원인 확정: `task-daemon.sh:894` `phase_sprint_signals`이 **STATUS=DONE만 처리** (`[ "$status" = "DONE" ] || continue`), FAILED/IN_PROGRESS/CREATED/MERGING/MERGED 모두 silent skip + stdout `/dev/null` redirect → log 침묵 = perception "dead". 외부 STATUS=IN_PROGRESS reset은 daemon 트리거 안 됨 (DONE 마킹은 autopilot 책임).
+- 📚 **재발 방지 (다층화 정착)**:
+  - feedback memory `feedback_taskdaemon_idle_silence.md` 신규 (Decode-X auto memory)
+  - rules 승격: `~/.claude/rules/development-workflow.md` § "task-daemon idle silence (S243)" 신규 섹션 — 표준 점검 4단계(process/heartbeat 30s watch/log/signal grep) + L1~L4 대책. 사용자 명시 우선순위 요청(C 조건) + Foundry-X 공유 범용 컴포넌트(B 조건) 적용.
+  - "Autopilot Production Smoke Test" 섹션 헤더에 S238/S243 누적 명시 + 변종(push/CI green 등치) 추가
+  - ax-config 리포 commit `3182c5b` push
+- 📌 **병행 흡수** (다른 pane 작업, master에 push됨): `30baa5c` fix(b-02) welcome.tsx dispatcher URL + worker.ts /cdn-cgi/* handler 제거, `4cc8b12` fix(b-03) AuthContext API_BASE — localhost fallback 제거 + /api 표준화. 본 pane은 SPEC/Sprint 243/rules 작업에만 집중.
+- 📌 **잔여 후속**:
+  - INTERNAL_API_SECRET secret 상태 확인 (Sprint 242 잔여 (a) — 인증 통과 후 Gateway 401 발생 시 재설정)
+  - Sprint 241 F403 잔여 (a~d) 진행 — Phase 9 신규 라우트 E2E 4 spec
+  - bashrc `sprint()` SPEC parsing 갭 (S242 (c) → S243 2회차) 정규식 보강 후보
+- 📌 **교훈**:
+  (a) **autopilot self-report ≠ CI green** — push 직후 "Match 95% 완료" 보고 시점에 CI는 pending 상태. session-end 진입 전 CI watch + STATUS 마킹 책임이 autopilot에 있으나 8회 누적 재현 — Match Rate 자체가 wrong abstraction 의심 (design-impl 매칭 ≠ verified action). "Verified Action Rate" 메타 metric 도입 검토.
+  (b) **Playwright glob vs RegExp** — origin/segment/query 처리에서 glob의 edge case가 매번 의외로 발생. mock 신뢰도가 중요한 E2E는 RegExp + 명시 fulfill이 안전 default.
+  (c) **task-daemon idle silence** — 외부 STATUS reset은 daemon에 의미 없음. autopilot이 STATUS=DONE까지 도달시키는 것이 표준 경로. heartbeat 30s watch가 liveness 1차 판정 도구.
+  (d) **memory lifecycle 즉시 승격** — 사용자 "우선순위 높여서 재발 방지 대책" 명시 = C 조건 + B 조건 동시 충족 → 2회 관찰 대기 없이 즉시 rules 승격이 정답.
+
 ### 세션 241 (2026-04-29) — B-02 ✅ DONE: 6일 인프라 장애 가설 → 실은 코드 버그 (welcome.tsx dispatcher URL)
 
 **Master pane (단일 세션) — 라이브 디버깅 + Dashboard 점검 6 round + 코드 fix (2 file) + 문서 갱신**:

@@ -26,11 +26,35 @@ test.describe("PoC & Spec pages (Sprint 209~210)", () => {
     await expect(page.getByRole("tab", { name: /Quality/ })).toBeVisible();
   });
 
-  // TODO(AIF-REQ-037): proxy fix is in src/worker.ts but takes effect only after
-  // production deploy (post-merge). Pre-merge CI uses rx.minu.best which still runs
-  // the old Worker (SPA fallback) → fetchOrgSpec receives HTML → fail.
-  // Verification moved to post-merge production smoke (AIF-RPT-042 §DoD).
-  test.skip("Org Spec — Business 탭 로딩", async ({ page }) => {
+  test("Org Spec — Business 탭 로딩", async ({ page }) => {
+    const mockDoc = {
+      success: true,
+      data: {
+        organizationId: "Miraeasset",
+        type: "business",
+        generatedAt: "2026-04-29T00:00:00.000Z",
+        skillCount: 8,
+        sections: [
+          { id: "s1", title: "개요", content: "퇴직연금 비즈니스 Spec 개요입니다.", order: 1 },
+          { id: "s2", title: "핵심 정책", content: "주요 정책 목록입니다.", order: 2 },
+        ],
+        metadata: {
+          domain: "pension",
+          totalPolicies: 24,
+          avgTrustScore: 0.87,
+          aiReadyScore: { business: 0.91, technical: 0.85, quality: 0.78 },
+        },
+      },
+    };
+
+    await page.route(/\/api\/skills\/org\/[^/]+\/spec\/business/, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(mockDoc),
+      }),
+    );
+
     await page.goto("/org-spec");
     await page.getByRole("tab", { name: /Business/ }).click();
     await expect(

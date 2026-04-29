@@ -47,8 +47,12 @@ test.describe("PoC & Spec pages (Sprint 209~210)", () => {
       },
     };
 
-    await page.route("**/api/skills/org/*/spec/business", (route) =>
-      route.fulfill({ json: mockDoc }),
+    await page.route(/\/api\/skills\/org\/[^/]+\/spec\/business/, (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(mockDoc),
+      }),
     );
 
     await page.goto("/org-spec");

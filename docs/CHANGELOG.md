@@ -2,6 +2,31 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 241 (2026-04-29) — B-02 ✅ DONE: 6일 인프라 장애 가설 → 실은 코드 버그 (welcome.tsx dispatcher URL)
+
+**Master pane (단일 세션) — 라이브 디버깅 + Dashboard 점검 6 round + 코드 fix (2 file) + 문서 갱신**:
+
+- 🔍 **Discovery**: 사용자가 `https://rx.minu.best/welcome` 콘솔 에러 보고 — `GET /cdn-cgi/access/login/rx.minu.best?redirect_url=... 404`. SPEC §8 B-02 (6일 진행 중)와 동일 증상. 처음 가설 = "CF Status incident 잔여" (세션 239 마커 따름).
+- 🔬 **CF Status 재확인**: WebFetch → "Apr 24 23:53 UTC **Resolved**" (4일 전 종료). 즉 incident 후속이 아닌 별도 잔여 문제로 가설 전환.
+- 📋 **Zero Trust Dashboard 점검 6 round** (사용자 스크린샷 7장):
+  (R1) `https://ktds-axbd.cloudflareaccess.com/...` → "Unable to find your Access organization" — stale team domain 확정.
+  (R2) Setup → 실제 team domain = `axconsulting.cloudflareaccess.com`.
+  (R3) `https://axconsulting.cloudflareaccess.com/cdn-cgi/access/login/rx.minu.best?...` → "Unable to find your Access **application**" — team은 살아있고 application lookup 실패.
+  (R4) Application Domain 필드 = `https://rx.minu.best` (scheme 포함) — 의심 후보 1.
+  (R5) scheme 제거 + 저장 → dispatcher 여전히 404.
+  (R6) UUID(`f81162de...`) 기반 dispatcher 호출도 404.
+- 🎯 **결정적 진단**: `curl https://rx.minu.best/` (zone GET) 시도 → **HTTP 302** + `Location: https://axconsulting.cloudflareaccess.com/cdn-cgi/access/login/rx.minu.best?**kid=e6843d85f3f1591196046323f539cb2175aa6a14f4a3ac891995b994c12b52a9**&**meta=eyJ0eXAi...**&redirect_url=/`. 즉 **CF Access middleware는 줄곧 정상 작동**. 진짜 Application AUD = `e6843d85...` (UUID 아님). dispatcher는 `kid`(AUD) + `meta`(서명 JWT) 둘 다 필수, client가 `redirect_url`만 보낸 것이 404 원인.
+- 🔧 **Fix (2 file, 8 line)**:
+  (1) `apps/app-web/src/pages/welcome.tsx:18-26` `handleGoogleLogin` → dispatcher URL 직접 호출 제거 + `window.location.href = "/"`로 단순화. CF Access middleware가 자동으로 정확한 dispatch URL 생성.
+  (2) `apps/app-web/src/worker.ts` `/cdn-cgi/*` 우회 핸들러 6 line 제거 (dead code, `/cdn-cgi/*`는 CF edge가 Worker 실행 전 처리).
+- ✅ **검증**: typecheck 14/14 PASS. Build success (370KB index bundle 동일).
+- 📝 **문서 갱신**: SPEC §8 B-02 row → ✅ DONE + 근본 원인 + Fix detail + 교훈. F407 Phase 9 가설("`href="/"`가 SPA fallback에 흡수됨")이 **실측으로 반박**됨 — Test D `curl https://rx.minu.best/` → 302 응답이 명확한 반박 증거.
+- 📌 **교훈 3종**:
+  (a) **Layer 분리 원칙**: dispatcher 4xx를 "edge 장애"로 단정하기 전에 `curl https://<zone>/` GET → **302 Location 헤더**로 단일 curl 진단 가능. 이 단순 점검 1회로 6일 가설 즉시 반박.
+  (b) **Application AUD ≠ Dashboard UUID**: Cloudflare가 두 개의 다른 ID 사용. dispatcher가 lookup하는 건 AUD(64자 hash), Dashboard URL의 UUID는 internal display only. 코드에서 UUID 하드코딩 시 동작 안 함.
+  (c) **CF Access dispatcher URL은 client가 만들 수 없음**: `kid` + `meta` 둘 다 CF edge가 동적으로 생성(짧은 nbf/exp + 서명). client가 직접 호출 시도는 무조건 실패. 정석은 protected path navigate → middleware 위임.
+- 💰 **6일 손실 비용**: ~6h(점검+monitor PID 123540 60 iter+가설 검증). 즉시 진단 가능했던 단순 curl 1회를 4일간 미실행한 게 핵심 시간 낭비.
+
 ### 세션 242 (2026-04-28~29) — Sprint 242 F409 MERGED: AIF-REQ-037 production `/api/*` 프록시 미동작 해소
 
 **Master pane %15 — `/ax:e2e-audit run` 실행 → 잠재 갭 발견 → 별도 Sprint 242 격리 → 자동 PDCA 완결**:

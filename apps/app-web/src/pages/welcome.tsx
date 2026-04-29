@@ -16,13 +16,12 @@ export default function WelcomePage() {
   }, [isAuthenticated, navigate]);
 
   const handleGoogleLogin = () => {
-    // F407 Phase 9: navigate directly to CF Access login dispatcher so the
-    // outcome is visible — dispatcher returns 302→Google IdP on success or
-    // 404 on platform outage. Previous `href="/"` was absorbed by Workers
-    // SPA fallback (`not_found_handling=single-page-application`) and looked
-    // like nothing happened.
-    const redirectUrl = encodeURIComponent(window.location.origin + "/");
-    window.location.href = `/cdn-cgi/access/login/rx.minu.best?redirect_url=${redirectUrl}`;
+    // CF Access middleware intercepts protected paths and emits a 302 with
+    // the dispatcher URL containing the per-request kid (AUD) and signed meta
+    // JWT. Building that URL client-side is impossible (the meta JWT is
+    // signed by CF edge), so navigate to "/" and let the middleware emit the
+    // correct dispatch. Verified: GET /  →  302  https://<team>.cloudflareaccess.com/cdn-cgi/access/login/<host>?kid=<AUD>&meta=<JWT>&redirect_url=/
+    window.location.href = "/";
   };
 
   return (

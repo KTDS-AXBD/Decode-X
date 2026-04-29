@@ -69,12 +69,9 @@ export default {
 
     const url = new URL(request.url);
 
-    // F407 Phase 9: bypass ASSETS for /cdn-cgi/* so Cloudflare edge (CF Access)
-    // handles the path. Without this, SPA fallback would absorb Access 404s
-    // into index.html 200, hiding login dispatcher outages from users.
-    if (url.pathname.startsWith("/cdn-cgi/")) {
-      return fetch(request);
-    }
+    // /cdn-cgi/* is reserved by Cloudflare edge — handled before Worker runs.
+    // No bypass handler needed (verified: GET https://rx.minu.best/ returns
+    // 302 to dispatcher with proper kid+meta, confirming middleware works).
 
     // F409: proxy /api/* to Gateway Worker. Pages Functions (functions/api/[[path]].ts)
     // are inactive in Workers mode — this handler replaces that dead code path.

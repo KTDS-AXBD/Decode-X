@@ -2,6 +2,71 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 253 (2026-05-02) — TD-49 ✅ 새 baseline (skill-packages SSOT) + TD-53 신규 발견 + F413 등록 (옵션 C 채택)
+
+**작업 흐름 (3 단계)**:
+
+1. **TD-49 해소** — `/task pla TD-49` 옵션 A 채택 → Master 직접 실행 + 전수 self-consistency
+2. **`/ax:sprint start 240`** — Master 직접 실행 + F412 신규 결정 → batch dry-run 차단 발견 (TD-53)
+3. **TD-53 옵션 C 채택** — packaging lifecycle 재설계 → F413 (AIF-REQ-040) 신규 등록
+
+**Step 1 — TD-49 baseline 재측정 (commit `b7d1d5a`)**:
+
+- 7 lpon-* skill × 6 criteria × 2 runs = **84 LLM calls**, $0.0504, 116초
+- 새 baseline (skill-packages SSOT): avg totalScore **0.549** (run1) / 0.537 (run2)
+- Self-consistency excellent: **39/42 |Δ|=0.000** (92.9%), outlier 1건 (`lpon-gift:testability` LLM JSON parse fail score=0, 1.2%)
+- S235 비교 (참고용): avg |Δ|=0.275, 25/42 (59.5%) |Δ|>0.20, max |Δ|=0.670 (`lpon-charge:source_consistency`)
+- 방향성: `comment_doc_alignment` +0.251 gain (skill-package metadata가 LLM 친화) / `source_consistency`·`io_structure`·`testability` -0.32~-0.44 drop (raw rules 표 부재로 LLM 보수 채점) — F408 Plan/Design R1 위험 정확히 실현
+- DoD 4분기 매트릭스 4축 통과 → TD-49 ✅ + Sprint 240 F356-B GO 마킹
+- 산출물: `scripts/td-49-baseline-measure.sh`(재사용 가능 측정 도구), `reports/td-49-baseline-2026-05-02/` (run1/run2 × 7 + AIF-ANLS-033 analysis MD)
+
+**Step 2 — TD-53 발견 (commit `c1678be`)**:
+
+- `/ax:sprint start 240` Master 직접 실행 + F412 신규 등록 결정
+- `batch-evaluate.ts --env production --model haiku --organization LPON --cross-check 100 --dry-run` 시도
+- HTTP 400 `VALIDATION_ERROR: No published skills found for organization: LPON`
+- Production skills 분포 검증: Miraeasset 3,065 superseded / **LPON 859 superseded** / LPON 35 bundled / lpon(소문자) 8 reviewed / org_ktds_axbd 1 published
+- 원인: `routes/ai-ready.ts:214` SQL `WHERE status='published'`이 LPON 0건 매칭. Sprint 228 F397 packaging이 859 skills `superseded` 자동 마킹 + skill-packages 번들 별도 추적 (rebundle-orchestrator.ts:178) → Sprint 238 F356-B 설계 가정과 불일치
+- TD-53 신규 등록 (P1): Sprint 240 F356-B/F412 RE-BLOCKED
+- 해결안 3안: (A) filter 완화 30min / (B) status migration 1h / (C) packaging lifecycle 재설계 1~2 Sprint
+- `feedback_autopilot_production_smoke` 패턴 9회차 후보 (S253) — autopilot Match 96% + CI green이 production data state 가정 갭 미탐지
+
+**Step 3 — F413 등록 (commit `36c4e7c`, 옵션 C 채택)**:
+
+- 사용자 4-question 결정:
+  - (Q1) skills.status 6-enum 표준화: `draft / reviewed / bundled / published / superseded / archived`
+  - (Q2) AI-Ready 평가 대상 = bundled + reviewed (LPON 35 + lpon 8 = 43건)
+  - (Q3) Rebundle supersede 자동 마킹 정책 유지 (rebundle-orchestrator.ts:178)
+  - (Q4) 859 superseded migration 없이 history로 보존
+- Phase 1 사전조사 결과:
+  - schema(0001_init): `draft / published / archived` 3종 + **CHECK 제약 부재**
+  - 코드 drift 추가: `bundled` (rebundle:154), `superseded` (rebundle:178), `reviewed` (skills.ts:654, F362)
+  - 자동 status 전이: queue/handler→draft / skills.ts:654→reviewed / rebundle:154→bundled / rebundle:178→superseded
+- 작업 규모 재평가: 1~2 Sprint → **0.5 Sprint (~4h)**
+- 4 Step: (1) `0013_skills_status_check.sql` 6-enum CHECK 1h, (2) `routes/ai-ready.ts:214` filter 보정 5min, (3) `UpdateStatusSchema`/`BulkPublishSchema` enum 6 확장 30min, (4) 테스트 + Production deploy + Master smoke 1.5h + 문서 1h
+- F413 신규 등록 (AIF-REQ-040, P1): Sprint 241에 F403 (E2E 보강)과 병행 배치 (~7h 합계)
+- F412 운영 실행은 **Sprint 242로 분리** (F413 DoD 충족 후)
+- 산출물: `docs/01-plan/features/F413.plan.md` (AIF-PLAN-043, Ready)
+
+**Production 검증**:
+
+- 3 commits (b7d1d5a, c1678be, 36c4e7c) CI 3/3 SUCCESS (E2E + Migration + Typecheck)
+- svc-skill /health 200 + svc-ingestion /health 200 + rx.minu.best/ 200
+
+**신규 교훈 3건 (cross-session)**:
+
+1. **rubric v2 + haiku tier deterministic 매우 우수** — force=true에도 92.9% 동일 응답, 859 batch 노이즈 ±0.05 신뢰 확보
+2. **Sprint 228 F397 packaging의 superseded 자동 마킹** ↔ Sprint 238 batch endpoint published 가정 미스매치 — autopilot 패턴 9회차 후보
+3. **schema CHECK 제약 부재가 코드 drift 근원** — D1 migration enum CHECK 표준 적용 정책 검토 필요 (GOV 후보)
+
+**차기 세션 (우선순위)**:
+
+1. **Sprint 241 시작** — F403 (E2E 보강) + F413 (lifecycle 표준화) 병행 ~7h
+2. **F412 운영 실행** — Sprint 242 (F413 DoD 충족 후, $48 / 30~40min)
+3. **OpenRouter key rotation** (보안 라인 잔여 1번 미수행)
+
+---
+
 ### 세션 252 (2026-05-02) — `/ax:daily-check` (full) + 모델 SSOT drift 4 → 0 + MEMORY.md 보안 잔여 정확화
 
 **daily-check 결과 (17 항목)**:

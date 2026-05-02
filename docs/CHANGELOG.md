@@ -2,6 +2,41 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 249 (2026-05-02) — Sprint 240 F411 autopilot 완결: zip spec coverage 가시화 3목표 ✅ DONE
+
+**Sprint 240 WT autopilot — Step 4(구현) → Step 5(분석) → Step 6(리포트) → Step 7(session-end)**:
+
+구현 범위 (TDD Red→Green):
+- `packages/types/src/analysis.ts` — ZipChunkSummarySchema(15 fields) + PartialExtractionSchema + TriageDocumentSchema 3 optional 필드 (`chunkSummary`, `isLibOnly`, `partialExtraction`)
+- `services/svc-ingestion/src/parsing/zip-extractor.ts` — ExtractionStats 카운터 4종 추가 + extractSourceFiles 리턴타입 변경 + parseSourceProject stats 전파(5 optional fields)
+- `services/svc-ingestion/src/queue.ts` — 호출부 `{ files, stats }` 구조분해 적용
+- `services/svc-extraction/src/factcheck/source-aggregator.ts` — SourceProjectSummary switch case 신규 처리 + libOnlyProjects 응답 필드
+- `services/svc-extraction/src/factcheck/types.ts` — SourceSpec.libOnlyProjects 필드 추가
+- `services/svc-extraction/src/routes/analysis.ts` — handleGetTriage SVC_INGESTION 서비스 바인딩 경유 청크 조회 + deriveLibOnly/derivePartialExtraction 헬퍼
+- `apps/app-web/src/components/analysis-report/TriageView.tsx` — expand 토글 + ZipMatrixSubRow 컴포넌트 + lib-only/partial badge
+- `apps/app-web/src/pages/source-upload.tsx` — SpecStats 파싱 + badge 렌더링
+- `services/svc-skill/src/index.ts` — pre-existing lint 수정 (`consistent-type-imports`)
+- 신규 테스트: `zip-extractor-stats.test.ts` (7건) + source-aggregator lib-only (4건) + E2E `zip-coverage.spec.ts` (3건)
+
+검증 결과:
+- `pnpm typecheck` 14/14 PASS
+- `pnpm lint` 9/9 PASS
+- `pnpm test` 12/12 PASS
+- Gap Analysis Match Rate **97%**
+
+기술 결정:
+- svc-extraction의 DB_INGESTION 직접 바인딩 없음 → SVC_INGESTION Fetcher 서비스 바인딩 경유(기존 source-aggregator.fetchChunks 패턴 동일). Promise.allSettled 병렬 조회.
+- ExtractionStats 필드 모두 optional — 기존 27 ZIP 문서 backward compatible (D1 schema 변경 없음)
+
+등록:
+- 📄 **AIF-RPRT-042** `docs/04-report/features/sprint-240-F411.report.md`
+- ✅ AIF-REQ-039 IN_PROGRESS → **DONE**
+- ✅ SPEC.md §6 Sprint 240 F411 PLANNED → DONE 갱신
+
+### 세션 248 (2026-05-02) — AIF-REQ-039 PLANNED 전환 + F411 Plan/Design 작성 + Sprint 240 WT 배치
+
+(세션 248: autopilot Step 0~3 — Plan/Design 완성까지)
+
 ### 세션 247 (2026-05-02) — `/ax:session-start` 진단: LPON 27 zip 전수 점검 + AIF-REQ-039 등록
 
 **Master 세션 — 사용자 인풋 2건 진단**:

@@ -16,9 +16,12 @@ import { ok, notFound, badRequest } from "@ai-foundry/utils";
 import {
   ExtractionSummarySchema,
   CoreIdentificationSchema,
+  ZipChunkSummarySchema,
   type DiagnosisFinding,
   type TriageDocument,
   type AggregatedProcess,
+  type ZipChunkSummary,
+  type PartialExtraction,
 } from "@ai-foundry/types";
 import { buildScoringPrompt, parseScoringResult, buildCoreSummary } from "../prompts/scoring.js";
 import { buildDiagnosisPrompt, parseDiagnosisResult } from "../prompts/diagnosis.js";
@@ -240,6 +243,10 @@ async function handleGetTriage(env: Env, organizationId: string): Promise<Respon
     .bind(organizationId)
     .all<TriageRow>();
 
+  // Fetch zip summaries via SVC_INGESTION service binding
+  const allDocIds = results.map((r) => r.document_id);
+  const zipSummaries = await fetchZipSummariesViaServiceBinding(env, organizationId, allDocIds);
+
   const documents: TriageDocument[] = [];
   let analyzed = 0;
   let highPriority = 0;
@@ -274,7 +281,11 @@ async function handleGetTriage(env: Env, organizationId: string): Promise<Respon
     else if (rank === "medium") mediumPriority++;
     else lowPriority++;
 
-    documents.push({
+    const summary = zipSummaries.get(row.document_id);
+    const isLibOnly = summary !== undefined ? deriveLibOnly(summary) : undefined;
+    const partial = summary !== undefined ? derivePartialExtraction(summary) : undefined;
+
+    const doc: TriageDocument = {
       documentId: row.document_id,
       extractionId: row.id,
       processCount,
@@ -287,7 +298,11 @@ async function handleGetTriage(env: Env, organizationId: string): Promise<Respon
       analysisId: row.analysis_id ?? null,
       analyzedAt: row.analyzed_at ?? null,
       extractedAt: row.created_at,
-    });
+    };
+    if (summary !== undefined) doc.chunkSummary = summary;
+    if (isLibOnly !== undefined) doc.isLibOnly = isLibOnly;
+    if (summary !== undefined) doc.partialExtraction = partial ?? null;
+    documents.push(doc);
   }
 
   // 스코어 내림차순 정렬
@@ -304,6 +319,89 @@ async function handleGetTriage(env: Env, organizationId: string): Promise<Respon
       lowPriority,
     },
   });
+}
+
+// ── Zip summary helpers ──────────────────────────────────────────────
+
+async function fetchZipSummariesViaServiceBinding(
+  env: Env,
+  organizationId: string,
+  documentIds: string[],
+): Promise<Map<string, ZipChunkSummary>> {
+  const map = new Map<string, ZipChunkSummary>();
+  if (documentIds.length === 0) return map;
+
+  // Fetch SourceProjectSummary chunks for each document in parallel (max 10 concurrent)
+  const results = await Promise.allSettled(
+    documentIds.map((docId) => fetchSummaryChunkForDoc(env, organizationId, docId))
+  );
+
+  for (let i = 0; i < documentIds.length; i++) {
+    const result = results[i];
+    const docId = documentIds[i];
+    if (result?.status === "fulfilled" && result.value !== null && docId !== undefined) {
+      map.set(docId, result.value);
+    }
+  }
+  return map;
+}
+
+async function fetchSummaryChunkForDoc(
+  env: Env,
+  organizationId: string,
+  documentId: string,
+): Promise<ZipChunkSummary | null> {
+  try {
+    const resp = await env.SVC_INGESTION.fetch(
+      `http://internal/documents/${documentId}/chunks`,
+      {
+        headers: {
+          "X-Internal-Secret": env.INTERNAL_API_SECRET,
+          "X-Organization-Id": organizationId,
+        },
+      },
+    );
+    if (!resp.ok) return null;
+
+    const body = await resp.json() as {
+      success: boolean;
+      data: { chunks: Array<{ element_type: string; masked_text: string }> };
+    };
+    if (!body.success) return null;
+
+    const summaryChunk = body.data.chunks.find((c) => c.element_type === "SourceProjectSummary");
+    if (!summaryChunk) return null;
+
+    const raw = JSON.parse(summaryChunk.masked_text) as { projectName?: string; stats?: unknown };
+    const parsed = ZipChunkSummarySchema.safeParse({
+      projectName: raw.projectName ?? "",
+      ...(raw.stats as object),
+    });
+    return parsed.success ? parsed.data : null;
+  } catch {
+    return null;
+  }
+}
+
+function deriveLibOnly(s: ZipChunkSummary): boolean {
+  return s.controllerCount === 0
+    && s.dataModelCount === 0
+    && s.transactionCount === 0
+    && s.mapperCount === 0;
+}
+
+function derivePartialExtraction(s: ZipChunkSummary): PartialExtraction | null {
+  const rate = s.extractionRate;
+  const reasons: string[] = [];
+  if (s.cappedAtMaxFiles) reasons.push("MAX_FILES 한도 도달");
+  if ((s.oversizedSkippedCount ?? 0) > 0) reasons.push(`${s.oversizedSkippedCount}개 파일 size 초과 skip`);
+  if (rate !== undefined && rate < 0.95) reasons.push(`추출률 ${Math.round(rate * 100)}%`);
+  if (reasons.length === 0) return null;
+
+  let severity: "HIGH" | "MEDIUM" | "LOW" = "LOW";
+  if (s.cappedAtMaxFiles || (rate !== undefined && rate < 0.5)) severity = "HIGH";
+  else if (rate !== undefined && rate < 0.8) severity = "MEDIUM";
+  return { rate: rate ?? 1, severity, reasons };
 }
 
 // ── POST /analysis/batch-analyze ─────────────────────────────────────

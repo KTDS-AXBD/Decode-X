@@ -419,9 +419,9 @@ function parseSourceCodeFiles(
   fileType: string,
 ): UnstructuredElement[] {
   if (fileType === "zip") {
-    const files = extractSourceFiles(fileBytes);
+    const { files, stats } = extractSourceFiles(fileBytes);
     const projectName = originalName.replace(/\.zip$/i, "");
-    return parseSourceProject(files, projectName);
+    return parseSourceProject(files, projectName, stats);
   }
   if (fileType === "java") {
     const source = new TextDecoder("utf-8").decode(fileBytes);

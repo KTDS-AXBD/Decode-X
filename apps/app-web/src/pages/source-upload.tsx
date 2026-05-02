@@ -19,6 +19,23 @@ import { useOrganization } from '@/contexts/OrganizationContext';
 
 const SOURCE_CATEGORIES = ['source_controller', 'source_entity', 'source_service', 'source_mapper'] as const;
 
+interface SpecStats {
+  controllerCount: number;
+  endpointCount: number;
+  dataModelCount: number;
+  transactionCount: number;
+  ddlTableCount: number;
+  mapperCount: number;
+  extractionRate?: number;
+  oversizedSkippedCount?: number;
+  cappedAtMaxFiles?: boolean;
+}
+
+interface DocChunkData {
+  counts: Record<string, number>;
+  specStats: SpecStats | null;
+}
+
 function getChunkCounts(chunks: DocumentChunk[]): Record<string, number> {
   const counts: Record<string, number> = {};
   for (const cat of SOURCE_CATEGORIES) {
@@ -32,6 +49,44 @@ function getChunkCounts(chunks: DocumentChunk[]): Record<string, number> {
   }
   return counts;
 }
+
+function parseSpecStats(chunks: DocumentChunk[]): SpecStats | null {
+  const summaryChunk = chunks.find((c) => c.element_type === "SourceProjectSummary");
+  if (!summaryChunk) return null;
+  try {
+    const parsed = JSON.parse(summaryChunk.masked_text) as { stats?: SpecStats };
+    if (!parsed.stats) return null;
+    return parsed.stats;
+  } catch {
+    return null;
+  }
+}
+
+function isLibOnly(stats: SpecStats): boolean {
+  return stats.controllerCount === 0
+    && stats.dataModelCount === 0
+    && stats.transactionCount === 0
+    && stats.mapperCount === 0;
+}
+
+function isPartialExtraction(stats: SpecStats): boolean {
+  return (stats.extractionRate !== undefined && stats.extractionRate < 0.95)
+    || stats.cappedAtMaxFiles === true
+    || (stats.oversizedSkippedCount !== undefined && stats.oversizedSkippedCount > 0);
+}
+
+function getPartialSeverity(stats: SpecStats): "HIGH" | "MEDIUM" | "LOW" {
+  const rate = stats.extractionRate;
+  if (stats.cappedAtMaxFiles || (rate !== undefined && rate < 0.5)) return "HIGH";
+  if (rate !== undefined && rate < 0.8) return "MEDIUM";
+  return "LOW";
+}
+
+const SEVERITY_COLOR: Record<"HIGH" | "MEDIUM" | "LOW", string> = {
+  HIGH: "#EF4444",
+  MEDIUM: "#F59E0B",
+  LOW: "#6B7280",
+};
 
 function getStatusBadge(status: string) {
   const map: Record<string, { bg: string; color: string; label: string }> = {
@@ -69,7 +124,7 @@ export default function SourceUploadPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [sourceDocs, setSourceDocs] = useState<DocumentRow[]>([]);
-  const [chunkCounts, setChunkCounts] = useState<Record<string, Record<string, number>>>({});
+  const [chunkCounts, setChunkCounts] = useState<Record<string, DocChunkData>>({});
   const [loadingChunks, setLoadingChunks] = useState<Set<string>>(new Set());
 
   const loadDocuments = async () => {
@@ -94,7 +149,8 @@ export default function SourceUploadPage() {
       const res = await fetchDocumentChunks(organizationId, docId);
       if (res.success) {
         const counts = getChunkCounts(res.data.chunks);
-        setChunkCounts((prev) => ({ ...prev, [docId]: counts }));
+        const specStats = parseSpecStats(res.data.chunks);
+        setChunkCounts((prev) => ({ ...prev, [docId]: { counts, specStats } }));
       }
     } catch {
       // ignore
@@ -292,7 +348,7 @@ export default function SourceUploadPage() {
                         {isParsed && docChunks && (
                           <div className="mt-3 flex items-center gap-3 flex-wrap">
                             {SOURCE_CATEGORIES.map((cat) => {
-                              const count = docChunks[cat] ?? 0;
+                              const count = docChunks.counts[cat] ?? 0;
                               const label = cat.replace('source_', '');
                               return (
                                 <div key={cat} className="flex items-center gap-1">
@@ -301,6 +357,37 @@ export default function SourceUploadPage() {
                                 </div>
                               );
                             })}
+                            {docChunks.specStats && (
+                              <div className="flex items-center gap-3 ml-2 pl-2 border-l" style={{ borderColor: 'var(--border)' }}>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-[10px]" style={{ color: 'var(--text-secondary)' }}>API</span>
+                                  <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>{docChunks.specStats.endpointCount}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-[10px]" style={{ color: 'var(--text-secondary)' }}>Table</span>
+                                  <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>{docChunks.specStats.ddlTableCount}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <span className="text-[10px]" style={{ color: 'var(--text-secondary)' }}>Tx</span>
+                                  <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>{docChunks.specStats.transactionCount}</span>
+                                </div>
+                                {isLibOnly(docChunks.specStats) && (
+                                  <Badge variant="secondary" className="text-[10px]">lib-only</Badge>
+                                )}
+                                {isPartialExtraction(docChunks.specStats) && (
+                                  <Badge
+                                    variant="outline"
+                                    className="text-[10px]"
+                                    style={{
+                                      color: SEVERITY_COLOR[getPartialSeverity(docChunks.specStats)],
+                                      borderColor: SEVERITY_COLOR[getPartialSeverity(docChunks.specStats)],
+                                    }}
+                                  >
+                                    부분 {Math.round((docChunks.specStats.extractionRate ?? 1) * 100)}%
+                                  </Badge>
+                                )}
+                              </div>
+                            )}
                           </div>
                         )}
 

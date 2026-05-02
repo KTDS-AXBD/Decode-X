@@ -86,6 +86,7 @@ export async function aggregateSourceSpec(
   const allTables: SourceTable[] = [];
   const allTransactions: SourceTransaction[] = [];
   const allQueries: SourceQuery[] = [];
+  const libOnlyProjects: NonNullable<SourceSpec["libOnlyProjects"]> = [];
   // VO class name → CodeDataModel fields (for cross-referencing)
   const voMap = new Map<string, Array<{ name: string; type: string; nullable: boolean }>>();
   let controllerCount = 0;
@@ -278,8 +279,20 @@ export async function aggregateSourceSpec(
           break;
         }
 
+        case "SourceProjectSummary": {
+          const summary = parseSourceSummaryChunk(parsed);
+          if (!summary) break;
+          if (isLibOnlyStats(summary.stats)) {
+            libOnlyProjects.push({
+              documentId: doc.document_id,
+              projectName: summary.projectName,
+              reason: "no controller/dataModel/transaction/mapper",
+            });
+          }
+          break;
+        }
+
         default:
-          // Skip non-source element types (SourceProjectSummary, etc.)
           break;
       }
     }
@@ -323,6 +336,7 @@ export async function aggregateSourceSpec(
       tableCount: deduplicatedTables.length,
       mapperCount,
     },
+    ...(libOnlyProjects.length > 0 && { libOnlyProjects }),
   };
 
   logger.info("Source spec aggregated", {
@@ -837,4 +851,20 @@ function deduplicateTables(tables: SourceTable[]): SourceTable[] {
   }
 
   return [...tableMap.values()];
+}
+
+function parseSourceSummaryChunk(
+  raw: unknown,
+): { projectName: string; stats: Record<string, number> } | null {
+  if (!raw || typeof raw !== "object") return null;
+  const obj = raw as Record<string, unknown>;
+  if (typeof obj["projectName"] !== "string" || !obj["stats"] || typeof obj["stats"] !== "object") return null;
+  return { projectName: obj["projectName"], stats: obj["stats"] as Record<string, number> };
+}
+
+function isLibOnlyStats(stats: Record<string, number>): boolean {
+  return (stats["controllerCount"] ?? 0) === 0
+    && (stats["dataModelCount"] ?? 0) === 0
+    && (stats["transactionCount"] ?? 0) === 0
+    && (stats["mapperCount"] ?? 0) === 0;
 }

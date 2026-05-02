@@ -45,13 +45,31 @@ export interface ExtractedFile {
   type: "java" | "sql" | "xml" | "properties";
 }
 
-export function extractSourceFiles(zipBytes: ArrayBuffer): ExtractedFile[] {
+export interface ExtractionStats {
+  totalEntries: number;
+  skippedBinary: number;
+  oversizedSkipped: number;
+  extracted: number;
+  cappedAtMaxFiles: boolean;
+}
+
+export interface ExtractSourceFilesResult {
+  files: ExtractedFile[];
+  stats: ExtractionStats;
+}
+
+export function extractSourceFiles(zipBytes: ArrayBuffer): ExtractSourceFilesResult {
   const files: ExtractedFile[] = [];
   const uint8 = new Uint8Array(zipBytes);
   const unzipped = unzipSync(uint8);
+  const totalEntries = Object.keys(unzipped).length;
+  let skippedBinary = 0;
+  let oversizedSkipped = 0;
+  let cappedAtMaxFiles = false;
 
   for (const [path, data] of Object.entries(unzipped)) {
     if (files.length >= MAX_FILES) {
+      cappedAtMaxFiles = true;
       logger.warn("Max file limit reached", { limit: MAX_FILES });
       break;
     }
@@ -60,7 +78,10 @@ export function extractSourceFiles(zipBytes: ArrayBuffer): ExtractedFile[] {
     if (data.length === 0) continue;
 
     // Skip binary/unwanted files
-    if (SKIP_PATTERNS.some((p) => p.test(path))) continue;
+    if (SKIP_PATTERNS.some((p) => p.test(path))) {
+      skippedBinary++;
+      continue;
+    }
 
     // Determine file type
     const ext = getExtension(path);
@@ -68,6 +89,7 @@ export function extractSourceFiles(zipBytes: ArrayBuffer): ExtractedFile[] {
 
     // Skip oversized files
     if (data.length > MAX_FILE_SIZE) {
+      oversizedSkipped++;
       logger.warn("Skipping oversized file", { path, size: data.length });
       continue;
     }
@@ -79,13 +101,19 @@ export function extractSourceFiles(zipBytes: ArrayBuffer): ExtractedFile[] {
   }
 
   logger.info("Extracted source files from zip", {
-    total: Object.keys(unzipped).length,
+    total: totalEntries,
     extracted: files.length,
+    skippedBinary,
+    oversizedSkipped,
+    cappedAtMaxFiles,
     java: files.filter((f) => f.type === "java").length,
     sql: files.filter((f) => f.type === "sql").length,
   });
 
-  return files;
+  return {
+    files,
+    stats: { totalEntries, skippedBinary, oversizedSkipped, extracted: files.length, cappedAtMaxFiles },
+  };
 }
 
 function getExtension(path: string): ExtractedFile["type"] | null {
@@ -99,6 +127,7 @@ function getExtension(path: string): ExtractedFile["type"] | null {
 export function parseSourceProject(
   files: ExtractedFile[],
   projectName: string,
+  extractionStats?: ExtractionStats,
 ): UnstructuredElement[] {
   const elements: UnstructuredElement[] = [];
 
@@ -136,6 +165,13 @@ export function parseSourceProject(
   const ddlCount = elements.filter((e) => e.type === "CodeDdl").length;
   const mapperCount = elements.filter((e) => e.type === "CodeMapper").length;
 
+  const endpointCount = elements
+    .filter((e) => e.type === "CodeController")
+    .reduce((sum, e) => {
+      const parsed = JSON.parse(e.text) as { endpoints?: unknown[] };
+      return sum + (parsed.endpoints?.length ?? 0);
+    }, 0);
+
   elements.push({
     type: "SourceProjectSummary",
     text: JSON.stringify({
@@ -145,16 +181,20 @@ export function parseSourceProject(
         javaFiles: javaFiles.length,
         sqlFiles: sqlFiles.length,
         controllerCount,
-        endpointCount: elements
-          .filter((e) => e.type === "CodeController")
-          .reduce((sum, e) => {
-            const parsed = JSON.parse(e.text) as { endpoints?: unknown[] };
-            return sum + (parsed.endpoints?.length ?? 0);
-          }, 0),
+        endpointCount,
         dataModelCount,
         transactionCount,
         ddlTableCount: ddlCount,
         mapperCount,
+        ...(extractionStats !== undefined && {
+          totalEntriesInZip: extractionStats.totalEntries,
+          skippedBinaryCount: extractionStats.skippedBinary,
+          oversizedSkippedCount: extractionStats.oversizedSkipped,
+          extractionRate: extractionStats.totalEntries === 0
+            ? 1
+            : Math.round((extractionStats.extracted / extractionStats.totalEntries) * 100) / 100,
+          cappedAtMaxFiles: extractionStats.cappedAtMaxFiles,
+        }),
       },
     }),
   });

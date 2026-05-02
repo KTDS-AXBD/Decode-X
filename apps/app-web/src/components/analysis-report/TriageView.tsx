@@ -9,6 +9,7 @@ import {
   Play,
   XCircle,
   Filter,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,7 +34,7 @@ import { toast } from "sonner";
 import { fetchTriage, batchAnalyze } from "@/api/analysis";
 import { fetchDocuments } from "@/api/ingestion";
 import type { DocumentRow } from "@/api/ingestion";
-import type { TriageDocument, TriageResponse } from "@ai-foundry/types";
+import type { TriageDocument, TriageResponse, ZipChunkSummary } from "@ai-foundry/types";
 import { useOrganization } from "@/contexts/OrganizationContext";
 import { MetricCard } from "./MetricCard";
 
@@ -261,6 +262,7 @@ export function TriageView() {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-8" />
               <TableHead className="w-10" />
               <TableHead>문서명</TableHead>
               <SortableHead label="규칙" sortKey="ruleCount" current={sortKey} asc={sortAsc} onSort={handleSort} />
@@ -284,7 +286,7 @@ export function TriageView() {
             {filteredDocs.length === 0 && (
               <TableRow>
                 <TableCell
-                  colSpan={8}
+                  colSpan={9}
                   className="text-center py-12"
                   style={{ color: "var(--text-secondary)" }}
                 >
@@ -344,6 +346,12 @@ const RANK_COLORS: Record<string, string> = {
   low: "#6B7280",
 };
 
+const SEVERITY_COLOR: Record<"HIGH" | "MEDIUM" | "LOW", string> = {
+  HIGH: "#EF4444",
+  MEDIUM: "#F59E0B",
+  LOW: "#6B7280",
+};
+
 function TriageRow({
   doc,
   docName,
@@ -355,49 +363,126 @@ function TriageRow({
   selected: boolean;
   onToggle: () => void;
 }) {
+  const [expanded, setExpanded] = useState(false);
   const rankColor = RANK_COLORS[doc.triageRank] ?? "#6B7280";
+  const isZip = doc.chunkSummary !== undefined;
+  const partial = doc.partialExtraction;
 
   return (
-    <TableRow className={selected ? "bg-blue-50/50 dark:bg-blue-950/20" : ""}>
-      <TableCell>
-        <Checkbox checked={selected} onCheckedChange={onToggle} />
-      </TableCell>
-      <TableCell>
-        <a
-          href={`/analysis-report?view=detail&doc=${doc.documentId}`}
-          className="text-sm font-medium hover:underline truncate block max-w-[280px]"
-          style={{ color: "var(--text-primary)" }}
-          title={docName}
-        >
-          {docName}
-        </a>
-      </TableCell>
-      <TableCell className="text-sm tabular-nums">{doc.ruleCount}</TableCell>
-      <TableCell className="text-sm tabular-nums">{doc.relationshipCount}</TableCell>
-      <TableCell className="text-sm tabular-nums">{doc.entityCount}</TableCell>
-      <TableCell className="text-sm tabular-nums">{doc.processCount}</TableCell>
-      <TableCell>
-        <div className="flex items-center gap-1.5">
-          <div
-            className="w-2 h-2 rounded-full"
-            style={{ backgroundColor: rankColor }}
-          />
-          <span className="text-sm tabular-nums font-medium" style={{ color: rankColor }}>
-            {doc.triageScore.toFixed(2)}
-          </span>
+    <>
+      <TableRow className={selected ? "bg-blue-50/50 dark:bg-blue-950/20" : ""}>
+        <TableCell className="w-8 px-2">
+          {isZip && (
+            <button
+              onClick={() => setExpanded(!expanded)}
+              className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              aria-label="Toggle details"
+            >
+              <ChevronRight
+                className="w-3 h-3 transition-transform"
+                style={{ transform: expanded ? "rotate(90deg)" : undefined, color: "var(--text-secondary)" }}
+              />
+            </button>
+          )}
+        </TableCell>
+        <TableCell>
+          <Checkbox checked={selected} onCheckedChange={onToggle} />
+        </TableCell>
+        <TableCell>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <a
+              href={`/analysis-report?view=detail&doc=${doc.documentId}`}
+              className="text-sm font-medium hover:underline truncate block max-w-[240px]"
+              style={{ color: "var(--text-primary)" }}
+              title={docName}
+            >
+              {docName}
+            </a>
+            {doc.isLibOnly && (
+              <Badge variant="secondary" className="text-[10px] shrink-0">라이브러리</Badge>
+            )}
+            {partial && (
+              <Badge
+                variant="outline"
+                className="text-[10px] shrink-0"
+                style={{ borderColor: SEVERITY_COLOR[partial.severity], color: SEVERITY_COLOR[partial.severity] }}
+                title={partial.reasons.join(", ")}
+              >
+                부분 {Math.round(partial.rate * 100)}%
+              </Badge>
+            )}
+          </div>
+        </TableCell>
+        <TableCell className="text-sm tabular-nums">{doc.ruleCount}</TableCell>
+        <TableCell className="text-sm tabular-nums">{doc.relationshipCount}</TableCell>
+        <TableCell className="text-sm tabular-nums">{doc.entityCount}</TableCell>
+        <TableCell className="text-sm tabular-nums">{doc.processCount}</TableCell>
+        <TableCell>
+          <div className="flex items-center gap-1.5">
+            <div
+              className="w-2 h-2 rounded-full"
+              style={{ backgroundColor: rankColor }}
+            />
+            <span className="text-sm tabular-nums font-medium" style={{ color: rankColor }}>
+              {doc.triageScore.toFixed(2)}
+            </span>
+          </div>
+        </TableCell>
+        <TableCell>
+          {doc.analysisStatus === "completed" ? (
+            <Badge variant="outline" className="text-xs" style={{ borderColor: "#22C55E", color: "#22C55E" }}>
+              완료
+            </Badge>
+          ) : (
+            <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
+              — 미분석
+            </span>
+          )}
+        </TableCell>
+      </TableRow>
+      {expanded && doc.chunkSummary && <ZipMatrixSubRow summary={doc.chunkSummary} />}
+    </>
+  );
+}
+
+function ZipMatrixSubRow({ summary }: { summary: ZipChunkSummary }) {
+  return (
+    <TableRow>
+      <TableCell colSpan={9} className="bg-slate-50 dark:bg-slate-900/30 px-10 py-3">
+        <div className="flex flex-wrap gap-4 text-xs">
+          <ZipMetric label="Controller" value={summary.controllerCount} />
+          <ZipMetric label="Endpoint" value={summary.endpointCount} highlight />
+          <ZipMetric label="DataModel" value={summary.dataModelCount} />
+          <ZipMetric label="Transaction" value={summary.transactionCount} highlight />
+          <ZipMetric label="DDL Table" value={summary.ddlTableCount} />
+          <ZipMetric label="MyBatis" value={summary.mapperCount} />
+          {summary.extractionRate !== undefined && (
+            <ZipMetric label="추출률" value={`${Math.round(summary.extractionRate * 100)}%`} />
+          )}
         </div>
       </TableCell>
-      <TableCell>
-        {doc.analysisStatus === "completed" ? (
-          <Badge variant="outline" className="text-xs" style={{ borderColor: "#22C55E", color: "#22C55E" }}>
-            완료
-          </Badge>
-        ) : (
-          <span className="text-xs" style={{ color: "var(--text-secondary)" }}>
-            — 미분석
-          </span>
-        )}
-      </TableCell>
     </TableRow>
+  );
+}
+
+function ZipMetric({
+  label,
+  value,
+  highlight,
+}: {
+  label: string;
+  value: number | string;
+  highlight?: boolean;
+}) {
+  return (
+    <div className="flex items-baseline gap-1">
+      <span style={{ color: "var(--text-secondary)" }}>{label}</span>
+      <span
+        className="font-semibold tabular-nums"
+        style={{ color: highlight ? "#2563EB" : "var(--text-primary)" }}
+      >
+        {value}
+      </span>
+    </div>
   );
 }

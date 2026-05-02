@@ -211,7 +211,7 @@ export async function handleAiReadyBatchTrigger(
 
   // Fetch skill IDs for org
   const skillsResult = await env.DB_SKILL.prepare(
-    "SELECT skill_id FROM skills WHERE organization_id = ? AND status = 'published'",
+    "SELECT skill_id FROM skills WHERE organization_id = ? AND status IN ('bundled','reviewed')",
   )
     .bind(organizationId)
     .all<{ skill_id: string }>();

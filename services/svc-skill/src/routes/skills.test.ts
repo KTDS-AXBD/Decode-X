@@ -224,6 +224,19 @@ describe("handleUpdateSkillStatus", () => {
     const res = await handleUpdateSkillStatus(req, env, "sk-001");
     expect(res.status).toBe(400);
   });
+
+  // F413: 6-enum 확장 — bundled/reviewed/superseded 신규 허용
+  it.each(["bundled", "reviewed", "superseded"] as const)(
+    "accepts lifecycle status '%s' (F413 6-enum)",
+    async (status) => {
+      const env = mockEnv();
+      const req = jsonRequest({ status });
+      const res = await handleUpdateSkillStatus(req, env, "sk-001");
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as { data: { status: string } };
+      expect(body.data.status).toBe(status);
+    },
+  );
 });
 
 // ── handleBulkPublish ────────────────────────────────────────────────
@@ -268,6 +281,23 @@ describe("handleBulkPublish", () => {
     const body = (await res.json()) as { success: boolean; data: { status: string } };
     expect(body.data.status).toBe("archived");
   });
+
+  // F413: bundled/reviewed bulk 전환 허용
+  it.each(["bundled", "reviewed"] as const)(
+    "accepts bulk status '%s' (F413 6-enum)",
+    async (status) => {
+      const env = mockEnv({ changes: 1 });
+      const req = new Request("https://test.internal/admin/bulk-publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ skillIds: ["sk-001"], status }),
+      });
+      const res = await handleBulkPublish(req, env);
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as { data: { status: string } };
+      expect(body.data.status).toBe(status);
+    },
+  );
 
   it("returns 400 for empty skillIds array", async () => {
     const env = mockEnv();

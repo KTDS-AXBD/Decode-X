@@ -28,8 +28,10 @@ interface AuditEntry {
   created_at: string;
 }
 
+// Radix UI Select는 빈 문자열 value를 금지 — sentinel "all" 사용
+const ALL_ROLES = "all";
 const ROLE_OPTIONS = [
-  { value: "", label: "전체 역할" },
+  { value: ALL_ROLES, label: "전체 역할" },
   { value: "analyst", label: "Analyst" },
   { value: "reviewer", label: "Reviewer" },
   { value: "developer", label: "Developer" },
@@ -70,14 +72,14 @@ export function AuditLog() {
   const { organizationId } = useOrganization();
   const [entries, setEntries] = useState<AuditEntry[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filterRole, setFilterRole] = useState("");
+  const [filterRole, setFilterRole] = useState(ALL_ROLES);
   const [filterUser, setFilterUser] = useState("");
   const [activeView, setActiveView] = useState<"log" | "matrix">("log");
 
   const fetchLogs = () => {
     setLoading(true);
     const params = new URLSearchParams();
-    if (filterRole) params.set("role", filterRole);
+    if (filterRole && filterRole !== ALL_ROLES) params.set("role", filterRole);
     if (filterUser) params.set("userId", filterUser);
     void fetch(`/api/admin/audit?${params.toString()}`, {
       headers: buildHeaders({ organizationId }),

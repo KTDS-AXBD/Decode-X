@@ -510,8 +510,10 @@ export function rowToSummary(row: SkillRow): SkillSummary & { status: string; co
 
 // ── PATCH /skills/:id/status ──────────────────────────────────────────
 
+const SKILL_STATUSES = ["draft", "reviewed", "bundled", "published", "superseded", "archived"] as const;
+
 const UpdateStatusSchema = z.object({
-  status: z.enum(["draft", "published", "archived"]),
+  status: z.enum(SKILL_STATUSES),
 });
 
 export async function handleUpdateSkillStatus(
@@ -528,7 +530,7 @@ export async function handleUpdateSkillStatus(
 
   const parsed = UpdateStatusSchema.safeParse(raw);
   if (!parsed.success) {
-    return badRequest("Invalid status. Must be: draft, published, archived", parsed.error.flatten());
+    return badRequest("Invalid status. Must be: draft, reviewed, bundled, published, superseded, archived", parsed.error.flatten());
   }
 
   const { status } = parsed.data;
@@ -550,7 +552,7 @@ export async function handleUpdateSkillStatus(
 
 const BulkPublishSchema = z.object({
   skillIds: z.array(z.string().min(1)).min(1).max(500),
-  status: z.enum(["draft", "published", "archived"]).default("published"),
+  status: z.enum(SKILL_STATUSES).default("published"),
 });
 
 export async function handleBulkPublish(

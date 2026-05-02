@@ -42,3 +42,20 @@ test.describe("Error handling", () => {
     await expect(page.getByText("페이지를 찾을 수 없습니다")).toBeVisible();
   });
 });
+
+// F403 (F382/F387): /admin 대시보드 + AuditLog 탭
+test.describe("Admin dashboard (F403)", () => {
+  test("admin page renders dashboard heading", async ({ page }) => {
+    await page.goto("/admin");
+    await expect(page.getByRole("heading", { name: /Admin 대시보드/ })).toBeVisible();
+  });
+
+  test("AuditLog tab switch renders audit tab content", async ({ page }) => {
+    await page.goto("/admin");
+    await page.getByRole("tablist").getByRole("tab", { name: /감사 로그/ }).click();
+    // fetch 안정 후 평가 — AuditLog 뷰 토글 버튼은 mount 즉시 렌더되고 fetch 결과와 무관
+    await page.waitForLoadState("networkidle");
+    const activePanel = page.locator('[role="tabpanel"][data-state="active"]');
+    await expect(activePanel).toBeVisible();
+  });
+});

@@ -2,6 +2,45 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 252 (2026-05-02) — `/ax:daily-check` (full) + 모델 SSOT drift 4 → 0 + MEMORY.md 보안 잔여 정확화
+
+**daily-check 결과 (17 항목)**:
+
+- ✅ PASS 14 — Runtime(node v22.22.0/pnpm 10.8.1/turbo 2.9.4), tmux 3.6a (client/server match `~/.claude-work/.local/bin/tmux`), Git Sync (main up-to-date dirty=0), Worktree (활성 1 / 고아 0 / dirty 0), Branch (gone/stale/orphan 0), Sprint Signals (`/tmp/sprint-signals` 없음), Dependencies (lock ↔ node_modules 동기), TypeScript (turbo 14/14 cache hit, 85ms `>>> FULL TURBO`), Hooks (3 scripts 실행 권한 + settings.json hooks=3), D1 file-based (ingestion=3 / ontology=2 / policy=2 / skill=12 / structure=8), Plugin Drift (ax=0 / bkit=0)
+- ℹ️ INFO 2 — 수치 하드코딩 (`CLAUDE.md` "7 Workers" 3곳 + `MEMORY.md` "9 Workers" 1곳 — 5-Stage + Queue Router + MCP Server = 7 운영 의도 일치, drift 아님), Disk/Cache (서비스별 `.wrangler` ~1.5–1.9MB ×5)
+- ⚠️ WARN 1 — 모델 버전 Drift (4건)
+
+**모델 drift 보정 (commit `f439aef`)**:
+
+- 위치: `scripts/ai-ready/evaluate.ts` `callAnthropicDirect`/`callOpenRouterJson` modelMap 4건
+- 구버전: `claude-sonnet-4-5-20250929` / `claude-opus-4-5-20250514` / `anthropic/claude-sonnet-4-5` / `anthropic/claude-opus-4-5` (haiku 1건은 SSOT family 일치, snapshot suffix만 차이)
+- SSOT (`packages/types/src/model-defaults.ts`): `MODEL_SONNET=claude-sonnet-4-6` / `MODEL_OPUS=claude-opus-4-7` / `MODEL_HAIKU=claude-haiku-4-5` + `OR_MODEL_*` 미러
+- 의도적 고정 흔적(주석/PR/keywords) 0건 확인 + SSOT 파일이 "1곳 수정 원칙" 명문화 + `OR_MODEL_*` export 이미 존재
+- 보정: 6 symbol(`MODEL_HAIKU/SONNET/OPUS` + `OR_MODEL_HAIKU/SONNET/OPUS`) import + modelMap 리터럴 → SSOT 참조 교체
+- 검증: drift 재측정 4 → **0건**, turbo typecheck PASS (cache hit), `pnpm tsx -e "import './scripts/ai-ready/evaluate.ts'"` import resolution 통과 + LLM call entry 진입(`/complete` URL 호출 직전 expected fail)
+
+**MEMORY.md 보안 라인 갱신** (사실 기반 정확화):
+
+- 보존: 245~246 노출 이력 (Master Password 추정값 3회 + OpenRouter key prefix 평문) + 246 후속 부분 해소 (9-worker `INTERNAL_API_SECRET` rotation, `~/.secrets/{decode-x-internal,openrouter-api-key}` chmod 600 정착)
+- 추가 검증: `.gitignore`가 `.env`/`.dev.vars` 보호 정상 + repo grep `OP_SERVICE_ACCOUNT_TOKEN` 0건 + 1Password 평문 토큰 0건 + `op` CLI v2.34.0 설치 확인
+- 252 실측 잔여 4건 명시:
+  1. **OpenRouter key rotation 미수행** 확정 — `~/.secrets/openrouter-api-key` 73자 `sk-or-v1-ade1a7...465e` mtime `2026-05-02 15:26` 동일 키 그대로. svc-llm-router worker secret도 동일 키 가능성 → revoke + 새 키 + `~/.secrets` + `wrangler secret put OPENROUTER_API_KEY --name svc-llm-router` 양쪽 동시 갱신 필수
+  2. 1Password Master Password 변경 미수행 (사용자 콘솔 작업)
+  3. 1Password CLI signin 미정상화 — `eval $(op signin)` + `op vault list` 동작 검증 필요
+  4. `docs/CHANGELOG.md` L139/L480 key prefix 평문 잔존 (rotation 후 무의미 prefix가 되므로 cosmetic)
+- 우선순위: 1번 절대 우선 → 2 → 3 → 4(cosmetic). 1번 완료 시 본 라인 자동 cleanup 트리거 (자기참조 마커 추가)
+
+**검증 결과**:
+
+- ✅ typecheck (turbo 14/14 cache hit)
+- ✅ drift 재측정 0건
+- ✅ tsx import resolution PASS
+- ⏭️ E2E (이번 세션 코드 변경이 svc 영역 외 + script 1 파일 → E2E 무관)
+
+**신규 교훈 0건** — drift 보정은 routine, MEMORY 갱신은 사실 정확화
+
+---
+
 ### 세션 250 (2026-05-02) — Sprint 240 F411 ✅ MERGED + Production verified
 
 **Master 후속 (autopilot 세션 249 완결 → daemon FAILED → Master 개입)**:

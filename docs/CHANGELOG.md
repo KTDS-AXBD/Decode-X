@@ -2,6 +2,26 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 247 (2026-05-02) — `/ax:session-start` 진단: LPON 27 zip 전수 점검 + AIF-REQ-039 등록
+
+**Master 세션 — 사용자 인풋 2건 진단**:
+
+1. **AI_Foundry_OS_DeepDive_v0.3.html (file://)** — "레거시 소스코드/패키지/DB 스키마로부터 충분한 Spec 추출 여부" 우선순위 확인
+2. **rx.minu.best/executive/evidence** — "zip 파일 형식 소스코드가 미분석으로 표시되는 것 같은데, 압축을 풀어서 점검할 수 없는지"
+
+**진단 결과 (LPON 조직 27 zip 전수 production D1 실측)**:
+- ✅ ingestion 정상: 27/27 `documents.parsed`, chunk 842건 (`source_project`)
+- ✅ extraction 정상: 27/27 `extractions.completed` (초기 "23건 누락" 가설은 IN 4건 쿼리 오해석으로 정정)
+- ⚠️ LLM Stage 2 분석 빈약: 평균 `process_node_count=2.67`, `entity_count=8.15`, `result_json size=1.4KB` — source-aggregator의 AST/structured chunk 경로가 실 spec 추출 담당 (LLM 자연어 요약은 보조)
+- ⚠️ factcheck contributing 6건 누락: 최신 `6e56af17` source_documentIds 27 zip 중 21건만 포함. 누락 6건 = chunk_cnt≤1 작은 lib-only zip 4건 (`contents/d7lib/extapi-mobile/extapi-hrs-server`) + `companybatch.zip` 25MB (MAX_FILE_SIZE 500KB 제약) + `kafka.zip` 316KB. source-aggregator switch case가 `SourceProjectSummary` element 미처리 → 0 spec items 기여 → factcheck source list 미포함
+- ✅ "압축 풀기"는 이미 ingestion 단계에서 자동 수행 (`zip-extractor.ts` + `source-aggregator.ts`). UI(evidence/analysis-report)가 zip을 1 row로만 표현하여 내부 추출 매트릭스 미가시화
+
+**등록**:
+- 🆕 **AIF-REQ-039** (Improvement / UX / P2 / OPEN): evidence/analysis-report에서 zip 파일 내부 spec coverage 가시화 — zip row 확장 시 내부 Java/SQL/XML chunk별 추출 결과 + lib-only/부분추출 라벨링. 사용자 결정: 후속 F-item으로 등록만, Sprint 240 진입 결정과 분리
+
+**활성 작업 컨텍스트 (변동 없음)**:
+- Sprint 240 진입 결정 (TD-49 4분기 매트릭스 보류) / Sprint 241 F403 Phase 9 E2E 보강 / 보안 후속(1Password vault 백업, Master Password 변경, OpenRouter key rotation 잔여)
+
 ### 세션 246 후속 #2 (2026-05-02) — TD-47 완전 해소 + secret 환경 재구성 + F408 LLM call 검증 + Sprint 240 보류 판정
 
 **Master pane — Sprint 239 F408 PR #38 squash merged 후 production smoke (404→401 차단 해소) → secret 환경 재구성 → LLM call 검증**:

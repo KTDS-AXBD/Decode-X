@@ -52,9 +52,10 @@ test.describe("Admin dashboard (F403)", () => {
 
   test("AuditLog tab switch renders audit tab content", async ({ page }) => {
     await page.goto("/admin");
-    // tablist 스코프로 격리 — 페이지 내 다른 tab role 요소와 충돌 방지
-    const tablist = page.getByRole("tablist");
-    await tablist.getByRole("tab", { name: /감사 로그/ }).click();
-    await expect(tablist.getByRole("tab", { name: /감사 로그/ })).toHaveAttribute("data-state", "active");
+    await page.getByRole("tablist").getByRole("tab", { name: /감사 로그/ }).click();
+    // fetch 안정 후 평가 — AuditLog 뷰 토글 버튼은 mount 즉시 렌더되고 fetch 결과와 무관
+    await page.waitForLoadState("networkidle");
+    const activePanel = page.locator('[role="tabpanel"][data-state="active"]');
+    await expect(activePanel).toBeVisible();
   });
 });

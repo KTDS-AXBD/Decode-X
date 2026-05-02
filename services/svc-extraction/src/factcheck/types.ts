@@ -60,6 +60,11 @@ export interface SourceSpec {
     tableCount: number;
     mapperCount: number;
   };
+  libOnlyProjects?: Array<{
+    documentId: string;
+    projectName: string;
+    reason: string;
+  }>;
 }
 
 /** Simplified CodeTransaction for relevance scoring */

@@ -23,6 +23,7 @@ import {
   logAuditLocal,
 } from "@ai-foundry/utils";
 import type { Env } from "./env.js";
+import type { AIReadyQueueMessage } from "./queue/ai-ready-consumer.js";
 import {
   handleCreateSkill,
   handleListSkills,
@@ -481,7 +482,7 @@ export default {
   async queue(batch: MessageBatch<unknown>, env: Env, ctx: ExecutionContext): Promise<void> {
     if (batch.queue === "ai-ready-queue") {
       await handleAIReadyMessage(
-        batch.messages as MessageBatch<import("./queue/ai-ready-consumer.js").AIReadyQueueMessage>["messages"],
+        batch.messages as MessageBatch<AIReadyQueueMessage>["messages"],
         env,
         ctx,
       );

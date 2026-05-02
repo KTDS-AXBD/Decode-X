@@ -525,3 +525,85 @@ describe("stripAppPrefix", () => {
     expect(stripAppPrefix("/")).toBe("/");
   });
 });
+
+// ── lib-only SourceProjectSummary 처리 ──────────────────────────────
+
+describe("aggregateSourceSpec — lib-only detection", () => {
+  it("lib-only zip은 libOnlyProjects에 포함됨", async () => {
+    const libOnlySummary = JSON.stringify({
+      projectName: "lpon-d7lib",
+      stats: { totalFiles: 12, javaFiles: 12, sqlFiles: 0, controllerCount: 0, endpointCount: 0, dataModelCount: 0, transactionCount: 0, ddlTableCount: 0, mapperCount: 0 },
+    });
+    const normalChunk = JSON.stringify({
+      projectName: "lpon-charge",
+      stats: { totalFiles: 88, javaFiles: 60, sqlFiles: 12, controllerCount: 14, endpointCount: 47, dataModelCount: 22, transactionCount: 31, ddlTableCount: 8, mapperCount: 9 },
+    });
+
+    const fetchResponses = new Map<string, unknown>([
+      ["/documents?", {
+        success: true,
+        data: {
+          documents: [
+            { document_id: "doc-lib", status: "parsed", original_name: "lpon-d7lib.zip", file_type: "zip" },
+            { document_id: "doc-normal", status: "parsed", original_name: "lpon-charge.zip", file_type: "zip" },
+          ],
+        },
+      }],
+      ["/documents/doc-lib/chunks", {
+        success: true,
+        data: {
+          chunks: [
+            { chunk_id: "c1", chunk_index: 0, element_type: "SourceProjectSummary", masked_text: libOnlySummary, classification: "source_project", word_count: 10 },
+          ],
+        },
+      }],
+      ["/documents/doc-normal/chunks", {
+        success: true,
+        data: {
+          chunks: [
+            { chunk_id: "c2", chunk_index: 0, element_type: "SourceProjectSummary", masked_text: normalChunk, classification: "source_project", word_count: 20 },
+          ],
+        },
+      }],
+      ["/documents/doc-lib/download", { success: false }],
+      ["/documents/doc-normal/download", { success: false }],
+    ]);
+
+    const env = createMockEnv(fetchResponses);
+    const spec = await aggregateSourceSpec(env, "org-1");
+
+    expect(spec.libOnlyProjects).toBeDefined();
+    expect(spec.libOnlyProjects?.length).toBe(1);
+    expect(spec.libOnlyProjects?.[0]?.documentId).toBe("doc-lib");
+    expect(spec.libOnlyProjects?.[0]?.projectName).toBe("lpon-d7lib");
+  });
+
+  it("normal zip은 libOnlyProjects에 포함 안 됨", async () => {
+    const normalChunk = JSON.stringify({
+      projectName: "lpon-charge",
+      stats: { totalFiles: 88, javaFiles: 60, sqlFiles: 12, controllerCount: 14, endpointCount: 47, dataModelCount: 22, transactionCount: 31, ddlTableCount: 8, mapperCount: 9 },
+    });
+    const fetchResponses = new Map<string, unknown>([
+      ["/documents?", {
+        success: true,
+        data: {
+          documents: [
+            { document_id: "doc-1", status: "parsed", original_name: "lpon-charge.zip", file_type: "zip" },
+          ],
+        },
+      }],
+      ["/documents/doc-1/chunks", {
+        success: true,
+        data: {
+          chunks: [
+            { chunk_id: "c1", chunk_index: 0, element_type: "SourceProjectSummary", masked_text: normalChunk, classification: "source_project", word_count: 20 },
+          ],
+        },
+      }],
+      ["/documents/doc-1/download", { success: false }],
+    ]);
+    const env = createMockEnv(fetchResponses);
+    const spec = await aggregateSourceSpec(env, "org-2");
+    expect(spec.libOnlyProjects).toBeUndefined();
+  });
+});

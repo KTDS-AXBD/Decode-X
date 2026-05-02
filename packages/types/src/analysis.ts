@@ -185,6 +185,33 @@ export const CrossOrgComparisonSchema = z.object({
 
 // ── Triage (문서 선별) ──────────────────────────────────────────────
 
+export const ZipChunkSummarySchema = z.object({
+  projectName: z.string(),
+  totalFiles: z.number().int(),
+  javaFiles: z.number().int(),
+  sqlFiles: z.number().int(),
+  controllerCount: z.number().int(),
+  endpointCount: z.number().int(),
+  dataModelCount: z.number().int(),
+  transactionCount: z.number().int(),
+  ddlTableCount: z.number().int(),
+  mapperCount: z.number().int(),
+  totalEntriesInZip: z.number().int().optional(),
+  skippedBinaryCount: z.number().int().optional(),
+  oversizedSkippedCount: z.number().int().optional(),
+  extractionRate: z.number().min(0).max(1).optional(),
+  cappedAtMaxFiles: z.boolean().optional(),
+});
+
+export const PartialExtractionSchema = z.object({
+  rate: z.number().min(0).max(1),
+  severity: z.enum(["HIGH", "MEDIUM", "LOW"]),
+  reasons: z.array(z.string()),
+});
+
+export type ZipChunkSummary = z.infer<typeof ZipChunkSummarySchema>;
+export type PartialExtraction = z.infer<typeof PartialExtractionSchema>;
+
 export const TriageDocumentSchema = z.object({
   documentId: z.string(),
   extractionId: z.string(),
@@ -198,6 +225,9 @@ export const TriageDocumentSchema = z.object({
   analysisId: z.string().nullable(),
   analyzedAt: z.string().nullable(),
   extractedAt: z.string(),
+  chunkSummary: ZipChunkSummarySchema.optional(),
+  isLibOnly: z.boolean().optional(),
+  partialExtraction: PartialExtractionSchema.nullable().optional(),
 });
 
 export const TriageResponseSchema = z.object({

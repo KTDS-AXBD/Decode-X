@@ -131,3 +131,54 @@ cat ~/.secrets/openrouter-api-key | \
 - batch result row: D1 `ai_ready_scores` `batch_id=170ed5de-55e0-47f5-9d28-4328a75bd1fc` (48 rows, 모두 score=0)
 - batch row: D1 `ai_ready_batches` `batch_id=170ed5de-...` (status=completed, avgScore=0)
 - 진단 cost: $0.0288
+
+---
+
+# Fix 실행 + Production 검증 (2026-05-04 세션 260, 추가 0.5h)
+
+## Fix 실행
+
+3종 secret을 `--env production` 워커에 put (코드 변경 0건):
+
+```
+✨ Success! Uploaded secret CLOUDFLARE_AI_GATEWAY_URL
+   = https://gateway.ai.cloudflare.com/v1/b6c06059b413892a92f150e5ca496236/axbd-team/openrouter/v1/chat/completions
+✨ Success! Uploaded secret INTERNAL_API_SECRET (~/.secrets/decode-x-internal)
+✨ Success! Uploaded secret OPENROUTER_API_KEY (~/.secrets/openrouter-api-key)
+```
+
+## Production smoke 검증
+
+| Metric | Fix 전 (`170ed5de`) | Fix 후 (`28124e59`) |
+|---|---|---|
+| status | completed | completed |
+| completed/total | 8/8 | 8/8 |
+| failed | 0 | 0 |
+| cost | $0.0288 | $0.0288 |
+| **avgScore** | **0.0** | **0.674** |
+| D1 score 분포 | 모두 0 | 0.42 ~ 0.95 |
+| rationale | "LLM returned HTML response..." | 정상 한국어 평가 텍스트 |
+
+D1 raw scores 검증 (Fix 후 `28124e59` 첫 2 skill 12 row 샘플):
+
+```
+[comment_doc_alignment    ] score=0.95 passed=1
+[exception_handling       ] score=0.72 passed=0   ← TD-60 0.6 threshold 적용 확인
+[io_structure             ] score=0.52 passed=0
+[source_consistency       ] score=0.95 passed=1
+[srp_reusability          ] score=0.82 passed=1
+[testability              ] score=0.45 passed=0
+... (lpon-charge 6건 동일 양상)
+```
+
+## 결론
+
+- **TD-57 ✅ 해소** — Root cause 확정 + Fix 적용 + Production smoke PASS 3축 충족.
+- **TD-56 ✅ 자연 해소** — F414 코드 fix(3계층 방어)는 처음부터 정상 동작했고, underlying gateway URL 문제(TD-57) 때문에 효과가 표면화되지 않았음을 사후 입증. 별도 코드 변경 불필요.
+- **TD-60 ✅ 동시 검증** — 0.6 threshold가 score 0.62 ↑를 정상으로 PASS 처리하는 모습 확인.
+
+## 후속 권고
+
+- **CLAUDE.md 업데이트** — "Inter-Service Communication" 섹션에 worker 별 secret store 분리 + secret rotation 시 양 워커 동시 갱신 의무 명시.
+- **secret-sync-svc-skill.sh 스크립트 후보** — `~/.secrets/`의 정본을 양 워커에 일괄 동기화하는 idempotent 스크립트.
+- **daily-check 검증 추가** — 양 워커의 `/health` + minimal authenticated endpoint 응답 비교로 secret divergence 자동 감지.

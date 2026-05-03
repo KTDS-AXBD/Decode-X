@@ -2,6 +2,55 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 258 (2026-05-04) — F417 Sprint 248 🟡 PARTIAL_FAIL + AIF-REQ-042 + TD-58/59/60 신규
+
+**핵심 결과**: bashrc sprint() WT 시동 + autopilot 10분 self-Match=100% + PR #43 daemon merge → Master 운영 검증 진입. autopilot 작성 augment-skill-data.ts 결함 발견 (svc-llm-router decommission per TD-44 미인지) → OpenRouter direct + sequential per-policy 재설계. OpenRouter BYOK burst → "Insufficient credits" account-wide 차단 → $5 prepay 후 재개 (1차 충전 다른 계정으로 들어가 1회 재충전). LPON 35 sequential 2.65h ($3.14 BYOK) + lpon 8 sequential 5min ($0.09) = **2581 policies augmented** (R2 augmented prefix). 재평가 LPON 35 avg 0.540 / lpon 8 avg 0.777 / **종합 43건 avg 0.584 (+14%)**, 3 target criteria avg 모두 향상하나 PASS threshold 0.75 미진입. **DoD 미달성 → F417 PARTIAL_FAIL** + TD-58/59/60 신규.
+
+**작업 요약**:
+- ✅ Sprint 248 시동: bashrc sprint() WT + ccs sonnet + sprint-autopilot
+- ⚠️ Autopilot 10분 self-Match=100% + PR #43 daemon merge — 운영 검증 0건 (10회차)
+- 🔧 augment-skill-data.ts patch: OpenRouter direct + sequential + 5s backoff on 402
+- ✅ LPON 35 augmentation: 35/35 SUCCESS, 2,524 policies, 9538s, $3.136
+- ✅ lpon 8 augmentation: 8/8 SUCCESS, 56 policies, 286s, $0.09
+- ✅ R2 augmented bundle 43건 write 검증
+- ✅ augment-eval-loop LPON 35: 35/35 SUCCESS, avg 0.540, $0.126
+- ✅ augment-eval-loop lpon 8: 8/8 SUCCESS, avg 0.777, $0.029
+
+**6 criteria pass rate (LPON 35 baseline → augmented 43건)**:
+| Criterion | Baseline | Augmented | Δ |
+|---|---|---|---|
+| source_consistency | 48.6% | 58.1% | +9.5pp |
+| comment_doc_alignment | 80.0% | 72.1% | -7.9pp ❌ regression |
+| **io_structure** ⭐ | 0% | 0% | score +20% (avg 0.522) |
+| **exception_handling** ⭐ | 0% | 4.7% | +4.7pp (lpon 8 only) |
+| srp_reusability | 8.6% | 7.0% | -1.6pp |
+| **testability** ⭐ | 0% | 0% | score +43% (avg 0.529) |
+| avg_score | 0.511 | **0.584** | +14% |
+| overall PASS | 0/35 | 0/43 | 0 |
+
+**DoD 미달성**: 3 criteria pass rate ≥ 50% ❌ (max 4.7%) + avg_score ≥ 0.65 ❌ (0.584). pipeline + R2 write + reports 실파일은 모두 충족.
+
+**autopilot Production Smoke Test 10회차 정확 재현**: Match=100% 자체 마킹 vs Test plan 체크박스 4/7 미완료 + DoD 미달성 정량 확정.
+
+**신규 TD 3건**:
+- **TD-58 (P2)**: PolicyCandidateSchema에 exception 필드 부재 — 구조적 해결 (Sprint 1, ~6-8h)
+- **TD-59 (P3)**: Large skill (171/245p) evaluator score=0 parse failure — 4/43 outliers
+- **TD-60 (P3)**: passThreshold 0.75 vs augmented avg 0.5-0.7 적정성 재검토
+
+**신규 교훈 4건**:
+- autopilot codebase context 미인지 (svc-llm-router decommission TD-44 미반영, 폐기 worker URL 호출)
+- OpenRouter BYOK burst 차단은 account-wide → $5 prepay 또는 Anthropic API 직접 필요
+- OR 키 owner 계정 확인 필수 (`/v1/auth/key` `creator_user_id`로 식별)
+- LLM augmentation으로 score +30~40% 가능하나 PASS threshold 0.75는 schema 확장 없이 불도달
+
+**비용 + 시간**: $3.23 BYOK augment + $5 OR prepay + $0.155 BYOK eval / 2.7h augment + 12min eval / 세션 ~5h.
+
+**Cleanup**: WT 제거, sprint/248 local+remote 삭제, signal 정리.
+
+**Commits**: `ed2ba2a` (Plan) → `5a7d4c4` (IN_PROGRESS) → `0e0392e` (autopilot PR #43) → `8226991` (PARTIAL_FAIL + TD).
+
+---
+
 ### 세션 257 (2026-05-03) — F416 Sprint 247 ✅ DONE 우회 경로 + AIF-REQ-041 PARTIAL_FAIL → DONE + TD-56 reopen + TD-57 신규
 
 **핵심 결과**: Master inline 즉시 (autopilot 회피 + OpenRouter rotation skip 결정). 사전 환경 검증 8/8 PASS → batch endpoint 재시도 35/35 fail (Sprint 244 패턴 그대로 재현, F414 production 효과 미발현 확인) → **우회 경로 single eval loop 신설** → 35/35 SUCCESS, 비용 $0.126, 소요 593s, 평균 점수 0.511. F412 원 DoD 100% 충족 + AIF-REQ-041 DONE 전환 + TD-56 ✅ → 🟡 reopen + TD-57 신규(P2 batch endpoint Queue handler 진단).

@@ -2,6 +2,109 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 254 (2026-05-03) — Sprint 241 ✅ MERGED + F413 hotfix Production verified + TD-53 ✅ 해소 + TD-54 신규
+
+**핵심 결과**: F403 (Phase 9 E2E 보강) + F413 (Skill packaging lifecycle 표준화) Sprint 241 완결. Master 직접 4단 개입으로 autopilot 표면 fix 함정 + D1 PRAGMA 함정 + Deploy path filter 함정을 1세션 내 종결.
+
+**작업 흐름 (4 단계)**:
+
+1. **Sprint Full Auto** (`bash sprint 241` + `/ax:sprint-autopilot` 주입) — autopilot 자체 완결 보고 Match 98%
+2. **E2E FAIL 3회차 패턴 발견** — autopilot의 spec-only 표면 fix 모두 실패
+3. **Master 직접 진단 + 수정** — Playwright `error-context.md` screenshot + console capture로 진짜 root cause 발견
+4. **Workers Deploy FAIL → Master hotfix → manual workflow_dispatch → Production 검증**
+
+**Step 1 — Sprint Full Auto (commit `de0f8a3`)**:
+
+- WT 생성: `~/work/worktrees/Decode-X/sprint-241` (sprint/241 branch)
+- autopilot 자체 완결: Plan/Design/Implement/Analyze/Report → PR #40 생성 → STATUS=DONE 보고
+- 그러나 signal=FAILED (CI E2E 2 fail / 57 pass)
+
+**Step 2 — autopilot fix 3회차 모두 실패**:
+
+| Iteration | Commit | E2E 결과 | autopilot 변경 방식 |
+|-----------|--------|----------|---------------------|
+| 1차 | `de0f8a3` | 2 fail / 57 pass | 초기 작성 (admin + guest-mode) |
+| 2차 | `b82e0ef` | 1 fail / 58 pass | tablist scope (guest-mode 통과) |
+| 3차 | `d915049` | 1 fail / 58 pass | toBeVisible() + networkidle (admin 잔존) |
+
+3회 모두 spec assertion만 변경 — root cause 미진단.
+
+**Step 3 — Master 직접 진단 (commit `ed48a1a`)**:
+
+- 로컬 CI=1 재현 → `error-context.md` screenshot **흰 화면** 확인 → 페이지 전체 unmount
+- 임시 debug spec 작성 (console + pageerror capture):
+  ```
+  Error: A <Select.Item /> must have a value prop that is not an empty string
+  ```
+- **TRUE ROOT CAUSE**: `apps/app-web/src/components/admin/AuditLog.tsx:32` `ROLE_OPTIONS[0].value: ""`
+  - Radix UI Select는 빈 문자열 value 금지
+  - mount 시 React throw → ErrorBoundary 부재 → AdminPage 전체 crash
+  - 첫 admin test(heading) 통과 이유: `defaultValue="users"`라 AuditLog mount 안 됨
+- Fix: `value: ""` → `ALL_ROLES = "all"` sentinel + filterRole 초기값 + fetchLogs 비교 로직 동기화
+- 로컬 검증: admin.spec 10/10 PASS + typecheck OK
+- Push → CI run `25254980236` 3/3 SUCCESS → PR #40 mergeStateStatus CLEAN
+
+**Step 4 — daemon 자동 merge → Workers Deploy FAIL → Master hotfix (commit `603b415`)**:
+
+- Signal `STATUS=DONE` 마킹 → daemon squash merge `8cf704a` (main에 반영)
+- Deploy run `25255151050`:
+  - ✅ CI / Pages / svc-skill 일부
+  - ❌ **Deploy Workers Services**: `D1 Migrations (production)` job FAIL
+  - 원인: `0013_skills_status_check.sql` SQLite ALTER 우회 패턴(CREATE→INSERT→DROP→RENAME)이 child tables 3개(`skill_downloads`/`skill_evaluations`/`ai_ready_scores`) FK 참조로 차단 → `FOREIGN KEY constraint failed`
+- Master 진단:
+  - D1 PRAGMA `defer_foreign_keys` migration 안에서 effective 안 됨 (local sqlite3 + D1 동일)
+  - SQLite docs §7 "PRAGMA foreign_keys=OFF는 transaction 외부에서만 가능" 제약
+  - Production schema 직접 조회로 19-col 구조 + 3 FK 참조 테이블 확인
+- **TRIGGER 기반 CHECK 동등 enforcement 재작성**:
+  - `BEFORE INSERT ON skills WHEN NEW.status NOT IN (...) BEGIN RAISE(ABORT, ...) END`
+  - `BEFORE UPDATE OF status ON skills` 동일 패턴
+  - DROP/RENAME 없음 → FK 영향 0 → 데이터 손실 0 (production 3,983 row 그대로)
+  - 로컬 검증: 6 enum INSERT PASS / INVALID INSERT/UPDATE ABORT / FK 여전히 enforced
+
+**Step 5 — Workflow_dispatch 수동 트리거**:
+
+- main push 후 Deploy Workers Services 자동 트리거 안 됨 — `paths:` filter가 `services/**`/`packages/**`만 → `infra/migrations/**` hotfix는 path 미포함
+- `gh workflow run "Deploy Workers Services" -f environment=production -f services=svc-skill` → run `25255633600` SUCCESS
+
+**Step 6 — Production 검증**:
+
+- `skills_status_check_insert/update` triggers 존재 확인
+- `d1_migrations` 0013 row 적용 확인
+- LPON dry-run: `POST /api/skills/ai-ready/batch?dryRun=true` HTTP 200, `totalSkills=35` (Plan DoD 정확 일치, $0.81/3min)
+
+**SPEC.md 갱신**:
+
+- §6 Sprint 241: ✅ MERGED 마킹 + 결과 + 4단 개입 요약
+- §6 F403 + F413: `[x]` ✅ DONE 세션 254
+- §8 TD-53: ~~취소선~~ + ✅ 해소 마킹 (옵션 C+ 채택)
+- §8 TD-54 신규 등록 (P3, recon-x-api Gateway worker production deploy 반복 실패 — 본 hotfix 무관 별개 이슈)
+
+**잔여**:
+
+- recon-x-api Gateway worker deploy 1 job FAIL (TD-54 신규 등록, 별개 점검 필요)
+- Sprint 240 F412 운영 실행 (Sprint 242로 분리, 본 세션 X)
+- OpenRouter API key rotation 미수행 (보안 잔여 4건 중 1번)
+
+**신규 교훈 4건**:
+
+1. **autopilot spec-only fix 함정** — E2E "element(s) not found" 에러는 spec assertion보다 컴포넌트 crash가 root일 수 있음. autopilot 3회 표면 보정 vs Master 1회 root-cause 진단(error-context screenshot + pageerror capture). feedback 후보.
+2. **Radix UI Select empty value 금지** — Component-level invariant이지만 unit test 부재로 mount-time 에러 미탐지. ALL_X sentinel 패턴이 표준. feedback 후보.
+3. **D1 PRAGMA defer_foreign_keys 함정** — D1 migration transaction 안에서 PRAGMA foreign_keys/defer_foreign_keys가 effective 안 됨. SQLite ALTER 우회(DROP+RENAME) 패턴은 child FK 있는 테이블에 사용 금지 → **TRIGGER 기반 CHECK가 D1 production-safe 표준**. rules/development-workflow.md 추가 후보.
+4. **Deploy workflow path filter 함정** — `infra/migrations/**`은 deploy-services.yml `paths:` filter에 안 잡혀 auto-trigger 안 됨. Migration-only hotfix는 `gh workflow run` workflow_dispatch 수동 필수.
+
+**Autopilot Production Smoke Test 패턴 9회차 정확 재현** (S215/S219/S220/S228/S230/S232/S238/S243/**S254**) — autopilot이 자체 Match 보고 + production migration 사전 impact 무검증으로 main merge 후 deploy fail. Master 독립 실측 + WT pane 위임 표준 경로로 처리 → 1세션 내 종결.
+
+**커밋 (sprint/241 + main hotfix)**:
+
+1. `de0f8a3` (sprint/241) — feat(sprint-241): F413 lifecycle 표준화 + F403 Phase 9 E2E 보강 (autopilot)
+2. `b82e0ef` (sprint/241) — fix(e2e): CI E2E 2건 locator scope 보정 (F403, autopilot 1차)
+3. `d915049` (sprint/241) — fix(e2e): admin AuditLog tab assertion 안정화 (race 회피, autopilot 2차)
+4. `ed48a1a` (sprint/241) — fix(admin): AuditLog Select empty value crash 수정 (F403 root-cause, Master 직접)
+5. `8cf704a` (main, squash) — feat: Sprint 241 — F413 Skill lifecycle 표준화 + F403 Phase 9 E2E 보강 (#40)
+6. `603b415` (main, hotfix) — hotfix(db-skill): 0013 migration FK 위반 해소 — TRIGGER 기반 CHECK 재작성
+
+---
+
 ### 세션 253 (2026-05-02) — TD-49 ✅ 새 baseline (skill-packages SSOT) + TD-53 신규 발견 + F413 등록 (옵션 C 채택)
 
 **작업 흐름 (3 단계)**:

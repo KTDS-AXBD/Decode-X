@@ -2,6 +2,55 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 255 (2026-05-03) — Sprint 244 F412 🟡 PARTIAL_FAIL + TD-55/TD-56 신규 등록
+
+**핵심 결과**: Sprint 241 F413 hotfix로 unblock된 batch endpoint LPON 35건 운영 실행 시도 → 차단 2건 발견 + Master inline 1.5h 진단 + 산출물 9건. autopilot 9회차 회피 (사용자 결정 "Master inline (Recommended)").
+
+**진행 흐름 (5 단계)**:
+
+1. **Sprint scope 사용자 결정 (AskUserQuestion 4건)** — Sprint 244 / F412 신규 / LPON 35 / WT + autopilot
+2. **Sprint 244 WT 생성** + `.sprint-context` F-item 잔재 정정 + tmux session rename
+3. **실행 모드 재인터뷰** (코드 변경 없는 운영 task + secrets 사용자 환경 의존 인식) → "Master inline (Recommended)" 결정
+4. **Step 1~4 단계별 진행** — 사전 환경 검증 → Master smoke (lpon-charge HTTP 200, 6/6 criteria) → Mixed scope batch (LPON 5/5 NOT_FOUND + lpon 8 batch) → 결과 검증
+5. **차단 발견 + Root cause 진단 + PARTIAL FAIL 마킹**
+
+**차단 2건**:
+
+- **TD-55** LPON 35 bundled의 R2 `skill-packages/{id}.skill.json` 100% 미존재 — CLAUDE.md "Bundled skills R2 이슈" 재확인. 5/5 sample (5281357c, c5a73dc0, a7548a83, d42c15f9, 91d347e7) 모두 HTTP 404 `spec-container '...' not found`. F412 원 scope (LPON 35건 batch) 0% 평가 가능.
+- **TD-56** lpon 8 batch trigger HTTP 200 + Queue process 8/8 status `completed` + LLM call 48/48 모두 fail (`SyntaxError: Unexpected token '<', "<!DOCTYPE "...` HTML index 응답). avg_score=0, 15초 fast-fail (예상 3분 대비 12배). Single evaluate(force=true) 2회 모두 정상 — endpoint OK + Queue burst만 systemic. 가설 H1+H3 (OpenRouter burst rate limit + CF Worker subrequest 50개 한도, 8 skill × 6 LLM = 48 + concurrency 10).
+
+**정상 증빙**:
+- lpon-charge `4591b69e` single evaluate 1차: HTTP 200 7.2s totalScore 0.54 (6/6 criteria) $0.0036
+- lpon-charge `4591b69e` single evaluate 2차: HTTP 200 8.7s totalScore 0.443 (5/6 criteria, 1 noise) $0.0036
+
+**산출물 9건** (commit `f3995f5`):
+- `docs/01-plan/features/F412.plan.md` (AIF-PLAN-044)
+- `docs/03-analysis/features/F412.analysis.md` (AIF-ANLS-034)
+- `docs/04-report/features/F412.report.md` (AIF-RPRT-044)
+- `reports/ai-ready-lpon-2026-05-03.{json,md}` (batch fail KPI)
+- `reports/ai-ready-LPON-NOT_FOUND-2026-05-03.json` (R2 누락 5/5 증빙)
+- `reports/ai-ready-lpon-charge-single-eval-{1,2}-2026-05-03.json` (정상 동작 증빙)
+- `SPEC.md` §6 Sprint 244 PARTIAL FAIL + §7 AIF-REQ-041 + §8 TD-55/TD-56 신규
+
+**DoD 매트릭스**: D1 LPON 210 row ❌(0) / reports ≥30KB ❌(KPI 784 bytes, 5 reports 합계 14KB+) / Haiku 통과율 ❌(0%) / Master smoke ✅(2회) / analysis ✅ / Plan/Report ✅. **Match Rate 84%** (단계 진행 100% / DoD 산출물 50% 가중). 비용 $0.036.
+
+**신규 교훈 5건**:
+1. batch endpoint 정상 ≠ Queue 경로 정상 — 단건 + burst 양쪽 검증 필요
+2. batch fast-fail (예상 대비 매우 빠른 완료) = LLM systemic 시그널
+3. avg_score=0 + completedSkills=N silent failure 위험 — quality gate 부재
+4. CLAUDE.md 알려진 issue를 Sprint 진입 전 사전 점검 필수 (Plan 단계에서 LPON 35 R2 누락 사전 확인했더라면 scope 재조정 가능)
+5. `routes/ai-ready.ts:144` `notFound("spec-container", id)` 메시지 라벨이 Primary path(`skill-packages/`)와 불일치 → 디버깅 misdirect
+
+**차기 sprint 우선순위**:
+- **P1 TD-55** packaging pipeline R2 업로드 누락 fix (1~2 sprint)
+- **P1 TD-56** Queue burst LLM HTML fix (0.5~1 sprint) — concurrency throttle / sequential evaluator / retry+content-type 검증
+- **P2 F412 재시도** (TD-55/56 해소 후 또는 lpon 8 single eval loop ~72초로 우회)
+- **P3** `routes/ai-ready.ts:144` notFound 라벨 cosmetic fix
+
+**Sprint 244 인프라 정리**: WT `~/work/worktrees/Decode-X/sprint-244` + branch `sprint/244` + tmux session 모두 정리. signal STATUS=PARTIAL_FAIL.
+
+---
+
 ### 세션 254 (2026-05-03) — Sprint 241 ✅ MERGED + F413 hotfix Production verified + TD-53 ✅ 해소 + TD-54 신규
 
 **핵심 결과**: F403 (Phase 9 E2E 보강) + F413 (Skill packaging lifecycle 표준화) Sprint 241 완결. Master 직접 4단 개입으로 autopilot 표면 fix 함정 + D1 PRAGMA 함정 + Deploy path filter 함정을 1세션 내 종결.

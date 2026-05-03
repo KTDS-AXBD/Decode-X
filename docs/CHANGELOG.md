@@ -2,6 +2,39 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 260 (2026-05-04) — TD-60 + TD-57 + TD-56 3종 ✅ 해소 (Master inline 2.5h)
+
+**핵심 결과**: AI-Ready evaluator 운영 quality + batch endpoint 정상화. autopilot 회피 7회 연속.
+
+**1. TD-60 ✅ passThreshold 0.75 → 0.6 인하** (commit `8012b11`):
+- Haiku LLM은 점수를 prompts.ts rubric tier 중간값(~0.42 / 0.62 / 0.82 / 0.95)으로 discrete bin 출력 → 0.75 threshold가 0.62 cluster 통째 cliff cut 했음을 시뮬레이션으로 확인
+- 0.6 threshold가 자연스러운 분리 경계 (LPON 35건 overallPassed 0/35 → 20/35 +57.1pp, io_structure 0%→60%, exception_handling 0%→71.4%, testability 0%→74.3%)
+- 코드 5건 변경 (types/svc-skill evaluator/routes + tests 5종) + reports 2건 + typecheck/lint/test 14 packages PASS
+- D1 ai_ready_scores 기존 row pass_threshold=0.75 보존 (감사 추적성, 신규 평가만 0.6 적용)
+
+**2. TD-57 ✅ Root cause 확정 + Fix 적용** (commits `c342de8` + `ea1028a`):
+- Root cause: `svc-skill` (default env) ↔ `svc-skill-production` (`--env production`) 워커가 별개 secret store 운용. Queue consumer 가 `[env.production.queues.consumers]` 선언 때문에 svc-skill-production 에서만 실행. 3종 secret 미동기 (특히 `CLOUDFLARE_AI_GATEWAY_URL` stale base path) → consumer LLM 100% HTML 응답 → F414 retry+content-type guard 정상 동작했으나 3회 재시도 모두 HTML → score=0 silent failure
+- 진단 lpon 8 batch (`170ed5de`) avgScore=0 + D1 raw rationale `"LLM returned HTML response after 3 attempts"` 캡처. 같은 INTERNAL_API_SECRET 으로 양 worker single eval 호출 시 default 통과 / production 거부 → secret divergence 1차 검증
+- Fix: 3종 secret을 `--env production`에 put (CLOUDFLARE_AI_GATEWAY_URL = full chat-completions path + INTERNAL + OPENROUTER, 코드 변경 0건)
+- 검증 lpon 8 batch (`28124e59`) **avgScore 0.674** + D1 0.42~0.95 분포 + 한국어 정상 rationale + TD-60 0.6 threshold 적용 확인
+
+**3. TD-56 ✅ 자연 해소**: F414 코드 fix는 처음부터 정상 동작했고 underlying URL 문제(TD-57)로 효과 미발현이었음을 사후 입증.
+
+**산출물**:
+- `docs/03-analysis/AIF-ANLS-041_td-57-batch-secret-divergence.md` (진단 1.5h + Fix 0.5h 전체 기록)
+- `reports/ai-ready-threshold-0.6-reaggregation-2026-05-04.{json,md}` (LPON 35 / lpon 8 retrospective)
+- 신규 feedback memory: `feedback_worker_secret_store_divergence.md`
+
+**Production cost**: $0.0576 (lpon 8 batch × 2)
+
+**다음 세션 우선**:
+1. OpenRouter key rotation (보안 skip 누적 4회, 양 worker 동기 필수)
+2. CLAUDE.md "Inter-Service Communication" 갱신 (worker secret store env-scoped 분리 명시)
+3. `scripts/secret-sync-svc-skill.sh` 자동화 후보
+4. TD-54 recon-x-api / TD-59 large skill chunking (P3)
+
+---
+
 ### 세션 259 (2026-05-04) — F418 Sprint 249 🟡 PARTIAL_FAIL + TD-58 ✅ 해소 + AIF-REQ-043 등록·종결
 
 **핵심 결과**: Master inline 직접 (autopilot 회피 6회 연속). TD-58 PolicyCandidateSchema exception 필드 정식화 — **구조적 정공 100% 완결 + 정량 DoD PARTIAL FAIL**. 4-Layer 결함 chain(prompt → schema 2종 → spec-content-adapter 매핑 → INSERT/forward) 모두 정공. 43건 R2 augmented bundle backfill SUCCESS. AI-Ready 재평가 결과는 F417 baseline과 거의 동일(Δ -0.010) — 본 backfill은 F417 augmented bundle의 source.excerpt를 → policy.exception로 텍스트 복사이므로 evaluator 입력 불변. **Schema 정공의 진짜 가치는 신규 inference에서 발현**.

@@ -43,7 +43,7 @@ describe("AIReadyScoreSchema", () => {
     criterion: "source_consistency" as const,
     score: 0.85,
     rationale: VALID_RATIONALE,
-    passThreshold: 0.75 as const,
+    passThreshold: 0.6 as const,
     passed: true,
   };
 
@@ -52,11 +52,11 @@ describe("AIReadyScoreSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("passThreshold 기본값 0.75 자동 설정", () => {
+  it("passThreshold 기본값 0.6 자동 설정", () => {
     const { passThreshold: _, ...without } = valid;
     const result = AIReadyScoreSchema.safeParse(without);
     expect(result.success).toBe(true);
-    if (result.success) expect(result.data.passThreshold).toBe(0.75);
+    if (result.success) expect(result.data.passThreshold).toBe(0.6);
   });
 
   it("score 범위 초과 거부 (> 1)", () => {
@@ -80,7 +80,7 @@ describe("AIReadyEvaluationSchema", () => {
       criterion,
       score: 0.8,
       rationale: VALID_RATIONALE,
-      passThreshold: 0.75,
+      passThreshold: 0.6,
       passed: true,
     };
   }

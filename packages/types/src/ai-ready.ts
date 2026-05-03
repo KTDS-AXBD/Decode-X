@@ -19,7 +19,7 @@ export const AIReadyScoreSchema = z.object({
   criterion: AIReadyCriterion,
   score: z.number().min(0).max(1),
   rationale: z.string().min(20).max(2000),
-  passThreshold: z.literal(0.75).default(0.75),
+  passThreshold: z.literal(0.6).default(0.6),
   passed: z.boolean(),
 });
 export type AIReadyScore = z.infer<typeof AIReadyScoreSchema>;

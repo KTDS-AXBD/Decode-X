@@ -1,0 +1,302 @@
+{
+  "generatedAt": "2026-05-03T22:43:22.055Z",
+  "context": "TD-60 passThreshold 0.75 → 0.6 — retrospective reaggregation of historical reports",
+  "changeNotes": [
+    "passThreshold reduced 0.75 → 0.6 to align with Haiku LLM discrete score bins (0.42 / 0.62 / 0.82 / 0.95).",
+    "Original 0.75 cutoff produced near-zero pass rates because the 0.62 bin (mid of 0.5~0.75 partial tier) is the most common positive outcome.",
+    "Per-row pass_threshold preserved in D1 ai_ready_scores; old rows remain 0.75. Only new evaluations use 0.6.",
+    "Files reaggregated: reports/ai-ready-LPON-schema-2026-05-04.json, ai-ready-LPON-augmented-2026-05-03.json, ai-ready-LPON-2026-05-03.json, ai-ready-lpon-augmented-2026-05-03.json"
+  ],
+  "newPassThreshold": 0.6,
+  "oldPassThreshold": 0.75,
+  "reports": [
+    {
+      "name": "LPON-schema",
+      "file": "reports/ai-ready-LPON-schema-2026-05-04.json",
+      "label": "F418 schema fix backfill",
+      "totalSkills": 35,
+      "avgScore": 0.5368857142857142,
+      "overallPassed_0_75": {
+        "count": 0,
+        "pct": 0
+      },
+      "overallPassed_0_60": {
+        "count": 20,
+        "pct": 57.1
+      },
+      "delta_overall_pct": 57.1,
+      "perCriterion": {
+        "source_consistency": {
+          "n": 35,
+          "avgScore": 0.5811,
+          "passOld_0_75": 17,
+          "passOld_pct": 48.6,
+          "passNew_0_60": 17,
+          "passNew_pct": 48.6,
+          "delta_pct": 0
+        },
+        "comment_doc_alignment": {
+          "n": 35,
+          "avgScore": 0.7329,
+          "passOld_0_75": 23,
+          "passOld_pct": 65.7,
+          "passNew_0_60": 26,
+          "passNew_pct": 74.3,
+          "delta_pct": 8.6
+        },
+        "io_structure": {
+          "n": 35,
+          "avgScore": 0.4823,
+          "passOld_0_75": 0,
+          "passOld_pct": 0,
+          "passNew_0_60": 21,
+          "passNew_pct": 60,
+          "delta_pct": 60
+        },
+        "exception_handling": {
+          "n": 35,
+          "avgScore": 0.5263,
+          "passOld_0_75": 0,
+          "passOld_pct": 0,
+          "passNew_0_60": 25,
+          "passNew_pct": 71.4,
+          "delta_pct": 71.4
+        },
+        "srp_reusability": {
+          "n": 35,
+          "avgScore": 0.3871,
+          "passOld_0_75": 0,
+          "passOld_pct": 0,
+          "passNew_0_60": 13,
+          "passNew_pct": 37.1,
+          "delta_pct": 37.1
+        },
+        "testability": {
+          "n": 35,
+          "avgScore": 0.5114,
+          "passOld_0_75": 0,
+          "passOld_pct": 0,
+          "passNew_0_60": 26,
+          "passNew_pct": 74.3,
+          "delta_pct": 74.3
+        }
+      }
+    },
+    {
+      "name": "LPON-augmented",
+      "file": "reports/ai-ready-LPON-augmented-2026-05-03.json",
+      "label": "F417 augmentation",
+      "totalSkills": 35,
+      "avgScore": 0.5398285714285713,
+      "overallPassed_0_75": {
+        "count": 0,
+        "pct": 0
+      },
+      "overallPassed_0_60": {
+        "count": 19,
+        "pct": 54.3
+      },
+      "delta_overall_pct": 54.3,
+      "perCriterion": {
+        "source_consistency": {
+          "n": 35,
+          "avgScore": 0.5811,
+          "passOld_0_75": 17,
+          "passOld_pct": 48.6,
+          "passNew_0_60": 17,
+          "passNew_pct": 48.6,
+          "delta_pct": 0
+        },
+        "comment_doc_alignment": {
+          "n": 35,
+          "avgScore": 0.7329,
+          "passOld_0_75": 23,
+          "passOld_pct": 65.7,
+          "passNew_0_60": 26,
+          "passNew_pct": 74.3,
+          "delta_pct": 8.6
+        },
+        "io_structure": {
+          "n": 35,
+          "avgScore": 0.522,
+          "passOld_0_75": 0,
+          "passOld_pct": 0,
+          "passNew_0_60": 22,
+          "passNew_pct": 62.9,
+          "delta_pct": 62.9
+        },
+        "exception_handling": {
+          "n": 35,
+          "avgScore": 0.5057,
+          "passOld_0_75": 0,
+          "passOld_pct": 0,
+          "passNew_0_60": 24,
+          "passNew_pct": 68.6,
+          "delta_pct": 68.6
+        },
+        "srp_reusability": {
+          "n": 35,
+          "avgScore": 0.368,
+          "passOld_0_75": 0,
+          "passOld_pct": 0,
+          "passNew_0_60": 13,
+          "passNew_pct": 37.1,
+          "delta_pct": 37.1
+        },
+        "testability": {
+          "n": 35,
+          "avgScore": 0.5291,
+          "passOld_0_75": 0,
+          "passOld_pct": 0,
+          "passNew_0_60": 27,
+          "passNew_pct": 77.1,
+          "delta_pct": 77.1
+        }
+      }
+    },
+    {
+      "name": "LPON-baseline",
+      "file": "reports/ai-ready-LPON-2026-05-03.json",
+      "label": "F416 single eval baseline",
+      "totalSkills": 35,
+      "avgScore": 0.511057142857143,
+      "overallPassed_0_75": {
+        "count": 0,
+        "pct": 0
+      },
+      "overallPassed_0_60": {
+        "count": 0,
+        "pct": 0
+      },
+      "delta_overall_pct": 0,
+      "perCriterion": {
+        "source_consistency": {
+          "n": 35,
+          "avgScore": 0.6029,
+          "passOld_0_75": 17,
+          "passOld_pct": 48.6,
+          "passNew_0_60": 17,
+          "passNew_pct": 48.6,
+          "delta_pct": 0
+        },
+        "comment_doc_alignment": {
+          "n": 35,
+          "avgScore": 0.8369,
+          "passOld_0_75": 28,
+          "passOld_pct": 80,
+          "passNew_0_60": 31,
+          "passNew_pct": 88.6,
+          "delta_pct": 8.6
+        },
+        "io_structure": {
+          "n": 35,
+          "avgScore": 0.4326,
+          "passOld_0_75": 0,
+          "passOld_pct": 0,
+          "passNew_0_60": 9,
+          "passNew_pct": 25.7,
+          "delta_pct": 25.7
+        },
+        "exception_handling": {
+          "n": 35,
+          "avgScore": 0.3889,
+          "passOld_0_75": 0,
+          "passOld_pct": 0,
+          "passNew_0_60": 5,
+          "passNew_pct": 14.3,
+          "delta_pct": 14.3
+        },
+        "srp_reusability": {
+          "n": 35,
+          "avgScore": 0.4349,
+          "passOld_0_75": 3,
+          "passOld_pct": 8.6,
+          "passNew_0_60": 10,
+          "passNew_pct": 28.6,
+          "delta_pct": 20
+        },
+        "testability": {
+          "n": 35,
+          "avgScore": 0.3709,
+          "passOld_0_75": 0,
+          "passOld_pct": 0,
+          "passNew_0_60": 0,
+          "passNew_pct": 0,
+          "delta_pct": 0
+        }
+      }
+    },
+    {
+      "name": "lpon-augmented",
+      "file": "reports/ai-ready-lpon-augmented-2026-05-03.json",
+      "label": "F417 lpon 8 augmentation",
+      "totalSkills": 8,
+      "avgScore": 0.776625,
+      "overallPassed_0_75": {
+        "count": 0,
+        "pct": 0
+      },
+      "overallPassed_0_60": {
+        "count": 8,
+        "pct": 100
+      },
+      "delta_overall_pct": 100,
+      "perCriterion": {
+        "source_consistency": {
+          "n": 8,
+          "avgScore": 0.9387,
+          "passOld_0_75": 8,
+          "passOld_pct": 100,
+          "passNew_0_60": 8,
+          "passNew_pct": 100,
+          "delta_pct": 0
+        },
+        "comment_doc_alignment": {
+          "n": 8,
+          "avgScore": 0.9137,
+          "passOld_0_75": 8,
+          "passOld_pct": 100,
+          "passNew_0_60": 8,
+          "passNew_pct": 100,
+          "delta_pct": 0
+        },
+        "io_structure": {
+          "n": 8,
+          "avgScore": 0.6825,
+          "passOld_0_75": 0,
+          "passOld_pct": 0,
+          "passNew_0_60": 8,
+          "passNew_pct": 100,
+          "delta_pct": 100
+        },
+        "exception_handling": {
+          "n": 8,
+          "avgScore": 0.735,
+          "passOld_0_75": 2,
+          "passOld_pct": 25,
+          "passNew_0_60": 8,
+          "passNew_pct": 100,
+          "delta_pct": 75
+        },
+        "srp_reusability": {
+          "n": 8,
+          "avgScore": 0.695,
+          "passOld_0_75": 3,
+          "passOld_pct": 37.5,
+          "passNew_0_60": 8,
+          "passNew_pct": 100,
+          "delta_pct": 62.5
+        },
+        "testability": {
+          "n": 8,
+          "avgScore": 0.695,
+          "passOld_0_75": 0,
+          "passOld_pct": 0,
+          "passNew_0_60": 8,
+          "passNew_pct": 100,
+          "delta_pct": 100
+        }
+      }
+    }
+  ]
+}

@@ -72,7 +72,7 @@ describe("runSixCriteriaEvaluation", () => {
     expect(result.totalScore).toBeLessThanOrEqual(1);
   });
 
-  it("calculates passCount correctly (score 0.85 > 0.75 threshold)", async () => {
+  it("calculates passCount correctly (score 0.85 > 0.6 threshold)", async () => {
     const env = mockEnv() as Env;
     const specContent = {
       rules: ["r"], originalRules: ["r"], emptySlotRules: [],

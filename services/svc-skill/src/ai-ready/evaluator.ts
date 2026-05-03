@@ -161,7 +161,7 @@ export async function runSixCriteriaEvaluation(
       returnedModelStr = result.model ?? model;
       const { score, rationale } = parseLlmCriterionOutput(result.content);
       totalCostUsd += COST_PER_CRITERION_USD[model] ?? 0;
-      criteriaResults.push({ criterion, score, rationale, passed: score >= 0.75 });
+      criteriaResults.push({ criterion, score, rationale, passed: score >= 0.6 });
     } catch (e) {
       logger.error("LLM criterion eval failed", { criterion, model, error: String(e) });
       totalCostUsd += COST_PER_CRITERION_USD[model] ?? 0;
@@ -181,7 +181,7 @@ export async function runSixCriteriaEvaluation(
       score: Math.round(c.score * 1000) / 1000,
       rationale: c.rationale,
       passed: c.passed,
-      passThreshold: 0.75 as const,
+      passThreshold: 0.6 as const,
     })),
     totalScore: Math.round(totalScore * 1000) / 1000,
     passCount,

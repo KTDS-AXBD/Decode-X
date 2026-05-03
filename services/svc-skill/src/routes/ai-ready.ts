@@ -121,7 +121,7 @@ export async function handleAiReadyEvaluateSingle(
           score: r.score,
           rationale: r.rationale,
           passed: r.passed === 1,
-          passThreshold: 0.75 as const,
+          passThreshold: 0.6 as const,
         })),
         totalScore: cached.reduce((s, r) => s + r.score, 0) / cached.length,
         passCount: cached.filter((r) => r.passed === 1).length,

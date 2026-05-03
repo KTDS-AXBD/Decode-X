@@ -54,6 +54,7 @@ export type AIReadyModel = z.infer<typeof AIReadyModelSchema>;
 export const AIReadySingleEvalRequestSchema = z.object({
   model: AIReadyModelSchema,
   force: z.boolean().default(false),
+  r2KeyOverride: z.string().optional(),
 });
 export type AIReadySingleEvalRequest = z.infer<typeof AIReadySingleEvalRequestSchema>;
 

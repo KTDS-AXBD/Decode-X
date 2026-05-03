@@ -30,8 +30,12 @@ export function skillPackageToSpecContent(
       .join("\n"),
   );
 
-  const tests = pkg.policies.map((p) =>
-    [
+  const tests = pkg.policies.map((p) => {
+    // F417: augmented bundles embed concrete test scenarios in description field
+    if (p.description?.startsWith("---TEST_SCENARIOS---")) {
+      return `skill: ${skillName}\npolicy: ${p.code}\n${p.description}`;
+    }
+    return [
       `skill: ${skillName}`,
       `policy: ${p.code}`,
       `scenario: ${p.title}`,
@@ -42,8 +46,8 @@ export function skillPackageToSpecContent(
       "then:",
       `  outcome: "${p.outcome}"`,
       `  trust: "${p.trust.level}"`,
-    ].join("\n"),
-  );
+    ].join("\n");
+  });
 
   const contractYaml = buildContractYaml(pkg, skillName);
   const provenanceYaml = buildProvenanceYaml(pkg, skillName);

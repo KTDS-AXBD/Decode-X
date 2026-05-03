@@ -87,7 +87,7 @@ export async function handleAiReadyEvaluateSingle(
   if (!parsed.success) {
     return badRequest("Invalid request", parsed.error.flatten());
   }
-  const { model, force } = parsed.data;
+  const { model, force, r2KeyOverride } = parsed.data;
 
   // Check skill exists and get r2_key (bundled skills have "bundle-" prefix in r2_key)
   const skillRow = await env.DB_SKILL.prepare(
@@ -139,7 +139,7 @@ export async function handleAiReadyEvaluateSingle(
   if (costBlock) return costBlock;
 
   try {
-    const loaded = await loadSpecContent(env, skillId, organizationId, skillRow["r2_key"]);
+    const loaded = await loadSpecContent(env, skillId, organizationId, r2KeyOverride ?? skillRow["r2_key"]);
     if (!loaded) {
       return notFound("skill-r2", skillId);
     }

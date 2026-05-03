@@ -14,6 +14,12 @@
  *   ORG_ID                — Organization filter (default: all orgs)
  */
 
+import { dirname, resolve } from "path";
+import { fileURLToPath } from "url";
+
+const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
+const SVC_SKILL_DIR = resolve(SCRIPT_DIR, "../services/svc-skill");
+
 const CF_TOKEN = process.env["CLOUDFLARE_API_TOKEN"] ?? "";
 const CF_ACCOUNT = process.env["CLOUDFLARE_ACCOUNT_ID"] ?? "";
 const ORG_FILTER = process.env["ORG_ID"] ?? "";
@@ -183,7 +189,7 @@ async function uploadToR2(r2Key: string, content: string): Promise<boolean> {
       "--remote",
     ],
     {
-      cwd: "/home/sinclair/work/axbd/res-ai-foundry/services/svc-skill",
+      cwd: SVC_SKILL_DIR,
       env: { ...process.env, CLOUDFLARE_API_TOKEN: CF_TOKEN, CLOUDFLARE_ACCOUNT_ID: CF_ACCOUNT },
       stdout: "pipe",
       stderr: "pipe",

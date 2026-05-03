@@ -89,12 +89,12 @@ export async function handleAiReadyEvaluateSingle(
   }
   const { model, force } = parsed.data;
 
-  // Check skill exists
+  // Check skill exists and get r2_key (bundled skills have "bundle-" prefix in r2_key)
   const skillRow = await env.DB_SKILL.prepare(
-    "SELECT skill_id FROM skills WHERE skill_id = ? AND organization_id = ?",
+    "SELECT skill_id, r2_key FROM skills WHERE skill_id = ? AND organization_id = ?",
   )
     .bind(skillId, organizationId)
-    .first<{ skill_id: string }>();
+    .first<{ skill_id: string; r2_key: string }>();
   if (!skillRow) {
     return notFound("skill", skillId);
   }
@@ -139,9 +139,9 @@ export async function handleAiReadyEvaluateSingle(
   if (costBlock) return costBlock;
 
   try {
-    const loaded = await loadSpecContent(env, skillId, organizationId);
+    const loaded = await loadSpecContent(env, skillId, organizationId, skillRow["r2_key"]);
     if (!loaded) {
-      return notFound("spec-container", skillId);
+      return notFound("skill-r2", skillId);
     }
 
     const evaluation = await runSixCriteriaEvaluation(env, loaded.specContent, loaded.skillName, model);

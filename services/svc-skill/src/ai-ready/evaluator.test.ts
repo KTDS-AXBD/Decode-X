@@ -199,7 +199,7 @@ describe("loadSpecContent", () => {
     expect(result).toBeNull();
   });
 
-  it("parses skill-packages/{id}.skill.json and returns SpecContent", async () => {
+  it("parses skill-packages/{id}.skill.json and returns SpecContent (default path)", async () => {
     const env = {
       R2_SKILL_PACKAGES: {
         get: vi.fn().mockImplementation((key: string) => {
@@ -220,6 +220,49 @@ describe("loadSpecContent", () => {
     expect(result?.skillName).toBe("lpon-charge");
     expect(result?.specContent.originalRules).toHaveLength(1);
     expect(result?.specContent.runbooks).toHaveLength(1);
+  });
+
+  it("uses explicit r2Key when provided — bundled skill with bundle- prefix (TD-55 fix)", async () => {
+    const bundledKey = "skill-packages/bundle-4591b69e-4e6a-4ac8-8261-ce177c35f994.skill.json";
+    const getMock = vi.fn().mockImplementation((key: string) => {
+      if (key === bundledKey) {
+        return Promise.resolve({ text: () => Promise.resolve(JSON.stringify(validSkillPackage)) });
+      }
+      return Promise.resolve(null);
+    });
+    const env = { R2_SKILL_PACKAGES: { get: getMock } } as unknown as Env;
+
+    const result = await loadSpecContent(
+      env,
+      "4591b69e-4e6a-4ac8-8261-ce177c35f994",
+      "LPON",
+      bundledKey,
+    );
+
+    expect(getMock).toHaveBeenCalledWith(bundledKey);
+    expect(result).not.toBeNull();
+    expect(result?.skillName).toBe("lpon-charge");
+  });
+
+  it("falls back to default path when r2Key is undefined", async () => {
+    const defaultKey = "skill-packages/4591b69e-4e6a-4ac8-8261-ce177c35f994.skill.json";
+    const getMock = vi.fn().mockImplementation((key: string) => {
+      if (key === defaultKey) {
+        return Promise.resolve({ text: () => Promise.resolve(JSON.stringify(validSkillPackage)) });
+      }
+      return Promise.resolve(null);
+    });
+    const env = { R2_SKILL_PACKAGES: { get: getMock } } as unknown as Env;
+
+    const result = await loadSpecContent(
+      env,
+      "4591b69e-4e6a-4ac8-8261-ce177c35f994",
+      "LPON",
+      undefined,
+    );
+
+    expect(getMock).toHaveBeenCalledWith(defaultKey);
+    expect(result).not.toBeNull();
   });
 });
 

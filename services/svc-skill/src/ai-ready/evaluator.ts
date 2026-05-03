@@ -53,16 +53,17 @@ async function loadTextFromR2(env: Env, key: string): Promise<string> {
   return obj.text();
 }
 
-// Primary path — reads skill-packages/{skillId}.skill.json (production R2 레이아웃)
+// Primary path — reads from R2 using r2Key from D1 (bundled skills have "bundle-" prefix)
 export async function loadSpecContent(
   env: Env,
   skillId: string,
   _organizationId: string,
+  r2Key?: string,
 ): Promise<{ specContent: SpecContent; skillName: string } | null> {
-  const r2Key = `skill-packages/${skillId}.skill.json`;
-  const obj = await env.R2_SKILL_PACKAGES.get(r2Key);
+  const key = r2Key ?? `skill-packages/${skillId}.skill.json`;
+  const obj = await env.R2_SKILL_PACKAGES.get(key);
   if (!obj) {
-    logger.warn("skill package not found in R2", { skillId, r2Key });
+    logger.warn("skill package not found in R2", { skillId, r2Key: key });
     return null;
   }
 

@@ -83,6 +83,8 @@ export async function callLlmRouter(
 /**
  * Call OpenRouter chat-completions via Cloudflare AI Gateway. Returns content + model metadata.
  */
+const LLM_MAX_RETRIES = 2;
+
 export async function callLlmRouterWithMeta(
   env: LlmClientEnv,
   callerService: string,
@@ -106,7 +108,7 @@ export async function callLlmRouterWithMeta(
   };
   if (options?.seed !== undefined) body["seed"] = options.seed;
 
-  const response = await fetch(env.CLOUDFLARE_AI_GATEWAY_URL, {
+  const fetchOpts: RequestInit = {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -115,24 +117,44 @@ export async function callLlmRouterWithMeta(
       "X-Title": `Decode-X/${callerService}`,
     },
     body: JSON.stringify(body),
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(`LLM Router (OpenRouter) error ${response.status}: ${text}`);
-  }
-
-  const json = (await response.json()) as OpenRouterChatResponse;
-  if (json.error) {
-    throw new Error(`LLM Router returned failure: ${json.error.message ?? "unknown"}`);
-  }
-
-  const content = json.choices?.[0]?.message?.content ?? "";
-  const returnedModel = json.model ?? model;
-
-  return {
-    content,
-    provider: "openrouter",
-    model: returnedModel,
   };
+
+  for (let attempt = 0; attempt <= LLM_MAX_RETRIES; attempt++) {
+    const response = await fetch(env.CLOUDFLARE_AI_GATEWAY_URL, fetchOpts);
+
+    // HTML guard: OpenRouter burst rate limit returns HTML error page instead of JSON
+    const contentType = response.headers?.get("content-type") ?? "";
+    if (contentType.includes("text/html")) {
+      if (attempt < LLM_MAX_RETRIES) {
+        await new Promise<void>((r) => setTimeout(r, 1000 * Math.pow(2, attempt)));
+        continue;
+      }
+      const preview = (await response.text()).slice(0, 200);
+      throw new Error(
+        `LLM returned HTML response after ${LLM_MAX_RETRIES + 1} attempts (burst rate limit?): ${preview}`,
+      );
+    }
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`LLM Router (OpenRouter) error ${response.status}: ${text}`);
+    }
+
+    const json = (await response.json()) as OpenRouterChatResponse;
+    if (json.error) {
+      throw new Error(`LLM Router returned failure: ${json.error.message ?? "unknown"}`);
+    }
+
+    const content = json.choices?.[0]?.message?.content ?? "";
+    const returnedModel = json.model ?? model;
+
+    return {
+      content,
+      provider: "openrouter",
+      model: returnedModel,
+    };
+  }
+
+  // TypeScript exhaustiveness — loop always returns or throws
+  throw new Error("LLM call failed: unexpected loop exit");
 }

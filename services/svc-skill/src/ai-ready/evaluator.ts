@@ -144,26 +144,30 @@ export async function runSixCriteriaEvaluation(
   let totalCostUsd = 0;
   let returnedModelStr = model as string;
 
-  const criteriaResults = await Promise.all(
-    ALL_AI_READY_CRITERIA.map(async (criterion: AIReadyCriterion) => {
-      const prompt = buildPrompt(criterion, { specContent, skillName });
-      try {
-        const result = await callLlmRouterWithMeta(env, "svc-skill:ai-ready", tier, prompt, {
-          system,
-          maxTokens: 512,
-          temperature: 0.1,
-        });
-        returnedModelStr = result.model ?? model;
-        const { score, rationale } = parseLlmCriterionOutput(result.content);
-        totalCostUsd += COST_PER_CRITERION_USD[model] ?? 0;
-        return { criterion, score, rationale, passed: score >= 0.75 };
-      } catch (e) {
-        logger.error("LLM criterion eval failed", { criterion, model, error: String(e) });
-        totalCostUsd += COST_PER_CRITERION_USD[model] ?? 0;
-        return { criterion, score: 0, rationale: `Evaluation failed: ${String(e)}`, passed: false };
-      }
-    }),
-  );
+  const criteriaResults: Array<{
+    criterion: AIReadyCriterion;
+    score: number;
+    rationale: string;
+    passed: boolean;
+  }> = [];
+  for (const criterion of ALL_AI_READY_CRITERIA) {
+    const prompt = buildPrompt(criterion, { specContent, skillName });
+    try {
+      const result = await callLlmRouterWithMeta(env, "svc-skill:ai-ready", tier, prompt, {
+        system,
+        maxTokens: 512,
+        temperature: 0.1,
+      });
+      returnedModelStr = result.model ?? model;
+      const { score, rationale } = parseLlmCriterionOutput(result.content);
+      totalCostUsd += COST_PER_CRITERION_USD[model] ?? 0;
+      criteriaResults.push({ criterion, score, rationale, passed: score >= 0.75 });
+    } catch (e) {
+      logger.error("LLM criterion eval failed", { criterion, model, error: String(e) });
+      totalCostUsd += COST_PER_CRITERION_USD[model] ?? 0;
+      criteriaResults.push({ criterion, score: 0, rationale: `Evaluation failed: ${String(e)}`, passed: false });
+    }
+  }
 
   const totalScore =
     criteriaResults.reduce((sum, c) => sum + c.score, 0) / criteriaResults.length;

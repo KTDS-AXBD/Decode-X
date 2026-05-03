@@ -23,7 +23,8 @@ function makePackage(overrides: Partial<SkillPackage> = {}): SkillPackage {
         condition: "충전 요청 시 출금계좌 잔액 확인",
         criteria: "출금계좌 잔액 ≥ 충전 요청 금액",
         outcome: "출금 처리를 진행한다",
-        source: { documentId: "doc-001", excerpt: "잔액 부족 시 출금 실패 에러 반환" },
+        exception: "잔액 부족 시 출금 실패 에러 반환", // TD-58 / F418
+        source: { documentId: "doc-001", excerpt: "원문 발췌 (exception과 다른 필드)" },
         trust: { level: "reviewed", score: 0.9 },
         tags: [],
       },
@@ -33,6 +34,7 @@ function makePackage(overrides: Partial<SkillPackage> = {}): SkillPackage {
         condition: "출금이 정상적으로 완료된 경우",
         criteria: "출금 프로세스가 에러 없이 종료됨",
         outcome: "충전 완료 처리한다",
+        // exception 미지정 → "—" 렌더
         source: { documentId: "doc-001" },
         trust: { level: "reviewed", score: 0.85 },
         tags: ["charge", "complete"],
@@ -92,15 +94,17 @@ describe("skillPackageToSpecContent", () => {
     expect(specContent.tests[0]).toContain("then:");
   });
 
-  it("source.excerpt mapped to exception column, missing excerpt uses dash", () => {
+  it("policy.exception mapped to exception column, missing exception uses dash (TD-58 / F418)", () => {
     const pkg = makePackage();
     const { specContent } = skillPackageToSpecContent(pkg);
 
     const table = specContent.originalRules![0];
-    // policy 001 has excerpt → should appear in table
+    // policy 001 has exception → should appear in table
     expect(table).toContain("잔액 부족 시 출금 실패 에러 반환");
-    // policy 002 has no excerpt → should use "—"
+    // policy 002 has no exception → should use "—"
     expect(table).toContain("| — |");
+    // source.excerpt should NOT leak into exception column anymore
+    expect(table).not.toContain("원문 발췌 (exception과 다른 필드)");
   });
 
   it("skillName derived from domain and subdomain", () => {

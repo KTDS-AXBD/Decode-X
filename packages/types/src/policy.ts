@@ -18,6 +18,7 @@ export const PolicyCandidateSchema = z.object({
   condition: z.string(),
   criteria: z.string(),
   outcome: z.string(),
+  exception: z.string().optional(), // Else branch description (TD-58 / F418)
   policyCode: z.string(), // POL-{DOMAIN}-{TYPE}-{SEQ}
   sourcePageRef: z.string().optional(),
   sourceExcerpt: z.string().optional(),

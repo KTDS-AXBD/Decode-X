@@ -76,7 +76,7 @@ function buildRulesTable(pkg: SkillPackage): string {
   ];
 
   const rows = pkg.policies.map((p) => {
-    const exception = p.source.excerpt ?? "—";
+    const exception = p.exception ?? "—"; // TD-58 / F418: Else branch (was incorrectly p.source.excerpt)
     return `| ${p.code} | ${p.condition} | ${p.criteria} | ${p.outcome} | ${exception} |`;
   });
 

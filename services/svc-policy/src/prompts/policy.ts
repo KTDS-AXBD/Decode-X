@@ -90,17 +90,29 @@ Output requirements:
 1. Return ONLY a JSON array of policy objects — no markdown fences, no surrounding text.
 2. Each object must have these exact fields:
    - title (string): concise Korean title for the policy
-   - condition (string): triggering circumstance
-   - criteria (string): decision logic / thresholds
-   - outcome (string): resulting action
+   - condition (string): triggering circumstance (When)
+   - criteria (string): decision logic / thresholds (If)
+   - outcome (string): resulting action (Then)
+   - exception (string, optional): "Else" branch — what happens when the condition is NOT met OR the criteria fails. Examples: error responses, alternative paths, fallback policies, rejection reasons, validation failures. Use natural Korean. If no clear Else branch exists in the source, omit this field (do not output empty string).
    - policyCode (string): POL-${config.code}-{TYPE}-{SEQ}
    - sourcePageRef (string, optional): page or section reference in source document
    - sourceExcerpt (string, optional): verbatim excerpt from source supporting this policy
    - tags (string[]): relevant domain tags in Korean
 
-3. Infer implicit policies from process flows, not just explicit rules.
+Example with exception:
+{
+  "title": "주택 구입 중도인출",
+  "condition": "가입자가 무주택 세대주이고 본인 명의 주택 구입 자금이 필요한 경우",
+  "criteria": "최근 3개월 이내 주택 매매계약서 또는 분양계약서 제출",
+  "outcome": "가입금액의 100% 한도 내 1회 인출 승인",
+  "exception": "주택 매매계약서가 가족 명의이거나 6개월 이상 경과한 경우 인출 거절 + 사유 통보",
+  "policyCode": "POL-${config.code}-WD-001",
+  "tags": ["인출", "주택"]
+}
+
+3. Infer implicit policies from process flows, not just explicit rules. Infer Else/exception branches actively from source text — error handling sections, "단, ~한 경우" clauses, validation rules, rejection criteria.
 4. Deduplicate — do not emit near-identical policies.
-5. Use Korean for title, condition, criteria, outcome, and tags.
+5. Use Korean for title, condition, criteria, outcome, exception, and tags.
 
 CRITICAL RULES:
 - Your response must be ONLY a JSON array. No explanations, no markdown, no code fences.

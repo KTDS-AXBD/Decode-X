@@ -242,10 +242,10 @@ export async function processQueueEvent(
       await env.DB_POLICY.prepare(
         `INSERT INTO policies (
           policy_id, extraction_id, organization_id, policy_code, title,
-          condition, criteria, outcome, source_document_id,
+          condition, criteria, outcome, exception, source_document_id,
           source_page_ref, source_excerpt, status, trust_level, trust_score,
           tags, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'candidate', 'unreviewed', 0.0, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'candidate', 'unreviewed', 0.0, ?, ?, ?)`,
       )
         .bind(
           policyId,
@@ -256,6 +256,7 @@ export async function processQueueEvent(
           candidate.condition,
           candidate.criteria,
           candidate.outcome,
+          candidate.exception ?? null, // TD-58 / F418
           documentId,
           candidate.sourcePageRef ?? null,
           candidate.sourceExcerpt ?? null,

@@ -36,6 +36,7 @@ export const PolicySchema = z.object({
   condition: z.string().min(1),   // "IF" clause
   criteria: z.string().min(1),    // evaluation criteria
   outcome: z.string().min(1),     // "THEN" clause
+  exception: z.string().optional(), // "ELSE" branch (TD-58 / F418)
   source: z.object({
     documentId: z.string(),
     pageRef: z.string().optional(),

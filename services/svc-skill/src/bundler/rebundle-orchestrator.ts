@@ -39,6 +39,7 @@ interface PolicyRow {
   condition: string;
   criteria: string;
   outcome: string;
+  exception?: string | null; // TD-58 / F418: Else branch
   sourceDocumentId: string;
   trustLevel: string;
   trustScore: number;
@@ -96,7 +97,7 @@ async function fetchApprovedPolicies(
  * Convert PolicyRow to @ai-foundry/types Policy format.
  */
 function toPolicy(row: PolicyRow): Policy {
-  return {
+  const policy: Policy = {
     code: row.policyCode,
     title: row.title,
     condition: row.condition,
@@ -109,6 +110,10 @@ function toPolicy(row: PolicyRow): Policy {
     },
     tags: row.tags,
   };
+  if (row.exception != null && row.exception !== "") {
+    policy.exception = row.exception; // TD-58 / F418: forward Else branch (omit when null/empty per exactOptionalPropertyTypes)
+  }
+  return policy;
 }
 
 /**

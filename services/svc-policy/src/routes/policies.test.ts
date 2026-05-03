@@ -61,6 +61,7 @@ describe("formatPolicyRow", () => {
     condition: "가입 후 5년 경과",
     criteria: "잔액 50% 이내",
     outcome: "중도인출 허용",
+    exception: null,
     source_document_id: "doc-001",
     source_page_ref: "p.12",
     source_excerpt: "발췌문",

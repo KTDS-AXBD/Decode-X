@@ -1,0 +1,2083 @@
+{
+  "executedAt": "2026-05-04T09:22:54.763Z",
+  "organization": "LPON",
+  "model": "haiku",
+  "method": "single-eval-loop (F416 우회 — TD-56 batch burst 차단 회피)",
+  "totalSkills": 35,
+  "completedSkills": 35,
+  "failedSkills": 0,
+  "totalCostUsd": 0.12600000000000008,
+  "durationSeconds": 570.585,
+  "avgScore": 0.5063714285714287,
+  "overallPassedCount": 0,
+  "criteriaPassRates": {
+    "source_consistency": {
+      "passed": 17,
+      "total": 35,
+      "passRate": 0.4857142857142857,
+      "avgScore": 0.5965714285714285
+    },
+    "comment_doc_alignment": {
+      "passed": 32,
+      "total": 35,
+      "passRate": 0.9142857142857143,
+      "avgScore": 0.8317142857142862
+    },
+    "io_structure": {
+      "passed": 3,
+      "total": 35,
+      "passRate": 0.08571428571428572,
+      "avgScore": 0.4157142857142856
+    },
+    "exception_handling": {
+      "passed": 0,
+      "total": 35,
+      "passRate": 0,
+      "avgScore": 0.35399999999999987
+    },
+    "srp_reusability": {
+      "passed": 12,
+      "total": 35,
+      "passRate": 0.34285714285714286,
+      "avgScore": 0.4751428571428571
+    },
+    "testability": {
+      "passed": 1,
+      "total": 35,
+      "passRate": 0.02857142857142857,
+      "avgScore": 0.36571428571428555
+    }
+  },
+  "results": [
+    {
+      "skillId": "de4f9d4d-a50a-4aba-96f7-c4ebf449f7ab",
+      "result": {
+        "skillId": "de4f9d4d-a50a-4aba-96f7-c4ebf449f7ab",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.95,
+            "rationale": "provenance.businessRules의 두 규칙(POL-PENSION-CT-406, POL-PENSION-EN-146)이 Original Rules 표에 ID 문자 그대로 존재하며, condition-criteria-outcome이 완전히 일치한다. POL-PENSION-CT-406은 '자동충전 금액이 설정될 때' 조건에서 '설정 금액 및 조건별 금액 입력' 기준으로 '조건에 따라 자동충전 금액이 산정되어 적용됨' 결과를 도출하고, POL-PENSION-EN-146은 '사용자가 App을 통해 충전을 요청한 경우' 조건에서 '사용자ID, 충전금액, 출금계좌ID 유효성' 기준으로 '필수 정보 유효 시 출금 처리, 누락/무효 시 거부' 결과를 도출한다. 두 규칙 모두 exception 열이 '—'(예외 없음)으로 명시되어 완결성을 만족한다. Runbooks와 Test Scenarios도 원본 표의 내용과 정확히 매핑되어 있다. Empty Slot Rules가 없으나 이는 평가 기준이 아니다. 0.95 감점 사유: provenance의 sources 배열이 비어있어 출처 추적성이 부재한 점(0.05점).",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.95,
+            "rationale": "giftvoucher-charging 스킬의 2개 비즈니스 규칙(POL-PENSION-CT-406, POL-PENSION-EN-146)에 대해 대응하는 runbook이 모두 존재하며, 내용이 rule의 condition-criteria-outcome을 정확히 반영하고 있습니다. POL-PENSION-CT-406의 경우 '자동충전 금액이 설정될 때'라는 condition, '잔액 조건, 일자 조건 등 충전 조건별로 설정 금액(stngAmt) 및 조건별 금액(blceCondAmt, ymdCondAmt, condSmAmt)이 입력됨'이라는 criteria, '조건에 따라 자동충전 금액이 산정되어 적용됨'이라는 outcome이 runbook에서 동일하게 명시되어 있습니다. POL-PENSION-EN-146도 마찬가지로 '사용자가 App을 통해 충전을 요청한 경우'의 condition, '사용자ID, 충전금액, 출금계좌ID가 모두 유효하게 입력되어야 함'의 criteria, '필수 정보가 모두 유효한 경우에만 출금 처리를 진행하고, 누락 또는 무효 시 요청을 거부함'의 outcome이 정확히 일치합니다. 테스트 시나리오도 두 정책 모두 포함되어 있어 완전성이 높습니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.35,
+            "rationale": "giftvoucher-charging skill의 tests/contract 시나리오에서 입출력 구조 명확성이 심각하게 부족합니다. POL-PENSION-CT-406 시나리오의 given 필드는 '자동충전 금액이 설정될 때 조건 충족'으로 추상적이며, 구체적 값이나 타입(stngAmt, blceCondAmt, ymdCondAmt, condSmAmt의 데이터 타입, 범위, 형식)이 명시되지 않았습니다. then 필드의 '조건에 따라 자동충전 금액이 산정되어 적용됨'도 산정 결과의 구체적 형태, 반환 필드명, 데이터 구조를 정의하지 않습니다. POL-PENSION-EN-146 시나리오도 동일하게 given에서 '사용자ID, 충전금액, 출금계좌ID'의 타입과 유효성 기준이 불명확하며, then의 '출금 처리 진행' 또는 '요청 거부'가 boolean 수준의 추상화로 실제 응답 구조(상태코드, 에러메시지, 트랜잭션ID 등)를 파악할 수 없습니다. 계약 테스트로서 필요한 필드별 타입 정의와 의미 명확화가 전무합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.35,
+            "rationale": "giftvoucher-charging 스킬의 예외·에러 핸들링 정의가 심각하게 부족합니다. 원본 Rules 테이블에서 두 정책 모두 'exception (Else)' 열이 '—'로 표시되어 있어 예외 케이스가 명시되지 않았습니다. POL-PENSION-CT-406은 '조건에 따라 자동충전 금액이 산정'되는 happy path만 정의되고, 입력값 누락, 잘못된 금액 형식, 조건 불일치 등의 예외 처리가 없습니다. POL-PENSION-EN-146은 '누락 또는 무효 시 요청을 거부함'이라는 일반적 언급만 있을 뿐, 구체적인 error_code나 예외 상태가 정의되지 않았습니다. Test Scenarios에서도 happy path 시나리오만 존재하며, error_code를 포함한 예외 시나리오(예: INVALID_USER_ID, INSUFFICIENT_BALANCE, INVALID_ACCOUNT)가 전혀 커버되지 않았습니다. Empty Slot Rules도 없어 엣지 케이스 보완이 전무합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.85,
+            "rationale": "giftvoucher-charging 스킬의 두 가지 비즈니스 규칙(POL-PENSION-CT-406, POL-PENSION-EN-146)은 각각 단일 책임을 명확히 분리하고 있습니다. POL-PENSION-CT-406은 '자동충전 금액 조건별 설정'에만 집중하며, POL-PENSION-EN-146은 '충전 요청 시 필수 정보 검증'으로 명확히 구분됩니다. 두 규칙 간 중복 정의나 모순이 없으며, 각각 독립적으로 참조·적용 가능합니다. 다만, Empty Slot Rules가 완전히 비어있어 엣지 케이스(예: 부분 입력, 타임아웃, 중복 요청 등)에 대한 보완 규칙이 부재합니다. 또한 두 규칙 간의 실행 순서나 의존성(예: 검증 후 금액 산정)이 명시되지 않아 통합 시나리오에서의 조율 가능성이 제한적입니다. 규칙 자체의 SRP 준수는 우수하나, 전체 스펙 완성도 측면에서 개선 여지가 있습니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "testability",
+            "score": 0.35,
+            "rationale": "giftvoucher-charging 스킬의 테스트 시나리오는 심각한 자동화 테스트 적합성 결함을 보입니다. 첫째, 총 2개 시나리오만 존재하여 최소 요구사항을 간신히 충족합니다. 둘째, happy path만 다루며 edge case와 error case가 완전히 부재합니다. POL-PENSION-CT-406의 given '자동충전 금액이 설정될 때 조건 충족'은 추상적이며, 구체적 금액값(stngAmt, blceCondAmt 등)이 명시되지 않습니다. POL-PENSION-EN-146의 경우 '사용자ID, 충전금액, 출금계좌ID가 모두 유효하게 입력'이라는 criteria는 구체적이나, then의 '출금 처리를 진행'은 boolean 수준의 표현입니다. 누락된 필수 정보(null userId, invalid amount, missing accountId)나 경계값(0원, 음수, 최대금액 초과) 테스트 시나리오가 없으며, 실제 자동화 테스트 구현을 위한 예상값(expected output)이 구체적으로 정의되지 않았습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.633,
+        "passCount": 3,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:13:51.875Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 25943
+    },
+    {
+      "skillId": "2254ade2-43fa-403a-813a-f726e3797d61",
+      "result": {
+        "skillId": "2254ade2-43fa-403a-813a-f726e3797d61",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.95,
+            "rationale": "provenance.businessRules의 17개 BL(POL-PENSION-EX-006, EX-014, EX-022, RG-011, RG-020, WD-004, WD-005, WD-007, WD-008, MG-423, MG-424, MG-416, MG-417, MG-225, MG-227, MG-230, MG-231)이 모두 originalRules 표에 ID 문자열 일치로 존재한다. 각 BL의 condition-criteria-outcome이 완전히 매핑되며, 모든 exception 열이 '—'(예외 없음)으로 명시되어 있다. runbooks와 test scenarios도 모든 BL을 포함하며 내용이 일치한다. Empty Slot Rules가 없으므로 참조 검증 불필요. 유일한 감점 사유는 provenance의 sources 배열이 비어있어 출처 추적성이 부재한 점이나, 이는 ID 매핑 정합성 평가 범위 외이다. 구조적 완결성과 내용 일치도가 매우 높다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.95,
+            "rationale": "giftvoucher-gift 스킬의 17개 비즈니스 규칙(POL-PENSION-EX-006 ~ POL-PENSION-MG-231)에 대해 모두 대응하는 runbook이 존재합니다. 각 runbook은 rule의 condition(When), criteria(If), outcome(Then)을 정확히 반영하고 있습니다. 예를 들어 POL-PENSION-WD-004는 '구매 후 7일 이내 환불 요청'이라는 criteria를 runbook에서 동일하게 명시하고 '전액 환불 처리'라는 outcome을 정확히 설명합니다. 또한 Test Scenarios와 Contract Tests가 모든 17개 정책을 완전히 커버하고 있으며, 각 시나리오의 given-when-then 구조가 rule의 condition-criteria-outcome과 일치합니다. 모든 runbook이 'reviewed' 신뢰도를 가지고 있고, Domain이 'giftvoucher'로 일관되게 표기되어 있습니다. 다만 일부 runbook의 설명이 매우 간결하여 운영 실무 가이드로서의 상세도가 약간 부족한 점이 0.05점 감점 사유입니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.35,
+            "rationale": "giftvoucher-gift 스킬의 tests/contract 시나리오들은 입출력 구조 명확성 기준에서 심각한 결함을 보입니다. given 필드는 '조건 충족'이라는 추상적 표현만 반복되며, 구체적 값이나 타입이 전혀 명시되지 않았습니다(예: POL-PENSION-WD-004의 'given: 미사용 상품권 환불 요청 시(구매 후 7일 이내) 조건 충족'). then 필드도 마찬가지로 '처리', '반환', '제한' 등 추상적 동작만 기술되어 있고, 응답 형태나 상태 변화의 구체적 필드 정의가 부재합니다. 특히 POL-PENSION-MG-416/417의 '목록을 조회하여 반환한다'는 배열 구조, 필드명, 데이터 타입을 전혀 명시하지 않습니다. 또한 POL-PENSION-MG-227처럼 상태값('대기', '완료', '실패')은 언급되나, 각 상태별 출력 필드가 구분되지 않습니다. 전체 17개 시나리오 모두 boolean 수준의 성공/실패 여부만 암시할 뿐, I/O 경계를 파악할 수 없는 상태입니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.35,
+            "rationale": "giftvoucher-gift 스킬의 예외·에러 핸들링 평가 결과, 심각한 결함이 확인됩니다. 17개 비즈니스 규칙 중 모든 규칙의 'exception (Else)' 열이 '—'로 표시되어 있어 예외 케이스가 전혀 정의되지 않았습니다. 예를 들어 POL-PENSION-WD-004(7일 이내 환불)는 7일 초과 시 처리 방법이 없고, POL-PENSION-MG-423(기프트 수락)은 유효성 확인 실패 시 동작이 명시되지 않았습니다. 테스트 시나리오는 happy path만 존재하며, error_code, 비정상 상태, 실패 케이스 등 예외 시나리오가 완전히 부재합니다. 계약 테스트도 정책 나열만 있고 예외 조건 검증이 없습니다. 이는 시스템 안정성과 사용자 경험에 심각한 위험을 초래합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.62,
+            "rationale": "giftvoucher-gift 스킬의 17개 규칙(POL-PENSION-EX-006~MG-231)을 분석한 결과, 업무루틴 분리·재사용성 측면에서 중간 수준의 문제가 확인됩니다. 긍정적 측면: 각 규칙이 명확한 Condition-Criteria-Outcome 구조를 가지며, 대부분 단일 도메인(giftvoucher)에 속합니다. 부정적 측면: (1) 환불 관련 규칙(WD-004, WD-005, WD-007, WD-008)과 기프트/쿠폰 처리(MG-423, MG-424) 간 개념적 중복 - 모두 '환불/반환' 처리를 다루나 조건과 기준이 상이하여 경계가 불명확합니다. (2) MG-227(환불 상태 분기)이 WD-004~008의 상태 관리를 포함하면서 책임 혼재 우려. (3) MG-416과 MG-417이 동일한 '법인 상품권 조회' 기능을 목록/요약으로만 분리하여 재사용성 저하. (4) Empty Slot 규칙 부재로 엣지 케이스 보완 미흡. 규칙 간 명시적 의존성 선언 부족으로 독립 참조 가능성이 제한됩니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "testability",
+            "score": 0.35,
+            "rationale": "giftvoucher-gift 스킬의 테스트 시나리오는 17개 정책을 다루고 있으나, 테스트 가능성 측면에서 심각한 결함을 보입니다. 모든 시나리오의 given 조건이 '조건 충족'이라는 추상적 표현으로만 기술되어 있어 자동화 테스트 구현이 불가능합니다. 예를 들어 POL-PENSION-WD-004의 'given: 미사용 상품권 환불 요청 시(구매 후 7일 이내) 조건 충족'은 구체적 값(구매일시, 요청일시, 상품권ID 등)이 없습니다. then 항목도 '환불 처리', '수락 처리' 같은 boolean 수준의 추상 표현만 있어 검증 기준이 불명확합니다. Happy path만 존재하며, edge case(예: 6일 vs 8일 경계값)와 error case(예: 환불 실패 시나리오)가 완전히 부재합니다. POL-PENSION-MG-227의 상태 분기는 3가지 경로를 언급하지만 각각에 대한 구체적 테스트 케이스가 없습니다. 전체적으로 운영 가이드 수준의 설명만 있고, 자동화 테스트로 구현 가능한 수준의 구체성이 결여되어 있습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.595,
+        "passCount": 3,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:13:55.946Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 32062
+    },
+    {
+      "skillId": "47b1581d-bdc0-4bf7-9343-89bdac35750f",
+      "result": {
+        "skillId": "47b1581d-bdc0-4bf7-9343-89bdac35750f",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.92,
+            "rationale": "provenance.businessRules의 17개 규칙(POL-PENSION-MG-001, MG-010, CT-421, MG-290, MG-291, MG-292, RG-280, RG-281, RG-282, RG-285, RG-286, RG-287, RG-289, WD-150, MG-144, MG-147, MG-149)이 모두 originalRules 표에 ID 문자열 일치로 존재한다. 각 규칙의 condition-criteria-outcome이 완전히 매핑되며, 모든 exception 열이 '—'(예외 없음)으로 명시되어 있다. runbooks와 test scenarios도 모든 17개 규칙에 대해 일관되게 정의되어 있다. contract tests에서도 동일한 17개 정책이 선언되어 있다. 다만 originalRules 표의 POL-PENSION-MG-147 행이 truncated 표기('... [truncated 312 chars to fit context]')로 인해 완전한 내용 검증이 불가능한 점이 미소한 완결성 저해 요인이다. 이를 제외하면 ID 명시, 구조적 일치, exception 완결성 모두 0.9+ 기준을 충족한다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.94,
+            "rationale": "giftvoucher-account 스킬의 17개 businessRules(POL-PENSION-MG-001 ~ POL-PENSION-MG-149)에 대해 모두 대응하는 runbook이 존재합니다. 각 runbook은 rule의 condition(When), criteria(If), outcome(Then)을 정확히 반영하고 있습니다. 예를 들어 POL-PENSION-MG-001은 'KMC 본인확인 요청 시' → 'result 응답값이 Y인 경우' → '인증 성공으로 처리'를 runbook에서 동일하게 기술하고 있으며, POL-PENSION-RG-287은 'REG_DT가 5년 이상 경과' → 'PARTIES_HIS 테이블 확인' → '해당 레코드 삭제'를 정확히 설명합니다. Test Scenarios와 Contract Tests도 모든 정책을 포함하고 있습니다. 다만 runbook의 세부 구현 단계(예: 에러 처리, 롤백 절차, 모니터링 지표)가 일부 추상적이어서 완전한 운영 가이드로서의 실행 가능성이 미미하게 제한됩니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0,
+            "rationale": "Evaluation failed: SyntaxError: Unterminated string in JSON at position 579 (line 3 column 561)",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.25,
+            "rationale": "giftvoucher-account 스킬의 예외·에러 핸들링 평가 결과: 17개 비즈니스 규칙 중 16개가 'exception (Else)' 열에 '—'(정의 없음)로 표기되어 있습니다. 유일하게 예외 처리가 명시된 규칙은 POL-PENSION-WD-150으로, '잔액 부족 시 출금 실패로 에러를 리턴함'이라는 단일 예외 케이스만 포함합니다. 테스트 시나리오(tests/*.yaml)는 happy path만 존재하며, error_code, 비정상 상태, 실패 케이스 등 예외 시나리오가 전혀 커버되지 않았습니다. 예를 들어 KMC 인증 실패(result='N'), 충전 한도 초과, 배치 작업 실패, 외부 API 연계 오류, 개인정보 파기 실패 등의 예외 케이스가 정의되지 않았습니다. 규칙 정의 단계에서 exception 절이 거의 모두 누락되었고, 테스트 단계에서도 에러 시나리오가 전혀 구성되지 않아 예외 처리 준비도가 매우 낮습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.62,
+            "rationale": "giftvoucher-account 스킬의 17개 규칙을 분석한 결과, 업무루틴 분리·재사용성 측면에서 중대한 문제가 발견되었습니다. 첫째, 개인정보 파기 관련 규칙들(RG-280, RG-281, RG-282)이 동일한 조건(목적 달성/기간 종료 시 5일 이내 파기)을 중복 정의하고 있으며, 실행 메커니즘이 명확히 구분되지 않습니다. 둘째, MG-290(파기 이력 기록), MG-291(배치 삭제), MG-292(배치 이력 기록)이 서로 겹치는 책임을 가지고 있어 규칙 간 경계가 불명확합니다. 셋째, 파기 관련 규칙(RG-285, RG-286)과 배치 규칙(MG-291, MG-292)이 동일한 파기 프로세스를 다중으로 정의하고 있습니다. 긍정적으로는 인증(MG-001), 자금관리(MG-010), 충전한도(CT-421), 계좌동기화(MG-144), 지갑생성(MG-147) 등 5개 규칙은 단일 책임을 명확히 하고 있습니다. Empty Slot 규칙이 없어 엣지케이스 보완도 부족합니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "testability",
+            "score": 0.35,
+            "rationale": "giftvoucher-account 스킬의 테스트 시나리오는 17개 정책을 다루고 있으나, 테스트 가능성 측면에서 심각한 결함을 보입니다. 모든 시나리오의 given/when/then이 추상적 표현으로만 작성되어 있습니다. 예를 들어 POL-PENSION-MG-001의 given은 '조건 충족'이라는 모호한 표현이고, when은 'result 응답값이 Y인 경우'로 구체적 테스트 데이터가 없습니다. POL-PENSION-WD-150의 경우 '잔액이 충분한 경우'와 '잔액 부족 시'라는 두 가지 경로를 암시하지만, 구체적 금액값(예: 요청금액 10,000원, 잔액 5,000원)이 없어 자동화 테스트 구현이 불가능합니다. Happy path만 암묵적으로 다루고 있으며, edge case(경계값, 정확히 같은 금액)와 error case(네트워크 오류, 타임아웃)가 전혀 정의되지 않았습니다. 또한 then의 outcome도 '처리한다', '기록한다' 같은 boolean 수준의 표현으로, 검증 가능한 구체적 결과값이 부재합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.513,
+        "passCount": 3,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:14:22.248Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 30652
+    },
+    {
+      "skillId": "426b3553-d8a8-4a5d-a548-d4812f89e514",
+      "result": {
+        "skillId": "426b3553-d8a8-4a5d-a548-d4812f89e514",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.95,
+            "rationale": "provenance.businessRules의 23개 BL ID(POL-PENSION-WD-011 등)가 Original Rules 표의 ID 컬럼과 문자 그대로 1:1 매핑되었으며, condition-criteria-outcome이 완전히 일치한다. 모든 행의 exception 컬럼이 '—'(예외 없음)으로 명시되어 완결성을 만족한다. Runbooks와 Test Scenarios도 각 BL의 내용을 정확히 반영하고 있다. Empty Slot Rules가 없으므로 참고 맥락 검증 불필요. 다만 provenance의 sources 배열이 비어있고 trust.score가 0으로 설정된 점은 메타데이터 완결성 측면에서 미흡하나, 소스코드 정합성 기준(BL 원본과 businessRules 매핑)에는 영향을 주지 않는다. 23개 모든 규칙이 구조적·내용적으로 정확히 대응된다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.95,
+            "rationale": "giftvoucher-payment 스킬의 23개 비즈니스 규칙(POL-PENSION-*)에 대해 모두 대응하는 runbook이 존재하며, 각 runbook의 condition-criteria-outcome 구조가 원본 규칙과 정확히 일치한다. 예를 들어 POL-PENSION-WD-011은 '결제가 정상적으로 완료된 경우' → '결제 완료 상태' → '결제취소 가능(부분취소, 망취소 포함)'으로 완벽하게 매핑되어 있고, POL-PENSION-MG-389의 mchtId, method, trdDt, trdTm, mchtTrdNo, trdAmt 등 필수 정보 요구사항도 runbook에서 동일하게 명시되어 있다. 모든 runbook이 'reviewed' 신뢰도를 갖추고 있으며, test scenarios와 contract tests도 모든 정책을 포함하고 있다. 다만 일부 runbook의 설명이 매우 간결하여 운영 실무에서의 상세한 구현 가이드가 다소 부족한 점이 미미한 감점 요인이다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.52,
+            "rationale": "giftvoucher-payment 스킬의 테스트 시나리오는 given/when/then 구조를 형식적으로 포함하나 입출력 구조 명확성이 심각하게 부족합니다. given 필드는 '조건 충족'이라는 추상적 표현만 반복되며 구체적 값이나 타입이 명시되지 않습니다(예: POL-PENSION-MG-389의 'mchtId, method, trdDt, trdTm, mchtTrdNo, trdAmt'는 criteria에만 언급되고 given에서 실제 입력값 구조가 없음). then 필드도 마찬가지로 '결제 내역(PaymentVO)을 저장'이나 '가맹점 정보가 조회된다' 같은 추상적 결과만 기술되어 있으며, 응답 객체의 필드명, 타입, 상태코드 등이 정의되지 않았습니다. 23개 정책 중 대부분이 동일한 패턴으로 작성되어 있어 필드 타입 소실 상태입니다. 계약 테스트로서 AI 모델이 입출력 스키마를 파악하기 어렵습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.42,
+            "rationale": "giftvoucher-payment 스킬의 예외·에러 핸들링 커버리지가 매우 낮습니다. 23개 비즈니스 규칙 중 대부분이 'exception (Else)' 열에 '—'(정의 없음)로 표기되어 있습니다. 예외 처리가 명시된 규칙은 POL-PENSION-BN-142(입금 실패 시 에러 리턴), POL-PENSION-BN-144(입금 에러 시 재시도), POL-PENSION-EX-152(에러/실패 차등 처리), POL-PENSION-WD-139(출금 실패 시 에러 리턴) 4개뿐입니다. 테스트 시나리오는 happy path만 존재하며, error_code, 비정상 상태, 타임아웃, 유효성 검증 실패 등 예외 케이스가 전혀 커버되지 않았습니다. POL-PENSION-MG-375(고객 식별 정보 검증), POL-PENSION-MG-390(취소 요청 유효성), POL-PENSION-MG-143(카드 등록 실패) 등 검증 로직이 있는 규칙도 실패 시나리오가 없습니다. 전반적으로 정상 흐름만 정의되고 예외 처리 전략이 부재합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.62,
+            "rationale": "giftvoucher-payment 스킬의 23개 규칙(POL-PENSION-*)을 분석한 결과, 업무루틴 분리·재사용성 측면에서 중대한 문제가 발견되었습니다. 첫째, 입금 처리 관련 규칙들(BN-142, BN-144, BN-148, BN-107, EX-152)이 동일한 '당일입금여부' 조건을 중복 정의하고 있습니다. BN-148과 BN-107은 실질적으로 동일한 로직('Y'면 당일, 'N'면 익영업일)을 반복 선언합니다. 둘째, 결제취소 관련 규칙들(WD-011, MG-390, MG-373, MG-264, MG-266)이 취소 프로세스의 서로 다른 단계를 처리하지만, 명확한 계층 구조 없이 혼재되어 있습니다. 셋째, 출금 실패(WD-139)와 입금 실패(BN-142)가 동일한 '실패 시 에러 리턴' 패턴을 중복 구현합니다. 긍정적으로는 각 규칙이 단일 조건-결과 쌍을 기본으로 하며, 명시적 모순은 없습니다. 그러나 규칙 간 중복 정의와 재사용성 부족으로 인해 유지보수 복잡도가 높습니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "testability",
+            "score": 0.35,
+            "rationale": "giftvoucher-payment 스킬의 23개 테스트 시나리오는 심각한 자동화 테스트 적합성 결함을 보입니다. 첫째, given 조건이 모두 추상적입니다. 예: 'POL-PENSION-MG-389'의 given은 '결제 정보 요청이 발생한 경우 조건 충족'으로, 구체적 입력값(mchtId='M001', trdAmt=10000 등)이 전혀 없습니다. 둘째, then 결과가 검증 불가능한 수준입니다. 'POL-PENSION-MG-262'의 then은 '가맹점 정보가 화면에 노출된다'로 boolean 검증만 가능하며, 반환되는 정확한 필드나 값 범위가 명시되지 않았습니다. 셋째, 23개 시나리오 중 happy path만 존재하며, edge case(예: 부분취소 vs 망취소 구분)나 error case(예: 유효하지 않은 clipCustCi, 존재하지 않는 결제 내역)가 완전히 부재합니다. 넷째, 입금 에러/실패 구분(POL-PENSION-EX-152)은 언급되지만 테스트 시나리오로 분리되지 않았습니다. 자동화 테스트 구현 불가능 수준입니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.635,
+        "passCount": 3,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:14:25.601Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 27882
+    },
+    {
+      "skillId": "f633b48d-4f51-44d7-b055-b8d469abd8bb",
+      "result": {
+        "skillId": "f633b48d-4f51-44d7-b055-b8d469abd8bb",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.95,
+            "rationale": "provenance.businessRules의 19개 규칙(POL-PENSION-WD-001~009, POL-PENSION-CT-420, POL-PENSION-CT-422, POL-PENSION-BN-239, POL-PENSION-BN-240, POL-PENSION-EX-244, POL-PENSION-WD-142, POL-PENSION-WD-143, POL-PENSION-WD-097, POL-PENSION-WD-098, POL-PENSION-WD-106)이 모두 Original Rules 표의 ID 컬럼에 문자 그대로 존재한다. 각 규칙의 condition-criteria-outcome이 완전히 매핑되며, 모든 exception 컬럼이 '—'(예외 없음)으로 명시되어 있다. Runbooks와 Test Scenarios도 provenance 규칙과 1:1 대응되며 내용이 일치한다. Empty Slot Rules가 없으므로 참고 맥락 검증 불필요. 유일한 감점 사유는 Original Rules 표의 POL-PENSION-WD-106 행이 truncated 표기('...')로 끝나 완전한 outcome 확인이 불가능한 점이나, runbooks에서 해당 규칙의 전체 내용이 명확히 제시되어 있어 실질적 불일치는 없다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.92,
+            "rationale": "giftvoucher-withdrawal 스킬의 19개 businessRules(POL-PENSION-WD-001~106)에 대해 모든 규칙에 대응하는 runbook이 존재한다. 각 runbook은 rule의 condition(When), criteria(If), outcome(Then)을 정확히 반영하고 있다. 예를 들어 POL-PENSION-WD-001은 '출금 프로세스가 에러 없이 종료됨'이라는 criteria를 '충전 완료 처리'라는 outcome으로 명확히 매핑하고 있으며, POL-PENSION-WD-240은 복잡한 환불 계산 로직('환불요청액 - 제외금액')을 정확히 기술하고 있다. 모든 runbook이 'reviewed' 신뢰도를 갖추고 있으며, 19개 test scenario도 각 policy와 1:1 대응된다. 다만 POL-PENSION-EX-244의 outcome이 '화면 처리 방식 별도 확인 및 정의 필요'로 미정의 상태이며, 일부 runbook에서 구체적인 구현 세부사항(예: API 호출 방식, 재시도 로직)이 추상적인 점이 완전성을 약간 감소시킨다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.42,
+            "rationale": "giftvoucher-withdrawal 스킬의 테스트 시나리오는 given/when/then 구조를 형식적으로 포함하나 입출력 구조 명확성이 심각하게 부족합니다. given 필드는 '조건 충족'이라는 추상적 문구만 반복되며 구체적 값, 타입, 필드명이 전혀 명시되지 않았습니다(예: 'POL-PENSION-WD-001'의 given: '출금이 정상적으로 완료된 경우 조건 충족'). then 필드도 마찬가지로 '충전 완료 처리', '에러 리턴' 등 상태 변화만 기술되고 응답 형태, 반환 필드, 데이터 타입이 정의되지 않았습니다. 특히 POL-PENSION-BN-240의 '입금액을 환불요청액 - 제외금액으로 산정'은 계산식만 있고 결과 필드명, 타입, 범위가 불명확합니다. 19개 정책 모두 동일한 패턴으로 I/O 경계를 파악하기 어렵습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.45,
+            "rationale": "giftvoucher-withdrawal 스킬의 예외·에러 핸들링 평가 결과입니다. 19개 규칙 중 POL-PENSION-WD-002, WD-007 등 일부 규칙에서 '에러 리턴'과 같은 기본적인 예외 처리가 명시되어 있으나, 대부분의 규칙(POL-PENSION-WD-001, WD-003, WD-004 등)에서 exception/else 절이 '—'로 표기되어 완전히 누락되어 있습니다. 테스트 시나리오는 happy path만 존재하며, error_code, 비정상 상태, 실패 케이스 등의 예외 시나리오가 거의 커버되지 않습니다. POL-PENSION-WD-106의 '잔액 부족 시 출금 실패' 처리는 예외 케이스를 다루지만, 전체 19개 규칙 중 명확한 예외 처리는 3~4개에 불과합니다. 타임아웃, 네트워크 오류, 잔액 부족, 환불 불가 조건 등 다양한 예외 시나리오에 대한 체계적인 정의와 테스트 커버리지가 부족합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.52,
+            "rationale": "giftvoucher-withdrawal 스킬의 19개 규칙을 분석한 결과, 업무루틴 분리·재사용성 측면에서 심각한 중복과 경계 불명확 문제가 발견되었습니다. 출금 타임아웃 처리가 POL-PENSION-WD-003, POL-PENSION-WD-142, POL-PENSION-WD-097에서 동일하게 '5분 후 상태조회 요청'으로 중복 정의되어 있습니다. 출금 정상 완료 후 취소 가능 조건도 POL-PENSION-WD-004, POL-PENSION-WD-143, POL-PENSION-WD-098에서 반복됩니다. 입금 실패 처리(POL-PENSION-WD-007, POL-PENSION-WD-009)와 환불 상태 업데이트(POL-PENSION-BN-239, POL-PENSION-BN-240)도 책임 경계가 모호합니다. POL-PENSION-EX-244(백스페이스 입력)는 giftvoucher-withdrawal 스킬과 무관한 UI 예외로 포함되어 있어 규칙 범위 설정이 부적절합니다. 각 규칙이 단일 책임을 명확히 하지 못하고 있으며, 독립적 참조 가능성이 낮습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0.42,
+            "rationale": "giftvoucher-withdrawal 스킬의 테스트 시나리오는 19개 정책을 다루고 있으나, 자동화 테스트 적합성 측면에서 심각한 결함을 보입니다. 첫째, 모든 시나리오의 given 조건이 '~경우 조건 충족' 같은 추상적 표현으로만 기술되어 있어 구체적 입력값(예: 출금액 10,000원, 계좌번호 123-456, 타임아웃 시간 300초)이 전혀 없습니다. 둘째, then의 outcome도 '충전 완료 처리', '에러 리턴' 같은 모호한 표현으로, 검증 가능한 구체적 결과값(예: status='COMPLETED', errorCode='WD-001')이 부재합니다. 셋째, happy path(정상 완료)와 error case(실패, 타임아웃)는 어느 정도 포함되나, edge case(경계값, 부분 환불, 중복 요청)는 거의 없습니다. 넷째, POL-PENSION-EX-244는 '별도 확인 및 정의 필요'로 미완성 상태입니다. 시나리오 수는 충분하지만 자동화 테스트 구현 불가능 수준의 추상성으로 인해 점수는 0.5 미만입니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.613,
+        "passCount": 2,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:14:50.274Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 28351
+    },
+    {
+      "skillId": "0e1fdeca-6c82-422a-8883-47e33e53572d",
+      "result": {
+        "skillId": "0e1fdeca-6c82-422a-8883-47e33e53572d",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.42,
+            "rationale": "소스코드 정합성 평가 결과: provenance.businessRules 47개 항목 중 originalRules 표에서 확인 가능한 항목은 약 35개이나, 심각한 구조적 불일치가 다수 발견됨. (1) ID 중복 문제: POL-PENSION-MG-416, POL-PENSION-MG-417, POL-PENSION-MG-419가 각각 2회 이상 반복 선언되어 있음. (2) 내용 불일치: 첫 번째 POL-PENSION-MG-416은 '카드사 전문요청 처리상태 관리'이나, 두 번째는 '게시판 글 등록 시 필수 정보 입력'으로 완전히 다른 내용. 동일 ID로 서로 다른 비즈니스 로직이 정의됨. (3) Exception 열 완결성: 모든 행에서 '—'로 표기되어 있으나, 실제 예외 조건이 명시되지 않은 행들이 존재. (4) 누락: POL-PENSION-MG-418, POL-PENSION-MG-420, POL-PENSION-MG-421 등 일부 항목이 표에서 불완전하게 정의됨. 이는 0.5 미만의 심각한 정합성 결함을 나타냄.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.92,
+            "rationale": "giftvoucher-integration 스킬의 47개 비즈니스 규칙(POL-PENSION-*) 중 46개에 대응하는 runbook이 존재하며, 각 runbook의 condition-criteria-outcome 구조가 원본 rule과 정확히 일치한다. 예를 들어 POL-PENSION-MG-007은 'BATCH_007 실행 시 COMPARE_INSPECT 테이블 데이터 삭제 후 MP_COMPARE_INSPECT 테이블에 신규 데이터 삽입'이라는 outcome을 정확히 반영하고 있으며, POL-PENSION-MG-444는 '가상계좌 요청/응답 시 VRTL_ACNT_DPST 테이블 기록'을 명확히 기술하고 있다. 모든 runbook이 'reviewed' 신뢰도(score: 0.7)로 표시되어 있고, test scenarios와 contract tests도 완벽하게 대응된다. 다만 POL-PENSION-MG-416이 두 번 선언되어 있으며(카드사 전문요청 처리상태 관리 vs 게시판 글 등록), 이로 인해 약간의 중복 및 혼동 가능성이 존재한다. 이를 제외하면 문서-규칙 일치도가 매우 높다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.62,
+            "rationale": "giftvoucher-integration의 test scenarios는 given/when/then 구조를 갖추고 있으나, 입출력 구조 명확성 측면에서 중대한 결함이 있습니다. given 필드는 대부분 '조건 충족'이라는 추상적 표현만 포함하며, 구체적 값이나 타입이 명시되지 않습니다. 예: 'BATCH_007이 실행되는 경우 조건 충족'은 입력 데이터 구조를 전혀 정의하지 않습니다. then 필드도 마찬가지로 '테이블에 데이터 삽입', '정보를 조회'와 같은 추상적 설명만 있고, 응답 객체의 필드 타입(예: resultCode: string, resultMessage: string)이 명시되지 않습니다. 일부 시나리오(POL-PENSION-MG-422, POL-PENSION-MG-401)에서 resultCode/resultMessage 언급이 있으나, 이는 전체 47개 정책 중 극소수입니다. 대다수 시나리오에서 I/O 경계가 불명확하여 자동화된 테스트 생성이 어렵습니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.35,
+            "rationale": "giftvoucher-integration 스킬의 예외·에러 핸들링 평가 결과, 심각한 결함이 확인됩니다. 원본 Rules 테이블의 47개 정책 중 exception(Else) 절이 거의 모두 '—'(정의 안 됨)로 표시되어 있습니다. POL-PENSION-MG-007부터 POL-PENSION-MG-017까지 검토한 결과, 단 POL-PENSION-EX-145('외부 API 호출 실패 시 오류 코드 반환 처리')와 POL-PENSION-MG-401('API 응답 결과 코드에 따른 처리 정책')만 예외 처리를 명시하고 있습니다. Test Scenarios에서도 happy path만 존재하며, error_code, 비정상 상태, 실패 케이스 등 예외 시나리오가 전혀 커버되지 않았습니다. Contract Tests도 정책 나열만 있고 예외 테스트 케이스가 없습니다. 이는 <0.5 구간의 '예외/else 거의 없거나 tests에서 에러 케이스 전혀 없음' 기준에 해당합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.42,
+            "rationale": "giftvoucher-integration 스킬의 업무루틴 분리·재사용성 평가 결과, 심각한 SRP 위반과 중복이 확인됨. 첫째, POL-PENSION-MG-416이 두 번 정의되어 있으며 서로 다른 업무(카드사 전문요청 처리상태 vs 게시판 글 등록)를 담당함. 둘째, POL-PENSION-MG-417, MG-418, MG-419도 중복 정의되어 있음. 셋째, 카드사 연동 관련 규칙들(MG-396~400, MG-416~419, RG-418)이 등록·삭제·상태갱신·이력기록·응답반환 등 다중 책임을 혼재하고 있음. 넷째, 게시판 관련 규칙들(MG-416~421)이 필터링·페이징·카테고리·코드 조회 등 유사 조건을 반복 정의함. 다섯째, 알림 관련 규칙(NF-021~030)이 금액 기준 분기 로직을 중복 구현함. 규칙 간 경계가 불명확하고 독립 참조 불가능한 상태로, 유지보수성과 재사용성이 극히 낮음.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0.35,
+            "rationale": "giftvoucher-integration 스킬의 테스트 시나리오는 심각한 자동화 테스트 적합성 결함을 보입니다. 48개 정책에 대해 제공된 시나리오들이 모두 동일한 구조적 문제를 가집니다. given 조건이 '조건 충족'이라는 추상적 표현으로만 기술되어 있으며, when 기준도 '~할 때', '~해야 함' 같은 모호한 표현입니다. then outcome도 '~처리됨', '~수행한다' 같은 boolean 수준의 추상 표현만 있습니다. 예를 들어 POL-PENSION-MG-007의 'BATCH_007이 실행되는 경우 조건 충족'은 구체적 입력값(배치 ID, 실행 시간, 테이블 상태)이 없고, 'COMPARE_INSPECT 테이블 데이터 삭제 후 신규 데이터 삽입'은 검증 가능한 assertion(삭제된 행 수, 삽입된 행 수, 데이터 무결성)이 부재합니다. Happy path만 존재하며 edge case(빈 테이블, 중복 데이터, 부분 실패)와 error case(API 타임아웃, DB 연결 실패, 암호화 오류)가 전혀 없습니다. 자동화 테스트 구현 불가능 수준입니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.513,
+        "passCount": 2,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:14:57.199Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 31709
+    },
+    {
+      "skillId": "0957188e-662e-4ab9-b670-6f400e6f6b4c",
+      "result": {
+        "skillId": "0957188e-662e-4ab9-b670-6f400e6f6b4c",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.42,
+            "rationale": "provenance.businessRules 목록(37개 항목)과 originalRules 표를 대조한 결과, 심각한 불일치가 발견되었습니다. 원본 표에서 POL-PENSION-MG-448, POL-PENSION-MG-447, POL-PENSION-CT-419(첫 번째), POL-PENSION-CL-418, POL-PENSION-CL-427, POL-PENSION-CT-420, POL-PENSION-CT-421, POL-PENSION-MG-412, POL-PENSION-MG-415, POL-PENSION-MG-416, POL-PENSION-MG-417, POL-PENSION-MG-422, POL-PENSION-CT-410, POL-PENSION-CT-412, POL-PENSION-NF-396, POL-PENSION-WD-400, POL-PENSION-MG-268, POL-PENSION-MG-254, POL-PENSION-MG-257 등 19개 규칙이 불완전하게 표시되어 있습니다(ID만 있고 condition/criteria/outcome 내용 누락). 또한 provenance에서 중복 선언된 항목(POL-PENSION-MG-005, MG-007, MG-008, MG-001, MG-002, MG-009, CT-419)이 있으며, 모든 exception 열이 '—'로 일괄 표기되어 있어 실질적 예외 정의가 부재합니다. ID 문자열 일치는 확인되나, 원본 표 자체의 구조적 완결성 부족으로 정합성 판정이 불가능합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.85,
+            "rationale": "giftvoucher-settlement 스킬의 37개 비즈니스 규칙(POL-PENSION-*) 중 36개에 대응하는 runbook이 존재하며, 각 runbook은 rule의 condition-criteria-outcome 구조를 정확히 반영하고 있습니다. 예를 들어 POL-PENSION-MG-005는 '인증번호 요청 후 1분 초과'(condition) → '1분 초과'(criteria) → '인증번호 입력 오류 처리'(outcome)로 일치하며, POL-PENSION-WD-006은 '환불 요청'(condition) → '환불 요청 접수'(criteria) → '/money/chargeCancel API 호출'(outcome)로 정확히 대응됩니다. 다만 원본 규칙 테이블에서 마지막 행(POL-PENSION-MG-448 이후)이 절단되어 완전성 검증에 제약이 있으며, 일부 runbook의 trust score가 0.7로 낮게 설정되어 있어 완전한 신뢰도 확보에 미흡합니다. 전반적으로 문서 일치도는 높으나 신뢰도 개선 필요합니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.42,
+            "rationale": "giftvoucher-settlement의 test scenarios에서 입출력 구조 명확성이 심각하게 부족합니다. given 필드는 '조건 충족'이라는 추상적 표현만 반복되며 구체적 값이나 타입이 명시되지 않습니다. 예: 'given: [\"사용자가 인증번호 받기 선택 후 1분이 경과한 경우 조건 충족\"]'는 실제 입력 데이터 구조를 전혀 정의하지 않습니다. when 필드는 criteria만 기술하고 입력 파라미터 타입(string, integer, timestamp 등)을 명시하지 않습니다. then 필드도 마찬가지로 '처리한다', '반환한다' 등 추상적 표현만 있으며, 응답 객체의 필드명, 타입, 범위가 정의되지 않습니다. POL-PENSION-MG-448의 '응답 코드(code), 유형(type), 설명(desc), 시간(duration)' 언급도 실제 JSON 스키마 없이 텍스트만 존재합니다. 38개 시나리오 모두 boolean 수준의 조건만 기술되어 있어 AI 모델이 입출력 계약을 파악하기 불가능합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.42,
+            "rationale": "giftvoucher-settlement 스킬의 예외·에러 핸들링 평가 결과, 대부분의 규칙(POL-PENSION-MG-005~009, MG-001~003 등)에서 exception/else 절이 명시적으로 정의되지 않았습니다. 원본 BL 테이블의 'exception (Else)' 컬럼이 거의 모두 '—'로 표기되어 있어 예외 처리 전략이 부재합니다. 테스트 시나리오는 happy path 중심으로 구성되었으며, error_code나 비정상 상태를 명시적으로 다루는 예외 케이스가 거의 없습니다. 일부 규칙(POL-PENSION-MG-448: 응답코드 처리, POL-PENSION-MG-416: 유효성 검증)에서 오류 처리 언급이 있으나, 구체적인 error_code 정의나 실패 시나리오 테스트가 부족합니다. 타임아웃(MG-001, MG-003), 입금 에러(MG-002) 등 일부 규칙에서 재시도 로직이 있으나, 최대 재시도 횟수, 실패 임계값 등 상세 예외 처리 정책이 미정의 상태입니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0,
+            "rationale": "Evaluation failed: SyntaxError: Unterminated string in JSON at position 610 (line 3 column 592)",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0.42,
+            "rationale": "giftvoucher-settlement 스킬의 테스트 시나리오는 총 43개로 수량은 충분하나, 자동화 테스트 적합성 측면에서 심각한 결함을 보입니다. 모든 시나리오의 given 조건이 '조건 충족'이라는 추상적 표현으로만 기술되어 있으며, 구체적인 입력값(예: 인증번호='123456', 요청시간=2024-01-01T10:00:00Z, 경과시간=61초)이 전혀 없습니다. when 절의 criteria도 '파라미터가 유효할 경우', '조건을 확인' 등 모호한 표현이 대부분입니다. then 절은 대부분 '처리한다', '반환한다' 같은 boolean 수준의 추상적 결과만 제시하며, 기대값(expected output)이 명시되지 않았습니다. Happy path 위주로 구성되었고, edge case(예: 경계값 테스트, 타임아웃 정확한 시간)와 error case(예: 잘못된 형식의 파라미터, 데이터베이스 연결 실패)가 거의 없습니다. 자동화 테스트 프레임워크에서 실행 불가능한 수준입니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.422,
+        "passCount": 1,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:15:20.807Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 30796
+    },
+    {
+      "skillId": "646a3518-0e84-4828-87d4-5ffebdfdc869",
+      "result": {
+        "skillId": "646a3518-0e84-4828-87d4-5ffebdfdc869",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.92,
+            "rationale": "provenance.businessRules의 26개 BL ID(POL-PENSION-EN-008부터 POL-PENSION-MG-001까지)가 originalRules 표에 모두 문자 그대로 일치하며, condition-criteria-outcome 매핑이 완전히 존재합니다. 모든 행의 exception 열이 '—'(예외 없음)으로 명시되어 완결성을 만족합니다. runbooks와 test scenarios도 각 BL과 1:1 대응되며 내용이 일치합니다. contract tests의 26개 정책 목록도 provenance와 동일하게 선언되어 있습니다. Empty Slot Rules가 없으므로 참고 맥락 검증 불필요합니다. 다만 originalRules 표의 POL-PENSION-RG-212 행이 criteria 컬럼에서 문장이 절단되어 표시되어 있어(\"사내 표준기준(Kate → Work Link → 정보/역량 → 정보보호 → 개인정\") 완전한 내용 확인이 제한적입니다. 이는 표 렌더링 이슈로 보이며 실제 매핑 정합성에는 영향을 주지 않습니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.92,
+            "rationale": "giftvoucher-other 스킬의 26개 비즈니스 규칙(POL-PENSION-*)에 대해 모두 대응하는 runbook이 존재합니다. 각 runbook은 rule의 condition(When), criteria(If), outcome(Then)을 정확히 반영하고 있습니다. 예를 들어 POL-PENSION-EN-008은 '오프라인 청약 시 청약서 첨부'로, POL-PENSION-MG-225는 '고객명 한글 마스킹'으로 명확히 구현되어 있습니다. 모든 runbook이 Domain(giftvoucher), Tags, Trust 메타데이터를 포함하고 있으며, Test Scenarios와 Contract Tests도 모든 정책을 완전히 커버하고 있습니다. 다만 일부 runbook(예: POL-PENSION-MG-067, POL-PENSION-MG-069, POL-PENSION-MG-071)이 POL-PENSION-MG-210, POL-PENSION-RG-212, POL-PENSION-RG-215와 내용이 중복되어 있어 미세한 중복 제거 개선의 여지가 있습니다. 전반적으로 규칙-운영가이드 일치도가 매우 높습니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.45,
+            "rationale": "giftvoucher-other 스킬의 tests/contract 시나리오들은 given/when/then 구조를 형식적으로 포함하고 있으나, 입출력 구조의 명확성이 심각하게 부족합니다. given 필드는 '조건 충족'이라는 추상적 표현만 반복되며 구체적 값이나 타입이 명시되지 않습니다(예: 'Route의 host가 미작성된 경우 조건 충족'). when 필드는 criteria를 단순 재술하는 수준이고, then 필드의 outcome도 비즈니스 결과만 기술할 뿐 응답 형태, 데이터 구조, 필드 타입을 정의하지 않습니다. 예를 들어 POL-PENSION-MG-315의 '오류 코드(KISQ9117) 반환'은 반환 형식(JSON/XML), 필드명, 상태코드를 명시하지 않습니다. 26개 정책 모두 동일한 패턴으로 I/O 경계가 불명확하며, 자동화된 테스트 실행이나 AI 검증에 필요한 구체적 입출력 스키마가 완전히 부재합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.35,
+            "rationale": "giftvoucher-other 스킬의 예외·에러 핸들링 평가 결과, 심각한 결함이 확인되었습니다. 26개 비즈니스 규칙 중 대부분이 'exception (Else)' 절에 '—'(정의 없음)로 표기되어 있습니다. POL-PENSION-MG-315만 'KISQ9117' 오류 코드를 명시하고 있으며, 나머지 규칙들은 예외 상황에 대한 처리 방안이 전혀 정의되지 않았습니다. 테스트 시나리오(tests/*.yaml)는 happy path만 포함하고 있으며, error_code나 비정상 상태 시나리오가 완전히 부재합니다. API 호출 실패, 데이터 검증 오류, 입력값 범위 초과 등 주요 예외 케이스에 대한 처리 로직과 테스트가 모두 누락되어 있습니다. 이는 프로덕션 환경에서 예상치 못한 오류 상황 발생 시 시스템의 안정성과 복원력을 심각하게 훼손할 수 있습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0,
+            "rationale": "Evaluation failed: SyntaxError: Unterminated string in JSON at position 633 (line 3 column 615)",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0.35,
+            "rationale": "giftvoucher-other 스킬의 테스트 시나리오는 26개 정책을 다루고 있으나, 테스트 가능성 측면에서 심각한 결함을 보입니다. 모든 시나리오의 given 조건이 '조건 충족'이라는 추상적 표현으로만 작성되어 있어 자동화 테스트 구현이 불가능합니다. 예를 들어 POL-PENSION-MG-315(성명 값 유효성 검증)는 '60바이트 이상이거나 비정상 문자'라는 구체적 기준이 있음에도, given에서 '조건 충족'으로만 표기되어 테스트 데이터 생성이 불가능합니다. 또한 happy path만 존재하며, edge case(예: 정확히 60바이트, 59바이트)와 error case(예: 특수문자 종류별 검증)가 완전히 부재합니다. then 결과도 대부분 선언적 문장으로만 표현되어 boolean 또는 구체적 검증값이 없습니다. 26개 시나리오 중 자동화 가능한 수준의 구체성을 갖춘 것이 없어 단위테스트 적합성이 극히 낮습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.498,
+        "passCount": 2,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:15:27.094Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 30172
+    },
+    {
+      "skillId": "3b9e48ea-9fe2-4cd4-97cd-53ea510dc9c1",
+      "result": {
+        "skillId": "3b9e48ea-9fe2-4cd4-97cd-53ea510dc9c1",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.42,
+            "rationale": "provenance.businessRules의 92개 규칙 중 originalRules 표에서 확인 가능한 규칙은 약 50개이며, 나머지 42개는 원본 표에 존재하지 않습니다. 특히 POL-PENSION-NF-008, POL-PENSION-NF-012, POL-PENSION-MG-010, POL-PENSION-NF-422, POL-PENSION-NF-429 등이 provenance에서 중복 선언되거나 originalRules 표에 누락되어 있습니다. 또한 originalRules 표의 exception 열에서 다수의 행이 '—'로 명시되어 있으나, provenance와의 1:1 매핑 검증 시 ID 문자열 일치도 불완전합니다. 예를 들어 POL-PENSION-NF-422는 '알림 메시지 전송 정책'과 '스케줄 메시지 등록 정책' 두 가지로 서로 다른 내용으로 정의되어 있어 condition-criteria-outcome 정합성이 깨져 있습니다. 구조적 불일치와 BL 누락이 광범위하게 발생하고 있습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.85,
+            "rationale": "giftvoucher-notification 스킬의 runbooks는 대부분의 business rules를 정확히 반영하고 있습니다. 제공된 runbooks 섹션에서 POL-PENSION-MG-010부터 POL-PENSION-MG-032까지 총 80개 이상의 규칙에 대해 condition-criteria-outcome 구조를 명확히 정의하고 있습니다. 각 runbook은 해당 rule의 조건(When), 기준(If), 결과(Then)를 정확히 매핑하고 있으며, 도메인(giftvoucher), 태그, 신뢰도 정보도 일관되게 기록되어 있습니다. 다만 일부 규칙(예: POL-PENSION-NF-008, POL-PENSION-NF-012, POL-PENSION-NF-402 등)이 중복되어 나타나고, 원본 rules 테이블에서 일부 규칙의 상세 내용이 truncated되어 완전한 검증이 제한됩니다. Test Scenarios와 Contract Tests도 모두 포함되어 있어 운영 가이드의 완성도가 높습니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.42,
+            "rationale": "giftvoucher-notification 스킬의 given/when/then 시나리오들은 구조적으로 매우 추상적이고 불명확합니다. given 필드는 '조건 충족'이라는 일반적 표현만 반복되며 구체적 입력값이나 타입이 명시되지 않습니다. 예: 'POL-PENSION-NF-001'의 given은 '구매 기능을 사용할 때 조건 충족'으로만 기술되어 있고, 실제 입력 데이터(사용자ID, 금액, 결제수단 등)가 없습니다. when 필드도 criteria만 반복되며 구체적 조건값이 부재합니다. then 필드의 outcome도 '~해야 함', '~발송' 같은 추상적 표현으로만 정의되어 있고, 응답 필드 타입(예: 성공/실패 코드, 메시지 형식)이 명확하지 않습니다. 'POL-PENSION-NF-422' 시나리오의 then은 'FCM을 통해 알림 메시지를 전송한다'로만 기술되어 있어 응답 구조를 파악할 수 없습니다. 전체 시나리오에서 필드 타입(string, integer, boolean, object 등)과 필드 의미가 거의 정의되지 않아 AI-Ready 품질 기준을 충족하지 못합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.35,
+            "rationale": "giftvoucher-notification 스킬의 예외·에러 핸들링 커버리지는 매우 낮습니다. 분석 결과: (1) rules/*.md의 exception/else 절이 거의 모두 '—'(정의 안 됨)로 표시되어 있습니다. 예를 들어 POL-PENSION-NF-001(SMS 인증 필수), POL-PENSION-NF-002(OTP 인증), POL-PENSION-MG-001~004(로그인 오류)에서 exception 절이 명시되지 않았습니다. (2) tests/*.yaml의 시나리오들은 happy path만 기술되어 있으며, error_code나 비정상 상태(인증 실패, 네트워크 오류, 타임아웃, 필수 정보 누락 등)를 다루는 예외 시나리오가 거의 없습니다. (3) POL-PENSION-EX-425(예외 처리 정책)는 존재하지만 구체적인 exception 케이스 정의가 부족합니다. (4) 100개 이상의 정책 중 대부분이 정상 흐름만 기술하고 있어 시스템 안정성 검증이 불충분합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.42,
+            "rationale": "giftvoucher-notification 스킬의 업무루틴 분리·재사용성 평가 결과, 심각한 SRP 위반과 중복이 확인되었습니다. 첫째, POL-PENSION-NF-008이 두 번 정의되어 있으며(프로모션 발송 vs 구매 승인), POL-PENSION-NF-012도 중복(프로모션 발송 vs 회원탈퇴)되어 있습니다. 둘째, 알림 관련 규칙들(NF-397~405)이 동일한 '발송 결과 기록' 책임을 반복하고 있으며, 스케줄 메시지 규칙들(NF-422~429)도 상태 변경이라는 단일 책임을 과도하게 세분화했습니다. 셋째, 결제금액 기준 SMS 발송이 NF-010, NF-102, NF-145에서 중복 정의되어 있고, 개인정보처리방침 변경 공지가 NF-064, NF-209, NF-213에서 중복됩니다. 넷째, businessRules 목록에 중복 항목이 다수 존재(NF-008, NF-012, NF-422, MG-010, MG-012 등)하여 메타데이터 정합성도 낮습니다. 규칙 간 경계가 불명확하고 독립적 참조 가능성이 제한적입니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0.42,
+            "rationale": "giftvoucher-notification 스킬의 테스트 시나리오는 심각한 자동화 테스트 적합성 문제를 보유하고 있습니다. 제공된 95개 시나리오 중 대부분이 happy path만 다루며, given/when/then 구조가 극도로 추상적입니다. 예를 들어 'POL-PENSION-NF-001' 시나리오의 given은 '구매 기능을 사용할 때 조건 충족'으로만 표현되어 구체적 테스트 데이터(사용자ID, 금액, 휴대폰번호 등)가 전혀 없습니다. then도 'SMS 인증을 반드시 수행해야 함'으로 boolean 수준의 모호한 표현만 있습니다. edge case(예: 5만원 미만 결제, 국제번호, 중복 발송)와 error case(API 실패, 타임아웃, 잘못된 번호 형식)가 거의 없으며, 결제금액 기준 시나리오도 '5만원 이상'이라는 단일 조건만 있습니다. 자동화 테스트 구현을 위해 필요한 구체적 값, 예상 결과, 검증 로직이 부재합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.48,
+        "passCount": 1,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:15:54.861Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 34052
+    },
+    {
+      "skillId": "cea99a5e-a35b-47a0-abfa-2d307a24af93",
+      "result": {
+        "skillId": "cea99a5e-a35b-47a0-abfa-2d307a24af93",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.15,
+            "rationale": "소스코드 정합성 평가 결과 심각한 불일치가 확인되었습니다. Provenance의 businessRules 목록(약 200개 규칙)과 Original Rules 표를 대조한 결과, 다음과 같은 문제점이 발견되었습니다: (1) ID 문자열 불일치: Provenance에 'POL-PENSION-MG-004' 등으로 표기된 규칙들이 Original Rules 표에서 동일한 형식으로 존재하지 않거나 중복 정의됨. (2) Exception 열 완결성 부재: Original Rules 표의 exception 컬럼이 대부분 '—'로 표기되어 있으나, 일부 행에서 실내용이 누락되거나 불명확함. (3) 구조적 불일치: Provenance의 businessRules 목록이 매우 길고 중복된 ID가 다수 포함되어 있으나, Original Rules 표는 이를 명확히 반영하지 못함. (4) 매핑 불가능: 많은 규칙이 원본 표에 존재하지 않거나 내용이 일치하지 않아 1:1 매핑이 불가능합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.25,
+            "rationale": "giftvoucher-security 스킬의 주석·문서 일치도는 매우 낮습니다. 제공된 데이터에서 rules/*.md 파일이 완전히 부재하며, runbooks/*.md만 대량으로 존재합니다. 평가 기준에 따르면 각 rule에 대응하는 runbook이 존재하고 condition-criteria-outcome을 정확히 반영해야 하는데, rule 자체가 없어 대응 관계를 검증할 수 없습니다. 제공된 runbook들(POL-PENSION-MG-004~MG-035 등)은 condition, criteria, outcome 구조를 포함하고 있으나, 이들이 실제 rule 정의와 일치하는지 확인 불가능합니다. businessRules 목록에는 200개 이상의 정책이 선언되어 있지만, 대응하는 rule 문서가 없어 runbook의 정확성을 검증할 수 없습니다. 따라서 spec-container의 핵심 요소인 rules와 runbooks 간의 일치도를 평가할 수 없는 상태입니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.42,
+            "rationale": "tests/contract/*.yaml 파일이 제공되지 않아 직접 검증 불가능합니다. 제공된 runbooks와 businessRules 기반 평가 결과, given/when/then 구조는 존재하나 심각한 결함이 있습니다. 대부분의 시나리오에서 given 필드가 '조건 충족'이라는 추상적 표현만 포함되어 구체적 값/타입이 명시되지 않았습니다. 예: 'POL-PENSION-MG-004'의 given은 '앱 실행 후 메인화면을 로드할 때 조건 충족'으로만 기술되어 입력 데이터 구조를 파악할 수 없습니다. then 필드도 '비정상 노출 시 보안키패드 숨김 처리'로 상태 변화만 기술되고 응답 형태(HTTP 상태코드, 응답 필드 등)가 정의되지 않았습니다. 필드 타입 정보 전무, 필수/선택 여부 미명시로 I/O 경계 파악 불가능합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.35,
+            "rationale": "giftvoucher-security 스킬의 예외·에러 핸들링 준비도는 낮은 수준입니다. 분석 결과, 대부분의 rules/*.md에서 exception/else 절이 명시적으로 정의되지 않았습니다. 예를 들어 POL-PENSION-MG-004(보안키패드 노출 방지), POL-PENSION-MG-005(jasypt 버전 관리), POL-PENSION-MG-006(구간암호화 요청)의 규칙들은 'outcome(Then)' 섹션에만 정상 케이스를 기술하고 있으며, 예외 상황에 대한 처리 로직이 누락되어 있습니다. tests/*.yaml에서도 error_code를 포함한 예외 시나리오가 거의 발견되지 않습니다. 일부 규칙(POL-PENSION-RG-332~340, POL-PENSION-MG-306~321)에서 오류 코드(KISQ9114, KISQ9115 등)가 언급되지만, 이는 제한적이며 전체 정책 대비 예외 처리 커버리지가 매우 낮습니다. 대부분의 시나리오가 happy path만 다루고 있어 실제 운영 환경의 오류 상황 대응이 불충분합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.35,
+            "rationale": "giftvoucher-security 스킬의 규칙 분리·재사용성은 심각한 결함을 보입니다. 첫째, businessRules 목록에 동일 정책이 반복 등재되어 있습니다(예: POL-PENSION-MG-002, POL-PENSION-MG-003, POL-PENSION-MG-004가 여러 번 중복). 둘째, 단일 정책 ID가 서로 다른 조건과 결과를 가진 여러 runbook으로 정의되어 있습니다(예: POL-PENSION-MG-004는 '보안키패드 노출 방지', 'API 오류 응답', '인증 API 웹방화벽 수용' 등 3가지 이상의 독립적 책임을 혼재). 셋째, POL-PENSION-MG-280이 '개인정보처리시스템 보안장비 배치'와 '로그인 시 OTP 발송'이라는 전혀 다른 두 가지 기능으로 정의되어 있습니다. 이는 규칙 간 경계가 불명확하고 중복·모순이 광범위하게 존재함을 의미하며, 독립적 참조·적용이 불가능합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0.42,
+            "rationale": "giftvoucher-security 스킬의 tests 섹션이 완전히 부재하다. 제공된 데이터는 businessRules(170개 이상), runbooks(100개 이상의 운영 가이드), scenario 정의(400개 이상)로 구성되어 있으나, 실제 자동화 가능한 단위 테스트 케이스(tests/*.yaml)가 없다. Scenario들은 given/when/then 구조를 가지고 있으나, 이는 테스트 시나리오 명세일 뿐 구현된 테스트 코드가 아니다. Happy path, edge case, error case의 균형 있는 커버리지를 판단할 수 없으며, 구체적인 입력값(예: 카드번호 형식, OTP 유효시간 초 단위)과 검증 가능한 출력값(예: HTTP 상태코드, 에러 코드 정확값)이 테스트 케이스로 구현되지 않았다. 따라서 자동화 테스트 구현 가능성이 매우 낮다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.323,
+        "passCount": 0,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:16:04.497Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 37223
+    },
+    {
+      "skillId": "859e3d01-1f7d-4cc3-ba8f-814f82bb9da6",
+      "result": {
+        "skillId": "859e3d01-1f7d-4cc3-ba8f-814f82bb9da6",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0,
+            "rationale": "Evaluation failed: SyntaxError: Unterminated string in JSON at position 657 (line 3 column 639)",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.85,
+            "rationale": "giftvoucher-operation 스킬의 runbooks는 대부분의 rule을 커버하고 있으나 일부 불일치가 존재합니다. 긍정적 측면: 170개 이상의 POL-PENSION-* 규칙에 대응하는 runbook이 체계적으로 작성되었으며, 각 runbook은 Condition(When), Criteria(If), Outcome(Then) 구조를 정확히 반영하고 있습니다. 예를 들어 POL-PENSION-MG-002(앱 초기화면 로딩 실패)는 runbook에서 '로딩 실패 또는 진입 불가 시 사용자에게 안내 메시지 제공 및 재시도 기능 노출'로 정확히 설명되어 있습니다. 부정적 측면: 일부 rule의 runbook 내용이 과도하게 단순화되었거나, POL-PENSION-MG-073처럼 동일 ID로 두 개의 서로 다른 규칙이 존재하는 경우 runbook이 하나만 제공되어 내용 불일치가 발생합니다. 또한 일부 기술적 세부사항(예: 포트번호, 파일경로)이 runbook에서 누락된 경우가 있습니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.62,
+            "rationale": "giftvoucher-operation 스킬의 테스트 시나리오들은 given/when/then 구조를 갖추고 있으나, 입출력 구조의 명확성 측면에서 중대한 결함이 있습니다. given 필드는 대부분 조건 충족 여부만 추상적으로 표현되어 있으며, 구체적인 입력값이나 타입이 명시되지 않습니다. 예를 들어 'POL-PENSION-MG-002' 시나리오의 given은 '앱 접속 시 초기화면을 로딩할 때 조건 충족'으로만 기술되어 있고, 로딩 시간, 응답 상태 코드, 사용자 정보 등 구체적 입력 파라미터가 부재합니다. then 필드도 '사용자에게 안내 메시지 제공 및 재시도 기능 노출'처럼 기능적 결과만 기술되어 있으며, 응답 객체의 필드명, 데이터 타입, 메시지 형식 등이 명확하지 않습니다. 대다수 시나리오가 이러한 패턴을 반복하고 있어, AI 모델이 입출력 계약을 정확히 파악하기 어렵습니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.35,
+            "rationale": "giftvoucher-operation 스킬의 예외·에러 핸들링 평가 결과, 대부분의 규칙(rules)에서 exception/else 절이 명시적으로 정의되지 않았습니다. 제공된 Business Logic Rules 테이블에서 'exception (Else)' 컬럼이 거의 모든 항목에서 '—'(정의 안 됨)로 표시되어 있습니다. 예를 들어 POL-PENSION-MG-002(앱 초기화면 로딩 실패)는 로딩 실패 시 안내 메시지 제공을 명시하지만, 추가 예외 케이스(네트워크 오류, 서버 다운 등)에 대한 처리는 미정의 상태입니다. Runbooks에서는 happy path만 기술되어 있으며, 예외 상황별 대응 절차가 부족합니다. Test Scenarios는 정상 케이스 중심으로 구성되어 있으며, error_code나 비정상 상태에 대한 테스트 시나리오가 거의 없습니다. POL-PENSION-EX-011(배치 오류 처리)과 같은 예외 규칙도 재시도 정책만 언급하고 구체적인 에러 코드나 실패 시나리오 커버가 부족합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.35,
+            "rationale": "giftvoucher-operation 스킬의 업무루틴 분리·재사용성 평가 결과, 심각한 SRP 위반과 중복이 확인되었습니다. 동일한 정책ID(예: POL-PENSION-MG-002, POL-PENSION-MG-006, POL-PENSION-MG-008)가 businessRules에서 반복 선언되며, 단일 정책이 여러 맥락에서 재정의됩니다. POL-PENSION-MG-357은 '모바일 접속 시 서비스 호출 방식'과 '여러 서비스 로드밸런싱'이라는 상이한 책임을 혼재하고, POL-PENSION-MG-073은 '백신설치'와 '관리자 권한 제한'이라는 무관한 두 조건을 포함합니다. POL-PENSION-MG-428은 '서버 동기화 시간 요청'과 '캐시백 예산 할당'이라는 완전히 다른 업무를 동일 ID로 정의합니다. 또한 POL-PENSION-MG-245가 두 번 등장하며 서로 다른 내용(JWT 검증 vs 로드밸런싱)을 담고 있습니다. 규칙 간 경계가 불명확하고 독립적 참조가 불가능하며, 대부분의 규칙이 복수 책임을 혼합하고 있어 재사용성이 극히 낮습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0.62,
+            "rationale": "giftvoucher-operation 스킬의 테스트 시나리오는 총 200개 이상의 시나리오를 포함하고 있으나, 테스트 가능성 측면에서 중대한 결함이 있습니다. 대부분의 시나리오가 happy path만 다루고 있으며, edge case와 error case 커버리지가 극히 부족합니다. 예를 들어 'POL-PENSION-MG-002 앱 초기화면 로딩 실패'는 given/when/then이 추상적으로 표현되어 있고, 구체적인 타임아웃 값(예: 30초 초과), 재시도 횟수 제한, 네트워크 오류 시나리오 등이 명시되지 않았습니다. 'POL-PENSION-MG-140 출금 타임아웃'은 5분 대기 후 상태조회를 언급하지만, 상태조회 실패 시 처리, 최대 재시도 횟수, 최종 실패 처리 등 error case가 누락되어 있습니다. 또한 대부분의 then 절이 '~를 수행한다', '~를 반환한다' 같은 추상 표현으로만 기술되어 있어 자동화 테스트 구현이 어렵습니다. 구체적인 응답 코드(예: resultCode='0000'), 데이터베이스 상태 검증, 예외 메시지 패턴 등이 부재합니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          }
+        ],
+        "totalScore": 0.465,
+        "passCount": 3,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:16:33.181Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 38061
+    },
+    {
+      "skillId": "f35f125b-b2fd-4171-880e-3ce1e3ccd6da",
+      "result": {
+        "skillId": "f35f125b-b2fd-4171-880e-3ce1e3ccd6da",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.15,
+            "rationale": "소스코드 정합성 평가 결과 심각한 불일치가 확인되었습니다. Provenance의 businessRules 목록(POL-PENSION-EN-003, POL-PENSION-MG-001 등 총 152개)과 Original Rules 표를 대조한 결과, 다음과 같은 문제점이 발견되었습니다: (1) ID 문자열 일치 부재: Provenance의 모든 BL ID가 Original Rules 표의 ID 컬럼에 정확히 매핑되지 않음. (2) Exception 열 완결성 부족: 표의 모든 행에서 exception 컬럼이 '—'로 명시되어 있으나, 실제 내용과의 일관성 검증 불가. (3) 구조적 불일치: Provenance는 단순 ID 나열이나 Original Rules는 condition-criteria-outcome-exception 4개 컬럼 구조로 정의되어 있음. (4) 중복 ID 다수: POL-PENSION-MG-001, MG-006, MG-007, MG-009 등이 여러 번 반복되어 1:1 매핑 원칙 위반. (5) 원본 표 자체의 완결성 의문: 제시된 Original Rules 표가 Provenance의 모든 152개 BL을 포함하지 않는 것으로 보임.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.62,
+            "rationale": "giftvoucher-member 스킬의 주석·문서 일치도를 평가한 결과, 대부분의 rule에 대응하는 runbook이 존재하나 내용 일치도에서 중대한 불일치가 발견되었습니다. 제공된 150개 이상의 rule 중 runbook이 존재하는 것은 약 130개(87%)이나, 내용 검토 시 다음 문제점이 확인됩니다: (1) POL-PENSION-MG-001~009 등 개인정보 접근로그 관련 rule들의 runbook이 회원가입/로그인 인증으로 잘못 매핑되어 있음, (2) POL-PENSION-MG-006, MG-007 등이 구매/입금 프로세스로 중복 정의되어 원래 마스킹해제 권한 부여 내용과 불일치, (3) 가맹점 지역검색(MG-001~005) rule의 runbook이 실제로는 동일한 내용으로 반복되어 세부 조건 차이를 정확히 반영하지 못함. 따라서 runbook 누락은 13% 수준이나 내용 불일치가 30% 이상으로 평가됩니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.42,
+            "rationale": "giftvoucher-member 스킬의 tests/contract 시나리오들을 분석한 결과, 입출력 구조 명확성이 현저히 부족합니다. 대부분의 시나리오에서 given 필드가 '조건 충족'이라는 추상적 표현만 포함되어 구체적 값이나 타입이 명시되지 않았습니다. 예: 'POL-PENSION-EN-003'의 given은 '회원가입 프로세스를 진행할 때 조건 충족'으로만 기술되어 입력 필드의 타입(string, number, object 등)과 의미가 불명확합니다. when/then 필드도 마찬가지로 비즈니스 로직 설명에 그쳐 응답 형태(성공/실패 상태코드, 반환 데이터 구조)를 정의하지 않았습니다. 예를 들어 'POL-PENSION-MG-001'의 then은 '오류 메시지 제공 및 재시도 안내'로만 기술되어 실제 응답 JSON 구조나 필드명이 없습니다. 약 200개 이상의 시나리오 중 구체적 필드 타입과 응답 구조를 명시한 경우가 거의 없어 AI 모델 학습 및 자동화 테스트 생성에 부적합합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.35,
+            "rationale": "예외·에러 핸들링 기준 평가 결과, giftvoucher-member 스킬은 심각한 결함을 보입니다. 분석 대상 150개 이상의 rules에서 대부분 'exception (Else)' 절이 '—'(대시)로 표기되어 있어 예외 처리가 명시되지 않았습니다. 예를 들어 POL-PENSION-EN-003(회원가입 실패 처리), POL-PENSION-MG-001(로그인 오류 처리) 등 핵심 규칙들도 exception 절이 완전히 누락되어 있습니다. tests/*.yaml 시나리오도 happy path 중심으로 구성되어 있으며, error_code나 비정상 상태(인증 실패, 입력값 검증 오류, 시스템 오류 등)를 다루는 예외 시나리오가 거의 없습니다. 일부 규칙(POL-PENSION-RG-002, POL-PENSION-EX-431 등)에서만 제한적으로 예외 상황이 언급되어 있으나, 체계적인 예외 처리 프레임워크가 부재합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.35,
+            "rationale": "giftvoucher-member 스킬의 업무루틴 분리·재사용성은 심각한 수준의 문제를 보입니다. 첫째, businessRules 목록에서 동일 규칙이 반복 선언됩니다(POL-PENSION-MG-001 3회, POL-PENSION-MG-006 2회, POL-PENSION-MG-007 2회, POL-PENSION-MG-009 3회, POL-PENSION-MG-408 2회, POL-PENSION-MG-409 2회, POL-PENSION-MG-411 2회, POL-PENSION-RG-135 2회 등). 둘째, 단일 규칙ID가 완전히 다른 업무 영역을 다룹니다. 예를 들어 POL-PENSION-MG-001은 '로그인 본인인증', '개인정보취급자 접속로그', '가맹점 지역검색' 세 가지 전혀 다른 책임을 혼재합니다. POL-PENSION-MG-006도 '마스킹해제 권한부여'와 '관리자 구매신청' 두 가지 독립적 기능을 포함합니다. 셋째, 규칙 간 명확한 경계가 없어 독립 참조가 어렵습니다. 이는 SRP(Single Responsibility Principle) 심각 위반으로, 규칙 재사용성과 유지보수성을 크게 저해합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0.35,
+            "rationale": "giftvoucher-member 스킬의 tests/*.yaml 시나리오는 심각한 품질 결함을 보입니다. 제공된 Test Scenarios 섹션에는 200개 이상의 시나리오가 나열되어 있으나, 모두 동일한 구조로 반복되며 실제 자동화 테스트 구현 가능성이 극히 낮습니다. 각 시나리오의 given/when/then이 추상적 표현('조건 충족', '확인', '판단')으로만 구성되어 구체적 입력값, 예상 출력값, 검증 기준이 전혀 없습니다. Happy path만 나열되어 있고 edge case(경계값, null, 빈 문자열)와 error case(인증 실패, 타임아웃, 데이터 불일치)가 완전히 부재합니다. 예를 들어 'OTP 발송' 시나리오는 '발송된다'는 boolean 결과만 제시하며, 발송 실패, 중복 발송, 유효시간 초과 등의 시나리오가 없습니다. 테스트 자동화 도구(JUnit, Selenium 등)로 구현 불가능한 수준의 모호성을 지닙니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.373,
+        "passCount": 1,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:16:41.069Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 36422
+    },
+    {
+      "skillId": "800a9623-88c6-4e10-8377-12dbcd796d1b",
+      "result": {
+        "skillId": "800a9623-88c6-4e10-8377-12dbcd796d1b",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.95,
+            "rationale": "provenance.businessRules의 두 규칙(POL-PENSION-CT-406, POL-PENSION-EN-146)이 Original Rules 표에 ID 문자열 일치로 완전히 존재한다. POL-PENSION-CT-406은 condition '자동충전 금액이 설정될 때', criteria '잔액 조건, 일자 조건 등 충전 조건별로 설정 금액(stngAmt) 및 조건별 금액(blceCondAmt, ymdCondAmt, condSmAmt)이 입력됨', outcome '조건에 따라 자동충전 금액이 산정되어 적용됨', exception '—'로 완결되어 있다. POL-PENSION-EN-146도 condition '사용자가 App을 통해 충전을 요청한 경우', criteria '사용자ID, 충전금액, 출금계좌ID가 모두 유효하게 입력되어야 함', outcome '필수 정보가 모두 유효한 경우에만 출금 처리를 진행하고, 누락 또는 무효 시 요청을 거부함', exception '—'로 완결되어 있다. 모든 exception 열이 명시적으로 '—'(예외 없음)로 표기되어 있으며, Runbooks와 Test Scenarios가 원본 규칙과 일치한다. Empty Slot Rules가 없으므로 참고 맥락 검증 불필요. 0.95는 완전 정합성에서 미미한 여유도(추가 검증 기회)를 반영한 점수다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.92,
+            "rationale": "giftvoucher-charging 스킬의 2개 비즈니스 규칙(POL-PENSION-CT-406, POL-PENSION-EN-146)에 대해 대응하는 runbook이 모두 존재하며, 각 runbook의 condition-criteria-outcome이 원본 rule을 정확히 반영하고 있습니다. POL-PENSION-CT-406의 경우 '자동충전 금액이 설정될 때' 조건과 'stngAmt, blceCondAmt, ymdCondAmt, condSmAmt' 입력 기준, '조건에 따라 자동충전 금액이 산정되어 적용됨' 결과가 일치합니다. POL-PENSION-EN-146도 '사용자가 App을 통해 충전을 요청한 경우' 조건과 '사용자ID, 충전금액, 출금계좌ID 유효성' 기준, '필수 정보 유효 시 출금 처리, 누락/무효 시 거부' 결과가 정확히 대응됩니다. 테스트 시나리오도 두 정책 모두 포함되어 있으며, 각 시나리오의 given-when-then 구조가 rule의 condition-criteria-outcome과 완벽하게 일치합니다. 다만 Empty Slot Rules가 없고 Contract Tests의 trust 점수가 0으로 표기된 점이 미미한 감점 요인입니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.35,
+            "rationale": "giftvoucher-charging 스킬의 테스트 시나리오에서 입출력 구조의 명확성이 심각하게 부족합니다. POL-PENSION-CT-406 시나리오의 given 필드는 '자동충전 금액이 설정될 때 조건 충족'으로 추상적이며, 구체적인 값이나 타입이 명시되지 않았습니다. 조건별 금액(stngAmt, blceCondAmt, ymdCondAmt, condSmAmt)이 언급되지만 입력값의 범위, 형식, 데이터 타입이 정의되지 않았습니다. then 필드의 '조건에 따라 자동충전 금액이 산정되어 적용됨'도 산정 로직, 반환 필드명, 응답 구조가 불명확합니다. POL-PENSION-EN-146 시나리오도 마찬가지로 given에서 '사용자ID, 충전금액, 출금계좌ID'의 유효성 기준이 정의되지 않았고, then에서 '출금 처리 진행' 또는 '요청 거부'의 응답 형태(상태코드, 메시지, 트랜잭션ID 등)가 명시되지 않았습니다. 전체적으로 given/then 구조가 자연어 설명에 머물러 있어 자동화된 테스트 실행이 불가능합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.35,
+            "rationale": "giftvoucher-charging 스킬의 예외·에러 핸들링 정의가 심각하게 부족합니다. 원본 Rules 테이블의 'exception (Else)' 컬럼이 두 정책 모두 '—'로 표시되어 있어 예외 케이스가 명시되지 않았습니다. POL-PENSION-CT-406은 '조건에 따라 자동충전 금액이 산정'되는 happy path만 정의되고, 입력값 누락, 잘못된 금액 형식, 조건 불일치 등의 예외 처리가 없습니다. POL-PENSION-EN-146은 '누락 또는 무효 시 요청을 거부'라는 일반적 언급만 있을 뿐, 구체적인 error_code나 예외 상태가 정의되지 않았습니다. Test Scenarios에서도 happy path 시나리오만 존재하며, error_code를 포함한 예외 시나리오(예: INVALID_USER_ID, INSUFFICIENT_BALANCE, INVALID_ACCOUNT)가 완전히 누락되어 있습니다. Runbooks도 정상 케이스만 다루고 있습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.85,
+            "rationale": "giftvoucher-charging 스킬의 두 가지 비즈니스 규칙(POL-PENSION-CT-406, POL-PENSION-EN-146)은 각각 단일 책임을 명확히 분리하고 있습니다. POL-PENSION-CT-406은 '자동충전 금액 조건별 설정'에만 집중하며, POL-PENSION-EN-146은 '충전 요청 시 필수 정보 검증'으로 명확히 구분됩니다. 두 규칙 간 중복 정의나 모순이 없으며, 각각 독립적으로 참조·적용 가능합니다. 다만 감점 사유는 다음과 같습니다: (1) Empty Slot Rules가 전혀 정의되지 않아 엣지 케이스 보완이 부재하고, (2) POL-PENSION-CT-406의 '조건별 금액' 파라미터(blceCondAmt, ymdCondAmt, condSmAmt)가 다소 모호하게 표현되어 있으며, (3) 두 규칙 간의 실행 순서나 의존성이 명시되지 않아 통합 시나리오에서의 상호작용이 불명확합니다. 전반적으로 SRP를 대부분 준수하나 세부 명확성과 엣지 케이스 커버리지 개선이 필요합니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "testability",
+            "score": 0.35,
+            "rationale": "giftvoucher-charging 스킬의 테스트 시나리오는 심각한 자동화 테스트 적합성 결함을 보입니다. 제공된 tests/*.yaml에는 단 2개 시나리오만 존재하며, 모두 happy path만 다룹니다. POL-PENSION-CT-406의 given은 '자동충전 금액이 설정될 때 조건 충족'으로 추상적이며, when의 criteria도 '설정 금액(stngAmt) 및 조건별 금액(blceCondAmt, ymdCondAmt, condSmAmt)이 입력됨'으로 구체적 값이 없습니다. then의 outcome도 '조건에 따라 자동충전 금액이 산정되어 적용됨'으로 boolean 수준의 모호한 표현입니다. POL-PENSION-EN-146도 마찬가지로 edge case(부분 누락, 형식 오류, 계좌 무효)와 error case(네트워크 실패, 중복 요청)가 전혀 없습니다. 자동화 테스트 구현을 위한 구체적 입력값, 예상 출력값, 경계값 테스트가 완전히 부재합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.628,
+        "passCount": 3,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:16:58.994Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 26320
+    },
+    {
+      "skillId": "d0440832-4a41-42e7-bc4b-72df85e75fe3",
+      "result": {
+        "skillId": "d0440832-4a41-42e7-bc4b-72df85e75fe3",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.92,
+            "rationale": "provenance.businessRules의 17개 규칙(POL-PENSION-MG-001, MG-010, CT-421, MG-290, MG-291, MG-292, RG-280, RG-281, RG-282, RG-285, RG-286, RG-287, RG-289, WD-150, MG-144, MG-147, MG-149)이 모두 originalRules 표에 ID 문자열 일치로 존재한다. 각 규칙의 condition-criteria-outcome이 완전히 매핑되며, 모든 exception 열이 '—'(예외 없음)으로 명시되어 있다. runbooks와 test scenarios도 모든 17개 규칙을 동일한 ID와 내용으로 포함하고 있어 일관성이 유지된다. Empty Slot Rules가 없으므로 참고 맥락 검증 불필요. 다만 originalRules 표의 POL-PENSION-MG-147 행이 truncated 표기('...')로 끝나 완전한 exception 값 확인이 불가능한 점이 미소 감점 요인이다. 이를 제외하면 ID 명시, 구조적 완결성, 내용 일치도 모두 0.9 이상 기준을 충족한다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.94,
+            "rationale": "giftvoucher-account 스킬의 17개 비즈니스 규칙(POL-PENSION-MG-001, MG-010, CT-421, MG-290, MG-291, MG-292, RG-280, RG-281, RG-282, RG-285, RG-286, RG-287, RG-289, WD-150, MG-144, MG-147, MG-149)에 대해 모두 대응하는 runbook이 존재한다. 각 runbook은 원본 규칙의 Condition(When), Criteria(If), Outcome(Then) 구조를 정확히 반영하고 있으며, 예를 들어 POL-PENSION-MG-001은 'KMC 본인확인 요청 시' → 'result 응답값이 Y' → '인증 성공 처리'로 일치한다. POL-PENSION-RG-287은 'REG_DT 5년 경과' → '확인' → 'PARTIES_HIS 테이블에서 삭제'로 정확히 대응된다. 모든 runbook이 reviewed 신뢰도(0.7)로 표시되어 있고, Test Scenarios와 Contract Tests도 모든 정책을 포함하고 있다. 다만 runbook 내용이 매우 간결하여 실제 운영 절차의 세부 단계나 예외 처리 방안이 제한적인 점이 미미한 감점 요인이다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.42,
+            "rationale": "giftvoucher-account 스킬의 테스트 시나리오들은 given/when/then 구조를 형식적으로 포함하고 있으나, 입출력 구조의 명확성이 심각하게 부족합니다. given 필드는 '조건 충족'이라는 추상적 표현만 반복되며, 구체적인 입력값, 데이터 타입, 필드명이 명시되지 않습니다. 예를 들어 POL-PENSION-MG-001의 given은 'KMC 본인확인 요청 시 조건 충족'으로만 기술되어 있고, 실제 요청 객체의 구조(예: {kmc_request_id, user_id, verification_type} 등)가 정의되지 않았습니다. when 절의 criteria도 '결과값이 Y'라는 boolean 수준의 추상화만 제공합니다. then 절의 outcome은 '인증 성공으로 처리'처럼 상태 변화만 기술하고, 응답 형태(HTTP status, response body structure, error codes)를 명시하지 않습니다. POL-PENSION-WD-150의 경우 '출금을 처리하고 에러를 리턴'이라 하나, 성공/실패 응답의 필드 구조가 불명확합니다. 17개 정책 모두에서 이러한 패턴이 반복되어, AI 모델이 입출력 스키마를 자동 추출하거나 검증하기 어렵습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.25,
+            "rationale": "giftvoucher-account 스킬의 예외·에러 핸들링 평가 결과: 17개 비즈니스 규칙 중 16개가 'exception (Else)' 열에 '—'(정의 없음)로 표기되어 있습니다. 유일하게 예외 처리가 명시된 규칙은 POL-PENSION-WD-150('잔액 부족 시 출금 실패로 에러를 리턴함')뿐입니다. 테스트 시나리오(tests/*.yaml)는 happy path만 포함하며, error_code, 비정상 상태, 실패 케이스 등 예외 시나리오가 전혀 커버되지 않았습니다. 예를 들어 KMC 인증 실패(result='N'), 충전 한도 초과, 배치 작업 실패, 외부 API 연계 오류, 파기 작업 실패 등의 예외 케이스가 규칙과 테스트에서 모두 누락되어 있습니다. 이는 운영 환경에서 발생 가능한 다양한 오류 상황에 대한 대응 방안이 정의되지 않은 상태로, AI-Ready 품질 기준에 미달합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.62,
+            "rationale": "giftvoucher-account 스킬의 17개 정책(POL-PENSION-*)을 분석한 결과, 업무루틴 분리·재사용성 측면에서 중대한 문제가 발견되었습니다. 첫째, 개인정보 파기 관련 규칙들(RG-280, RG-281, RG-282)이 동일한 '5일 이내 완전파기' 아웃컴을 반복 정의하고 있으며, 조건만 상이합니다(수집목적 달성 vs 제공목적 달성 vs 보유기간 종료). 둘째, 파기 이력 기록 책임이 RG-286(파기관리대장 기록)과 MG-292(JOB_STTS_BATCH 테이블 기록)에 중복 분산되어 있어 책임 경계가 불명확합니다. 셋째, MG-291(배치 삭제)과 RG-287(5년 경과 삭제)이 동일한 PARTIES_HIS 테이블 삭제 로직을 중복 정의합니다. 긍정적으로는 인증(MG-001), 자금관리(MG-010), 충전한도(CT-421), 계좌동기화(MG-144), 지갑생성(MG-147) 등 5개 규칙은 단일 책임을 명확히 합니다. Empty Slot 규칙이 없어 엣지케이스 보완도 부족합니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "testability",
+            "score": 0.35,
+            "rationale": "giftvoucher-account 스킬의 테스트 시나리오는 17개 정책을 다루고 있으나, 테스트 가능성 측면에서 심각한 결함을 보입니다. 모든 시나리오의 given 조건이 '조건 충족'이라는 추상적 표현으로만 기술되어 있어 자동화 테스트 구현이 불가능합니다. 예를 들어 POL-PENSION-WD-150(출금 처리)의 경우 'given: 충전 요청에 따라 출금계좌에서 출금을 시도하는 경우 조건 충족'으로만 표기되어, 구체적인 계좌번호, 잔액액수, 요청금액 등의 테스트 데이터가 전혀 없습니다. Happy path만 암묵적으로 다루고 있으며, edge case(한도 초과, 잔액 부족)와 error case(API 실패, 타임아웃)가 명시적으로 분리되지 않았습니다. Then 절도 '처리한다', '기록한다' 같은 boolean 수준의 추상 표현만 있어 검증 기준이 불명확합니다. 총 17개 시나리오 중 구체적 값으로 자동화 가능한 시나리오는 0개입니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.583,
+        "passCount": 3,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:17:13.780Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 32513
+    },
+    {
+      "skillId": "d7e35396-e0bf-4771-953c-8cbea58bf803",
+      "result": {
+        "skillId": "d7e35396-e0bf-4771-953c-8cbea58bf803",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.95,
+            "rationale": "provenance.businessRules의 17개 BL(POL-PENSION-EX-006, EX-014, EX-022, RG-011, RG-020, WD-004, WD-005, WD-007, WD-008, MG-423, MG-424, MG-416, MG-417, MG-225, MG-227, MG-230, MG-231)이 모두 originalRules 표에 ID 문자열 일치로 존재한다. 각 BL의 condition-criteria-outcome이 완전히 매핑되며, 모든 exception 열이 '—'(예외 없음)으로 명시되어 있다. runbooks와 test scenarios도 모든 BL을 포함하며 내용이 일치한다. Empty Slot Rules가 없으므로 참고 맥락 검증 불필요. 유일한 경미한 감점 사유는 provenance의 sources 배열이 비어있어 출처 추적성이 부재한 점이나, 이는 ID 매핑 정합성 평가 범위 외이다. 구조적 완결성과 내용 일치도가 매우 높다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.95,
+            "rationale": "giftvoucher-gift 스킬의 17개 비즈니스 규칙(POL-PENSION-EX-006 ~ POL-PENSION-MG-231)에 대해 모두 대응하는 runbook이 존재합니다. 각 runbook은 rule의 condition(When), criteria(If), outcome(Then)을 정확히 반영하고 있습니다. 예를 들어 POL-PENSION-WD-004는 '구매 후 7일 이내 환불 요청'이라는 criteria를 runbook에서 동일하게 명시하고 '전액 환불 처리'라는 outcome을 정확히 설명합니다. POL-PENSION-MG-423의 '기프트 또는 쿠폰의 유효성 및 사용 가능 여부 확인'도 runbook에서 동일하게 기술되어 있습니다. 또한 Test Scenarios와 Contract Tests가 모든 정책을 포괄하고 있으며, 각 runbook의 trust 점수가 0.7로 일관되게 설정되어 있습니다. 다만 일부 runbook의 설명이 매우 간결하여 운영 실무에서의 상세한 절차나 예외 케이스 처리 방법이 다소 부족한 점이 미미한 감점 요인입니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.35,
+            "rationale": "giftvoucher-gift 스킬의 tests/contract 시나리오들은 입출력 구조 명확성 측면에서 심각한 결함을 보입니다. given 필드는 '조건 충족'이라는 추상적 표현만 반복되며, 구체적 값이나 타입이 전혀 명시되지 않았습니다(예: POL-PENSION-WD-004의 'given: 미사용 상품권 환불 요청 시(구매 후 7일 이내) 조건 충족'). then 필드도 마찬가지로 'outcome: 전액 환불 처리'처럼 상태 변화만 기술하고, 응답 형태(금액, 계좌정보, 거래ID 등)를 정의하지 않습니다. 특히 POL-PENSION-MG-416/417(목록/요약 조회)은 '조회하여 반환한다'고만 표기하며, 반환 데이터 구조(배열, 필드명, 타입)가 완전히 부재합니다. 17개 정책 모두 boolean 수준의 성공/실패만 암시하고, 필드 타입과 의미를 파악할 수 없는 상태입니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.35,
+            "rationale": "giftvoucher-gift 스킬의 예외·에러 핸들링 평가 결과, 심각한 결함이 확인됩니다. 17개 비즈니스 규칙 중 모든 규칙의 'exception (Else)' 열이 '—'로 표시되어 있어 예외 케이스가 전혀 정의되지 않았습니다. 예를 들어 POL-PENSION-WD-004(7일 이내 환불)는 '전액 환불 처리'만 명시하고 환불 실패, 계좌 오류, 거래 취소 등의 예외 시나리오가 없습니다. POL-PENSION-MG-423(기프트 수락)도 유효성 확인 실패, 만료된 기프트, 중복 수락 등의 예외가 미정의 상태입니다. 테스트 시나리오는 happy path만 존재하며, error_code, 비정상 상태, 실패 케이스를 포함한 예외 시나리오가 완전히 부재합니다. 계약 테스트도 정책 나열만 있고 실제 에러 조건 검증이 없습니다. 이는 운영 중 예상치 못한 장애 상황에 대한 대응 지침이 부족함을 의미합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.62,
+            "rationale": "giftvoucher-gift 스킬의 17개 규칙(POL-PENSION-EX-006~MG-231)을 분석한 결과, 업무루틴 분리·재사용성 측면에서 중간 수준의 문제가 확인됩니다. 긍정적 측면: 각 규칙이 명확한 Condition-Criteria-Outcome 구조를 가지며, 대부분 단일 도메인(giftvoucher)에 속합니다. 부정적 측면: (1) 환불 관련 규칙(WD-004, WD-005, WD-007, WD-008)과 기프트/쿠폰 처리(MG-423, MG-424) 간 책임 경계가 불명확하며, (2) POL-PENSION-MG-227의 '상태별 처리 분기'는 3가지 상태('대기', '완료', '실패')를 하나의 규칙에 혼합하여 단일책임원칙 위반, (3) 정책 변경(MG-230)과 권한 관리(MG-231)는 시스템 관리 영역으로 상품권 운영과 혼재되어 있습니다. Empty Slot 규칙이 없어 엣지 케이스 보완이 부족하며, 규칙 간 참조 관계가 명시되지 않아 독립적 적용 가능성이 제한적입니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "testability",
+            "score": 0.35,
+            "rationale": "giftvoucher-gift 스킬의 테스트 시나리오는 17개 정책을 다루고 있으나, 테스트 가능성 측면에서 심각한 결함을 보입니다. 모든 시나리오의 given 조건이 '조건 충족'이라는 추상적 표현으로만 기술되어 있어 자동화 테스트 구현이 불가능합니다. 예: 'POL-PENSION-WD-004'의 given은 '미사용 상품권 환불 요청 시(구매 후 7일 이내) 조건 충족'으로, 구체적 값(구매일시, 요청일시, 상품권ID 등)이 전혀 없습니다. then 항목도 '환불 처리', '수락 처리' 등 boolean 수준의 추상 표현만 있어 검증 기준이 불명확합니다. Happy path만 존재하며, edge case(예: 6일 vs 8일 경계)와 error case(예: 환불 실패 시나리오)가 완전히 부재합니다. 17개 시나리오 모두가 동일한 구조적 결함을 반복하고 있어 단위테스트 자동화 적합성이 매우 낮습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.595,
+        "passCount": 3,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:17:27.800Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 29239
+    },
+    {
+      "skillId": "b4873556-8487-4e6f-b227-c824cfa063f4",
+      "result": {
+        "skillId": "b4873556-8487-4e6f-b227-c824cfa063f4",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.95,
+            "rationale": "provenance.businessRules의 23개 BL ID(POL-PENSION-WD-011 ~ POL-PENSION-BN-107)가 Original Rules 표의 ID 컬럼과 문자 그대로 1:1 매핑되었으며, condition-criteria-outcome이 완전히 일치한다. 모든 행의 exception 컬럼이 '—'(예외 없음)으로 명시되어 완결성을 충족한다. Runbooks와 Test Scenarios도 각 BL의 내용을 정확히 반영하고 있다. Empty Slot Rules가 없으므로 참고 맥락 검증 불필요. 다만 provenance의 sources 배열이 비어있고 trust.score가 0으로 설정된 점은 메타데이터 완결성 측면에서 미흡하나, 소스코드 정합성 기준(originalRules ↔ businessRules 매핑)에는 영향을 주지 않는다. ID 표기, 조건-기준-결과 내용, exception 완결성 모두 0.9+ 기준을 충족한다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.95,
+            "rationale": "giftvoucher-payment 스킬의 23개 비즈니스 규칙(POL-PENSION-*)에 대해 모두 대응하는 runbook이 존재하며, 각 runbook의 condition-criteria-outcome 구조가 원본 규칙과 정확히 일치한다. 예를 들어 POL-PENSION-WD-011은 '결제가 정상적으로 완료된 경우' → '결제 완료 상태' → '결제취소 가능(부분취소, 망취소 포함)'으로 완벽하게 매핑되어 있고, POL-PENSION-MG-389의 mchtId, method, trdDt, trdTm, mchtTrdNo, trdAmt 등 필수 정보 요구사항도 runbook에서 동일하게 명시되어 있다. 모든 runbook이 'reviewed' 신뢰도를 갖추고 있으며, test scenarios와 contract tests도 모든 정책을 포함하고 있다. 다만 일부 runbook의 설명이 매우 간결하여 운영 실무에서의 상세한 구현 가이드가 다소 부족한 점이 미미한 감점 요인이다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.42,
+            "rationale": "giftvoucher-payment 스킬의 테스트 시나리오들은 given/when/then 구조를 형식적으로 포함하고 있으나, 입출력 구조의 명확성이 심각하게 부족합니다. given 필드는 '조건 충족'이라는 추상적 표현만 반복되며 구체적 값이나 타입이 명시되지 않습니다. 예: 'POL-PENSION-MG-389'의 given은 '결제 정보 요청이 발생한 경우 조건 충족'으로만 기술되어 mchtId, method, trdDt 등 필수 필드의 구체적 타입, 포맷, 범위가 정의되지 않았습니다. then 필드도 마찬가지로 '결제 내역(PaymentVO)을 저장하고 결제 처리 절차를 진행한다'는 선언적 표현만 있을 뿐, PaymentVO의 구체적 필드 구조, 반환 형식, 상태 코드가 명시되지 않습니다. 'POL-PENSION-BN-148'의 경우 당일입금여부 'Y'/'N' 값만 언급되고 실제 입금 처리 응답 구조는 불명확합니다. 23개 정책 모두에서 이러한 패턴이 반복되어 AI 모델이 입출력 스키마를 자동 추출하기 어렵습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.42,
+            "rationale": "giftvoucher-payment 스킬의 예외·에러 핸들링 커버리지가 매우 부족합니다. 23개 규칙 중 대부분(약 17개)이 'exception (Else)' 열에 '—'로 표기되어 있어 예외 케이스가 명시되지 않았습니다. 예외 처리가 정의된 규칙은 POL-PENSION-BN-142(입금 실패 시 에러 리턴), POL-PENSION-BN-144(입금 에러 시 재시도), POL-PENSION-EX-152(에러/실패 차등 처리), POL-PENSION-WD-139(출금 실패 시 에러 리턴) 등 4개뿐입니다. 테스트 시나리오는 happy path만 존재하며, error_code나 비정상 상태(실패, 타임아웃, 유효성 검증 실패 등)를 검증하는 예외 시나리오가 거의 없습니다. 결제 취소, 고객 정보 검증, 가맹점 조회 등 주요 기능에서 실패 케이스가 누락되어 있습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.62,
+            "rationale": "giftvoucher-payment 스킬의 23개 규칙(POL-PENSION-*)을 분석한 결과, 업무루틴 분리·재사용성 측면에서 중대한 문제가 발견되었습니다. 첫째, 입금 처리 관련 규칙들(BN-142, BN-144, BN-148, BN-107, EX-152)이 동일한 '당일입금여부' 조건을 중복 정의하고 있습니다. BN-148과 BN-107은 실질적으로 동일한 로직('Y'면 당일, 'N'면 익영업일)을 반복 선언합니다. 둘째, 결제취소 관련 규칙들(WD-011, MG-390, MG-373, MG-264, MG-266)이 취소 프로세스의 서로 다른 단계를 처리하지만, 명확한 계층 구조 없이 혼재되어 있어 독립 참조 시 충돌 위험이 있습니다. 셋째, 출금 실패(WD-139)와 입금 실패(BN-142)가 동일한 '실패 시 에러 리턴' 패턴을 반복하며, 에러/실패 구분(EX-152)이 별도 규칙으로 분리되어 있어 응집도가 낮습니다. 규칙 간 명확한 책임 경계가 부족하고, 중복 정의가 다수 존재하여 SRP 준수 수준이 미흡합니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "testability",
+            "score": 0.35,
+            "rationale": "giftvoucher-payment 스킬의 테스트 시나리오는 23개 정책을 다루고 있으나, 테스트 가능성 측면에서 심각한 결함을 보입니다. 모든 시나리오의 given 조건이 '조건 충족'이라는 추상적 표현으로만 기술되어 있어 구체적인 테스트 데이터(예: 결제금액, 거래번호, 고객ID 등)가 전혀 없습니다. when 절도 '결제 완료 상태', '취소 발생 시' 등 모호한 기준만 제시하며, then 절은 '결제취소 가능', '정보가 조회된다' 같은 boolean 수준의 추상적 결과만 기술합니다. Happy path만 존재하며 edge case(부분취소 실패, 중복 취소 요청, 타임아웃 등)와 error case(네트워크 오류, 데이터 불일치, 권한 부족 등)가 완전히 부재합니다. 자동화 테스트 구현을 위한 구체적 assertion이나 예상값이 없어 단위테스트 작성이 불가능합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.618,
+        "passCount": 3,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:17:44.359Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 30897
+    },
+    {
+      "skillId": "dc1ce7ba-50de-4af2-b2af-c43b0694bbfb",
+      "result": {
+        "skillId": "dc1ce7ba-50de-4af2-b2af-c43b0694bbfb",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.95,
+            "rationale": "provenance.businessRules의 19개 규칙(POL-PENSION-WD-001~009, POL-PENSION-CT-420, POL-PENSION-CT-422, POL-PENSION-BN-239, POL-PENSION-BN-240, POL-PENSION-EX-244, POL-PENSION-WD-142, POL-PENSION-WD-143, POL-PENSION-WD-097, POL-PENSION-WD-098, POL-PENSION-WD-106)이 모두 Original Rules 표의 ID 컬럼에 문자 그대로 존재한다. 각 규칙의 condition-criteria-outcome이 완전히 매핑되며, 모든 exception 컬럼이 '—'(예외 없음)으로 명시되어 있다. Runbooks와 Test Scenarios도 모든 19개 규칙에 대해 일관되게 정의되어 있다. Empty Slot Rules가 없으므로 참조 검증 불필요. 유일한 감점 사유는 provenance의 trust.score가 0으로 설정되어 있어 신뢰도 메타데이터가 미흡한 점이나, 이는 소스코드 정합성 평가 범위 외이다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.92,
+            "rationale": "giftvoucher-withdrawal 스킬의 19개 비즈니스 규칙(POL-PENSION-WD-001~106)에 대해 모두 대응하는 runbook이 존재합니다. 각 runbook은 rule의 condition(When), criteria(If), outcome(Then)을 정확히 반영하고 있습니다. 예를 들어 POL-PENSION-WD-001은 '출금 프로세스가 에러 없이 종료됨'을 criteria로, '충전 완료 처리'를 outcome으로 명시하며, runbook도 동일하게 구성되어 있습니다. POL-PENSION-WD-142, WD-143, WD-097, WD-098, WD-106 등 복잡한 규칙들도 상세한 criteria와 outcome으로 정확히 문서화되었습니다. 모든 runbook이 'reviewed' 신뢰도를 가지고 있으며, test scenarios와 contract tests도 완벽하게 대응됩니다. 다만 POL-PENSION-EX-244의 outcome이 '별도 확인 및 정의 필요'로 미완성 상태인 점이 만점을 제외한 이유입니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.42,
+            "rationale": "giftvoucher-withdrawal 스킬의 테스트 시나리오는 given/when/then 구조를 형식적으로 포함하나 입출력 구조 명확성이 심각하게 부족합니다. given 필드는 '조건 충족'이라는 추상적 표현만 반복되며 구체적 값, 타입, 필드명이 전혀 명시되지 않았습니다(예: 'POL-PENSION-WD-001'의 given은 '출금이 정상적으로 완료된 경우 조건 충족'). then 필드도 마찬가지로 '충전 완료 처리', '에러 리턴' 등 추상적 상태만 기술되어 응답 형태, 반환 필드, 데이터 타입이 불명확합니다. POL-PENSION-BN-240의 경우 '환불상태', '입금액' 같은 필드명은 언급되나 타입(string/number), 범위, 계산식 상세가 누락되었습니다. 19개 정책 모두 동일한 패턴으로 I/O 경계를 파악하기 어렵습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0,
+            "rationale": "Evaluation failed: SyntaxError: Unterminated string in JSON at position 634 (line 3 column 616)",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.52,
+            "rationale": "giftvoucher-withdrawal 스킬의 19개 규칙을 분석한 결과, 업무루틴 분리·재사용성 측면에서 심각한 문제가 발견되었습니다. 첫째, 동일 조건에 대한 중복 정의가 광범위합니다: POL-PENSION-WD-003, WD-142, WD-097은 모두 '출금 타임아웃 시 5분 후 상태조회'를 처리하며, POL-PENSION-WD-001과 WD-004는 '출금 정상 완료' 조건을 공유합니다. 둘째, 단일 책임 원칙 위반: POL-PENSION-WD-098은 '출금 정상 완료 상태 확인' + '취소 사유 발생 감지' + '출금취소 API 호출' + '금액 원복'의 4가지 책임을 혼재합니다. 셋째, 규칙 간 모순: WD-004와 WD-143은 동일한 '출금 정상 완료 후 취소 가능' 로직을 중복 정의합니다. 넷째, POL-PENSION-EX-244는 '화면 처리 방식 별도 확인 필요'로 정의되지 않은 상태로 남아있습니다. 이러한 중복과 경계 불명확성으로 인해 규칙의 독립적 참조와 재사용이 어렵습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0,
+            "rationale": "Evaluation failed: SyntaxError: Unterminated string in JSON at position 620 (line 3 column 602)",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.468,
+        "passCount": 2,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:17:58.595Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 30975
+    },
+    {
+      "skillId": "13bb0d15-4a27-47ed-a22e-62d80cf06538",
+      "result": {
+        "skillId": "13bb0d15-4a27-47ed-a22e-62d80cf06538",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.42,
+            "rationale": "소스코드 정합성 평가 결과: provenance.businessRules 48개 항목 중 originalRules 표에서 확인된 항목은 약 35개이나, 심각한 구조적 불일치가 다수 존재합니다. (1) ID 중복 문제: POL-PENSION-MG-416, POL-PENSION-MG-417, POL-PENSION-MG-419가 provenance에서 2회 이상 반복 선언되었으나, originalRules 표에서는 각각 1회만 정의됨. (2) 내용 불일치: provenance의 POL-PENSION-MG-416(게시판 글 등록)과 originalRules의 POL-PENSION-MG-416(카드사 전문요청)이 완전히 다른 도메인의 규칙으로 매핑됨. (3) Exception 열 완결성 부족: 모든 행이 '—'로 표기되어 있으나, 실제 예외 조건이 명시되지 않은 행들이 존재. (4) 누락: POL-PENSION-MG-418, POL-PENSION-MG-420, POL-PENSION-MG-421 등 일부 규칙이 provenance에는 있으나 originalRules 표의 ID 컬럼에 명확히 매핑되지 않음. 이는 0.5 미만의 심각한 정합성 결함입니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.92,
+            "rationale": "giftvoucher-integration 스킬의 47개 비즈니스 규칙(POL-PENSION-*) 중 46개에 대응하는 runbook이 존재하며, 각 runbook의 Condition/Criteria/Outcome이 원본 rule을 정확히 반영하고 있습니다. 예를 들어 POL-PENSION-MG-007은 'BATCH_007 실행 시 COMPARE_INSPECT 테이블 데이터 삭제 후 MP_COMPARE_INSPECT 테이블에 신규 데이터 삽입'이라는 rule을 runbook에서 동일하게 기술했으며, POL-PENSION-MG-444는 '가상계좌 요청/응답 시 VRTL_ACNT_DPST 테이블 기록'을 정확히 설명합니다. 다만 POL-PENSION-RG-418(카드번호 암호화)의 runbook이 원본 rule과 완전히 일치하지만, 일부 rule(예: POL-PENSION-MG-416이 중복 등재)에서 미미한 구조적 불일치가 있습니다. Test Scenarios와 Contract Tests도 모든 정책을 포괄하고 있어 문서 일치도가 매우 높습니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.42,
+            "rationale": "giftvoucher-integration 스킬의 테스트 시나리오는 given/when/then 구조를 형식적으로 포함하나, 입출력 구조 명확성이 심각하게 부족합니다. given 필드는 '조건 충족'이라는 추상적 표현만 반복되며 구체적 값이나 타입이 명시되지 않습니다(예: 'BATCH_007이 실행되는 경우 조건 충족'). then 필드도 마찬가지로 '테이블에 데이터 삽입', '데이터 갱신' 등 추상적 설명만 있고, 응답 객체의 필드명, 타입, 범위 등이 정의되지 않습니다. POL-PENSION-MG-422의 경우 'resultCode와 resultMessage를 포함한 응답'이라 하나 데이터 타입(string/int), 길이 제약, 가능한 값 범위가 불명확합니다. 48개 정책 중 대부분이 동일한 패턴으로 I/O 경계를 파악할 수 없어 AI 학습 및 자동화 검증에 부적합합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.35,
+            "rationale": "giftvoucher-integration 스킬의 예외·에러 핸들링 평가 결과, 심각한 결함이 확인됩니다. 48개 규칙 중 대다수가 'exception (Else)' 절에 '—' 기호만 표기되어 있어 예외 처리가 정의되지 않았습니다. POL-PENSION-EX-145만 외부 API 호출 실패 시 오류 코드 반환을 명시하고 있으며, POL-PENSION-MG-401은 resultCode 기반 오류 처리를 언급합니다. 그러나 대부분의 규칙(POL-PENSION-MG-007, MG-010, MG-444, MG-445 등)은 happy path만 정의되어 있습니다. 테스트 시나리오 역시 정상 케이스만 포함되어 있으며, error_code나 비정상 상태에 대한 테스트 케이스가 전혀 없습니다. 데이터베이스 오류, API 타임아웃, 필수값 누락, 암호화 실패 등 주요 예외 시나리오가 커버되지 않았습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.42,
+            "rationale": "giftvoucher-integration 스킬의 업무루틴 분리·재사용성 평가 결과, 심각한 SRP 위반과 중복이 확인됨. POL-PENSION-MG-416이 '카드사 전문요청 처리상태 관리'와 '게시판 글 등록 시 필수 정보 입력' 두 개의 완전히 다른 업무를 혼재하고 있음. POL-PENSION-MG-417도 '카드사 전문요청 승인번호 관리'와 '게시판 목록 조회 시 페이징 처리'를 동시에 정의. POL-PENSION-MG-418, 419도 동일한 패턴으로 카드사 연동과 게시판/앱 기능을 혼합. 또한 businessRules에서 POL-PENSION-MG-416, 417, 418, 419가 중복 선언되어 있음. 이는 규칙 경계가 불명확하고 단일 책임 원칙을 심각하게 위반하며, 독립적 참조 및 재사용이 불가능한 상태. 규칙 간 모순 관계도 존재하여 운영 혼란을 초래할 수 있음.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0.35,
+            "rationale": "giftvoucher-integration 스킬의 테스트 시나리오는 심각한 자동화 테스트 적합성 문제를 보유하고 있습니다. 47개 정책에 대해 제시된 테스트 시나리오들은 모두 추상적 표현으로만 구성되어 있습니다. 예를 들어 POL-PENSION-MG-007의 'COMPARE_INSPECT, COMPARE_INSPECT_LOAD 테이블 데이터 삭제 후...신규 데이터 삽입'은 구체적 값 없이 기술되었고, POL-PENSION-MG-010의 'COMPANY_API_COMMUNICATE, PARTIES, PARTIES_PERSON 데이터 조회 및...갱신'도 마찬가지입니다. Happy path만 존재하며 edge case(예: 빈 응답, 타임아웃, 부분 실패)와 error case(예: 암호화 실패, DB 연결 오류)가 전혀 없습니다. Given 조건들이 '조건 충족'이라는 추상 표현으로만 작성되었고, Then 결과도 boolean이 아닌 서술적 표현이지만 자동화 검증 기준이 불명확합니다. 총 시나리오 수는 충분하나(47개) 자동화 테스트 구현 가능성이 매우 낮습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.48,
+        "passCount": 1,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:18:13.993Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 29630
+    },
+    {
+      "skillId": "9f4f2704-fad9-49c5-ac81-e7f332db32fe",
+      "result": {
+        "skillId": "9f4f2704-fad9-49c5-ac81-e7f332db32fe",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.92,
+            "rationale": "provenance.businessRules의 26개 BL ID(POL-PENSION-EN-008부터 POL-PENSION-MG-001)가 originalRules 표에 모두 문자 그대로 일치하며, condition-criteria-outcome 매핑이 완전히 존재합니다. 모든 행의 exception 열이 '—'(예외 없음)으로 명시되어 있어 완결성을 충족합니다. runbooks와 test scenarios도 각 BL과 1:1 대응되며 내용이 일치합니다. contract tests의 policies 목록도 provenance.businessRules와 동일하게 26개 정책을 선언하고 있습니다. Empty Slot Rules가 없으므로 참고 맥락 검증 불필요합니다. 다만 originalRules 표의 POL-PENSION-RG-212 행이 criteria 컬럼에서 문장이 절단되어 표시되었으나, runbooks의 동일 정책에서 전체 내용이 명확히 기술되어 있어 실질적 불일치는 아닙니다. ID 표기 변동 없고 구조적 정합성이 우수합니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.92,
+            "rationale": "giftvoucher-other 스킬의 26개 비즈니스 규칙(POL-PENSION-*)에 대해 모두 대응하는 runbook이 존재하며, 각 runbook은 rule의 condition-criteria-outcome 구조를 정확히 반영하고 있습니다. 예를 들어 POL-PENSION-EN-008은 '오프라인 청약 시 청약서 첨부'라는 명확한 condition-outcome 매핑을 제시하고, POL-PENSION-MG-225는 '한글 고객명 마스킹(뒤 1글자를 *로 표시)'이라는 구체적 기준을 일관되게 설명합니다. 개인정보처리방침 관련 규칙들(RG-206, RG-207, RG-208 등)도 초기화면 게시, 로그인 전 전문 열람, 메뉴 레벨 배치 등의 요구사항을 정확히 문서화했습니다. 다만 일부 runbook에서 criteria 섹션이 condition과 중복되거나 실행 세부사항(예: 데이터베이스 스키마, API 검증 로직)이 추상적인 점이 완벽성을 약간 감소시킵니다. 전체적으로 규칙-운영가이드 일치도는 매우 높은 수준입니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.42,
+            "rationale": "giftvoucher-other 스킬의 tests/contract 시나리오들은 given/when/then 구조를 형식적으로 포함하나 입출력 구조 명확성이 심각하게 부족합니다. given 필드는 '조건 충족'이라는 추상적 표현만 반복되며 구체적 값이나 타입이 명시되지 않습니다(예: 'Route의 host가 미작성된 경우 조건 충족'). then 필드도 마찬가지로 상태 변화나 응답 형태를 구체적으로 정의하지 않으며, 필드 타입 정보가 완전히 소실되어 있습니다. 예를 들어 POL-PENSION-MG-315의 경우 '인증 실패 및 오류 코드(KISQ9117) 반환'이라는 문자열만 있고, 응답 객체 구조, 필드명, 데이터 타입이 전혀 명시되지 않습니다. 26개 정책 모두에서 이러한 패턴이 반복되어 AI 모델이 입출력 계약을 파악하기 어렵습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.35,
+            "rationale": "giftvoucher-other 스킬의 예외·에러 핸들링 평가 결과, 심각한 결함이 확인됩니다. 26개 비즈니스 규칙 중 대부분이 'exception (Else)' 절에 '—'(정의 없음)로 표기되어 있습니다. POL-PENSION-MG-315만 'KISQ9117' 오류 코드를 명시하고 있으며, 나머지 규칙들은 정상 경로(Then)만 정의되어 있습니다. 테스트 시나리오는 happy path 중심으로 구성되어 있으며, 예외 상황(API 실패, 데이터 검증 오류, 타임아웃, 비정상 입력값 등)에 대한 에러 코드나 비정상 상태 시나리오가 거의 없습니다. 특히 POL-PENSION-MG-013(API 호출), POL-PENSION-CL-014(데이터 처리), POL-PENSION-CT-427(포인트 충전) 등 외부 의존성이 있는 규칙들에서 실패 케이스가 전혀 정의되지 않았습니다. 이는 프로덕션 환경에서 예상치 못한 장애 상황에 대응할 수 없음을 의미합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.52,
+            "rationale": "giftvoucher-other 스킬의 26개 정책 규칙을 분석한 결과, 업무루틴 분리·재사용성 측면에서 심각한 문제가 발견되었습니다. 첫째, 개인정보처리방침 관련 규칙들(POL-PENSION-MG-210, MG-067, MG-069, MG-071, RG-206, RG-207, RG-208, RG-212, RG-215, RG-063, RG-065, RG-066, RG-072, NF-070)이 동일한 조건과 결과를 반복 정의하고 있습니다. 예를 들어 '초기화면 게시'는 RG-206과 RG-063에서, '메뉴 레벨 배치'는 RG-208과 RG-066에서 중복됩니다. 둘째, 단일 책임 원칙 위반으로 MG-214와 MG-071은 변경이력 관리의 동일 책임을 가집니다. 셋째, 나머지 규칙들(EN-008, EX-014, CL-014, MG-013, CT-427, MG-359, MG-315, MG-225, MG-001)은 서로 다른 도메인(청약, 정산, API, 포인트, 라우팅, 인증, 마스킹, 인터페이스)을 다루어 독립성은 있으나, 전체 26개 규칙 중 약 50% 이상이 중복 또는 모순 관계를 보입니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0.35,
+            "rationale": "giftvoucher-other 스킬의 테스트 시나리오는 26개 정책을 다루고 있으나, 테스트 가능성 측면에서 심각한 결함을 보입니다. 모든 시나리오의 given 조건이 '조건 충족'이라는 추상적 표현으로만 작성되어 있어 자동화 테스트 구현이 불가능합니다. 예를 들어 POL-PENSION-MG-315(성명 값 유효성 검증)는 '60바이트 이상이거나 비정상 문자'라는 구체적 기준이 있음에도, given에서 '조건 충족'으로만 표기되어 테스트 데이터 구성이 불명확합니다. Happy path만 존재하며, edge case(경계값: 59바이트, 60바이트, 61바이트)와 error case(특수문자 종류별, 혼합 입력)가 전혀 커버되지 않습니다. 또한 then의 outcome도 대부분 '처리', '게시', '관리' 등 추상적 표현으로, 검증 가능한 구체적 값(예: 오류코드 KISQ9117 반환 확인, 마스킹 결과 '홍길*' 정확성 검증)이 부족합니다. 26개 시나리오 중 실제 자동화 테스트로 구현 가능한 수준의 시나리오는 5개 미만입니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.58,
+        "passCount": 2,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:18:29.571Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 31230
+    },
+    {
+      "skillId": "6e05ea37-57f8-402c-9a45-59efa4f6b7aa",
+      "result": {
+        "skillId": "6e05ea37-57f8-402c-9a45-59efa4f6b7aa",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.42,
+            "rationale": "provenance.businessRules의 37개 규칙 중 originalRules 표에서 완전히 매핑되는 규칙은 제한적입니다. 주요 불일치: (1) POL-PENSION-MG-005, MG-007, MG-008이 표에 중복 정의되어 있으며, 각각 다른 condition/criteria/outcome을 가짐(인증번호 vs 예약전송 vs 트랜잭션). (2) POL-PENSION-CT-419가 두 번 나타나며 '충전 가능 금액 확인'과 '월별 수수료 자동 청구'로 완전히 다른 내용. (3) originalRules 표의 마지막 행(POL-PENSION-MG-448)이 불완전하게 끝남. (4) exception 열이 모든 행에서 '—'로만 표기되어 있어 실질적 예외 정의 부재. (5) provenance의 일부 규칙(예: POL-PENSION-MG-447, MG-254, MG-257)은 runbooks에는 있으나 originalRules 표에서 명확한 condition-criteria-outcome 구조로 완성되지 않음. ID 문자열 일치는 확인되나, 내용 정합성과 exception 완결성 기준을 충족하지 못합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.85,
+            "rationale": "giftvoucher-settlement 스킬의 37개 비즈니스 규칙(POL-PENSION-*) 중 36개에 대응하는 runbook이 존재하며, 각 runbook은 rule의 condition-criteria-outcome 구조를 정확히 반영하고 있습니다. 예를 들어 POL-PENSION-MG-005는 '인증번호 요청 후 1분 초과'(condition) → '1분 초과'(criteria) → '인증번호 입력 오류 처리'(outcome)로 일치하며, POL-PENSION-WD-006의 '환불 요청'(condition) → '환불 요청 접수'(criteria) → '/money/chargeCancel API 호출'(outcome)도 정확히 대응됩니다. 다만 일부 runbook에서 구체적인 구현 세부사항(예: 타임아웃 재시도 메커니즘, 에러 로깅 전략)이 부족하고, POL-PENSION-MG-447의 'insertNbkkDepositChgPrchsSttsCd 메서드' 호출 조건이 다소 기술적으로 추상화되어 있어 운영 담당자의 이해도를 낮출 수 있습니다. 전반적으로 문서 일치도는 높으나 운영 실행 가능성 측면에서 미세한 개선 여지가 있습니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.42,
+            "rationale": "giftvoucher-settlement의 test scenarios에서 given/when/then 구조는 존재하나 입출력 명확성이 심각하게 부족합니다. given 필드는 '조건 충족'이라는 추상적 표현만 반복되며 구체적 값이나 타입이 명시되지 않습니다(예: 'CPU 사용률이 할당 쿼터를 초과하는 경우 조건 충족'). when/criteria는 비즈니스 조건을 서술하지만 입력 필드의 타입, 범위, 형식을 정의하지 않습니다. then/outcome은 기대 결과를 자연어로만 표현하여 응답 구조, 필드명, 데이터 타입이 불명확합니다. 예를 들어 'POL-PENSION-MG-448'의 '응답 데이터를 반환'은 code, type, desc, duration 필드를 언급하지만 구체적 스키마가 없습니다. 38개 시나리오 모두 이러한 패턴을 반복하며, 필드 검증 규칙, 에러 응답 형식, 상태 코드 정의가 완전히 부재합니다. I/O 경계를 파악하기 위해 추가 문서 참조가 필수적입니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.45,
+            "rationale": "giftvoucher-settlement 스킬의 예외·에러 핸들링 평가 결과, 대부분의 규칙(POL-PENSION-MG-005~009, MG-001~003 등)에서 exception/else 절이 명시적으로 정의되지 않았습니다. 원본 규칙 테이블의 'exception (Else)' 컬럼이 거의 모두 '—'로 표시되어 있으며, 예외 상황에 대한 구체적인 처리 방안이 부재합니다. 테스트 시나리오는 happy path 중심으로 구성되어 있고, error_code나 비정상 상태에 대한 명시적 테스트 케이스가 거의 없습니다. 일부 규칙(POL-PENSION-MG-448: 응답 코드 처리, POL-PENSION-WD-400: 환불 가능 여부 판단)에서 조건부 처리가 있으나, 실패 시나리오나 에러 코드 매핑이 구체화되지 않았습니다. 타임아웃, 재시도, 데이터 검증 실패 등의 엣지 케이스 커버가 미흡합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.42,
+            "rationale": "giftvoucher-settlement 스킬의 업무루틴 분리·재사용성 평가 결과, 심각한 SRP 위반과 중복이 확인됩니다. 첫째, businessRules 목록에서 POL-PENSION-MG-005, MG-007, MG-008이 중복 선언되어 있으며, POL-PENSION-CT-419도 2회 반복됩니다. 둘째, 동일 ID로 서로 다른 업무를 정의한 사례가 다수입니다: POL-PENSION-MG-005는 '인증번호 1분 초과'와 '예약전송 메시지 취소'라는 무관한 두 가지 책임을 가집니다. POL-PENSION-MG-007은 '인증번호 없이 로그인'과 '비즈니스 트랜잭션 단일화'를 혼합합니다. POL-PENSION-MG-008은 '인증번호 불일치'와 '본인인증 SMS'를 함께 처리합니다. 셋째, POL-PENSION-CT-419는 '충전 가능 금액 확인'과 '월별 수수료 자동 청구'라는 완전히 다른 두 시나리오를 포함합니다. 이러한 구조는 규칙 간 경계가 불명확하고 독립적 참조·적용이 어려우며, 유지보수 시 의도하지 않은 부작용을 초래할 수 있습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0.42,
+            "rationale": "giftvoucher-settlement의 테스트 시나리오는 38개 정책을 다루고 있으나, 자동화 테스트 적합성 측면에서 심각한 결함을 보입니다. 모든 시나리오의 given 조건이 '조건 충족'이라는 추상적 표현으로만 기술되어 있어 구체적 입력값이 전혀 없습니다. 예: 'POL-PENSION-MG-005'의 given은 '사용자가 인증번호 받기 선택 후 1분이 경과한 경우 조건 충족'으로, 실제 타임스탬프나 요청ID 같은 자동화 가능한 데이터가 부재합니다. then 절도 '오류로 처리한다', '메시지를 표시한다' 같은 boolean 수준의 추상 표현만 있어 검증 기준이 불명확합니다. Happy path 위주이며, edge case(예: 59초 경과, 61초 경과)와 error case(네트워크 오류, 데이터베이스 실패)가 거의 없습니다. 38개 시나리오 중 실제 자동화 테스트로 구현 가능한 수준의 구체성을 갖춘 것은 5개 미만입니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.497,
+        "passCount": 1,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:18:45.546Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 32131
+    },
+    {
+      "skillId": "0913d606-86d2-46a5-97be-a72b8e7bc7a5",
+      "result": {
+        "skillId": "0913d606-86d2-46a5-97be-a72b8e7bc7a5",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.42,
+            "rationale": "provenance.businessRules의 92개 규칙 중 originalRules 표에서 확인 가능한 규칙은 약 50개입니다. 주요 불일치 사항: (1) ID 문자열 일치 부재 - provenance의 'POL-PENSION-MG-010'이 originalRules 표에서 중복 정의되거나 명확하지 않음. (2) exception 열 완결성 부족 - 표의 모든 행에서 exception 컬럼이 '—'로 명시되어 있으나, provenance에 선언된 규칙 중 다수(POL-PENSION-NF-422, POL-PENSION-NF-429, POL-PENSION-NF-430 등)가 originalRules 표에 누락되거나 중복 기재됨. (3) BL 누락 - provenance의 약 40% 규칙이 originalRules 원본 표에 존재하지 않음. (4) 구조적 불일치 - runbooks와 test scenarios는 존재하나, originalRules 표 자체가 불완전하여 1:1 매핑 불가능. ES 규칙은 제공되지 않아 참고 맥락 검증 불가.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.92,
+            "rationale": "giftvoucher-notification 스킬의 주석·문서 일치도를 평가한 결과, 매우 높은 수준의 대응성을 확인했습니다. 제공된 businessRules 목록의 97개 정책 중 95개 이상이 runbooks 섹션에서 명시적으로 대응되고 있습니다. 각 runbook은 rule의 condition(When), criteria(If), outcome(Then) 구조를 정확히 반영하고 있으며, 예를 들어 POL-PENSION-NF-001(구매 기능 사용 시 SMS 인증 필수)은 runbook에서 동일한 조건과 결과를 명확히 기술하고 있습니다. Test Scenarios와 Contract Tests도 모든 주요 정책을 포괄하고 있습니다. 다만 일부 정책(예: POL-PENSION-MG-010이 두 가지 다른 내용으로 중복 정의됨)에서 미미한 불일치가 있으며, 극히 소수의 정책에서 runbook 내용이 rule과 완전히 동일하지 않은 부분이 있어 완벽한 1.0점에 미치지 못합니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.42,
+            "rationale": "giftvoucher-notification 스킬의 테스트 시나리오들은 given/when/then 구조를 형식적으로 포함하고 있으나, 입출력 구조의 명확성이 심각하게 부족합니다. given 필드는 대부분 '조건 충족'이라는 추상적 표현만 반복되며, 구체적인 입력값이나 타입이 명시되지 않습니다. 예를 들어 'POL-PENSION-NF-001' 시나리오의 given은 '구매 기능을 사용할 때 조건 충족'으로만 기술되어 있고, 실제 입력 데이터(구매금액, 사용자ID, 결제수단 등)가 없습니다. when/then 필드도 마찬가지로 비즈니스 규칙을 설명하는 수준이며, 응답 형태나 상태 변화의 구체적 필드 정의가 부재합니다. 'POL-PENSION-NF-422' 같은 메시지 발송 시나리오도 '알림 메시지가 생성되었을 때'라는 모호한 조건만 있고, 메시지 객체의 필드 구조(messageId, content, recipientId, timestamp 등)가 명시되지 않습니다. 따라서 AI 모델이 테스트 케이스를 자동 생성하거나 검증하기 어렵습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.42,
+            "rationale": "giftvoucher-notification 스킬의 예외·에러 핸들링 커버리지가 매우 낮습니다. 분석 결과: (1) 원본 BL 규칙 표에서 대부분의 규칙이 'exception (Else)' 열에 '—'(정의 없음)로 표시되어 있습니다. 예를 들어 POL-PENSION-NF-001~NF-005, POL-PENSION-RG-005~RG-013 등 핵심 규칙들이 예외 케이스를 명시하지 않습니다. (2) Runbooks에서 POL-PENSION-EX-425만 '예외 처리 및 알림 정책'으로 명시되어 있으나, 구체적인 error_code나 비정상 상태 분류가 부재합니다. (3) Test Scenarios에서 모든 시나리오가 happy path(given-when-then 정상 흐름)만 기술되어 있으며, error_code, 실패 케이스, 타임아웃, 네트워크 오류 등 예외 시나리오가 완전히 누락되어 있습니다. (4) Contract Tests에서도 정상 계약만 정의되고 예외 계약(negative test)이 없습니다. 따라서 0.5 미만의 낮은 점수를 부여합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.42,
+            "rationale": "giftvoucher-notification 스킬의 업무루틴 분리·재사용성 평가 결과, 심각한 SRP 위반과 중복이 확인되었습니다. 첫째, POL-PENSION-NF-008이 두 번 정의되어 있으며(프로모션 발송 vs 구매 승인), POL-PENSION-NF-012도 중복(프로모션 발송 vs 회원탈퇴)되어 있습니다. 둘째, 알림 관련 규칙들(NF-397~405)이 동일한 '발송 결과 기록' 책임을 반복하고 있습니다. 셋째, POL-PENSION-MG-010이 '인증 처리'와 '배너 노출'이라는 전혀 다른 두 가지 책임을 혼재하고 있으며, POL-PENSION-MG-012도 '신규 항목 표시'와 'FAQ 유형 코드'라는 무관한 기능을 함께 정의하고 있습니다. 넷째, 결제금액 기준 SMS 발송이 POL-PENSION-NF-010, NF-102, NF-145에서 중복 정의되어 있습니다. 이러한 구조는 규칙 간 모순 위험을 높이고 독립적 참조·적용을 어렵게 합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0.42,
+            "rationale": "giftvoucher-notification 스킬의 테스트 시나리오는 심각한 자동화 테스트 적합성 문제를 보유하고 있습니다. 제공된 100개 이상의 시나리오 중 대부분이 'given-when-then' 구조를 형식적으로만 따르고 있으며, 실제 자동화 테스트 구현에 필요한 구체적 값이 거의 없습니다. 예를 들어 'POL-PENSION-NF-001'의 'given: 구매 기능을 사용할 때 조건 충족', 'when: SMS 알림을 통한 인증 절차가 완료되어야 함'은 추상적 표현으로만 이루어져 있고, 실제 테스트 케이스 구현을 위한 입력값(예: 휴대폰번호, SMS 내용, 타임아웃 값)이 전혀 명시되지 않았습니다. Happy path만 주로 다루고 있으며, edge case(예: 중복 발송, 네트워크 지연, 잘못된 휴대폰번호)와 error case(예: SMS 발송 실패, 타임아웃, 데이터베이스 오류)에 대한 시나리오가 거의 없습니다. 또한 then 절이 '발송한다', '기록한다' 같은 boolean 수준의 표현으로만 되어 있어 검증 기준이 불명확합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.503,
+        "passCount": 1,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:19:02.627Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 33054
+    },
+    {
+      "skillId": "ed4f5519-0ba3-4036-b8c7-884678e6718b",
+      "result": {
+        "skillId": "ed4f5519-0ba3-4036-b8c7-884678e6718b",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.15,
+            "rationale": "provenance.businessRules 목록(총 237개 항목)과 originalRules 표를 대조한 결과, 심각한 불일치가 확인됩니다. originalRules 표에는 약 200개의 BL 규칙이 condition-criteria-outcome-exception 구조로 정의되어 있으나, provenance의 businessRules 목록에는 동일한 ID 형식(POL-PENSION-XXX)의 규칙들이 다수 중복 등재되어 있습니다. 예를 들어 POL-PENSION-MG-002, POL-PENSION-MG-003, POL-PENSION-MG-004, POL-PENSION-MG-005 등이 여러 번 반복 나타나며, 이는 1:1 매핑 원칙을 위반합니다. 또한 originalRules 표의 exception 열에서 대부분의 항목이 '—'(예외 없음)로 명시되어 있으나, provenance 메타데이터에는 이러한 exception 정보가 반영되지 않았습니다. 추가로 originalRules에 존재하는 모든 BL-ID가 provenance.businessRules에 정확히 매핑되지 않은 상태입니다. 이는 spec-container의 핵심 요구사항인 '원본 표와 provenance의 완전한 1:1 정합성'을 충족하지 못합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.25,
+            "rationale": "giftvoucher-security 스킬의 runbooks와 rules 간 대응성이 심각하게 부족합니다. 제공된 runbooks는 POL-PENSION-MG-004부터 POL-PENSION-MG-003(Persistent 연결)까지 약 200개 정책에 대해 기본적인 condition-criteria-outcome 구조를 반영하고 있으나, 다음과 같은 중대한 결함이 있습니다: (1) 많은 runbook이 동일한 ID로 중복되어 있어 실제 대응 정책이 불명확함 (예: POL-PENSION-MG-002, MG-003, MG-004가 여러 번 반복); (2) runbook의 내용이 rule의 condition-criteria-outcome을 단순히 복사한 수준으로, 실제 운영 가이드로서의 상세한 절차나 검증 방법이 부재; (3) businessRules에 선언된 정책 중 상당수(예: POL-PENSION-MG-415, RG-407 등)에 대한 runbook이 존재하지만, 내용의 정확성과 실행 가능성이 검증되지 않음. 따라서 runbook 누락은 30% 이하이나, 내용 불일치 및 중복으로 인한 신뢰도 저하가 심각합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.42,
+            "rationale": "giftvoucher-security 스킬의 tests/contract 시나리오들을 분석한 결과, 입출력 구조 명확성이 현저히 부족합니다. 대부분의 시나리오에서 given 필드는 단순 조건 충족 여부만 나열하고 구체적 입력값이나 타입을 명시하지 않습니다. 예: 'POL-PENSION-MG-004'의 given은 '앱 실행 후 메인화면을 로드할 때 조건 충족'으로만 기술되어 있으며, 보안키패드 노출 여부 같은 구체적 입력 상태가 정의되지 않았습니다. then 필드도 '비정상 노출 시 보안키패드 숨김 처리'로 추상적이며, 응답 형태(상태코드, 메시지 포맷)가 명확하지 않습니다. 약 200개 이상의 정책이 유사한 패턴을 반복하며, 필드 타입(boolean, string, object), 범위, 제약조건이 거의 기술되지 않았습니다. 일부 시나리오(POL-PENSION-RG-332 등)는 오류코드를 반환하지만, 대다수는 상태 변화만 기술하여 I/O 경계가 모호합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.42,
+            "rationale": "giftvoucher-security 스킬의 예외·에러 핸들링 준비도는 낮은 수준입니다. 분석 결과: (1) rules/*.md에서 대부분의 정책이 'Outcome(Then)' 절만 정의되어 있고, 명시적인 'exception/else' 절이 거의 없습니다. 예를 들어 POL-PENSION-MG-004~007, POL-PENSION-RG-332~340 등에서 실패 시나리오나 예외 처리 로직이 누락되어 있습니다. (2) tests/*.yaml의 시나리오들이 주로 happy path(정상 경로)만 다루고 있으며, error_code 반환이나 비정상 상태 처리 시나리오가 희소합니다. 일부 정책(POL-PENSION-MG-002/003 KMC 오류 처리, POL-PENSION-RG-332~340 유효성 검증 실패)에서 오류 코드가 명시되어 있으나, 전체 정책 대비 약 15% 수준에 불과합니다. (3) 환불/입금 실패 처리(POL-PENSION-TR-099~101), 타임아웃 재시도(POL-PENSION-CT-140) 등 일부 예외 처리가 있으나 체계적이지 않습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.35,
+            "rationale": "giftvoucher-security 스킬의 업무루틴 분리·재사용성 평가 결과, 심각한 SRP 위반과 중복이 확인되었습니다. 첫째, 동일한 정책ID(예: POL-PENSION-MG-002, POL-PENSION-MG-003, POL-PENSION-MG-004)가 서로 다른 조건과 결과로 반복 정의되어 있습니다. 예를 들어 POL-PENSION-MG-002는 '외부 오픈 웹사이트 웹방화벽 수용', 'API 인증 토큰 필수 포함', 'KMC 본인확인 런타임 오류 처리' 등 3가지 이상의 독립적인 책임을 혼재하고 있습니다. 둘째, businessRules 목록에 동일 정책이 30회 이상 중복 선언되어 있으며, 이는 규칙 간 경계 불명확을 야기합니다. 셋째, 마스킹 처리(POL-PENSION-MG-344~351)와 환불 상태(POL-PENSION-MG-352~354) 등 유사 도메인의 규칙들이 개별 정책으로 분산되어 있어 재사용성이 낮습니다. 규칙 간 모순도 존재하여(예: 동일 ID의 상이한 condition 정의) 독립 참조 불가능 상태입니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0.42,
+            "rationale": "giftvoucher-security 스킬의 tests/*.yaml 시나리오는 happy path 위주로 구성되어 있으나, edge case와 error case 커버가 부족합니다. 제공된 시나리오들은 대부분 정상 케이스(given 조건 충족 → when 기준 확인 → then 정상 처리)만 기술되어 있습니다. 예를 들어 'POL-PENSION-MG-004 보안키패드 노출 방지'는 '비정상 노출 시' 처리만 언급하고, 정상 상태 유지 케이스나 부분 노출 등의 edge case가 없습니다. 또한 given 조건이 '조건 충족'으로 추상적이며, then 결과도 '처리한다', '반환한다' 등 boolean 수준의 표현이 많습니다. 자동화 테스트 구현을 위한 구체적 값(예: 특정 에러코드, 타임아웃 시간, 재시도 횟수)이 부족하고, 실패 시나리오(invalid input, timeout, network error 등)가 거의 없어 테스트 가능성이 낮습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.335,
+        "passCount": 0,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:19:26.456Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 40293
+    },
+    {
+      "skillId": "c55819cb-8f88-4852-9a37-d5f014f12f4e",
+      "result": {
+        "skillId": "c55819cb-8f88-4852-9a37-d5f014f12f4e",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.15,
+            "rationale": "소스코드 정합성 평가 결과 심각한 불일치가 확인되었습니다. provenance.businessRules에 선언된 170개 규칙 중 originalRules 표에는 약 170개 행이 존재하나, 다음의 중대 결함이 발견됩니다: (1) **ID 문자열 불일치**: provenance의 'POL-PENSION-MG-002'가 originalRules 표에서 동일 ID로 2회 이상 중복 등재되어 있으며, 일부 규칙은 표 내에서 ID 명시 부재 또는 불완전한 상태입니다. (2) **Exception 열 완결성 부재**: 대다수 행의 exception 컬럼이 '—'(예외 없음) 표기로 일관되어 있으나, 실제 조건-기준-결과 매핑 검증 시 일부 규칙의 exception 내용이 실질적 예외 처리를 명시하지 않습니다. (3) **구조적 불일치**: originalRules 표의 condition/criteria/outcome 내용이 runbooks의 동일 ID 규칙과 문자 그대로 일치하지만, provenance 선언 목록과 originalRules 표 간 1:1 매핑 검증 불가능합니다. (4) **누락 및 드리프트**: 일부 BL 규칙이 provenance에는 선언되었으나 originalRules 표에서 명확한 ID 행으로 확인되지 않습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.85,
+            "rationale": "giftvoucher-operation 스킬의 주석·문서 일치도를 평가한 결과, 대부분의 규칙(rule)에 대응하는 운영 가이드(runbook)가 존재하며 내용이 rule의 condition-criteria-outcome을 정확히 반영하고 있습니다. 제공된 Runbooks 섹션에서 POL-PENSION-MG-002부터 POL-PENSION-MG-019, POL-PENSION-NF-015 등 주요 규칙들에 대해 명확한 운영 가이드가 작성되어 있으며, 각 가이드는 'Condition(When)', 'Criteria(If)', 'Outcome(Then)' 구조로 rule의 조건과 결과를 정확히 설명하고 있습니다. 다만 일부 규칙(예: POL-PENSION-MG-425, POL-PENSION-MG-428 등)에서 runbook 내용이 rule의 세부 사항을 완전히 포괄하지 못하거나, 중복된 규칙 ID로 인한 문서 구조 혼란이 있습니다. 또한 businessRules 목록의 중복 항목들이 runbook 매핑의 명확성을 저하시킵니다. 전체적으로 문서 커버리지는 우수하나 일관성과 정확성 측면에서 개선 필요합니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.62,
+            "rationale": "giftvoucher-operation 스킬의 tests/contract 시나리오들을 분석한 결과, given/when/then 구조는 존재하나 입출력 명확성에서 중대한 결함이 발견됨. given 필드는 대부분 조건 충족 여부만 기술하고 구체적 입력값(타입, 범위, 형식)을 명시하지 않음. 예: 'POL-PENSION-MG-262' 시나리오의 given은 '모바일 API를 통해 거래 요청이 접수된 경우'로만 표기되며, 거래고유번호 필드의 타입(string/numeric), 길이 제약, null 가능성 등이 불명확. then 필드도 '거래고유번호를 신규로 생성한다'로 기술되어 생성 규칙, 반환 형식, 응답 구조가 정의되지 않음. 약 200개 시나리오 중 대부분이 boolean 수준의 추상적 표현(조건 충족/미충족)에 머물러 있어, 실제 API 계약 테스트 수행 시 필요한 필드 타입, 제약조건, 에러 응답 형식 등이 누락됨.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.42,
+            "rationale": "giftvoucher-operation 스킬의 예외·에러 핸들링 커버리지는 부분적 수준입니다. 분석 결과: (1) Rules 측면: 대부분의 규칙(POL-PENSION-MG-*)이 'exception (Else)' 절을 '—'로 표기하여 예외 처리가 명시되지 않았습니다. 예외적으로 POL-PENSION-EX-011, POL-PENSION-EX-149, POL-PENSION-EX-150, POL-PENSION-EX-281 등 일부 EX(Exception) 규칙만 예외 시나리오를 다룹니다. (2) Runbooks 측면: 대부분의 운영 가이드가 happy path만 기술하고 있으며, 예를 들어 POL-PENSION-MG-002(로딩 실패 시 안내 메시지)와 POL-PENSION-MG-140/143(타임아웃 시 재시도) 정도만 예외 상황을 명시합니다. (3) Tests 측면: 제공된 테스트 시나리오들이 주로 정상 케이스(given-when-then)만 포함하며, error_code나 비정상 상태 시나리오가 거의 없습니다. 타임아웃, 에러 응답, 검증 실패 등의 부정적 테스트 케이스가 부족합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.32,
+            "rationale": "giftvoucher-operation 스킬의 업무루틴 분리·재사용성 평가 결과, 심각한 SRP 위반과 중복이 확인됨. 동일한 정책ID(예: POL-PENSION-MG-002, POL-PENSION-MG-006, POL-PENSION-MG-008)가 businessRules 목록에서 반복 선언되며, 단일 정책이 여러 맥락에서 중복 정의됨. 예를 들어 POL-PENSION-MG-002는 '앱 초기화면 로딩 실패'와 '개발/검증 배포 브랜치 설정'이라는 전혀 다른 두 가지 책임을 가짐. POL-PENSION-MG-006도 '웹방화벽 수용'과 '파이프라인 스크립트 실행'이라는 이질적 조건을 혼합. 또한 POL-PENSION-MG-357, POL-PENSION-MG-358, POL-PENSION-MG-360 등이 Route 설정 관련 유사 규칙을 중복 정의하고 있음. 규칙 간 경계가 불명확하며 독립적 참조 불가능한 상태. 전체 정책 수 대비 실질적 단일 책임 규칙 비율이 매우 낮음.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0.35,
+            "rationale": "giftvoucher-operation 스킬의 tests/*.yaml 시나리오는 심각한 테스트 가능성 결함을 보입니다. 제공된 시나리오들은 모두 given/when/then 구조를 가지고 있으나, then 절이 거의 전부 추상적 서술로만 표현되어 있습니다. 예를 들어 'POL-PENSION-MG-002'의 then은 '로딩 실패 또는 진입 불가 시 사용자에게 안내 메시지 제공 및 재시도 기능 노출'로, 자동화 테스트로 구현 불가능한 수준입니다. 또한 happy path 위주로만 구성되어 있으며, edge case나 error case가 거의 없습니다. 예를 들어 타임아웃, 네트워크 오류, 권한 부족 등의 예외 시나리오가 부재합니다. 시나리오 수는 충분하지만(200+개), 각 시나리오의 given 조건도 '~인 경우 조건 충족' 같은 추상 표현으로 구체적 값이 없습니다. 자동화 테스트 구현을 위해서는 구체적인 입력값, 기대 결과값, 검증 기준이 필요하나 현재는 모두 부족합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.452,
+        "passCount": 2,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:19:43.219Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 40218
+    },
+    {
+      "skillId": "70239cef-e554-44ee-864f-093aec9a31d8",
+      "result": {
+        "skillId": "70239cef-e554-44ee-864f-093aec9a31d8",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.15,
+            "rationale": "소스코드 정합성 평가 결과 심각한 불일치가 확인되었습니다. provenance.businessRules에 선언된 BL ID들(POL-PENSION-EN-003, POL-PENSION-MG-001 등 총 152개)이 originalRules 표에 존재하지 않습니다. 제공된 Original Rules 표는 giftvoucher 스킬의 BL 원본을 포함하고 있으나, provenance의 businessRules 목록은 'POL-PENSION-' 접두사를 사용하는 완전히 다른 ID 체계를 따릅니다. 또한 exception 열에 다수의 빈칸이 존재하며, 일부 행에서만 '—' 표기가 되어 있습니다. originalRules 자체는 구조적으로 완결되어 있으나, provenance와의 1:1 매핑이 전혀 이루어지지 않았습니다. 이는 BL 원본 표와 provenance 선언 간 근본적인 불일치로, 평가 기준 0.5 미만에 해당합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.62,
+            "rationale": "giftvoucher-member 스킬의 주석·문서 일치도를 평가한 결과, 대부분의 rule에 대응하는 runbook이 존재하나 내용 일치도에서 중대한 불일치가 발견되었습니다. 제공된 150개 이상의 runbook 중 대다수가 rule의 condition-criteria-outcome을 정확히 반영하고 있으나, 다음과 같은 문제점이 확인됩니다: (1) 일부 runbook이 rule과 무관한 내용을 포함(예: POL-PENSION-MG-001이 개인정보 접근로그와 가맹점 지역검색 두 가지 상이한 주제로 중복 정의됨), (2) 구체적인 구현 세부사항 부재로 실제 운영 가이드로서의 실용성 부족, (3) 일부 rule의 exception 항목이 runbook에 반영되지 않음. 특히 POL-PENSION-MG-002의 사설IP 협의 의무 규칙이 마지막에 추가되어 있으나 원본 rule 테이블에는 명확히 정의되지 않은 점이 구조적 불일치를 시사합니다. 전체적으로 runbook 커버리지는 높으나 내용 정확성과 일관성에서 개선이 필요합니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.42,
+            "rationale": "giftvoucher-member 스킬의 tests/contract 섹션을 분석한 결과, 입출력 구조 명확성이 현저히 부족합니다. 제공된 테스트 시나리오들은 given/when/then 구조를 형식적으로만 따르고 있으나, given 필드가 단순 조건 충족 여부만 나열하며 구체적 입력값이나 타입이 명시되지 않았습니다. 예를 들어 'POL-PENSION-EN-003' 시나리오의 given은 '회원가입 프로세스를 진행할 때 조건 충족'으로만 기술되어 있고, 실제 입력 필드명, 데이터 타입, 예시값이 전혀 없습니다. then 필드도 '실패 시 사용자에게 오류 메시지 제공'처럼 추상적이며, 응답 형태(JSON 구조, 필드명, 상태코드 등)가 정의되지 않았습니다. 대부분의 시나리오가 이러한 패턴을 반복하고 있어, AI-Ready 품질 기준의 0.5~0.75 구간(일부 필드 추상적, boolean only)보다도 낮은 수준입니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.35,
+            "rationale": "giftvoucher-member 스킬의 예외·에러 핸들링 평가 결과, 대부분의 rules에서 exception/else 절이 명시적으로 정의되지 않았습니다. 예를 들어 POL-PENSION-EN-003(회원가입 본인인증 실패)는 'Then' 절에만 '실패 시 오류 메시지 제공'이라고 기술되어 있으나, 구체적인 exception 처리 로직이 명확하지 않습니다. POL-PENSION-MG-001(로그인 인증)도 마찬가지로 '실패 또는 오류 발생 시' 처리만 언급되고 세부 예외 케이스가 누락되어 있습니다. 제공된 test scenarios에서도 error_code나 비정상 상태에 대한 명시적 테스트 케이스가 거의 없으며, happy path 중심의 시나리오만 존재합니다. POL-PENSION-RG-002(필수동의 거부), POL-PENSION-EX-431(미등록 요청) 등 일부 규칙에서만 else 절이 부분적으로 정의되어 있습니다. 전반적으로 예외 처리의 구체성과 테스트 커버리지가 부족한 상태입니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.32,
+            "rationale": "giftvoucher-member 스킬의 업무루틴 분리·재사용성은 심각한 수준의 문제를 보입니다. 첫째, businessRules 목록에서 동일 규칙이 반복 선언됩니다(POL-PENSION-MG-001 3회, POL-PENSION-MG-006 2회, POL-PENSION-MG-007 2회, POL-PENSION-MG-009 3회, POL-PENSION-MG-408·409·411 중복). 둘째, 단일 규칙ID가 완전히 다른 업무를 처리합니다. 예: POL-PENSION-MG-001은 '로그인 본인인증', '개인정보취급자 접속로그', '가맹점 지역검색'을 혼재합니다. POL-PENSION-MG-006은 '마스킹해제 다운로드권한'과 '관리자 무통장입금'을 동시에 정의합니다. 셋째, 규칙 간 명확한 경계가 없어 독립 참조가 불가능합니다. 넷째, 동일 조건(예: 상태변경)에 대해 POL-PENSION-MG-408·409·410이 각각 법인/계좌/계정을 처리하지만 구조적 일관성이 부족합니다. 이는 0.5 이하 범주의 '규칙 경계 불명확, 대부분 중복 또는 모순'에 해당합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0.35,
+            "rationale": "giftvoucher-member 스킬의 테스트 시나리오는 심각한 품질 결함을 보입니다. 제공된 200개 이상의 시나리오 중 대부분이 'given/when/then' 구조를 가지고 있으나, 자동화 테스트 구현 관점에서 극도로 추상적입니다. 예를 들어 'POL-PENSION-EN-003' 시나리오의 then은 '실패 시 사용자에게 오류 메시지 제공 및 재시도 안내'로만 표현되어 구체적 검증값(예: 오류코드, 메시지 텍스트, 재시도 횟수 제한)이 전혀 없습니다. Happy path 중심으로 편향되어 있으며, edge case(예: 타임아웃, 네트워크 오류, 중복 요청)와 error case(예: 잘못된 OTP, 만료된 토큰)가 거의 없습니다. 또한 given 조건들이 '조건 충족'이라는 추상 표현으로만 기술되어 구체적 입력값(예: 특정 회원ID, 특정 상태코드)이 부재합니다. 테스트 자동화 도구로 구현 불가능한 수준의 모호성을 지니고 있습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.368,
+        "passCount": 1,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:20:06.066Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 39355
+    },
+    {
+      "skillId": "92b692af-7588-4ae7-97df-e81e01684657",
+      "result": {
+        "skillId": "92b692af-7588-4ae7-97df-e81e01684657",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.95,
+            "rationale": "provenance.businessRules의 두 규칙(POL-PENSION-CT-406, POL-PENSION-EN-146)이 Original Rules 표에 ID 문자열 일치로 완전히 존재한다. POL-PENSION-CT-406은 condition '자동충전 금액이 설정될 때', criteria '잔액 조건, 일자 조건 등 충전 조건별로 설정 금액(stngAmt) 및 조건별 금액(blceCondAmt, ymdCondAmt, condSmAmt)이 입력됨', outcome '조건에 따라 자동충전 금액이 산정되어 적용됨', exception '—'로 완결되어 있다. POL-PENSION-EN-146도 condition '사용자가 App을 통해 충전을 요청한 경우', criteria '사용자ID, 충전금액, 출금계좌ID가 모두 유효하게 입력되어야 함', outcome '필수 정보가 모두 유효한 경우에만 출금 처리를 진행하고, 누락 또는 무효 시 요청을 거부함', exception '—'로 완결되어 있다. 모든 exception 열이 명시적으로 '—'(예외 없음)로 표기되어 있으며, Runbooks와 Test Scenarios가 원본 규칙과 일치한다. Empty Slot Rules가 없으므로 참고 맥락 검증 불필요. 0.95점은 완전 정합성에서 minor 개선 여지(예: exception 설명 확장 가능성)를 반영한 점수다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.95,
+            "rationale": "giftvoucher-charging 스킬의 2개 비즈니스 규칙(POL-PENSION-CT-406, POL-PENSION-EN-146)에 대해 대응하는 runbook이 모두 존재하며, 내용이 rule의 condition-criteria-outcome을 정확히 반영하고 있습니다. POL-PENSION-CT-406의 경우 '자동충전 금액이 설정될 때'라는 condition, 'stngAmt, blceCondAmt, ymdCondAmt, condSmAmt 입력'이라는 criteria, '조건에 따라 자동충전 금액이 산정되어 적용됨'이라는 outcome이 runbook에서 동일하게 기술되어 있습니다. POL-PENSION-EN-146도 '사용자가 App을 통해 충전을 요청한 경우'의 condition, '사용자ID, 충전금액, 출금계좌ID 유효성 검증'의 criteria, '필수 정보 유효 시 출금 처리, 누락/무효 시 거부'의 outcome이 정확히 일치합니다. 추가로 test scenarios도 두 정책 모두에 대해 작성되어 있어 검증 가능성이 높습니다. 다만 exception 항목이 명시되지 않은 점이 미소한 감점 요인입니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.35,
+            "rationale": "giftvoucher-charging의 tests/contract 시나리오에서 입출력 구조의 명확성이 심각하게 부족합니다. POL-PENSION-CT-406 시나리오의 given 필드는 '자동충전 금액이 설정될 때 조건 충족'으로 추상적이며, 구체적 값이나 타입(예: stngAmt의 숫자 범위, blceCondAmt의 단위)이 명시되지 않았습니다. then 필드의 '조건에 따라 자동충전 금액이 산정되어 적용됨'도 산정 결과의 구체적 형태(응답 객체 구조, 필드명, 타입)를 정의하지 않습니다. POL-PENSION-EN-146도 마찬가지로 given에서 '사용자ID, 충전금액, 출금계좌ID'의 타입과 유효성 기준이 불명확하고, then에서 '출금 처리 진행' 또는 '요청 거부'의 응답 형태(상태코드, 에러메시지 구조)가 정의되지 않았습니다. 전체적으로 boolean 수준의 성공/실패만 표현되어 실제 I/O 경계를 파악할 수 없습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.35,
+            "rationale": "giftvoucher-charging 스킬의 예외·에러 핸들링 정의가 심각하게 부족합니다. 원본 Rules 테이블에서 두 정책 모두 'exception (Else)' 열이 '—'로 표시되어 있어 예외 케이스가 명시되지 않았습니다. POL-PENSION-CT-406은 '조건에 따라 자동충전 금액이 산정'되는 happy path만 정의되고, 입력값 누락, 잘못된 금액 형식, 조건 불일치 등의 예외 처리가 없습니다. POL-PENSION-EN-146은 '누락 또는 무효 시 요청을 거부함'이라는 일반적 언급만 있을 뿐, 구체적인 error_code나 예외 상태가 정의되지 않았습니다. Test Scenarios에서도 happy path 시나리오만 존재하며, error_code를 포함한 예외 시나리오(예: INVALID_USER_ID, INSUFFICIENT_BALANCE, INVALID_ACCOUNT)가 전혀 커버되지 않았습니다. Empty Slot Rules도 정의되지 않아 엣지 케이스 보완이 없습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.85,
+            "rationale": "giftvoucher-charging 스킬의 두 가지 비즈니스 규칙(POL-PENSION-CT-406, POL-PENSION-EN-146)은 각각 단일 책임을 명확히 분리하고 있습니다. POL-PENSION-CT-406은 '자동충전 금액 조건별 설정'에만 집중하며, POL-PENSION-EN-146은 '충전 요청 시 필수 정보 검증'으로 명확히 구분됩니다. 두 규칙 간 중복 정의나 모순이 없으며, 각각 독립적으로 참조·적용 가능합니다. 다만 감점 요인으로는 Empty Slot Rules가 전혀 정의되지 않아 엣지 케이스 보완이 부족하며, 조건별 금액 변수들(blceCondAmt, ymdCondAmt, condSmAmt)의 상세한 검증 기준이 명시되지 않아 구현 시 모호함이 발생할 수 있습니다. 또한 두 규칙 모두 exception 항목이 공란으로 처리되어 실패 시나리오에 대한 명확한 정의가 부족합니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "testability",
+            "score": 0.35,
+            "rationale": "giftvoucher-charging의 테스트 시나리오는 심각한 자동화 테스트 부적합성을 보입니다. 첫째, 시나리오가 2건으로 최소 수준입니다. 둘째, given 조건이 '조건 충족', '조건 충족'으로 추상적이며 구체적 입력값(예: 잔액=10,000원, 충전금액=5,000원, 유효한 계좌ID)이 전혀 없습니다. 셋째, when의 criteria도 '입력됨'이라는 수동적 표현으로 자동화 불가능합니다. 넷째, then의 outcome이 '산정되어 적용됨', '진행하고 거부함'으로 boolean 수준의 추상 표현만 있어 검증 가능한 구체적 값(예: 충전금액=15,000원, 응답코드=200, 거부사유=INVALID_ACCOUNT)이 없습니다. 다섯째, happy path만 존재하며 edge case(경계값: 0원, 최대금액), error case(중복요청, 계좌무효, 잔액부족)가 완전히 부재합니다. 자동화 테스트 구현 불가능 수준입니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.633,
+        "passCount": 3,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:20:08.588Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 23780
+    },
+    {
+      "skillId": "2a5dbbca-24ca-4502-9ea9-862404f679dd",
+      "result": {
+        "skillId": "2a5dbbca-24ca-4502-9ea9-862404f679dd",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.92,
+            "rationale": "provenance.businessRules의 17개 BL ID(POL-PENSION-MG-001, MG-010, CT-421, MG-290, MG-291, MG-292, RG-280, RG-281, RG-282, RG-285, RG-286, RG-287, RG-289, WD-150, MG-144, MG-147, MG-149)가 originalRules 표에 문자 그대로 일치하며 존재함. 각 행의 condition-criteria-outcome이 완전히 매핑되었고, exception 열이 모두 '—'(예외 없음)으로 명시되어 있음. Runbooks와 Test Scenarios도 모든 BL에 대해 동일한 내용으로 구현됨. 다만 originalRules 표의 POL-PENSION-MG-147 행이 truncated 표기('... [truncated 312 chars to fit context]')로 인해 완전한 내용 검증이 불가능한 점이 미세한 감점 요인. ES 규칙은 없으므로 참조 검증 불필요. 전반적으로 ID 정합성, 내용 일치도, exception 완결성 모두 우수함.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.94,
+            "rationale": "giftvoucher-account 스킬의 17개 비즈니스 규칙(POL-PENSION-MG-001, MG-010, CT-421, MG-290, MG-291, MG-292, RG-280, RG-281, RG-282, RG-285, RG-286, RG-287, RG-289, WD-150, MG-144, MG-147, MG-149)에 대해 모두 대응하는 runbook이 존재한다. 각 runbook은 원본 규칙의 Condition(When), Criteria(If), Outcome(Then)을 정확히 반영하고 있으며, 예를 들어 POL-PENSION-MG-001은 'KMC 본인확인 요청 시' → 'result 응답값이 Y인 경우' → '인증 성공으로 처리'를 완벽히 매칭한다. POL-PENSION-RG-287은 'REG_DT가 5년 이상 경과' → 'PARTIES_HIS 테이블 확인' → '해당 레코드 삭제'를 정확히 설명한다. 모든 runbook이 'reviewed' 신뢰도를 가지며, 테스트 시나리오와 계약 테스트도 완벽히 구성되어 있다. 다만 일부 runbook의 세부 구현 지침(예: 파기 관리대장의 구체적 기록 형식)이 추가될 여지가 있어 완벽한 1.0이 아닌 0.94로 평가한다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.42,
+            "rationale": "giftvoucher-account 스킬의 테스트 시나리오들은 given/when/then 구조를 형식적으로 포함하고 있으나, 입출력 구조의 명확성이 심각하게 부족합니다. given 필드는 '조건 충족'이라는 추상적 표현만 반복되며 구체적 값, 타입, 필드명이 전혀 명시되지 않습니다(예: 'KMC 본인확인 요청 시 조건 충족'). when 필드는 criteria로 표현되지만 입력 파라미터의 구체적 형태를 정의하지 않습니다. then 필드의 outcome도 마찬가지로 추상적 문장 형태로만 기술되어 있으며, 응답 필드명, 데이터 타입, 상태 변화의 구체적 형태가 불명확합니다. 예를 들어 POL-PENSION-WD-150의 경우 '출금을 처리하고 에러를 리턴함'이라는 표현만 있을 뿐, 성공 응답의 필드 구조(예: {status: 'SUCCESS', transactionId: '...', balance: ...})나 실패 응답의 에러 코드 형식이 정의되지 않았습니다. 17개 정책 모두 동일한 패턴으로 I/O 경계가 모호하여 자동화된 테스트 구현이 불가능합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.25,
+            "rationale": "giftvoucher-account 스킬의 예외·에러 핸들링 정의가 심각하게 부족합니다. 17개 비즈니스 규칙 중 16개가 'exception (Else)' 열에 '—'(정의 없음)로 표기되어 있습니다. 유일한 예외 정의는 POL-PENSION-WD-150에서 '잔액 부족 시 출금 실패로 에러를 리턴함'이 명시되어 있으나, 나머지 규칙들(KMC 인증 실패, 충전 한도 초과, 배치 실패, 외부 API 연계 실패 등)에 대한 예외 처리가 완전히 누락되었습니다. 테스트 시나리오(tests/*.yaml)도 happy path만 존재하며, error_code, 비정상 상태, 실패 케이스를 다루는 예외 시나리오가 전혀 없습니다. 개인정보 파기 관련 규칙들도 파기 실패, 시간 초과, 데이터 검증 실패 등의 예외 케이스가 정의되지 않았습니다. 이는 운영 중 예상치 못한 장애 상황에 대한 대응 체계가 부재함을 의미합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.62,
+            "rationale": "giftvoucher-account 스킬의 17개 규칙(POL-PENSION-MG-001, MG-010, CT-421, MG-290, MG-291, MG-292, RG-280, RG-281, RG-282, RG-285, RG-286, RG-287, RG-289, WD-150, MG-144, MG-147, MG-149)을 분석한 결과, 단일 책임 원칙(SRP) 준수 측면에서 중대한 문제가 발견되었습니다. 특히 개인정보 파기 관련 규칙들(RG-280, RG-281, RG-282)이 동일한 '5일 이내 완전파기' 결과를 반복 정의하고 있으며, MG-290과 RG-286이 '파기 이력 기록'이라는 동일 책임을 중복 처리합니다. MG-291과 RG-287은 '5년 경과 회원정보 삭제'를 각각 배치 스케줄과 REG_DT 기준으로 중복 정의합니다. MG-292는 배치 이력 기록이라는 별도 책임을 추가로 혼재시킵니다. 또한 MG-144, MG-147, MG-149는 계좌/지갑/서비스 정보 동기화라는 관련 책임들이 명확히 분리되지 않아 있습니다. Empty Slot 규칙이 없어 엣지 케이스 보완도 부족합니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "testability",
+            "score": 0.35,
+            "rationale": "giftvoucher-account 스킬의 테스트 시나리오는 17개 정책을 다루고 있으나, 테스트 가능성 측면에서 심각한 결함을 보입니다. 모든 시나리오의 given 조건이 '조건 충족'이라는 추상적 표현으로만 기술되어 있어 자동화 테스트 구현이 불가능합니다. 예를 들어 POL-PENSION-WD-150(출금 처리)의 경우 'given: 충전 요청에 따라 출금계좌에서 출금을 시도하는 경우 조건 충족'으로만 표기되어, 구체적인 계좌번호, 잔액액수, 요청금액 등이 명시되지 않습니다. Happy path만 존재하며 edge case(잔액 부족, 경계값 테스트)와 error case(API 실패, 타임아웃)가 완전히 부재합니다. Then 절도 '처리한다', '기록한다' 같은 추상적 표현으로만 구성되어 검증 기준이 불명확합니다. 자동화 테스트로 구현 가능한 수준의 구체적 값, 예상 결과값, 에러 코드 정의가 전혀 없습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.583,
+        "passCount": 3,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:20:36.723Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 30859
+    },
+    {
+      "skillId": "87bc5b32-06aa-44c7-9e7f-e813f2ceb87d",
+      "result": {
+        "skillId": "87bc5b32-06aa-44c7-9e7f-e813f2ceb87d",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.95,
+            "rationale": "provenance.businessRules의 17개 BL ID(POL-PENSION-EX-006, EX-014, EX-022, RG-011, RG-020, WD-004, WD-005, WD-007, WD-008, MG-423, MG-424, MG-416, MG-417, MG-225, MG-227, MG-230, MG-231)가 originalRules 표에 문자 그대로 1:1 매핑되어 있습니다. 각 행의 condition-criteria-outcome이 완전히 일치하며, 모든 exception 열이 '—'(예외 없음)으로 명시되어 있습니다. Runbooks와 Test Scenarios도 각 BL의 내용을 정확히 반영하고 있습니다. Empty Slot Rules가 없으므로 참고 맥락 검증 불필요합니다. 다만 provenance의 sources 배열이 비어있고 trust.score가 0으로 설정된 점은 메타데이터 완결성 측면에서 미흡하나, 소스코드 정합성 평가 기준(originalRules ↔ businessRules 1:1 매핑)에는 영향을 주지 않습니다. ID 표기 일관성, exception 완결성, 내용 정합성 모두 우수합니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.92,
+            "rationale": "giftvoucher-gift 스킬의 17개 비즈니스 규칙(POL-PENSION-EX-006 ~ POL-PENSION-MG-231)에 대해 모두 대응하는 runbook이 존재한다. 각 runbook은 rule의 condition(When), criteria(If), outcome(Then)을 정확히 반영하고 있다. 예를 들어 POL-PENSION-WD-004는 '구매 후 7일 이내 환불 요청'이라는 criteria를 runbook에서 동일하게 명시하고 '전액 환불 처리'라는 outcome을 정확히 설명한다. POL-PENSION-MG-423의 '기프트 또는 쿠폰의 유효성 및 사용 가능 여부 확인'도 runbook에서 동일하게 기술되어 있다. 모든 runbook이 'reviewed' 신뢰도를 가지고 있으며, 각 규칙마다 적절한 태그(Tags)와 도메인(Domain: giftvoucher)이 일관되게 적용되어 있다. 다만 runbook의 신뢰도 점수가 0.7로 설정되어 있고, 일부 규칙(예: POL-PENSION-MG-227, POL-PENSION-MG-230)의 outcome 설명이 다소 추상적인 점이 미세한 감점 요인이다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.35,
+            "rationale": "giftvoucher-gift 스킬의 tests/contract 시나리오들은 입출력 구조 명확성에서 심각한 결함을 보입니다. given 필드는 모두 '조건 충족'이라는 추상적 문구로만 정의되어 있으며, 구체적인 값이나 타입이 전혀 명시되지 않았습니다. 예: 'POL-PENSION-WD-004'의 given은 '미사용 상품권 환불 요청 시(구매 후 7일 이내) 조건 충족'으로만 표기되어 있고, 실제 입력 필드(구매일시, 환불요청일시, 상품권ID, 금액 등)의 타입과 형식이 정의되지 않았습니다. then 필드도 마찬가지로 '전액 환불 처리', '수락 처리' 등 추상적 문구만 있으며, 응답 구조(반환 필드명, 타입, 상태코드)가 명확하지 않습니다. 특히 POL-PENSION-MG-416, MG-417의 '목록을 조회하여 반환한다'는 배열 구조, 페이징, 필드 정의가 전무합니다. 이는 AI 모델이 실제 API 계약을 이해하거나 테스트를 자동화하기 불가능한 수준입니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.35,
+            "rationale": "giftvoucher-gift 스킬의 예외·에러 핸들링 평가 결과: 17개 비즈니스 규칙 중 모든 규칙의 'exception (Else)' 열이 '—'로 표시되어 있어 명시적 예외 처리가 전무합니다. 예를 들어 POL-PENSION-WD-004(7일 이내 환불)는 7일 초과 시 처리 방식이 정의되지 않았고, POL-PENSION-WD-005(60% 이상 사용)는 60% 미만 사용 시 예외 처리가 없습니다. 테스트 시나리오는 happy path만 존재하며 error_code, 비정상 상태, 실패 케이스가 전혀 포함되지 않았습니다. POL-PENSION-EX-014(전산 장애)나 POL-PENSION-WD-008(계좌 오류)처럼 예외 상황을 다루는 규칙도 테스트에서 실제 에러 시나리오가 커버되지 않았습니다. 따라서 exception 절 정의 부재와 테스트에서 에러 케이스 전혀 없음으로 0.5 미만 점수에 해당합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.72,
+            "rationale": "giftvoucher-gift 스킬의 17개 규칙(POL-PENSION-EX-006~MG-231)을 분석한 결과, 대부분이 단일 책임을 가지나 몇 가지 문제점이 확인됩니다. 긍정적 측면: 각 규칙이 명확한 Condition-Criteria-Outcome 구조를 유지하며, 환불(WD-004/005/007/008), 기프트관리(MG-423/424), 조회(MG-416/417) 등 기능별로 분리되어 있습니다. 문제점: (1) POL-PENSION-MG-227은 '대기/완료/실패' 3가지 상태 분기를 단일 규칙에 혼합하여 복수 책임을 가집니다. (2) POL-PENSION-WD-004와 WD-005가 모두 '환불 요청' 조건을 공유하며, 미사용(7일) vs 부분사용(60% 이상) 기준이 중복 정의되어 있습니다. (3) POL-PENSION-RG-011과 RG-020이 모두 '정보보호/보안' 영역을 다루어 경계가 불명확합니다. Empty Slot 규칙이 없어 엣지 케이스 보완이 부족합니다. 전체적으로 SRP 준수율은 약 70% 수준입니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "testability",
+            "score": 0.35,
+            "rationale": "giftvoucher-gift 스킬의 테스트 시나리오는 17개 정책을 다루고 있으나, 자동화 테스트 적합성 측면에서 심각한 결함을 보입니다. 모든 시나리오의 given 조건이 '조건 충족'이라는 추상적 표현으로만 기술되어 있어 구체적 입력값이 전혀 없습니다. 예: 'POL-PENSION-WD-004'의 given은 '미사용 상품권 환불 요청 시(구매 후 7일 이내) 조건 충족'으로, 실제 구매일시, 요청일시, 상품권ID 등 자동화 테스트에 필요한 구체적 값이 부재합니다. then 결과도 '환불 처리', '수락 처리' 등 boolean 수준의 추상 표현만 있어 검증 기준이 불명확합니다. Happy path만 존재하며, edge case(예: 6일 vs 8일 경계값)와 error case(예: 환불 실패 시나리오)가 완전히 누락되었습니다. 또한 POL-PENSION-RG-011, RG-020 등 규제/보안 정책은 자동화 테스트 자체가 불가능한 운영 정책입니다. 자동화 가능한 기능 테스트는 최대 8개(WD-004~008, MG-423~424) 정도이며, 이들도 구체성이 극히 낮습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.607,
+        "passCount": 3,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:20:39.176Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 30801
+    },
+    {
+      "skillId": "9491acbb-e653-47d1-9b95-d0f53216b3e4",
+      "result": {
+        "skillId": "9491acbb-e653-47d1-9b95-d0f53216b3e4",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.95,
+            "rationale": "provenance.businessRules의 23개 BL ID(POL-PENSION-WD-011부터 POL-PENSION-BN-107)가 Original Rules 표의 ID 컬럼과 문자 그대로 1:1 매핑되었다. condition-criteria-outcome 구조가 모두 완전히 일치한다. exception 열은 모든 23개 행에서 '—'(예외 없음)으로 명시되어 완결성을 만족한다. Runbooks와 Test Scenarios도 각 BL의 내용과 정확히 부합한다. Empty Slot Rules가 없으므로 참조 검증 불필요. 다만 provenance의 sources 배열이 비어있고 trust.score가 0으로 설정된 점은 메타데이터 완결성 측면에서 미흡하나, 소스코드 정합성 평가 기준(originalRules ↔ businessRules 매핑)에는 영향을 주지 않는다. ID 표기 변동, 누락, 드리프트 없음.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.92,
+            "rationale": "giftvoucher-payment 스킬의 23개 비즈니스 규칙(POL-PENSION-*)에 대해 모두 대응하는 runbook이 존재하며, 각 runbook은 rule의 condition-criteria-outcome 구조를 정확히 반영하고 있습니다. 예를 들어 POL-PENSION-WD-011은 '결제가 정상적으로 완료된 경우(Condition) → 결제 완료 상태(Criteria) → 결제취소 가능(Outcome)'의 구조가 runbook에서 동일하게 표현되었습니다. POL-PENSION-MG-389의 경우 mchtId, method, trdDt 등 필수 정보 검증 조건이 명확히 기술되어 있고, POL-PENSION-BN-144와 POL-PENSION-EX-152는 '에러'와 '실패'의 차등 처리를 정확히 구분하고 있습니다. 모든 runbook이 'reviewed' 신뢰도를 가지고 있으며, test scenarios와 contract tests도 완전히 커버되어 있습니다. 다만 일부 runbook의 설명이 rule 원문을 단순 반복하는 수준으로, 운영 실행 단계의 구체적 절차나 예외 처리 흐름에 대한 추가 상세화 여지가 있습니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.42,
+            "rationale": "giftvoucher-payment 스킬의 테스트 시나리오는 given/when/then 구조를 형식적으로 포함하나 입출력 구조 명확성이 심각하게 부족합니다. given 필드는 '조건 충족'이라는 추상적 표현만 반복되며 구체적 값이나 타입이 전혀 명시되지 않습니다(예: POL-PENSION-MG-389의 mchtId, trdDt, trdAmt 등 필수 필드가 given에서 구체화되지 않음). then 필드도 마찬가지로 '결제 내역(PaymentVO)을 저장'이라는 추상적 설명만 있고, PaymentVO의 구체적 필드 구조, 반환 타입, 상태 코드 등이 정의되지 않습니다. 23개 정책 모두 동일한 패턴으로 작성되어 있어 각 시나리오별 입출력 차별성이 없습니다. 특히 POL-PENSION-MG-390(RequestPayCancel/ResponsePayCancel)처럼 구체적 객체명이 언급되어도 필드 정의가 없으며, 상태값(성공/실패/에러)도 boolean이 아닌 문자열로만 표현되어 타입 정보가 소실되었습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.42,
+            "rationale": "giftvoucher-payment 스킬의 예외·에러 핸들링 평가 결과: 23개 비즈니스 규칙 중 대부분이 'exception (Else)' 절에 '—'(정의 없음)로 표기되어 있습니다. 명시적 예외 처리가 있는 규칙은 POL-PENSION-BN-142(입금 실패 시 에러 리턴), POL-PENSION-BN-144(입금 에러 시 재시도), POL-PENSION-EX-152(에러/실패 차등 처리), POL-PENSION-WD-139(출금 실패 시 에러 리턴) 등 4개뿐입니다. 테스트 시나리오는 happy path 중심으로 구성되어 있으며, error_code나 비정상 상태를 명시적으로 다루는 테스트 케이스가 거의 없습니다. POL-PENSION-MG-375(고객 식별 정보 검증), POL-PENSION-MG-390(취소 요청 유효성) 등에서 검증 실패 시나리오가 누락되어 있고, 네트워크 타임아웃, 데이터베이스 오류, API 호출 실패 등 운영 환경의 예외 상황이 커버되지 않습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.62,
+            "rationale": "giftvoucher-payment 스킬의 23개 정책 규칙 중 단일 책임 원칙(SRP) 준수 수준을 분석한 결과, 중복 정의와 책임 혼재가 다수 발견되었습니다. 특히 POL-PENSION-BN-148과 POL-PENSION-BN-107은 '당일입금여부에 따른 입금 처리 구분'이라는 동일한 조건과 결과를 반복 정의하고 있습니다. POL-PENSION-BN-142(입금 실패)와 POL-PENSION-BN-144(입금 에러)는 구분되지만, POL-PENSION-EX-152가 동일 내용을 재정의합니다. 결제 취소 관련 규칙들(POL-PENSION-WD-011, MG-390, MG-264, MG-266)도 취소 처리라는 공통 책임을 중복 처리합니다. QR 결제 관련 규칙(MG-264, MG-265, MG-266)은 세분화되어 있으나, 가맹점 정보 조회(MG-262, MG-265)에서 중복이 있습니다. 규칙 간 명확한 경계가 불충분하며, 독립적 참조 가능성이 제한적입니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "testability",
+            "score": 0.35,
+            "rationale": "giftvoucher-payment 스킬의 테스트 시나리오는 23개 정책을 다루고 있으나, 테스트 가능성 측면에서 심각한 결함을 보입니다. 모든 시나리오의 given 조건이 '조건 충족'이라는 추상적 표현으로만 기술되어 있어 구체적인 입력값이 전혀 없습니다. 예: 'POL-PENSION-MG-389'의 given은 '결제 정보 요청이 발생한 경우 조건 충족'으로만 표기되며, mchtId, trdAmt 등 필수 필드의 구체적 값이 명시되지 않았습니다. then 항목도 '결제 내역을 저장하고 결제 처리 절차를 진행한다'처럼 추상적이어서 자동화 테스트 검증 기준이 불명확합니다. Happy path만 존재하며, edge case(부분취소, 망취소, 당일/익영업일 입금 등)와 error case(입금실패, 출금실패, 토큰발급실패 등)가 별도 시나리오로 분리되지 않았습니다. 따라서 자동화 테스트 구현이 거의 불가능한 수준입니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.613,
+        "passCount": 3,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:21:07.685Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 31390
+    },
+    {
+      "skillId": "37c7bf42-4a25-47c6-b5ae-31061cb62849",
+      "result": {
+        "skillId": "37c7bf42-4a25-47c6-b5ae-31061cb62849",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.42,
+            "rationale": "소스코드 정합성 평가 결과: provenance.businessRules 목록(48개)과 originalRules 표를 대조한 결과 심각한 불일치 발견. (1) ID 중복: POL-PENSION-MG-416, POL-PENSION-MG-417, POL-PENSION-MG-419가 provenance에서 2회씩 반복 선언되어 있으나 originalRules 표에는 1회만 존재. (2) 내용 불일치: provenance의 POL-PENSION-MG-416(게시판 글 등록)과 originalRules의 POL-PENSION-MG-416(카드사 전문요청 처리상태)이 완전히 다른 도메인의 규칙. 동일 ID로 2개 이상의 서로 다른 규칙이 존재. (3) Exception 열 완결성: originalRules 표의 모든 행이 exception 컬럼에 '—'로 명시되어 있으나, 이는 형식적 완결성만 충족. (4) 구조적 드리프트: provenance 선언과 originalRules 표 간 1:1 매핑 실패. 48개 선언 중 다수가 표에서 중복되거나 내용이 상이함. 평가 기준 0.5~0.75 구간의 '3~5개 불일치 또는 1개 BL 누락/드리프트' 기준을 초과하는 다중 구조적 오류로 판정.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.92,
+            "rationale": "giftvoucher-integration 스킬의 47개 비즈니스 규칙(POL-PENSION-*) 중 46개에 대응하는 runbook이 존재하며, 각 runbook의 condition-criteria-outcome 구조가 원본 rule과 정확히 일치한다. 예를 들어 POL-PENSION-MG-007은 'BATCH_007 실행 시 COMPARE_INSPECT 테이블 데이터 삭제 후 MP_COMPARE_INSPECT 테이블에 신규 데이터 삽입'이라는 outcome을 정확히 반영하고 있으며, POL-PENSION-MG-444는 '가상계좌 요청/응답 시 VRTL_ACNT_DPST 테이블에 기록'이라는 criteria를 명확히 설명한다. 모든 runbook이 'reviewed' 신뢰도(score: 0.7)로 표시되어 있고, test scenarios와 contract tests도 완전히 커버된다. 다만 POL-PENSION-MG-416이 중복 등재되어 있으며(카드사 전문요청 vs 게시판 글 등록), 일부 runbook의 세부 구현 지침(예: 암호화 알고리즘, 재시도 정책의 구체적 시간값)이 추상적인 수준에서 기술되어 있어 완전성에서 미소한 감점이 발생한다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.42,
+            "rationale": "giftvoucher-integration의 test scenarios에서 given/when/then 구조는 존재하나 입출력 구조 명확성이 심각하게 부족합니다. given 필드는 '조건 충족'이라는 추상적 표현만 반복되며 구체적 입력값이나 타입이 명시되지 않습니다. 예: 'BATCH_007이 실행되는 경우 조건 충족'은 실제 입력 파라미터, 데이터 구조, 필드 타입을 전혀 정의하지 않습니다. then 필드도 마찬가지로 '데이터 삽입', '데이터 갱신' 등 추상적 설명만 있고, 응답 객체의 구체적 필드명, 타입, 값 범위가 불명확합니다. POL-PENSION-MG-422의 'resultCode와 resultMessage를 포함한 응답'도 데이터 타입(string/int), 길이 제약, 가능한 값들이 정의되지 않았습니다. 계약 테스트로서 자동화 검증이 불가능한 수준의 모호성을 보입니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.35,
+            "rationale": "giftvoucher-integration 스킬의 예외·에러 핸들링 평가 결과, 심각한 결함이 확인되었습니다. 원본 Rules 테이블의 47개 정책 중 exception(Else) 절이 거의 모두 '—'(정의 안 됨)로 표시되어 있습니다. 예를 들어 POL-PENSION-MG-007(배치 데이터 마이그레이션), POL-PENSION-MG-010(API 통신), POL-PENSION-MG-444(가상계좌 요청)등 핵심 정책들이 예외 처리를 전혀 정의하지 않았습니다. 유일한 예외 정책은 POL-PENSION-EX-145(외부 API 호출 실패 시 오류 코드 반환)뿐입니다. Test Scenarios에서도 모든 시나리오가 happy path만 다루고 있으며, error_code나 비정상 상태(실패, 타임아웃, 데이터 검증 오류 등)를 커버하는 예외 테스트 케이스가 전혀 없습니다. Contract Tests도 정책 나열만 있고 실제 에러 시나리오 검증이 부재합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.42,
+            "rationale": "giftvoucher-integration 스킬의 업무루틴 분리·재사용성 평가 결과, 심각한 SRP 위반과 중복이 확인되었습니다. 첫째, POL-PENSION-MG-416이 두 번 정의되어 있으며 서로 다른 업무(카드사 전문요청 처리상태 vs 게시판 글 등록)를 담당합니다. 둘째, POL-PENSION-MG-417, MG-418, MG-419도 중복 정의되어 있습니다. 셋째, 카드사 연동 관련 규칙들(MG-396~400, MG-416~419, RG-418)이 등록·삭제·상태갱신·이력기록·응답반환 등 다중 책임을 혼재하고 있습니다. 넷째, 게시판 관련 규칙들(MG-416~421)과 결제알림 규칙들(NF-021~030)이 각각 유사한 조건을 반복 정의하고 있습니다. 다섯째, 외부API 호출 관련 규칙들(MG-406, EX-145, MG-401)이 로깅·오류처리·응답처리를 중복으로 다루고 있습니다. 규칙 간 경계가 불명확하고 독립적 참조가 어려운 상태입니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0.35,
+            "rationale": "giftvoucher-integration 스킬의 테스트 시나리오는 심각한 자동화 테스트 적합성 문제를 보유하고 있습니다. 47개 정책에 대해 1:1 매핑된 시나리오가 존재하지만, 각 시나리오의 given/when/then 구조가 극도로 추상적입니다. 예를 들어 POL-PENSION-MG-007의 'BATCH_007이 실행되는 경우 조건 충족'은 구체적 입력값 없이 기술되었고, then의 '반복적으로 신규 데이터 삽입'은 자동화 검증 불가능한 표현입니다. POL-PENSION-NF-021(결제금액 5만원 이상 SMS 발송)은 happy path만 다루며, 경계값(49,999원, 50,000원, 50,001원) 테스트나 SMS 발송 실패 시나리오가 없습니다. 모든 시나리오가 boolean 수준의 '처리됨', '수행한다' 같은 모호한 then으로 종료되며, 구체적 assertion(예: resultCode='0000', rowCount>0)이 전무합니다. 총 47개 시나리오 중 edge case와 error case는 POL-PENSION-EX-145 1건뿐이며, happy path 위주로 구성되어 있습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.48,
+        "passCount": 1,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:21:11.767Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 32693
+    },
+    {
+      "skillId": "3d3dc1e7-47ce-4a91-96ed-719e8317d1f0",
+      "result": {
+        "skillId": "3d3dc1e7-47ce-4a91-96ed-719e8317d1f0",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.42,
+            "rationale": "provenance.businessRules의 37개 규칙 중 originalRules 표에서 완전히 매핑되는 규칙은 15개(POL-PENSION-MG-005~009, MG-001~003, WD-004, WD-006, CL-005, CL-021)에 불과합니다. 나머지 22개 규칙(POL-PENSION-MG-448, MG-447, CT-419, CL-418, CL-427, CT-420, CT-421, MG-412, MG-415, MG-416, MG-417, MG-422, CT-410, CT-412, NF-396, WD-400, MG-268, MG-254, MG-257 등)은 originalRules 표에서 ID 컬럼에 명시되지 않았습니다. 표의 마지막 행(POL-PENSION-MG-448)이 불완전하게 끝나며, 이후 규칙들은 runbooks와 test scenarios에만 존재합니다. 또한 originalRules 표의 exception 컬럼이 모두 '—'로 표기되어 있어 완결성은 있으나, 핵심 문제는 provenance에 선언된 규칙의 약 60%가 원본 표에 구조적으로 누락되어 있다는 점입니다. 이는 spec-container의 기본 원칙인 1:1 매핑 정합성을 심각하게 위반합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.85,
+            "rationale": "giftvoucher-settlement 스킬의 37개 비즈니스 규칙(POL-PENSION-*) 중 36개에 대응하는 runbook이 존재하며, 각 runbook은 rule의 condition-criteria-outcome 구조를 정확히 반영하고 있습니다. 예를 들어 POL-PENSION-MG-005는 '인증번호 요청 후 1분 초과'(condition) → '1분 초과'(criteria) → '인증번호 입력 오류 처리'(outcome)로 일관되게 문서화되었습니다. POL-PENSION-CT-419는 두 개의 서로 다른 시나리오(충전 가능 금액 확인, 월별 수수료 자동 청구)로 분리되어 있으나 runbook에서 명확히 구분되지 않아 약간의 혼동 가능성이 있습니다. 모든 runbook이 'Domain: giftvoucher', 'Trust: reviewed' 메타데이터를 포함하고 있으며, 테스트 시나리오와도 일치합니다. 다만 일부 규칙(POL-PENSION-MG-448 등)의 runbook 내용이 매우 기술적이어서 운영 가이드로서의 실용성이 제한적입니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.42,
+            "rationale": "giftvoucher-settlement의 test scenarios에서 given/when/then 구조는 존재하나 입출력 명확성이 심각하게 부족합니다. given 필드는 '조건 충족'이라는 추상적 표현만 반복되며 구체적 값이나 타입이 명시되지 않습니다(예: '사용자가 인증번호 받기 선택 후 1분이 경과한 경우 조건 충족'). when/criteria는 조건 설명일 뿐 입력 파라미터 구조를 정의하지 않습니다. then/outcome은 기대 결과를 자연어로만 표현하며, 응답 필드 타입, 상태 코드, 데이터 구조가 완전히 부재합니다. POL-PENSION-MG-448의 '응답 코드(code), 유형(type), 설명(desc), 처리 소요 시간(duration)' 언급도 테스트 시나리오에 구체화되지 않았습니다. 38개 정책 모두 동일한 패턴으로 I/O 경계가 불명확하며, 필드 타입 정보 전무로 AI-Ready 품질 기준을 충족하지 못합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.45,
+            "rationale": "giftvoucher-settlement 스킬의 예외·에러 핸들링 평가 결과: 규칙 테이블의 37개 정책 중 대부분이 'exception (Else)' 열에 '—'(정의 안 됨)로 표시되어 있습니다. 예를 들어 POL-PENSION-MG-005~009, POL-PENSION-MG-001~003 등 핵심 정책들이 예외 케이스를 명시하지 않고 있습니다. Runbooks에서는 각 정책의 happy path만 기술되어 있으며, 실패 시나리오나 에러 코드 처리 방안이 구체적으로 정의되지 않았습니다. 테스트 시나리오(Test Scenarios)는 모두 정상 케이스(given/when/then)만 포함하고 있으며, 타임아웃, 네트워크 오류, 유효성 검증 실패 등의 예외 상황에 대한 테스트 케이스가 전혀 없습니다. 일부 정책(POL-PENSION-MG-448, POL-PENSION-MG-268)에서 '응답 코드', '유효성 검증' 언급이 있으나, 구체적인 error_code 정의나 예외 처리 로직이 부재합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.42,
+            "rationale": "giftvoucher-settlement 스킬의 업무루틴 분리·재사용성 평가 결과, 심각한 SRP 위반과 중복이 확인되었습니다. 첫째, POL-PENSION-MG-005가 두 번 정의되어 있으며 서로 다른 조건(인증번호 1분 초과 vs 예약전송 메시지)을 처리합니다. 둘째, POL-PENSION-MG-007, POL-PENSION-MG-008도 중복 정의되어 있습니다. 셋째, 로그인 관련 규칙(MG-005~009)이 인증, 오류처리, 권한관리를 혼재하고 있으며, 입금/출금 규칙(MG-001~003)도 타임아웃 처리와 상태조회를 함께 다룹니다. 넷째, 정산 관련 규칙들(CL-005, CL-418, CL-427)이 유사한 데이터 처리 책임을 중복으로 정의하고 있습니다. 다섯째, businessRules 목록에 37개 규칙이 선언되었으나 실제 정의는 불완전하고, 규칙 간 경계가 불명확합니다. 독립 참조 가능성이 낮고 규칙 재사용성이 제한적입니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0.42,
+            "rationale": "giftvoucher-settlement의 테스트 시나리오는 총 37개로 수량은 충분하나, 자동화 테스트 적합성 측면에서 심각한 결함을 보입니다. 모든 시나리오의 given 조건이 '조건 충족'이라는 추상적 표현으로만 기술되어 있으며, 구체적인 입력값(예: 인증번호='123456', 요청시간=2024-01-01T10:00:00Z, 경과시간=61초)이 전혀 없습니다. when 절도 '인증번호 요청 시점으로부터 1분 초과' 같은 모호한 기준만 제시하고, then 절은 '오류로 처리한다', '메시지를 표시한다' 같은 boolean 수준의 추상적 결과만 기술합니다. 예를 들어 POL-PENSION-MG-005는 '1분 초과'의 정확한 임계값, 타임스탬프 형식, 오류 코드(예: ERR_AUTH_TIMEOUT_001)가 명시되지 않아 자동화 검증이 불가능합니다. happy path만 존재하고, edge case(59초, 60초, 61초 경계값)와 error case(네트워크 지연, 시스템 시간 오류)가 완전히 부재합니다. 따라서 단위테스트 구현 난이도가 매우 높습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.497,
+        "passCount": 1,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:21:37.655Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 30177
+    },
+    {
+      "skillId": "91d347e7-5b01-4a01-863d-129403f152a6",
+      "result": {
+        "skillId": "91d347e7-5b01-4a01-863d-129403f152a6",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.92,
+            "rationale": "provenance.businessRules의 26개 BL ID(POL-PENSION-EN-008부터 POL-PENSION-MG-001까지)가 originalRules 표에 모두 문자 그대로 일치하며, condition-criteria-outcome 매핑이 완전히 존재합니다. 모든 행의 exception 열이 '—'(예외 없음)으로 명시되어 완결성을 만족합니다. runbooks와 test scenarios도 각 BL과 1:1 대응되며 내용이 일치합니다. contract tests의 26개 정책 목록도 provenance 선언과 정확히 매칭됩니다. Empty Slot Rules가 없으므로 참고 맥락 검증은 해당 없습니다. 다만 originalRules 표의 POL-PENSION-RG-212 행이 criteria 컬럼에서 문장이 절단되어 표시되어 있어(\"사내 표준기준(Kate → Work Link → 정보/역량 → 정보보호 → 개인정\") 완전한 내용 확인이 제한적입니다. 이는 표 렌더링 이슈로 보이며, runbook 본문에서는 전체 내용이 명확히 기술되어 있습니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.92,
+            "rationale": "giftvoucher-other 스킬의 26개 businessRules 모두에 대응하는 runbook이 존재하며, 각 runbook은 rule의 condition-criteria-outcome을 정확히 반영하고 있습니다. 예를 들어 POL-PENSION-EN-008은 '오프라인 청약 시 청약서 첨부'라는 condition/outcome을 runbook에서 동일하게 명시하고 있으며, POL-PENSION-MG-225의 '고객명 한글 마스킹(홍길*)'도 정확히 재현되어 있습니다. 개인정보처리방침 관련 규칙들(RG-206, RG-207, RG-208 등)도 초기화면 게시, 로그인 전 열람, 메뉴 레벨 배치 등의 세부 기준이 runbook에 충실히 기록되어 있습니다. 다만 일부 runbook의 'Criteria' 섹션이 rule의 조건을 단순 반복하는 경향이 있어 실행 가능한 검증 절차로의 구체화 수준이 미흡한 점이 있습니다. 전반적으로 문서 일치도는 매우 높으나 운영 실행성 측면에서 소폭의 개선 여지가 있습니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.45,
+            "rationale": "giftvoucher-other 스킬의 tests/contract 시나리오들은 given/when/then 구조를 형식적으로 포함하고 있으나, 입출력 구조의 명확성이 심각하게 부족합니다. given 필드는 '조건 충족'이라는 추상적 표현만 반복되며 구체적 값이나 타입이 명시되지 않습니다(예: 'POL-PENSION-MG-315'의 given은 '성명 값이 60바이트 이상이거나 비정상 문자가 입력된 경우 조건 충족'). then 필드도 마찬가지로 상태 변화나 응답 형태를 완전히 정의하지 못하고 있습니다. 예를 들어 'POL-PENSION-CL-014'의 then은 '거래 데이터 반복 처리 후 CALCULATION_TRANS, CALCULATION 데이터 갱신'으로만 표기되어 갱신 전후 데이터 구조, 필드 타입, 반환값 형식이 전혀 명시되지 않습니다. 26개 정책 모두에서 이러한 패턴이 반복되며, I/O 경계를 명확히 파악하기 어렵습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.35,
+            "rationale": "giftvoucher-other 스킬의 예외·에러 핸들링 정의가 심각하게 부족합니다. 26개 규칙 중 대부분이 'exception (Else)' 열에 '—'(정의 없음)로 표기되어 있습니다. 명시적 예외 처리는 POL-PENSION-MG-315(오류코드 KISQ9117 반환)와 POL-PENSION-RG-189(UI 누락 시 배포 불가) 2개뿐입니다. 테스트 시나리오는 happy path만 존재하며, error_code, 비정상 상태, 실패 케이스를 다루는 예외 시나리오가 전혀 없습니다. API 호출 실패, 데이터 검증 오류, 타임아웃, 권한 부족 등 실무적 예외 상황이 커버되지 않았습니다. 계약 테스트도 정책 나열만 있고 예외 조건 검증이 없습니다. 규제 기반 규칙(개인정보처리방침 관련)이 대부분이나, 이들도 실패 시나리오나 대체 처리 로직이 정의되지 않았습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.42,
+            "rationale": "giftvoucher-other 스킬의 26개 규칙(POL-PENSION-*)을 분석한 결과, 업무루틴 분리·재사용성 기준에서 심각한 결함이 발견되었습니다. 첫째, 개인정보처리방침 관련 규칙들(RG-206, RG-207, RG-208, RG-212, RG-215, RG-063, RG-065, RG-066, RG-072)과 MG 규칙들(MG-210, MG-214, MG-067, MG-069, MG-071)이 동일한 조건(개인정보처리방침 게시·변경·관리)을 중복으로 정의하고 있습니다. 예를 들어 RG-206과 RG-063은 초기화면 게시 의무를 동일하게 규정하며, MG-210과 MG-067은 이전 버전 보관을 중복 정의합니다. 둘째, 규칙 간 경계가 불명확하여 독립적 참조가 어렵습니다. 셋째, 스킬명 'giftvoucher-other'와 실제 규칙 내용(퇴직연금, 개인정보처리방침)의 불일치로 인해 규칙 적용 범위가 모호합니다. 넷째, 26개 규칙 중 대다수가 개인정보처리방침 관련으로 편중되어 있어 단일 책임 원칙을 위반합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0.35,
+            "rationale": "giftvoucher-other 스킬의 테스트 시나리오는 26개 정책을 다루고 있으나, 테스트 가능성 측면에서 심각한 결함을 보입니다. 모든 시나리오의 given 조건이 '조건 충족'이라는 추상적 표현으로만 작성되어 있어 자동화 테스트 구현이 불가능합니다. 예를 들어 POL-PENSION-MG-315(성명 값 유효성)는 'given: 성명 값이 60바이트 이상이거나 비정상 문자가 입력된 경우 조건 충족'으로만 표기되어, 구체적인 테스트 데이터(예: '홍길동동동...' 또는 특수문자 '@#$')가 없습니다. Happy path만 존재하며 edge case(59바이트, 정확히 60바이트)와 error case(빈 값, null)가 전혀 없습니다. Then 결과도 대부분 boolean 수준('게시한다', '제공한다')으로 검증 기준이 불명확합니다. 26개 시나리오 중 실제 자동화 가능한 구체적 시나리오는 0개입니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.568,
+        "passCount": 2,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:21:43.440Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 31822
+    },
+    {
+      "skillId": "d42c15f9-437c-4f6f-a5d7-b2892992f69f",
+      "result": {
+        "skillId": "d42c15f9-437c-4f6f-a5d7-b2892992f69f",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.35,
+            "rationale": "provenance.businessRules의 92개 규칙 중 originalRules 표에 실제로 존재하는 규칙은 약 32개(POL-PENSION-MG-010, NF-001~005, NF-008, RG-005~013, MG-001~004 등)입니다. 심각한 불일치 사항: (1) ID 문자열 일치 부재 - provenance의 'POL-PENSION-MG-010'이 originalRules 표에 정확히 매핑되지 않음. (2) 중복 규칙 다수 - POL-PENSION-NF-008, NF-012, NF-422, NF-429, MG-010, MG-012가 provenance에서 반복 선언됨. (3) 원본 표 미완성 - 제시된 originalRules 표가 'POL-PENS...' 이후 절단되어 전체 내용 확인 불가. (4) Exception 열 완결성 부족 - 다수 행의 exception 컬럼이 '—'로 표기되어 있으나 실내용 검증 불가. (5) 60개 이상의 규칙(NF-026, EX-425, NF-422~430, MG-412~415, NF-397~405 등)이 originalRules 표에 누락되어 있음. 구조적 정합성 심각 결함.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.92,
+            "rationale": "giftvoucher-notification 스킬의 주석·문서 일치도를 평가한 결과, 매우 높은 수준의 대응성을 확인했습니다. 제공된 93개 비즈니스 규칙(POL-PENSION-* 정책)에 대해 runbooks 섹션에서 거의 모든 규칙에 대응하는 운영 가이드가 존재합니다. 각 runbook은 rule의 condition(When), criteria(If), outcome(Then) 구조를 정확히 반영하고 있으며, Domain을 'giftvoucher'로 명시하고 Trust 레벨을 'reviewed (score: 0.7)'로 일관되게 기록하고 있습니다. Test Scenarios와 Contract Tests 섹션도 모든 주요 정책을 포괄적으로 다루고 있습니다. 다만 일부 중복된 정책 ID(예: POL-PENSION-NF-008, POL-PENSION-NF-012, POL-PENSION-MG-010 등이 businessRules에서 반복 등재)와 runbook 내용의 세부 구현 지침 부재로 인해 완벽한 1.0 점수에는 미치지 못했습니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.42,
+            "rationale": "giftvoucher-notification 스킬의 테스트 시나리오들은 given/when/then 구조를 형식적으로 포함하고 있으나, 입출력 구조의 명확성이 심각하게 부족합니다. given 필드는 대부분 '조건 충족'이라는 추상적 표현만 반복되며, 구체적인 입력값이나 데이터 타입이 명시되지 않습니다. 예를 들어 'POL-PENSION-NF-001' 시나리오의 given은 '구매 기능을 사용할 때 조건 충족'으로만 표기되어 실제 입력 파라미터(사용자ID, 구매금액, 결제수단 등)를 파악할 수 없습니다. then 필드도 '다중 인증 방식 지원', 'SMS 인증 수행' 등 추상적 결과만 기술되어 있으며, 응답 필드 구조, 상태코드, 반환 데이터 형식이 정의되지 않았습니다. 테이블 참조(PROMOTION_SEND, TEMP_RECIPIENT 등)가 있는 시나리오들도 필드명만 언급될 뿐 데이터 타입이나 필드 의미가 불명확합니다. 계약 테스트로서 AI 모델이 자동 검증할 수 있는 수준의 구체성이 전혀 부족합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.35,
+            "rationale": "giftvoucher-notification 스킬의 예외·에러 핸들링 커버리지는 매우 낮습니다. 분석 결과: (1) 원본 BL 규칙 테이블의 'exception (Else)' 컬럼이 모든 항목에서 '—'로 표시되어 있어 예외 케이스가 명시되지 않음. (2) Runbooks에서 POL-PENSION-EX-425만 예외 처리를 언급하고 있으나, 대부분의 규칙(POL-PENSION-NF-001~005, POL-PENSION-RG-005~013 등)에서 실패 시나리오나 에러 조건이 정의되지 않음. (3) Test Scenarios는 happy path만 포함하며, error_code, 비정상 상태, 실패 케이스가 전혀 없음. 예를 들어 'SMS 인증 실패', '계정 잠금 실패', 'API 호출 실패', '데이터 검증 오류' 등의 예외 시나리오가 누락됨. (4) Contract Tests도 정상 케이스만 나열되어 있음. 따라서 0.5 미만의 점수가 적절합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.42,
+            "rationale": "giftvoucher-notification 스킬의 업무루틴 분리·재사용성 평가 결과, 심각한 SRP 위반과 중복이 확인되었습니다. 첫째, POL-PENSION-NF-008이 두 번 정의되어 있으며(프로모션 발송 vs 구매 승인), POL-PENSION-NF-012도 중복(프로모션 발송 vs 회원탈퇴)되어 있습니다. 둘째, 알림 관련 규칙들(NF-397~405)이 동일한 '발송 결과 기록' 책임을 반복하고 있습니다. 셋째, POL-PENSION-MG-010이 '인증 처리'와 '배너 노출'이라는 전혀 다른 두 가지 책임을 혼재하고 있습니다. 넷째, 결제금액 기준 SMS 발송이 POL-PENSION-NF-145, NF-102에서 동일하게 정의되어 있습니다. 다섯째, 개인정보처리방침 변경 공지가 NF-209, NF-213, NF-064에서 중복 정의되어 있습니다. 규칙 간 경계가 불명확하고 독립적 참조가 어려우며, 동일 조건을 처리하는 규칙들이 산재되어 있어 유지보수성과 재사용성이 매우 낮습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0.35,
+            "rationale": "giftvoucher-notification 스킬의 테스트 시나리오는 심각한 자동화 테스트 적합성 문제를 보유하고 있습니다. 제공된 100개 이상의 시나리오 중 대부분이 추상적 표현으로만 구성되어 있습니다. 예를 들어 'POL-PENSION-NF-001'의 given은 '구매 기능을 사용할 때 조건 충족'이라는 모호한 표현이며, then은 'SMS 인증을 반드시 수행해야 함'으로 boolean 수준의 검증만 가능합니다. 구체적 테스트 데이터(예: 특정 금액, 시간, 사용자ID)가 전혀 없고, happy path만 나열되어 있으며 edge case(예: 5만원 정확히, 5만원 미만)나 error case(인증 실패, 네트워크 오류)가 체계적으로 커버되지 않습니다. 'POL-PENSION-MG-004'의 '5회 연속 오류'는 edge case이지만, 4회, 6회 등 경계값 테스트가 명시되지 않았습니다. 전체적으로 자동화 테스트 프레임워크에서 구현 불가능한 수준의 추상성을 유지하고 있습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.468,
+        "passCount": 1,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:22:12.014Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 34388
+    },
+    {
+      "skillId": "a7548a83-2a84-4bff-aaff-e9f6c05d26fe",
+      "result": {
+        "skillId": "a7548a83-2a84-4bff-aaff-e9f6c05d26fe",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.15,
+            "rationale": "소스코드 정합성 평가 결과 심각한 불일치가 확인되었습니다. Provenance의 businessRules 목록에는 POL-PENSION-MG-004, POL-PENSION-MG-005 등 총 200개 이상의 규칙이 선언되어 있으나, Original Rules 표에서 확인할 수 있는 BL 원본은 극히 제한적입니다. 특히 ID 문자열 일치 검증에서 provenance의 'POL-PENSION-' 형식 규칙들이 originalRules 표의 ID 컬럼에 명시적으로 매핑되지 않습니다. Exception 열의 완결성도 부족하며, 다수의 BL이 원본 표에서 누락되었습니다. 또한 ES 규칙들이 참조하는 BL 중 일부가 originalRules에 존재하지 않아 참고 맥락 구성도 불완전합니다. 이는 provenance 출처와 originalRules 구조 간 근본적인 불일치를 나타냅니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.25,
+            "rationale": "giftvoucher-security 스킬의 runbooks와 rules 간 대응성이 매우 낮습니다. 제공된 runbooks는 약 150개 정책에 대해 기본적인 condition-criteria-outcome 구조를 반복적으로 나열하고 있으나, 실질적인 운영 가이드 내용이 부족합니다. 예를 들어 POL-PENSION-MG-004(보안키패드 노출 방지)의 runbook은 'condition: 앱 실행 후 메인화면 로드, criteria: 비정상 노출 여부 확인, outcome: 숨김 처리'만 기술하고 있으며, 구체적인 구현 방법, 검증 절차, 예외 처리 등이 전혀 없습니다. 또한 많은 정책이 중복되어 있고(예: POL-PENSION-MG-002, MG-003, MG-004가 여러 번 반복), runbook의 내용이 rule의 세부 조건을 정확히 반영하지 못하고 있습니다. 특히 복잡한 보안 정책(예: SSLVPN 접근 절차, TLS 암호화 전송)에 대한 상세한 운영 가이드가 누락되어 있어 실무 적용이 어렵습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.42,
+            "rationale": "giftvoucher-security의 tests/contract 시나리오들을 분석한 결과, 입출력 구조 명확성이 현저히 부족합니다. 대부분의 시나리오에서 given 필드는 단순 조건 충족 여부만 기술되어 있고 구체적인 입력값이나 타입이 명시되지 않았습니다. 예를 들어 'POL-PENSION-MG-004' 시나리오의 given은 '앱 실행 후 메인화면을 로드할 때 조건 충족'으로만 표기되어 있으며, 실제 입력 데이터 구조(예: 화면 상태, 키패드 표시 여부 등)가 정의되지 않았습니다. then 필드도 '비정상 노출 시 보안키패드 숨김 처리'로 추상적이며, 응답 형태나 상태 변화의 구체적 형식이 부재합니다. 전체 200개 이상의 시나리오에서 이러한 패턴이 반복되어, 필드 타입과 의미를 파악하기 어렵습니다. 구체적 값/타입 명시 부족으로 0.5~0.75 범위에 해당하며, 일부 시나리오의 추상성으로 인해 0.42로 평가됩니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.35,
+            "rationale": "giftvoucher-security 스킬의 예외·에러 핸들링 평가 결과, 심각한 결함이 발견되었습니다. 분석 대상 200개 이상의 규칙(POL-PENSION-*) 중 대다수가 exception/else 절을 명시하지 않고 있습니다. 예를 들어 POL-PENSION-MG-004(보안키패드 노출 방지), POL-PENSION-MG-005(암복호화 라이브러리), POL-PENSION-MG-006(구간암호화 요청) 등은 정상 케이스(Then)만 정의되어 있고, 예외 상황에 대한 처리 방안이 누락되어 있습니다. 테스트 시나리오(Test Scenarios)에서도 error_code나 비정상 상태에 대한 커버리지가 극히 제한적입니다. 일부 규칙(POL-PENSION-RG-332~340, POL-PENSION-MG-306~321)에서 오류 코드(KISQ9114, KISQ9115 등)가 언급되지만, 전체 규칙 대비 예외 처리 정의 비율은 15% 미만입니다. 따라서 happy path 중심의 불완전한 예외 처리 구조로 평가됩니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.35,
+            "rationale": "giftvoucher-security 스킬의 규칙 분리·재사용성 평가 결과, 심각한 SRP 위반과 중복이 확인되었습니다. 동일한 정책ID(예: POL-PENSION-MG-002, POL-PENSION-MG-003, POL-PENSION-MG-004)가 서로 다른 조건과 결과로 반복 정의되어 있습니다. 예를 들어 POL-PENSION-MG-002는 '외부 오픈 웹사이트 웹방화벽 수용', 'API 인증 토큰 필수 포함', 'KMC 본인확인 런타임 오류 처리' 등 3가지 이상의 독립적인 책임을 혼재하고 있습니다. POL-PENSION-MG-004도 '메인화면 보안키패드 노출 방지', '인증 API 웹방화벽 수용', 'API 오류 응답 코드 반환' 등으로 중복 정의되어 있습니다. 또한 businessRules 목록에서 동일 정책이 30회 이상 반복되어 있으며, runbooks와 original rules 간 매핑 불일치가 존재합니다. 규칙 경계가 불명확하고 대부분 중복 또는 모순 관계를 보이고 있어 독립적 참조·적용이 불가능합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0.35,
+            "rationale": "giftvoucher-security 스킬의 tests/*.yaml 시나리오는 심각한 결함을 보입니다. 제공된 테스트 시나리오들은 given/when/then 구조를 형식적으로만 갖추고 있으나, 자동화 테스트 구현에 필요한 구체적 값이 거의 없습니다. 예를 들어 'POL-PENSION-MG-004' 시나리오의 then은 '비정상 노출 시 보안키패드 숨김 처리 및 오류 로그 기록'으로만 표현되어 있고, 어떤 오류 코드를 반환해야 하는지, 로그 포맷이 무엇인지 명시되지 않습니다. Happy path만 다루고 있으며, edge case(예: 네트워크 타임아웃, 부분 실패)나 error case(예: 잘못된 입력값, 권한 부족)를 거의 커버하지 않습니다. 약 300개 이상의 정책이 선언되었으나 실제 테스트 시나리오는 추상적 표현으로만 구성되어 있어 단위테스트 자동화 적합성이 매우 낮습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.312,
+        "passCount": 0,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:22:22.078Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 38399
+    },
+    {
+      "skillId": "c5a73dc0-8c13-424f-9593-adfd2b758357",
+      "result": {
+        "skillId": "c5a73dc0-8c13-424f-9593-adfd2b758357",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.15,
+            "rationale": "소스코드 정합성 평가 결과 심각한 불일치가 확인되었습니다. Provenance의 businessRules 목록(POL-PENSION-MG-002, POL-PENSION-MG-006 등 총 170개 항목)과 Original Rules 표를 대조한 결과, 다음과 같은 문제점이 발견되었습니다: (1) ID 문자열 불일치: Provenance에 선언된 'POL-PENSION-MG-002'가 Original Rules 표에서 동일 ID로 여러 번 중복 정의되어 있으며, 각각 다른 condition/criteria/outcome을 가지고 있습니다. (2) 구조적 혼란: 동일 ID(예: POL-PENSION-MG-002)가 '앱 초기화면 로딩'과 '배포 프로젝트 브랜치 설정' 두 가지 완전히 다른 규칙으로 정의되어 있어 1:1 매핑이 불가능합니다. (3) Exception 열 완결성 부재: 대부분의 행에서 exception 컬럼이 '—'로 표기되어 있으나, 실제 예외 조건이 명확하지 않습니다. (4) 원본 표 자체의 신뢰성 문제: 동일 ID 중복으로 인해 provenance와의 정합성 판정이 근본적으로 불가능합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.92,
+            "rationale": "giftvoucher-operation 스킬의 주석·문서 일치도를 평가한 결과, 매우 높은 수준의 대응성을 확인했습니다. 제공된 Runbooks 섹션에서 POL-PENSION-MG-002(앱 초기화면 로딩 실패), POL-PENSION-MG-006(웹방화벽 수용), POL-PENSION-MG-008(트래픽 웹방화벽 경유) 등 주요 규칙들에 대해 condition-criteria-outcome 구조를 정확히 반영한 운영 가이드가 존재합니다. 또한 POL-PENSION-MG-001부터 POL-PENSION-MG-019, POL-PENSION-EX-011, POL-PENSION-NF-015 등 대부분의 비즈니스 규칙에 대응하는 runbook이 제공되어 있으며, 각 runbook의 내용이 원본 규칙의 조건, 기준, 결과를 정확하게 설명하고 있습니다. 다만 일부 중복된 정책ID(예: POL-PENSION-MG-002, POL-PENSION-MG-006이 여러 번 나타남)와 Test Scenarios 섹션에서 일부 시나리오의 내용이 원본 규칙과 미세한 표현 차이가 있어 완벽한 1.0점에는 미치지 못했습니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.42,
+            "rationale": "tests/contract/*.yaml 시나리오들의 입출력 구조 명확성이 현저히 부족합니다. given 필드는 조건 설명만 추상적으로 제시되며 구체적 값이나 타입이 명시되지 않습니다(예: 'BATCH_001이 실행되는 경우 조건 충족'). when 필드는 criteria만 반복되어 실제 입력 데이터 구조를 파악할 수 없습니다. then 필드는 outcome만 기술되어 응답 형태의 필드 타입, 반환값 구조, 상태 변화 세부사항이 완전히 부재합니다. 예를 들어 POL-PENSION-MG-003 시나리오에서 'COMPARE_INSPECT_LOAD 테이블 데이터 삭제 후 신규 데이터 반복 삽입'이라는 설명만 있고, 입력 데이터 형식(레코드 수, 필드명, 타입), 출력 상태(성공/실패 코드, 영향받은 행 수)가 정의되지 않았습니다. 대부분의 시나리오가 boolean 수준의 조건만 포함하여 I/O 경계를 명확히 파악할 수 없습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.35,
+            "rationale": "giftvoucher-operation 스킬의 예외·에러 핸들링 평가 결과, 심각한 결함이 확인되었습니다. 분석 대상 170개 이상의 규칙(POL-PENSION-*) 중 대다수가 'exception (Else)' 절을 완전히 누락하고 있습니다. 예를 들어 POL-PENSION-MG-002(앱 초기화면 로딩 실패)는 '—'로 표시되어 예외 처리가 정의되지 않았으며, POL-PENSION-MG-006, MG-008, MG-001 등도 동일합니다. 제공된 Test Scenarios는 happy path만 다루고 있으며, error_code나 비정상 상태를 검증하는 시나리오가 거의 없습니다. 일부 예외 규칙(POL-PENSION-EX-011, EX-149, EX-150, EX-281, EX-211)이 존재하지만, 이들도 tests에서 구체적인 에러 케이스 커버가 부족합니다. Runbooks의 신뢰도가 모두 0.7로 표시되어 있으나, 실제 예외 처리 메커니즘이 명확하지 않습니다. 따라서 예외 시나리오 커버리지가 매우 낮은 상태입니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.35,
+            "rationale": "giftvoucher-operation 스킬의 업무루틴 분리·재사용성 평가 결과, 심각한 SRP 위반과 규칙 간 중복이 광범위하게 발견되었습니다. 동일한 정책ID(예: POL-PENSION-MG-002, POL-PENSION-MG-006, POL-PENSION-MG-008)가 businessRules 목록에서 반복 선언되며, 여러 규칙이 동일한 조건을 처리합니다. 예를 들어 POL-PENSION-MG-357, POL-PENSION-MG-358, POL-PENSION-MG-360이 모두 Route 설정 관련 규칙이지만 경계가 불명확하고, POL-PENSION-MG-073이 두 번 나타나며 서로 다른 내용(백신설치 vs 권한제한)을 담고 있습니다. POL-PENSION-MG-245도 중복 선언되어 있습니다. 또한 POL-PENSION-MG-428이 두 번 나타나 '서버동기화시간'과 '캐시백예산할당'이라는 전혀 다른 책임을 혼재하고 있습니다. 규칙 간 독립 참조 가능성이 낮으며, 단일 책임 원칙을 준수하지 않는 규칙들이 다수 존재합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0.42,
+            "rationale": "giftvoucher-operation 스킬의 테스트 시나리오는 총 200개 이상이 제시되었으나, 테스트 가능성 및 단위테스트 적합성 기준에서 심각한 결함을 보입니다. 대부분의 시나리오가 happy path만 다루고 있으며, edge case와 error case가 거의 없습니다. 예를 들어 'POL-PENSION-MG-002 앱 초기화면 로딩 실패'는 given/when/then이 추상적으로만 표현되어 있고, 구체적인 테스트 값(예: 로딩 시간 임계값, 응답 지연 시간, 재시도 횟수)이 명시되지 않았습니다. 'POL-PENSION-MG-140 출금 타임아웃'의 경우 '5분 대기'라는 구체적 값이 있으나, 타임아웃 발생 조건, 재시도 실패 시나리오, 부분 출금 등의 edge case가 누락되어 있습니다. 또한 then 절이 대부분 '~한다', '~처리한다' 같은 추상적 표현으로만 기술되어 자동화 테스트 구현이 어렵습니다. 구체적인 응답 코드, 데이터베이스 상태 변경, 예외 메시지 등이 명확하지 않아 단위테스트 작성 난이도가 높습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.435,
+        "passCount": 1,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:22:50.129Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 37899
+    },
+    {
+      "skillId": "5281357c-bf73-41eb-a5b9-57bb8899f1e0",
+      "result": {
+        "skillId": "5281357c-bf73-41eb-a5b9-57bb8899f1e0",
+        "model": "haiku",
+        "criteria": [
+          {
+            "criterion": "source_consistency",
+            "score": 0.15,
+            "rationale": "소스코드 정합성 평가 결과 심각한 불일치가 확인되었습니다. provenance.businessRules에 선언된 170개 규칙 중 originalRules 표에는 단 165개 BL만 존재합니다. 더 심각한 문제는 ID 문자열 일치 기준 위반입니다: provenance에 'POL-PENSION-MG-001'이 3회 중복 선언되었으나 originalRules 표에는 동일 ID로 3개의 서로 다른 규칙(로그인 본인인증, 개인정보취급자 접속로그, 가맹점 지역 검색)이 혼재되어 있습니다. exception 열 완결성도 부족하여 일부 행에서 빈칸이 확인됩니다. originalRules 표 자체가 'POL-PENSION-MG-002' 마지막 행에서 절단되어 있어 전체 내용 검증이 불가능합니다. ID 명시 부재 및 구조적 불일치로 인해 provenance와 originalRules 간 1:1 매핑이 성립하지 않습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "comment_doc_alignment",
+            "score": 0.62,
+            "rationale": "giftvoucher-member 스킬의 주석·문서 일치도를 평가한 결과, 대부분의 rule에 대응하는 runbook이 존재하나 내용 일치도에서 상당한 불일치가 발견되었습니다. 제공된 runbooks는 170개 이상의 rule을 다루고 있으나, 다음과 같은 문제점이 있습니다: (1) 일부 rule의 condition-criteria-outcome이 runbook에서 정확히 반영되지 않음. 예를 들어 POL-PENSION-MG-001은 '로그인 시 본인인증'과 '개인정보취급자 접속로그'라는 서로 다른 두 가지 시나리오를 포함하고 있으나 runbook에서 명확히 구분되지 않음. (2) 일부 rule(예: POL-PENSION-MG-002, MG-003 등)은 pension 관련 규정이나 개인정보보호 정책으로 보이는데, giftvoucher-member 스킬과의 연관성이 불명확함. (3) Test Scenarios와 Contract Tests는 제공되었으나 실제 구현 검증 증적이 부족함. 약 30% 정도의 rule-runbook 매핑이 불완전하거나 내용이 일부 불일치합니다.",
+            "passThreshold": 0.6,
+            "passed": true
+          },
+          {
+            "criterion": "io_structure",
+            "score": 0.35,
+            "rationale": "giftvoucher-member 스킬의 tests/contract 섹션을 분석한 결과, 입출력 구조 명확성이 현저히 부족합니다. 제공된 테스트 시나리오들은 given/when/then 구조를 형식적으로만 포함하고 있으나, given 필드가 단순 조건 충족 여부만 나열하며 구체적 입력값이나 타입 정의가 전무합니다. 예를 들어 'POL-PENSION-EN-003' 시나리오의 given은 '회원가입 프로세스를 진행할 때 조건 충족'으로만 기술되어 있고, 실제 입력 데이터 구조(필드명, 타입, 범위)가 명시되지 않았습니다. then 필드도 '실패 시 사용자에게 오류 메시지 제공'처럼 추상적이며, 응답 형태(JSON 구조, 필드 타입)가 정의되지 않았습니다. 대부분의 시나리오가 이러한 패턴을 반복하여 I/O 경계를 파악하기 어렵습니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "exception_handling",
+            "score": 0.35,
+            "rationale": "giftvoucher-member 스킬의 예외·에러 핸들링 커버리지는 현저히 부족합니다. 분석 결과: (1) Rules 단계에서 대부분의 규칙이 'exception (Else)' 절을 '—'로 표기하여 예외 처리가 명시되지 않음. 예를 들어 POL-PENSION-EN-003(회원가입 실패 처리), POL-PENSION-MG-001(로그인 인증 실패)은 outcome만 있고 else 절이 없음. (2) Runbooks에서 예외 시나리오 정의 부재: 대부분 happy path만 기술되어 있으며, 인증 실패, 데이터 검증 오류, 시스템 장애 등의 비정상 케이스가 누락됨. (3) Test Scenarios에서 error_code나 예외 상황 테스트 케이스 전무: 모든 시나리오가 'given-when-then' 형식으로 성공 경로만 다루고 있으며, 실패 케이스(예: 인증 실패, 필수값 누락, 타임아웃)에 대한 테스트가 없음. (4) 예외 처리 전략 부재: 오류 응답 형식, 재시도 로직, 폴백 메커니즘 등이 정의되지 않음.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "srp_reusability",
+            "score": 0.32,
+            "rationale": "giftvoucher-member 스킬의 업무루틴 분리·재사용성은 심각한 수준의 문제를 보입니다. 첫째, businessRules 목록에서 POL-PENSION-MG-001, POL-PENSION-MG-006, POL-PENSION-MG-007, POL-PENSION-MG-009 등이 중복 선언되어 있습니다(예: MG-001 3회, MG-006 2회, MG-007 2회, MG-009 3회). 둘째, 동일 ID의 규칙들이 완전히 다른 업무 영역을 다룹니다. 예를 들어 POL-PENSION-MG-001은 '로그인 본인인증', '개인정보취급자 접속로그', '가맹점 지역검색' 세 가지 전혀 다른 책임을 가집니다. 셋째, 개인정보 마스킹 규칙(MG-226~233)과 동의 철회 규칙(MG-073~079)이 각각 중복되어 있으며, 규칙 간 경계가 불명확합니다. 넷째, 동일 조건을 처리하는 규칙들(예: 동의 철회 관련 MG-073, MG-075, MG-078, MG-079)이 독립적으로 참조 불가능하게 얽혀 있습니다. 이는 SRP(Single Responsibility Principle) 원칙을 심각하게 위반하며, 규칙 재사용성과 유지보수성을 크게 저해합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          },
+          {
+            "criterion": "testability",
+            "score": 0.35,
+            "rationale": "giftvoucher-member 스킬의 테스트 시나리오는 심각한 품질 결함을 보입니다. 제공된 200개 이상의 시나리오 중 대부분이 given/when/then 구조가 극도로 추상적입니다. 예: 'given: 조건 충족', 'when: 기준 확인', 'then: 처리됨' 형태로 자동화 테스트 구현이 불가능합니다. Happy path만 반복되며 edge case(예: 잘못된 OTP 입력, 네트워크 오류, 동시성 문제)와 error case(예: 인증 실패 시 재시도 횟수 제한, 마스킹 해제 권한 없음)가 거의 없습니다. 구체적 입력값(예: 'OTP 유효시간 3분', '마스킹 글자수 계산식')이 명시되지 않아 테스트 자동화 불가능합니다. 또한 POL-PENSION-MG-001 등 중복 정의된 정책들이 서로 다른 도메인(개인정보 접근로그 vs 가맹점 검색)을 혼재하여 시나리오 신뢰성을 훼손합니다.",
+            "passThreshold": 0.6,
+            "passed": false
+          }
+        ],
+        "totalScore": 0.357,
+        "passCount": 1,
+        "overallPassed": false,
+        "evaluatedAt": "2026-05-04T09:22:56.272Z",
+        "costUsd": 0.0036
+      },
+      "error": null,
+      "durationMs": 34194
+    }
+  ]
+}

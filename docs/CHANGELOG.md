@@ -710,7 +710,7 @@ io_structure / exception_handling / testability avg는 F417과 완전 동일 →
 - 보존: 245~246 노출 이력 (Master Password 추정값 3회 + OpenRouter key prefix 평문) + 246 후속 부분 해소 (9-worker `INTERNAL_API_SECRET` rotation, `~/.secrets/{decode-x-internal,openrouter-api-key}` chmod 600 정착)
 - 추가 검증: `.gitignore`가 `.env`/`.dev.vars` 보호 정상 + repo grep `OP_SERVICE_ACCOUNT_TOKEN` 0건 + 1Password 평문 토큰 0건 + `op` CLI v2.34.0 설치 확인
 - 252 실측 잔여 4건 명시:
-  1. **OpenRouter key rotation 미수행** 확정 — `~/.secrets/openrouter-api-key` 73자 `sk-or-v1-ade1a7...465e` mtime `2026-05-02 15:26` 동일 키 그대로. svc-llm-router worker secret도 동일 키 가능성 → revoke + 새 키 + `~/.secrets` + `wrangler secret put OPENROUTER_API_KEY --name svc-llm-router` 양쪽 동시 갱신 필수
+  1. **OpenRouter key rotation 미수행** 확정 — `~/.secrets/openrouter-api-key` 73자 `sk-or-v1-[REDACTED]` mtime `2026-05-02 15:26` 동일 키 그대로. svc-llm-router worker secret도 동일 키 가능성 → revoke + 새 키 + `~/.secrets` + `wrangler secret put OPENROUTER_API_KEY --name svc-llm-router` 양쪽 동시 갱신 필수 [S266 redact: prefix 평문 제거]
   2. 1Password Master Password 변경 미수행 (사용자 콘솔 작업)
   3. 1Password CLI signin 미정상화 — `eval $(op signin)` + `op vault list` 동작 검증 필요
   4. `docs/CHANGELOG.md` L139/L480 key prefix 평문 잔존 (rotation 후 무의미 prefix가 되므로 cosmetic)
@@ -860,8 +860,8 @@ io_structure / exception_handling / testability avg는 F417과 완전 동일 →
   - `feedback_evaluator_cache_force.md` (후속 #2) — evaluator 1h cache + force=true 우회
   - `feedback_wrangler_default_vs_production_env.md` (후속 #2) — default env vs --env production worker 분리
 - ⚠️ **보안 후속 (악화 누적)**:
-  - `demian1015!` Master Password 추정값 채팅 로그 3회 노출 (1Password Secret Key 입력란 오인) → **변경 강력 권장**
-  - OpenRouter API key `sk-or-v1-ade1a7a5...` 평문 노출 (`.dev.vars` cat 결과) → **OpenRouter 대시보드 rotation 권장**
+  - `[REDACTED-MP]` Master Password 추정값 채팅 로그 3회 노출 (1Password Secret Key 입력란 오인) → **변경 강력 권장** [S266 redact]
+  - OpenRouter API key `sk-or-v1-[REDACTED]` 평문 노출 (`.dev.vars` cat 결과) → **OpenRouter 대시보드 rotation 권장** [S266 redact: prefix 평문 제거]
   - 부분 해소: ~/.secrets/ 영구 저장 + 9-worker rotation + GH Actions secret 갱신
   - 잔여: 1Password vault 백업 + Secret Key 회수 + Master Password 변경 + OpenRouter rotation
 
@@ -902,7 +902,7 @@ io_structure / exception_handling / testability avg는 F417과 완전 동일 →
   (b) **Cloudflare wrangler env 처리 모호성** — `[env.production]` block이 있는데 해당 worker가 미존재할 때 `wrangler secret put --env production` 동작이 명시 문서화 안 됨. **Top-level (no --env)이 가장 안전한 default**, env override 필요 시 wrangler.toml에 정확한 name + 실 deploy 확인 후 사용. session-244의 "9 worker 일괄 --env production" 패턴은 Gateway에 대해 잘못된 target 가능성 있었음.
   (c) **Layer separation by single curl** — 이번에도 1 curl (rx.minu.best vs *.workers.dev 직접)로 Worker 도달 여부 분리 → CF Access 미통과(302) vs Gateway authMiddleware 거부(401)를 즉시 구분. rules/memory-lifecycle "Layer separation by curl" 패턴 재확인.
 - 📌 **SSOT (실제 적용)**: 사용자 1차 선택 "1Password CLI" 설치는 완료(`/usr/bin/op` 2.34.0)되었으나 Secret Key 미보유로 `op account add` 미완. **fallback 결정 → GH repo secret**(`KTDS-AXBD/Decode-X`)에 INTERNAL_API_SECRET 저장 완료(`2026-04-30T05:39:01Z`). 다음 rotation 시 `gh secret list`로 존재 확인 가능(write-only API라 값 read는 불가). 추후 1Password 계정 정리 후 마이그레이션 후보. 임시 파일 `/tmp/.new-internal-api-secret-2007775` shred 완료 + 환경변수 unset 완료.
-- ⚠️ **보안 노트**: 사용자 대화 로그에 `demian1015!`(Master Password 의심값) 노출 — 즉시 변경 권장.
+- ⚠️ **보안 노트**: 사용자 대화 로그에 `[REDACTED-MP]`(Master Password 의심값) 노출 — 즉시 변경 권장. [S266 redact]
 
 ---
 
@@ -1202,7 +1202,7 @@ io_structure / exception_handling / testability avg는 F417과 완전 동일 →
 - 📌 **교훈 3종**: (a) **Rubric은 채점기이자 수기 평가자 모두의 기준** — 2차 튜닝에서 LLM 점수는 0.92로 동일하게 유지됐으나 "수기 평가자의 모호성 해소"가 본질이었음. Gate 구체화는 양쪽 평가자를 같은 답으로 수렴시킴. 정확도 83.3%→100% 개선은 "LLM을 바꾸는 것"이 아닌 "수기 판단 편차 해소"였다는 메타 인사이트. (b) **LLM rationale 품질은 rubric 상세도의 직접 함수** — 2차 측정 rationale이 4 gate를 하나씩 명시 인용("ID 문자열 일치(BL-XXX 형식) / exception 열 모든 행 완결 / ES 참조 BL 전원 존재")하여 rubric이 채점 가능 수준으로 구체화됐다는 증거. (c) **차등 능력 보존 확인** — 2차 rubric이 7 container에서 source_consistency 0.62~0.92 range 0.30 5단계 연속 분포 유지 → "rubric 강화 시 모든 container가 똑같이 떨어지거나 똑같이 오르지 않음"을 실측으로 증명. 본부장 리뷰 정량 증거로서 spec quality 서열화 능력 확보.
 - 📌 **실 소요 ~22분** (SPEC/MEMORY 리뷰 3m + rubric 설계 + AskUserQuestion 5m + prompts.ts edit 2m + typecheck/test 1m + OpenRouter 재측정 40s + Appendix C 작성 10m + 7전수 재측정 5m + Appendix C.1 확장 + 커밋 준비 2m). 당초 예상 30분 대비 8분 단축.
 - 📌 **다음 P0 후보**: (1) **F356-B Sprint 설계** (API endpoint + D1 스키마 0011 + 859 skill 전수 + KPI 집계 1 Sprint ~8h) — TD-44 복구 선결 여부 판단 필요. (2) **TD-44 svc-llm-router 502 복구** (AI Foundry 포털 리포 접근, CF AI Gateway secret 재주입, P1) — F356-B 전신 경로 복구. (3) **F403 Phase 9 E2E 커버리지 보강** (병행 pane F405/F406 CF Access 관련 작업과 연동 가능).
-- ⚠️ **보안 노트**: OPENROUTER_API_KEY 실값이 세션 중 대화 로그에 노출됨(`sk-or-v1-ade1...e465e`). 세션 종료 후 OpenRouter Dashboard → Keys → revoke + 새 키 발급 **필수**. `.env` 하드코딩 미수행 확인(grep -c `OPENROUTER` .env = 0) → 리포 누출은 없음.
+- ⚠️ **보안 노트**: OPENROUTER_API_KEY 실값이 세션 중 대화 로그에 노출됨(`sk-or-v1-[REDACTED]`). 세션 종료 후 OpenRouter Dashboard → Keys → revoke + 새 키 발급 **필수**. `.env` 하드코딩 미수행 확인(grep -c `OPENROUTER` .env = 0) → 리포 누출은 없음. [S266 redact: prefix 평문 제거]
 - Commits: `86b3126` feat(ai-ready) 2차 rubric 튜닝 — source_consistency 0.9+ gate 강화 + 전수 검증 (7 files +623 -4).
 
 ### 세션 234 (2026-04-22)

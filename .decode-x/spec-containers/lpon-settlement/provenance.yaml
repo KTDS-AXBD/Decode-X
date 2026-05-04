@@ -1,5 +1,5 @@
 # Provenance — POL-LPON-SETTLE-001
-# 출처 추적 (FX-SPEC-002 specToTest 검증)
+# 출처 추적 (FX-SPEC-003 specToTest 검증)
 
 skillId: POL-LPON-SETTLE-001
 extractedAt: "2026-04-20T00:00:00+09:00"
@@ -33,4 +33,4 @@ inputCompleteness:
     - "Phase 3에서 BATCH_004 소스 추출 후 DIVERGENCE 검증 필요"
 
 handoffTarget: Foundry-X
-handoffVersion: "FX-SPEC-002 v1.0"
+handoffVersion: "FX-SPEC-003 v1.0"

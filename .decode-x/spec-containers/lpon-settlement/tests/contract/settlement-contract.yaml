@@ -4,7 +4,7 @@ title: LPON 정산 도메인 Handoff 계약
 version: "1.0.0"
 sprint: 214c
 handoffTarget: Foundry-X
-specVersion: "FX-SPEC-002 v1.0"
+specVersion: "FX-SPEC-003 v1.0"
 sourceMarker: DOC_ONLY
 ---
 

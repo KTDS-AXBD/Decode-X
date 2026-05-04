@@ -1,5 +1,5 @@
 # Provenance — POL-LPON-GIFT-001
-# 출처 추적 (FX-SPEC-002 specToTest 검증)
+# 출처 추적 (FX-SPEC-003 specToTest 검증)
 
 skillId: POL-LPON-GIFT-001
 extractedAt: "2026-04-20T00:00:00+09:00"
@@ -33,4 +33,4 @@ inputCompleteness:
     - "Empty Slot 3건 Fill: ES-GIFT-001(만료), ES-GIFT-002(취소), ES-GIFT-003(원자성)"
 
 handoffTarget: Foundry-X
-handoffVersion: "FX-SPEC-002 v1.0"
+handoffVersion: "FX-SPEC-003 v1.0"

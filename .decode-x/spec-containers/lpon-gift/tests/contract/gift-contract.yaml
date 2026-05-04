@@ -4,7 +4,7 @@ title: LPON 선물 도메인 Handoff 계약
 version: "1.0.0"
 sprint: 214c
 handoffTarget: Foundry-X
-specVersion: "FX-SPEC-002 v1.0"
+specVersion: "FX-SPEC-003 v1.0"
 sourceMarker: SOURCE_MISSING
 ---
 
@@ -49,4 +49,4 @@ aiReadyGrade: Conditional   # 70% 목표 초과 (83%)
 notes:
   - "SOURCE_MISSING: 선물 도메인 문서 부재로 추정 기반 Fill"
   - "Phase 3에서 /gift/*.java 소스 추출 후 DIVERGENCE 검증 필요"
-  - "FX-SPEC-002 v1.0 바인딩 — 결제 E2E 완료 후 선물 E2E 확장 예정"
+  - "FX-SPEC-003 v1.0 바인딩 — 결제 E2E 완료 후 선물 E2E 확장 예정"

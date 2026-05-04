@@ -1,0 +1,356 @@
+{
+  "timestamp": "2026-05-04T13:02:24.118Z",
+  "wasmStats": {
+    "grammarSizeBytes": 414641,
+    "runtimeSizeBytes": 196763,
+    "totalWasmKb": 597,
+    "wasmCompileMs": 1.71,
+    "languageLoadMs": 1.87,
+    "parserInitMs": 6.3
+  },
+  "samples": [
+    {
+      "file": "ChargeService.java",
+      "sizeBytes": 821,
+      "parseMs": 3.68,
+      "tsClasses": [
+        {
+          "className": "LponChargeService",
+          "packageName": "com.ktds.lpon.payment.service",
+          "kind": "service",
+          "basePath": "",
+          "endpoints": [],
+          "fields": []
+        }
+      ],
+      "regexSummary": {
+        "controllerCount": 0,
+        "endpointCount": 0,
+        "dataModelCount": 0,
+        "serviceCount": 1
+      },
+      "diffs": []
+    },
+    {
+      "file": "PaymentController.java",
+      "sizeBytes": 1089,
+      "parseMs": 0.52,
+      "tsClasses": [
+        {
+          "className": "LponPaymentController",
+          "packageName": "com.ktds.lpon.payment.controller",
+          "kind": "controller",
+          "basePath": "/api/v1/lpon/payment",
+          "endpoints": [
+            {
+              "httpMethod": "POST",
+              "methodPath": "/charge",
+              "fullPath": "/api/v1/lpon/payment/charge",
+              "methodName": "charge",
+              "returnType": "ResponseEntity<ChargeResponse>",
+              "paramCount": 1
+            },
+            {
+              "httpMethod": "GET",
+              "methodPath": "/balance/{accountNo}",
+              "fullPath": "/api/v1/lpon/payment/balance/{accountNo}",
+              "methodName": "getBalance",
+              "returnType": "ResponseEntity<BalanceResponse>",
+              "paramCount": 1
+            },
+            {
+              "httpMethod": "POST",
+              "methodPath": "/cancel",
+              "fullPath": "/api/v1/lpon/payment/cancel",
+              "methodName": "cancel",
+              "returnType": "ResponseEntity<Void>",
+              "paramCount": 2
+            },
+            {
+              "httpMethod": "GET",
+              "methodPath": "/history",
+              "fullPath": "/api/v1/lpon/payment/history",
+              "methodName": "getHistory",
+              "returnType": "ResponseEntity<List<PaymentHistory>>",
+              "paramCount": 2
+            }
+          ],
+          "fields": []
+        }
+      ],
+      "regexSummary": {
+        "controllerCount": 1,
+        "endpointCount": 4,
+        "dataModelCount": 0,
+        "serviceCount": 0
+      },
+      "diffs": [
+        {
+          "kind": "base_path_missing",
+          "file": "PaymentController.java",
+          "detail": "LponPaymentController: class-level @RequestMapping not captured by regex",
+          "regexValue": "basePath=\"\"",
+          "tsValue": "basePath=\"/api/v1/lpon/payment\""
+        },
+        {
+          "kind": "path_incomplete",
+          "file": "PaymentController.java",
+          "detail": "LponPaymentController.charge: full API path differs",
+          "regexValue": "/charge",
+          "tsValue": "/api/v1/lpon/payment/charge"
+        },
+        {
+          "kind": "path_incomplete",
+          "file": "PaymentController.java",
+          "detail": "LponPaymentController.getBalance: full API path differs",
+          "regexValue": "/balance/{accountNo}",
+          "tsValue": "/api/v1/lpon/payment/balance/{accountNo}"
+        },
+        {
+          "kind": "path_incomplete",
+          "file": "PaymentController.java",
+          "detail": "LponPaymentController.cancel: full API path differs",
+          "regexValue": "/cancel",
+          "tsValue": "/api/v1/lpon/payment/cancel"
+        },
+        {
+          "kind": "path_incomplete",
+          "file": "PaymentController.java",
+          "detail": "LponPaymentController.getHistory: full API path differs",
+          "regexValue": "/history",
+          "tsValue": "/api/v1/lpon/payment/history"
+        },
+        {
+          "kind": "return_type_generic_loss",
+          "file": "PaymentController.java",
+          "detail": "LponPaymentController.charge: generic return type stripped by regex",
+          "regexValue": "Object",
+          "tsValue": "ResponseEntity<ChargeResponse>"
+        },
+        {
+          "kind": "return_type_generic_loss",
+          "file": "PaymentController.java",
+          "detail": "LponPaymentController.getBalance: generic return type stripped by regex",
+          "regexValue": "Object",
+          "tsValue": "ResponseEntity<BalanceResponse>"
+        },
+        {
+          "kind": "return_type_generic_loss",
+          "file": "PaymentController.java",
+          "detail": "LponPaymentController.cancel: generic return type stripped by regex",
+          "regexValue": "Object",
+          "tsValue": "ResponseEntity<Void>"
+        },
+        {
+          "kind": "return_type_generic_loss",
+          "file": "PaymentController.java",
+          "detail": "LponPaymentController.getHistory: generic return type stripped by regex",
+          "regexValue": "Object",
+          "tsValue": "ResponseEntity<List<PaymentHistory>>"
+        }
+      ]
+    },
+    {
+      "file": "PaymentEntity.java",
+      "sizeBytes": 1015,
+      "parseMs": 1,
+      "tsClasses": [
+        {
+          "className": "LponPaymentEntity",
+          "packageName": "com.ktds.lpon.payment.domain",
+          "kind": "entity",
+          "basePath": "",
+          "endpoints": [],
+          "fields": [
+            {
+              "name": "id",
+              "type": "Long"
+            },
+            {
+              "name": "accountNo",
+              "type": "String"
+            },
+            {
+              "name": "amount",
+              "type": "BigDecimal"
+            },
+            {
+              "name": "status",
+              "type": "PaymentStatus"
+            },
+            {
+              "name": "histories",
+              "type": "List<PaymentHistory>"
+            },
+            {
+              "name": "createdAt",
+              "type": "LocalDateTime"
+            },
+            {
+              "name": "metadata",
+              "type": "java.util.Map<String, Object>"
+            }
+          ]
+        }
+      ],
+      "regexSummary": {
+        "controllerCount": 0,
+        "endpointCount": 0,
+        "dataModelCount": 1,
+        "serviceCount": 0
+      },
+      "diffs": []
+    },
+    {
+      "file": "RefundMapper.java",
+      "sizeBytes": 1340,
+      "parseMs": 0.44,
+      "tsClasses": [
+        {
+          "className": "LponRefundMapper",
+          "packageName": "com.ktds.lpon.refund.mapper",
+          "kind": "mapper",
+          "basePath": "",
+          "endpoints": [],
+          "fields": []
+        }
+      ],
+      "regexSummary": {
+        "controllerCount": 0,
+        "endpointCount": 0,
+        "dataModelCount": 0,
+        "serviceCount": 0
+      },
+      "diffs": [
+        {
+          "kind": "mapper_skipped",
+          "file": "RefundMapper.java",
+          "detail": "@Mapper interface LponRefundMapper completely missing from regex output",
+          "regexValue": "(not found)",
+          "tsValue": "LponRefundMapper — 0 mapped methods"
+        }
+      ]
+    },
+    {
+      "file": "WithdrawalController.java",
+      "sizeBytes": 1279,
+      "parseMs": 0.45,
+      "tsClasses": [
+        {
+          "className": "LponWithdrawalController",
+          "packageName": "com.ktds.lpon.withdrawal.controller",
+          "kind": "controller",
+          "basePath": "/api/v1/lpon/withdrawal",
+          "endpoints": [
+            {
+              "httpMethod": "POST",
+              "methodPath": "/initiate",
+              "fullPath": "/api/v1/lpon/withdrawal/initiate",
+              "methodName": "initiateWithdrawal",
+              "returnType": "ResponseEntity<WithdrawalResponse>",
+              "paramCount": 2
+            },
+            {
+              "httpMethod": "GET",
+              "methodPath": "/status/{txId}",
+              "fullPath": "/api/v1/lpon/withdrawal/status/{txId}",
+              "methodName": "getStatus",
+              "returnType": "ResponseEntity<WithdrawalStatus>",
+              "paramCount": 1
+            },
+            {
+              "httpMethod": "POST",
+              "methodPath": "",
+              "fullPath": "/api/v1/lpon/withdrawal",
+              "methodName": "confirm",
+              "returnType": "ResponseEntity<Void>",
+              "paramCount": 1
+            },
+            {
+              "httpMethod": "DELETE",
+              "methodPath": "/cancel/{txId}",
+              "fullPath": "/api/v1/lpon/withdrawal/cancel/{txId}",
+              "methodName": "cancel",
+              "returnType": "ResponseEntity<Void>",
+              "paramCount": 1
+            }
+          ],
+          "fields": []
+        }
+      ],
+      "regexSummary": {
+        "controllerCount": 1,
+        "endpointCount": 3,
+        "dataModelCount": 0,
+        "serviceCount": 0
+      },
+      "diffs": [
+        {
+          "kind": "base_path_missing",
+          "file": "WithdrawalController.java",
+          "detail": "LponWithdrawalController: class-level @RequestMapping not captured by regex",
+          "regexValue": "basePath=\"\"",
+          "tsValue": "basePath=\"/api/v1/lpon/withdrawal\""
+        },
+        {
+          "kind": "path_incomplete",
+          "file": "WithdrawalController.java",
+          "detail": "LponWithdrawalController.initiateWithdrawal: full API path differs",
+          "regexValue": "/initiate",
+          "tsValue": "/api/v1/lpon/withdrawal/initiate"
+        },
+        {
+          "kind": "path_incomplete",
+          "file": "WithdrawalController.java",
+          "detail": "LponWithdrawalController.getStatus: full API path differs",
+          "regexValue": "/status/{txId}",
+          "tsValue": "/api/v1/lpon/withdrawal/status/{txId}"
+        },
+        {
+          "kind": "path_incomplete",
+          "file": "WithdrawalController.java",
+          "detail": "LponWithdrawalController.cancel: full API path differs",
+          "regexValue": "/cancel/{txId}",
+          "tsValue": "/api/v1/lpon/withdrawal/cancel/{txId}"
+        },
+        {
+          "kind": "return_type_generic_loss",
+          "file": "WithdrawalController.java",
+          "detail": "LponWithdrawalController.initiateWithdrawal: generic return type stripped by regex",
+          "regexValue": "Object",
+          "tsValue": "ResponseEntity<WithdrawalResponse>"
+        },
+        {
+          "kind": "return_type_generic_loss",
+          "file": "WithdrawalController.java",
+          "detail": "LponWithdrawalController.getStatus: generic return type stripped by regex",
+          "regexValue": "Object",
+          "tsValue": "ResponseEntity<WithdrawalStatus>"
+        },
+        {
+          "kind": "return_type_generic_loss",
+          "file": "WithdrawalController.java",
+          "detail": "LponWithdrawalController.cancel: generic return type stripped by regex",
+          "regexValue": "Object",
+          "tsValue": "ResponseEntity<Void>"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "totalSamples": 5,
+    "totalParseMs": 6.09,
+    "avgParseMsPerFile": 1.22,
+    "avgParseMsPerKb": 1.12,
+    "silentDriftsDetected": 17,
+    "diffsByKind": {
+      "base_path_missing": 2,
+      "path_incomplete": 7,
+      "return_type_generic_loss": 7,
+      "mapper_skipped": 1
+    },
+    "workersCompatibility": "PASS",
+    "phase2Recommendation": "GO",
+    "phase2Notes": "Workers-compatible WASM 로드 검증 PASS (597KB, 1.71ms compile). regex 대비 17건 silent drift 검출. avg 1.22ms/파일. Phase 2 WASM 번들 방식 진행 권고."
+  }
+}

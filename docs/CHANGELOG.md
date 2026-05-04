@@ -2,6 +2,64 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 262 (2026-05-04) — F417 회귀 검증 + Sprint 250 F403 autopilot MERGED + Sprint MERGED 알림 4-layer 도입
+
+**핵심 결과**: 활성 작업 1번(F417 회귀 검증) + 4번(F403 Phase 9 E2E) 동시 처리. autopilot 자동 진행으로 Master inline 부담 최소화. Sprint 종료 silent 패턴(S262 신규 발견) 4-layer 알림으로 재발 방지.
+
+**1. F417 회귀 검증 ✅ PASS — TD-59 cap 효과 운영 입증**
+- 대상: F418 schema baseline에서 score=0이었던 LPON outlier 3건 (a7548a83 / cea99a5e / ed4f5519, 245p × 3KB ≈ 750KB context overflow)
+- 방법: `POST /skills/:id/ai-ready/evaluate?force=true` × 3 sequential, model=haiku
+- 결과: 0.000 → 0.323 / 0.323 / 0.335 (avg 0.327), 6 criteria 모두 score > 0 (0.15~0.42), Healthy 32건 baseline 영향 없음
+- 비용: ~$0.01 / 시간 ~2분
+- 산출물: `reports/ai-ready-LPON-large-skill-recheck-2026-05-04.json` (4.2KB)
+- TD-59 commit `27c9ffb` `capSpecContentForLargeSkills` (Stage 1 per-entry 2000자 + Stage 2 200K total) 효과 명확 입증
+
+**2. F403 Sprint 250 ✅ MERGED — Phase 9 E2E 커버리지 보강 PDCA 종결**
+- Master `/ax:todo plan` → AskUserQuestion으로 작업 범위 결정 ("F417 검증 + F403 E2E 병렬")
+- SPEC.md F403 Sprint 232 → Sprint 250 이관 + commit `f699769` push
+- `bash -i -c "sprint 250"` WT 시동 → tmux 새 탭 + `.sprint-context` 자동 생성
+- ⚠️ **`.sprint-context` stale 발견** (SPRINT_NUM=248 + F_ITEMS=F417 잔존 → Sprint 250 + F403으로 보정)
+- ccs --model sonnet + `/ax:sprint-autopilot` 주입 → 12분 자율 진행
+- autopilot이 자체적으로 stale 감지 + git log/SPEC.md 검색 + F403 작업 파악 후 진행
+- **발견**: E2E spec 4종은 **Sprint 241 `8cf704a`에서 이미 구현 완료** → Sprint 250은 PDCA 4종 문서만 신규 작성하여 종결
+- 산출물: AIF-PLAN-047 + AIF-DSGN-047 + AIF-ANLS-047 + AIF-RPRT-047 (각 1.6~3.4KB)
+- PR #44 squash MERGED `bb1ee5e` (09:35:42Z) Match 97% / typecheck 14/14 + lint 9/9 + CI green
+- AIF-ANLS-032 Match 82%→95%+ 복원은 Sprint 241 시점에 이미 달성된 상태
+
+**3. Sprint MERGED Master 알림 4-layer 도입 (S262 신규 패턴)**
+- **현상 발견**: Sprint 250 09:33 MERGED 후 Master Claude가 사용자 수동 입력 시점까지 silent. task-daemon이 자체 로그(daemon-Foundry-X.log)에만 기록 + Master pane 외부 알림 0건
+- **근본 원인**: `phase_sprint_signals` MERGED 마킹 단계가 `log` 만 수행. autopilot pane은 `sprint_cleanup_pane`로 자동 종료되어 시각적 신호조차 소실
+- **Fix — 4-Layer**:
+  - L1 `~/.foundry-x/notifications.ndjson` append (event:sprint_merged, consumed:false)
+  - L2 `tmux display-message` master claude pane 휴리스틱 탐색 → 30s 토스트
+  - L3 `notify-send` WSL desktop notification (있으면)
+  - L4 `UserPromptSubmit` hook (`~/scripts/sprint-notification-surface.sh`) — 매 user prompt 직전 미처리 이벤트 stderr surface + consumed:true 마킹 (5s timeout)
+- **변경 commits**:
+  - Foundry-X `9b5460a8` task-daemon.sh L1~L3 push
+  - ax-config `d378fbb` rules/development-workflow.md "Sprint MERGED Master 알림 4-Layer" + settings.json hook 등록
+  - `~/scripts/sprint-notification-surface.sh` 신규 (로컬, ax-config 외부)
+- **검증**: 모의 notification inject → hook 실행 → surface → consumed 마킹 전 사이클 동작 확인. task-daemon 재시작(PID 4283) 새 코드 활성
+
+**4. Cleanup**
+- Decode-X-241/244/250 signal 모두 `/tmp/sprint-signals/archive/` 이동
+- Sprint 250 worktree 제거 + local branch 삭제 + remote prune (`git fetch --prune`)
+
+**5. 신규 교훈 → cross-session learning**
+- Sprint MERGED 알림 누락 → rules/development-workflow.md "Sprint MERGED Master 알림 4-Layer" 신규 섹션
+- `.sprint-context` stale 보정 패턴 (autopilot이 자체 감지하므로 fix 후 동작 가능)
+- bash sprint() 함수가 F-item 추출을 잘못하는 케이스 (Sprint 250→F417 잘못 표기, signal/context 양쪽 보정 필요)
+
+**Commits**:
+- `f699769` docs(spec): Sprint 250 F403 등록 + F417 회귀 검증 메모
+- `8377ac9` report(td-59): F417 회귀 검증 PASS — 3건 0→0.327
+- `bb1ee5e` feat(sprint-250): F403 Phase 9 E2E PDCA 문서화 종결 (autopilot, PR #44)
+- Foundry-X `9b5460a8` feat(task-daemon): Sprint MERGED 알림 4-layer 도입
+- ax-config `d378fbb` feat(s262): Sprint MERGED 4-layer 정착
+
+**다음 우선순위**: F356-B 운영 (P1, 5,154 전수 + Opus 100건, $48), F407 P0 (사용자 콘솔 ~80min), F360 P3 (TD-20/21/23 작연, 1.6h), F359 P2 (comparator 교체 2h), F417 augmented eval은 ✅ 회귀 검증 완결.
+
+---
+
 ### 세션 261 (2026-05-04) — Master inline 4건: TD-54 + TD-59 ✅ 해소 + governance docs/scripts 정착
 
 **핵심 결과**: MEMORY.md "활성 작업 4건" 일괄 처리 — recon-x-api Gateway 잠재 폭탄 해소 + evaluator large-skill cap 도입 + S246/S260 secret governance 정착 + secret rotation 자동화 스크립트.

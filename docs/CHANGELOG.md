@@ -2,6 +2,65 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 263 (2026-05-04) — daily-check 보정 + Sprint 251 F359 autopilot MERGED (round-trip 91.7→100%) + ax-marketplace Phase 5d 도입
+
+**핵심 결과**: daily-check D1 28→29 drift 보정 → `/todo plan` → F359 scope 4종 통합 결정 → Sprint 251 worktree autopilot 자율 → PR #46 MERGED → Master 독립 검증 round-trip **91.7% → 100%** (12/12 PASS) 확인. 별도 세션 발견 패턴 1건(autopilot Monitor 누락 4회+ 재현) → ax-marketplace `session-start` Phase 5d 신규 도입으로 재발 방지.
+
+**1. daily-check 보정 (~30min)**
+- D1 5 DBs 실측 29 vs SPEC.md 28 drift 발견 → SPEC §5 마지막 실측 행 자동 갱신
+- 검증 14항: TypeScript 14/14 PASS (turbo cache 77ms), Plugin Drift 0, Sonnet alias OK (CLI=SSOT=4-6), dist Orphan 0, Worktree/Branch/Signal 모두 clean
+- Commit `87d0685` push 완료
+
+**2. F359 scope 확장 결정 (~1h Master inline)**
+- baseline `npx tsx scripts/roundtrip-verify/index.ts` → implementedRate 91.7% (12 implemented, 11 PASS, TC-REFUND-002 단일 FAIL = BL-024 7일 미구현)
+- 8 keys 분석: 3 keys 사용 중 (refund-contract.yaml) + 5 keys lpon-payment/charge ES-*.yaml에 있으나 round-trip 미스캔(`tests/contract/`만 스캔)
+- TD-23 `runner.ts:159 rfndPsbltyYn:"Y"` hardcoded + `refund.ts:81 exclusionAmount=0` (BL-028 DIVERGENCE) + BL-024 미구현 동시 노출
+- 사용자 4지선다 결정 4건: (1) Sprint 251 worktree 이관, (2) 5 dead keys stub 구현 포함, (3) TD-23 domain 확장(rfndPsbltyYn 필드), (4) BL-028 cashback 실 구현, (5) BL-020 BL-024+025+029 실 구현
+- SPEC.md F359 라인 + Sprint 251 항목 신설 commit `0305b73` push
+
+**3. Sprint 251 worktree autopilot ✅ MERGED PR #46 `224d3d9` (Match 100%)**
+- `bash -i -c "sprint 251"` WT 시동 → S262 패턴 정확 재현 (`.sprint-context` SPRINT_NUM=250 + F_ITEMS=F403 stale, signal F_ITEMS=F403)
+- Master 수동 보정: signal F_ITEMS=F359 + sprint-context 전체 갱신 + tmux window rename
+- ccs --model sonnet 시동 → `/ax:sprint-autopilot F359 Sprint 251 — round-trip 91.7→95% 회복 (4 sub-task)` 명시 주입
+- autopilot 자율 진행 (~수분, MATCH=100, TEST_RESULT=pass) → PR #46 자동 생성 → STATUS=MERGING → STATUS=MERGED → sprint_cleanup_pane 정상 종료
+- 산출물: comparator.ts 8 keys 실/stub + RefundResult.rfndPsbltyYn + `0002_cashback.sql` migration + BL-024/025/029 + PDCA 4종 (AIF-PLAN/DSGN/ANLS/RPRT-048)
+
+**4. Master 독립 검증 ✅ round-trip 91.7% → 100% 회복**
+- `git pull --rebase origin main` → `224d3d9` 동기화
+- `npx tsx scripts/roundtrip-verify/index.ts` → 통과 12/12, **구현 서비스 일치율 100%** ✅ KPI 달성
+- TC-REFUND-002 (BL-024 7일) FAIL → PASS 전환 확인
+- autopilot Production Smoke Test 11회차 패턴 **미재현** (드물게 좋은 결과 — autopilot Match 100% = Master 독립 검증 100% 일치)
+
+**5. ax-marketplace Phase 5d 신규 도입 (S256/266/268/263 4회+ 누적 패턴 해소)**
+- 발견: bashrc `sprint()` 직접 호출 시 `/ax:sprint` skill을 안 거치므로 Phase 5b "Monitor 도구 시작"이 자동 수행되지 않음. bash이 Claude tool API 호출 불가가 구조적 한계
+- Fix: `~/.claude/plugins/marketplaces/ax-marketplace/skills/session-start/SKILL.md` Phase 5d 신규 — Master 세션이 활성 Sprint signal 중 MONITOR_TASK_ID 미부착 + STATUS=CREATED/IN_PROGRESS + 현 프로젝트 일치 케이스 감지하여 Monitor 도구 자동 시작
+- Skip 조건: worktree 세션 / 종료 Sprint(5c에서 정리) / `~/.claude/.no-auto-monitor` flag / 사용자 명시 거부
+- 외부 commit: `cbf184e` (master) push 완료. cache 동기화 drift=0
+- 현 Sprint 251 signal에 `MONITOR_TASK_ID=be4c86wxx` 백필 (다음 세션 중복 방지)
+
+**6. autopilot 진행 모니터링 (Monitor 도구 활용)**
+- 시동 직후 task `be4c86wxx` persistent monitor 가동 (signal STATUS/CHECKPOINT/PR_NUM/MATCH 변화 + ndjson sprint_251 이벤트 + tmux pane CLOSED 감지)
+- 이벤트 기록: CREATED → MERGING(CHECKPOINT=session-end, PR=46, MATCH=100) → MERGED + ndjson sprint_merged + pane CLOSED
+- MERGED 후 PushNotification 1회 + TaskStop으로 monitor 정리
+
+**핵심 교훈**:
+- (a) **bash `sprint()` 직접 호출 = Monitor 누락 4회 누적 → Phase 5d 도입으로 다음 세션부터 자동 처리**. session-start skill이 활성 signal 스캔 + Monitor 시동 책임자 역할
+- (b) **autopilot 자체보고 100% = Master 독립 검증 100% 일치 케이스 발생** (Production Smoke Test 11회차 미재현). round-trip 같은 단순 in-memory 검증은 autopilot이 신뢰 가능. 하지만 production 외부 API/DB 의존 케이스는 여전히 Master 독립 검증 필수
+- (c) **`.sprint-context` stale 보정 패턴 S262 재확인** — bashrc `sprint()` 함수가 직전 Sprint 컨텍스트를 추출하는 케이스 (Sprint 250 stale 그대로 유지). signal/context 양쪽 수동 보정 표준 절차 정착
+
+**검증 결과**:
+- ✅ Master pane scope: dirty=0, baseline empty (모든 변경 commit/push 완료)
+- ✅ TypeScript 14/14 (turbo cache)
+- ✅ round-trip implementedRate 100% (12/12, KPI ≥90% 초과 충족)
+- ✅ SPEC.md F359 [x] / TD-22~~취소선~~ / TD-23~~취소선~~ 마킹 (autopilot 처리)
+
+**잔여 활성 작업** (다음 세션 우선):
+- (1) F356-B 운영 실행 후속 (P1, $48 비용)
+- (2) F407 P0 Blocker (minu.best zone KTDS-AXBD 이관, 사용자 콘솔 작업 ~80min)
+- (3) F360 P3 1.6h (TD-20/21 잔연 정리, TD-23은 Sprint 251에서 해소됨)
+
+---
+
 ### 세션 262 (2026-05-04) — F417 회귀 검증 + Sprint 250 F403 autopilot MERGED + Sprint MERGED 알림 4-layer 도입
 
 **핵심 결과**: 활성 작업 1번(F417 회귀 검증) + 4번(F403 Phase 9 E2E) 동시 처리. autopilot 자동 진행으로 Master inline 부담 최소화. Sprint 종료 silent 패턴(S262 신규 발견) 4-layer 알림으로 재발 방지.

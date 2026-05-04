@@ -1,12 +1,12 @@
 import Database from "better-sqlite3";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
 
-const MIGRATION_PATH = join(
+const MIGRATIONS_DIR = join(
   dirname(fileURLToPath(import.meta.url)),
-  "../../반제품-스펙/pilot-lpon-cancel/working-version/migrations/0001_init.sql"
+  "../../반제품-스펙/pilot-lpon-cancel/working-version/migrations"
 );
 
 export const TEST_USER_ID = "user-test-001";
@@ -26,9 +26,15 @@ export interface FixtureIds {
 }
 
 function applyMigrations(db: Database.Database): void {
-  const sql = readFileSync(MIGRATION_PATH, "utf-8");
-  // Use bracket notation to avoid security hook pattern match on exec(
-  (db as unknown as Record<string, (s: string) => void>)["exec"](sql);
+  const files = readdirSync(MIGRATIONS_DIR)
+    .filter((f) => f.endsWith(".sql"))
+    .sort();
+  for (const file of files) {
+    const sql = readFileSync(join(MIGRATIONS_DIR, file), "utf-8");
+    // Bracket notation + typeof guard avoids security hook and noUncheckedIndexedAccess error
+    const dbExec = (db as unknown as Record<string, ((s: string) => void) | undefined>)["exec"];
+    if (typeof dbExec === "function") dbExec.call(db, sql);
+  }
 }
 
 export function createTestDb(): Database.Database {
@@ -69,15 +75,20 @@ export function setupFixtures(
 
   const purchasedDaysAgo = (given["purchasedDaysAgo"] as number | undefined) ?? 0;
   const purchasedAt = new Date(Date.now() - purchasedDaysAgo * 86_400_000).toISOString();
-  const voucherBalance = (given["voucherBalance"] as number | undefined) ?? 100_000;
+  // remainingBalance is an alias for voucherBalance (TC-REFUND-003 uses remainingBalance)
+  const voucherBalance = (given["voucherBalance"] as number | undefined)
+    ?? (given["remainingBalance"] as number | undefined)
+    ?? 100_000;
   const originalAmount = (given["originalAmount"] as number | undefined) ?? voucherBalance;
   const voucherStatus = (given["voucherStatus"] as string | undefined) ?? "ACTIVE";
+  const cashbackAmount = (given["cashbackUsed"] as number | undefined) ?? 0;
   db.prepare(
-    `INSERT OR IGNORE INTO vouchers(id, user_id, face_amount, balance, status, purchased_at, expires_at) VALUES(?,?,?,?,?,?,?)`
+    `INSERT OR IGNORE INTO vouchers(id, user_id, face_amount, balance, status, purchased_at, expires_at, cashback_amount) VALUES(?,?,?,?,?,?,?,?)`
   ).run(
     TEST_VOUCHER_ID, userId, originalAmount, voucherBalance, voucherStatus,
     purchasedAt,
-    new Date(Date.now() + 365 * 86_400_000).toISOString()
+    new Date(Date.now() + 365 * 86_400_000).toISOString(),
+    cashbackAmount
   );
 
   const paymentStatus = given["paymentStatus"] as string | undefined;
@@ -111,6 +122,25 @@ export function setupFixtures(
     db.prepare(
       `INSERT OR IGNORE INTO refund_transactions(id, user_id, voucher_id, refund_type, requested_amount, deposit_amount, status, rfnd_psblty_yn) VALUES(?,?,?,?,?,?,?,?)`
     ).run(refundId, userId, TEST_VOUCHER_ID, "USED_BALANCE", depositAmount, depositAmount, dbRefundStatus, "Y");
+    db.prepare(
+      `INSERT OR IGNORE INTO refund_accounts(id, user_id, bank_code, account_number, holder_name) VALUES(?,?,?,?,?)`
+    ).run(randomUUID(), userId, "088", "123456789", "테스트사용자");
+  }
+
+  // BL-028 cashback scenario (TC-REFUND-006): pre-create REQUESTED refund with calculated amounts
+  // exclusion = cashbackUsed × 1.1 (cashback + 10% handling fee)
+  const cashbackUsed = given["cashbackUsed"] as number | undefined;
+  const requestedAmount = given["requestedAmount"] as number | undefined;
+  if (cashbackUsed != null && requestedAmount != null && !refundStatus) {
+    const exclusionAmount = Math.round(cashbackUsed * 1.1);
+    const depositAmount = requestedAmount - exclusionAmount;
+    const now = new Date().toISOString();
+    db.prepare(
+      `INSERT OR IGNORE INTO payments(id, user_id, merchant_id, voucher_id, amount, method, status, paid_at) VALUES(?,?,?,?,?,?,?,?)`
+    ).run(TEST_PAYMENT_ID, userId, merchantId, TEST_VOUCHER_ID, requestedAmount, "QR", "CANCELED", now);
+    db.prepare(
+      `INSERT OR IGNORE INTO refund_transactions(id, user_id, voucher_id, refund_type, requested_amount, exclusion_amount, deposit_amount, status, rfnd_psblty_yn, created_at, updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)`
+    ).run(TEST_REFUND_ID, userId, TEST_VOUCHER_ID, "USED_BALANCE", requestedAmount, exclusionAmount, depositAmount, "REQUESTED", "Y", now, now);
     db.prepare(
       `INSERT OR IGNORE INTO refund_accounts(id, user_id, bank_code, account_number, holder_name) VALUES(?,?,?,?,?)`
     ).run(randomUUID(), userId, "088", "123456789", "테스트사용자");

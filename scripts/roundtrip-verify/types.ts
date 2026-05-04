@@ -19,7 +19,8 @@ export type FailReason =
   | "WRONG_VALUE"
   | "UNEXPECTED_ERROR"
   | "EXPECTED_ERROR_MISSING"
-  | "UNSUPPORTED_WHEN";  // Domain not implemented in working prototype
+  | "UNSUPPORTED_WHEN"   // Domain not implemented in working prototype
+  | "STUB_PENDING";      // Edge Spec contract not yet added; stub passes silently
 
 export interface RunResult {
   contractFile: string;

@@ -24,6 +24,7 @@ export interface RefundInput {
   paymentId: string;
   amount: number;
   reason: string;
+  refundType?: string;
 }
 
 export interface RefundResult {
@@ -33,13 +34,14 @@ export interface RefundResult {
   status: string;
   reason: string;
   requestedAt: string;
+  rfndPsbltyYn: string;
 }
 
 export function processRefundRequest(
   db: Database.Database,
   input: RefundInput
 ): RefundResult {
-  const { userId, paymentId, amount, reason } = input;
+  const { userId, paymentId, amount, reason, refundType } = input;
 
   // Step 1: payment 유효성 확인
   const payment = db
@@ -77,8 +79,41 @@ export function processRefundRequest(
     throw new RefundError('E422-DUP', 'Refund already requested for this payment', 422);
   }
 
-  // BL-028: 제외금액 산정 (현 PoC에서는 0)
-  const exclusionAmount = 0;
+  // BL-020 확장: voucher 조회 (BL-024/025/028/029 기반)
+  const voucher = db
+    .prepare('SELECT face_amount, balance, purchased_at, expires_at, cashback_amount FROM vouchers WHERE id = ?')
+    .get(payment.voucher_id) as {
+      face_amount: number; balance: number; purchased_at: string; expires_at: string; cashback_amount: number;
+    } | undefined;
+
+  if (!voucher) {
+    throw new RefundError('E404-V', 'Voucher not found', 404);
+  }
+
+  // BL-029: 만료 거부
+  if (new Date(voucher.expires_at) < new Date()) {
+    throw new RefundError('PERIOD_EXPIRED', 'Voucher has expired', 422);
+  }
+
+  // BL-024: UNUSED_FULL — 7일 초과 거부
+  if (refundType === 'UNUSED_FULL') {
+    const daysSincePurchase = (Date.now() - new Date(voucher.purchased_at).getTime()) / (1000 * 60 * 60 * 24);
+    if (daysSincePurchase > 7) {
+      throw new RefundError('PERIOD_EXPIRED', 'Full refund period has expired (>7 days since purchase)', 422);
+    }
+  }
+
+  // BL-025: USED_BALANCE — 60% 이상 사용 요건 확인
+  if (refundType === 'USED_BALANCE') {
+    const usedAmount = voucher.face_amount - voucher.balance;
+    const usageRate = voucher.face_amount > 0 ? usedAmount / voucher.face_amount : 0;
+    if (usageRate < 0.6) {
+      throw new RefundError('INSUFFICIENT_USAGE', 'At least 60% of voucher must be used for USED_BALANCE refund', 422);
+    }
+  }
+
+  // BL-028: 제외금액 = 캐시백 사용분 × 1.1 (캐시백 + 10% 취급수수료)
+  const exclusionAmount = Math.round((voucher.cashback_amount) * 1.1);
   const depositAmount = amount - exclusionAmount;
 
   // Step 4: refund_transactions INSERT
@@ -97,6 +132,7 @@ export function processRefundRequest(
     status: 'REQUESTED',
     reason,
     requestedAt,
+    rfndPsbltyYn: 'Y',
   };
 }
 

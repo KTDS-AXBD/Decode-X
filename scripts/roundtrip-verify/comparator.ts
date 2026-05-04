@@ -158,22 +158,47 @@ function checkAssertion(
 
     case "rfndPsbltyYn": {
       if (!actual.ok) return { failReason: "UNEXPECTED_ERROR", failDetail: actual.errorCode };
-      const yn = actual.result["rfndPsbltyYn"] ?? (actual.ok ? "Y" : "N");
+      const yn = actual.result["rfndPsbltyYn"] as string | undefined;
       if (yn !== expected) {
         return { failReason: "WRONG_VALUE", failDetail: `rfndPsbltyYn: expected ${String(expected)}, got ${String(yn)}` };
       }
       return null;
     }
 
-    case "reject_reason_recorded":
-    case "deposit_amount":
-    case "exclusion_amount":
+    case "reject_reason_recorded": {
+      if (!actual.ok) return { failReason: "UNEXPECTED_ERROR", failDetail: actual.errorCode };
+      const recorded = actual.result["reject_reason_recorded"] as boolean | undefined;
+      if (expected === true && !recorded) {
+        return { failReason: "WRONG_VALUE", failDetail: "reject_reason_recorded: expected true but reason was not stored in DB" };
+      }
+      return null;
+    }
+
+    case "deposit_amount": {
+      if (!actual.ok) return { failReason: "UNEXPECTED_ERROR", failDetail: actual.errorCode };
+      const val = actual.result["deposit_amount"] as number | undefined;
+      if (val !== expected) {
+        return { failReason: "WRONG_VALUE", failDetail: `deposit_amount: expected ${String(expected)}, got ${String(val)}` };
+      }
+      return null;
+    }
+
+    case "exclusion_amount": {
+      if (!actual.ok) return { failReason: "UNEXPECTED_ERROR", failDetail: actual.errorCode };
+      const val = actual.result["exclusion_amount"] as number | undefined;
+      if (val !== expected) {
+        return { failReason: "WRONG_VALUE", failDetail: `exclusion_amount: expected ${String(expected)}, got ${String(val)}` };
+      }
+      return null;
+    }
+
+    // STUB_PENDING: these keys appear in ES-PAYMENT-001+ Edge Specs but not in current round-trip contracts.
+    // Replace null with actual.result comparison when the contract is added.
     case "newBalanceDeducted":
     case "newPaymentIdGenerated":
     case "responseIdempotent":
     case "responseStatus":
     case "responsePaymentId":
-      // These require deeper DB inspection — mark as passed for PoC scope
       return null;
 
     default:

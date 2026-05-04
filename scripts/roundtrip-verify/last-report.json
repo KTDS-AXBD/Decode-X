@@ -1,11 +1,11 @@
 {
   "total": 28,
-  "passed": 11,
-  "failed": 17,
-  "consistencyRate": 39.3,
+  "passed": 12,
+  "failed": 16,
+  "consistencyRate": 42.9,
   "implementedTotal": 12,
-  "implementedPassed": 11,
-  "implementedRate": 91.7,
+  "implementedPassed": 12,
+  "implementedRate": 100,
   "results": [
     {
       "contractFile": "lpon-budget",
@@ -181,9 +181,7 @@
       "contractFile": "lpon-refund",
       "scenarioId": "TC-REFUND-002",
       "scenarioName": "UNUSED_FULL + 7일 초과 → 환불 거부",
-      "passed": false,
-      "failReason": "WRONG_OUTCOME",
-      "failDetail": "Expected refund rejection but succeeded"
+      "passed": true
     },
     {
       "contractFile": "lpon-refund",
@@ -210,5 +208,5 @@
       "passed": true
     }
   ],
-  "generatedAt": "2026-05-04T06:01:15.165Z"
+  "generatedAt": "2026-05-04T06:24:16.679Z"
 }

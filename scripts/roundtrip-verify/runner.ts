@@ -149,14 +149,16 @@ function runRefundRequest(
   }
 
   const paymentAmount = (given["paymentAmount"] as number | undefined) ?? 30_000;
+  const refundType = (given["refundType"] as string | undefined) ?? "USED_BALANCE";
   const result = mod.processRefundRequest(db, {
     userId: ids.userId,
     paymentId: ids.paymentId,
     amount: paymentAmount,
     reason: "customer_request",
+    refundType,
   });
 
-  return { ok: true, result: { ...result, rfndPsbltyYn: "Y" } };
+  return { ok: true, result };
 }
 
 async function runRefundApprove(
@@ -171,8 +173,20 @@ async function runRefundApprove(
   const mod = await loadDomain<RefundModule>("refund.js");
   const result = await mod.approveRefund(db, ids.refundId, mod.mockDepositApi);
   // Domain returns status='APPROVED' but DB stores 'COMPLETED' — read DB authoritative value
-  const row = db.prepare("SELECT status FROM refund_transactions WHERE id = ?").get(ids.refundId) as { status: string } | undefined;
-  return { ok: true, result: { ...result, status: row?.status ?? result["status"], deposit_requested: true } };
+  // Also read deposit_amount and exclusion_amount for comparator real verification
+  const row = db.prepare("SELECT status, deposit_amount, exclusion_amount FROM refund_transactions WHERE id = ?").get(ids.refundId) as {
+    status: string; deposit_amount: number; exclusion_amount: number;
+  } | undefined;
+  return {
+    ok: true,
+    result: {
+      ...result,
+      status: row?.status ?? result["status"],
+      deposit_requested: true,
+      deposit_amount: row?.deposit_amount,
+      exclusion_amount: row?.exclusion_amount,
+    },
+  };
 }
 
 function runRefundReject(
@@ -192,5 +206,9 @@ function runRefundReject(
   }
   const rejectReason = (given["rejectReason"] as string | undefined) ?? "INVALID_REQUEST";
   const result = mod.rejectRefund(db, ids.refundId, rejectReason);
-  return { ok: true, result: { ...result, reject_reason_recorded: true } };
+  // Verify reject reason was actually stored in DB
+  const row = db.prepare("SELECT error_message FROM refund_transactions WHERE id = ?").get(ids.refundId) as {
+    error_message: string | null;
+  } | undefined;
+  return { ok: true, result: { ...result, reject_reason_recorded: (row?.error_message ?? "") !== "" } };
 }

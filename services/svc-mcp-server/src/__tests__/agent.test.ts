@@ -126,7 +126,7 @@ describe("AG-UI Agent endpoints", () => {
       expect(events[0]?.["taskDescription"]).toBe("정책 분석");
     });
 
-    it("sends RUN_FINISHED as last event", async () => {
+    it("sends HITL_REQUEST as last event (F357: HITL flow replaces RUN_FINISHED)", async () => {
       const req = agentRunRequest({
         task: "정책 분석",
         organizationId: "org-test",
@@ -136,8 +136,10 @@ describe("AG-UI Agent endpoints", () => {
 
       expect(events.length).toBeGreaterThan(1);
       const lastEvent = events[events.length - 1];
-      expect(lastEvent?.type).toBe("RUN_FINISHED");
-      expect(typeof lastEvent?.["summary"]).toBe("string");
+      expect(lastEvent?.type).toBe("CUSTOM");
+      expect(lastEvent?.["subType"]).toBe("HITL_REQUEST");
+      expect(typeof lastEvent?.["resumeToken"]).toBe("string");
+      expect(lastEvent?.["componentType"]).toBe("PolicyApprovalCard");
     });
 
     it("returns 400 for invalid request body", async () => {
@@ -176,7 +178,7 @@ describe("AG-UI Agent endpoints", () => {
       expect(stateSync?.["visualizationType"]).toBe("chart");
     });
 
-    it("sends events in correct sequence", async () => {
+    it("sends events in correct sequence (F357: ends with HITL_REQUEST)", async () => {
       const req = agentRunRequest({
         task: "분석 요청",
         organizationId: "org-test",
@@ -184,13 +186,14 @@ describe("AG-UI Agent endpoints", () => {
       const res = await handler.fetch(req, env, ctx);
       const events = await collectSSEEvents(res);
 
-      // Expected sequence: RUN_STARTED → TOOL_CALL_START → TOOL_CALL_END → STATE_SYNC → RUN_FINISHED
+      // Sequence: RUN_STARTED → TOOL_CALL_START → TOOL_CALL_END → STATE_SYNC → CUSTOM/HITL_REQUEST
       expect(events.length).toBe(5);
       expect(events[0]?.type).toBe("RUN_STARTED");
       expect(events[1]?.type).toBe("TOOL_CALL_START");
       expect(events[2]?.type).toBe("TOOL_CALL_END");
       expect(events[3]?.type).toBe("STATE_SYNC");
-      expect(events[4]?.type).toBe("RUN_FINISHED");
+      expect(events[4]?.type).toBe("CUSTOM");
+      expect(events[4]?.["subType"]).toBe("HITL_REQUEST");
     });
   });
 

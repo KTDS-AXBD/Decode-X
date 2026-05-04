@@ -1,9 +1,9 @@
 /**
  * AG-UI Protocol — SSE 기반 Agent 실행 스트리밍 엔드포인트.
- * Design Doc: AIF-DSGN-024 §4 AG-UI Protocol
+ * Design Doc: AIF-DSGN-024 §4 AG-UI Protocol, AIF-DSGN-052 F357
  *
- * POST /agent/run   → SSE 스트림으로 에이전트 실행 이벤트 전송
- * POST /agent/resume → HITL 응답 후 에이전트 재개 (stub)
+ * POST /agent/run    → SSE 스트림으로 에이전트 실행 이벤트 전송 + HITL 세션 KV 저장
+ * POST /agent/resume → KV에서 세션 복구 + nextStep 응답 (F357 실구현)
  */
 
 import {
@@ -15,11 +15,29 @@ import type {
   ToolCallStartEvent,
   ToolCallEndEvent,
   StateSyncEvent,
-  RunFinishedEvent,
+  HitlRequestEvent,
 } from "@ai-foundry/types";
-import { ok, badRequest } from "@ai-foundry/utils";
+import { ok, badRequest, notFound } from "@ai-foundry/utils";
+import type { Env } from "../env.js";
 
-// ── SSE Helpers ─────────────────────────────────────────────────────
+// ── KV session constants ─────────────────────────────────────────────
+
+const KV_SESSION_PREFIX = "session:";
+const KV_SESSION_TTL = 86_400; // 24h
+
+// ── Session state stored in KV ───────────────────────────────────────
+
+interface AgentSessionState {
+  runId: string;
+  organizationId: string;
+  task: string;
+  nextToolCall: { toolName: string; args: Record<string, unknown> } | null;
+  hitlComponentType: "PolicyApprovalCard" | "EntityConfirmation" | "ParameterInput";
+  hitlProps: Record<string, unknown>;
+  createdAt: number;
+}
+
+// ── SSE Helpers ──────────────────────────────────────────────────────
 
 function sseEncode(event: Record<string, unknown>): string {
   return `event: ag-ui\ndata: ${JSON.stringify(event)}\n\n`;
@@ -37,7 +55,7 @@ function sseHeaders(): HeadersInit {
   };
 }
 
-// ── Sample Widget SVG ───────────────────────────────────────────────
+// ── Sample Widget SVG ────────────────────────────────────────────────
 
 const SAMPLE_WIDGET_HTML = `
 <div style="padding: 16px; font-family: system-ui, sans-serif;">
@@ -55,9 +73,9 @@ const SAMPLE_WIDGET_HTML = `
   </svg>
 </div>`.trim();
 
-// ── Handlers ────────────────────────────────────────────────────────
+// ── Handlers ─────────────────────────────────────────────────────────
 
-export async function handleAgentRun(request: Request): Promise<Response> {
+export async function handleAgentRun(request: Request, env: Env): Promise<Response> {
   let body: unknown;
   try {
     body = await request.json();
@@ -77,15 +95,12 @@ export async function handleAgentRun(request: Request): Promise<Response> {
   const runId = crypto.randomUUID();
   const toolCallId = crypto.randomUUID();
 
-  // TransformStream for Cloudflare Workers SSE
   const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
   const writer = writable.getWriter();
   const encoder = new TextEncoder();
 
-  // Simulate agent flow asynchronously
   const streamEvents = async () => {
     try {
-      // 1. RUN_STARTED
       const startEvent: RunStartedEvent = {
         type: "RUN_STARTED",
         timestamp: Date.now(),
@@ -95,7 +110,6 @@ export async function handleAgentRun(request: Request): Promise<Response> {
       };
       await writer.write(encoder.encode(sseEncode(startEvent)));
 
-      // 2. TOOL_CALL_START
       const toolStartEvent: ToolCallStartEvent = {
         type: "TOOL_CALL_START",
         timestamp: Date.now(),
@@ -106,10 +120,8 @@ export async function handleAgentRun(request: Request): Promise<Response> {
       };
       await writer.write(encoder.encode(sseEncode(toolStartEvent)));
 
-      // 3. Delay 100ms
       await new Promise((resolve) => setTimeout(resolve, 100));
 
-      // 4. TOOL_CALL_END
       const toolEndEvent: ToolCallEndEvent = {
         type: "TOOL_CALL_END",
         timestamp: Date.now(),
@@ -123,7 +135,6 @@ export async function handleAgentRun(request: Request): Promise<Response> {
       };
       await writer.write(encoder.encode(sseEncode(toolEndEvent)));
 
-      // 5. STATE_SYNC (widget HTML)
       const stateSyncEvent: StateSyncEvent = {
         type: "STATE_SYNC",
         timestamp: Date.now(),
@@ -133,14 +144,43 @@ export async function handleAgentRun(request: Request): Promise<Response> {
       };
       await writer.write(encoder.encode(sseEncode(stateSyncEvent)));
 
-      // 6. RUN_FINISHED
-      const finishEvent: RunFinishedEvent = {
-        type: "RUN_FINISHED",
+      // HITL: store session state in KV, then emit HITL_REQUEST
+      const resumeToken = crypto.randomUUID();
+      const sessionState: AgentSessionState = {
+        runId,
+        organizationId,
+        task,
+        nextToolCall: {
+          toolName: "confirm-policy",
+          args: { policyCode: "POL-PENSION-WD-HOUSING-001", confidence: 0.87 },
+        },
+        hitlComponentType: "PolicyApprovalCard",
+        hitlProps: {
+          policyCode: "POL-PENSION-WD-HOUSING-001",
+          confidence: 0.87,
+          policiesFound: 6,
+        },
+        createdAt: Date.now(),
+      };
+
+      if (env.AGENT_SESSIONS) {
+        await env.AGENT_SESSIONS.put(
+          `${KV_SESSION_PREFIX}${resumeToken}`,
+          JSON.stringify(sessionState),
+          { expirationTtl: KV_SESSION_TTL },
+        );
+      }
+
+      const hitlEvent: HitlRequestEvent = {
+        type: "CUSTOM",
+        subType: "HITL_REQUEST",
         timestamp: Date.now(),
         runId,
-        summary: `분석 완료: "${task}" — 6개 정책 발견, 시각화 생성됨`,
+        componentType: "PolicyApprovalCard",
+        props: sessionState.hitlProps,
+        resumeToken,
       };
-      await writer.write(encoder.encode(sseEncode(finishEvent)));
+      await writer.write(encoder.encode(sseEncode(hitlEvent)));
     } catch {
       // Stream may be closed by client — ignore write errors
     } finally {
@@ -152,7 +192,6 @@ export async function handleAgentRun(request: Request): Promise<Response> {
     }
   };
 
-  // Fire and forget — the stream will be consumed by the client
   void streamEvents();
 
   return new Response(readable, {
@@ -161,7 +200,7 @@ export async function handleAgentRun(request: Request): Promise<Response> {
   });
 }
 
-export async function handleAgentResume(request: Request): Promise<Response> {
+export async function handleAgentResume(request: Request, env: Env): Promise<Response> {
   let body: unknown;
   try {
     body = await request.json();
@@ -177,5 +216,48 @@ export async function handleAgentResume(request: Request): Promise<Response> {
     );
   }
 
-  return ok({ status: "resumed", resumeToken: parsed.data.resumeToken });
+  const { resumeToken, decision } = parsed.data;
+
+  // Degraded mode: KV namespace not bound
+  if (!env.AGENT_SESSIONS) {
+    return ok({
+      status: "resumed",
+      resumeToken,
+      runId: "unknown",
+      nextStep: {
+        type: "complete",
+        summary: "Session storage unavailable — operating in degraded mode",
+      },
+    });
+  }
+
+  const raw = await env.AGENT_SESSIONS.get(`${KV_SESSION_PREFIX}${resumeToken}`);
+  if (!raw) {
+    return notFound("session", resumeToken);
+  }
+
+  const sessionState = JSON.parse(raw) as AgentSessionState;
+
+  // One-shot: delete session immediately after retrieval
+  await env.AGENT_SESSIONS.delete(`${KV_SESSION_PREFIX}${resumeToken}`);
+
+  const nextStep =
+    decision === "approve" && sessionState.nextToolCall
+      ? {
+          type: "tool_call" as const,
+          toolName: sessionState.nextToolCall.toolName,
+          args: sessionState.nextToolCall.args,
+          summary: `정책 승인됨 — ${sessionState.nextToolCall.toolName} 실행 예정`,
+        }
+      : {
+          type: "complete" as const,
+          summary: `결정 '${decision}' 처리됨 — 워크플로우 종료`,
+        };
+
+  return ok({
+    status: "resumed",
+    resumeToken,
+    runId: sessionState.runId,
+    nextStep,
+  });
 }

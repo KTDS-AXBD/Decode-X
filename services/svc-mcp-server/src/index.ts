@@ -707,7 +707,7 @@ export default {
           { status: 401, headers: corsHeaders() },
         );
       }
-      return handleAgentRun(request);
+      return handleAgentRun(request, env);
     }
 
     if (method === "POST" && path === "/agent/resume") {
@@ -717,7 +717,7 @@ export default {
           { status: 401, headers: corsHeaders() },
         );
       }
-      return handleAgentResume(request);
+      return handleAgentResume(request, env);
     }
 
     // Org-level MCP endpoint: POST /mcp/org/:orgId

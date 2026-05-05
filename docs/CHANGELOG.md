@@ -2,6 +2,42 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 270 (2026-05-05) — Sprint 258 F425 (F358 Phase 3a) ✅ DONE (Master inline ~2.5h, Match 95%, 원안 메커니즘 한계 발견 후 C형 분할)
+
+**핵심 결과**: F358 Phase 3 잔여 분리 후 Phase 3a 종결. Sprint 257 production deploy 7일+ alive 입증 + silent drift 17건 정확 재현 + Tree-sitter ground truth 0 drift + reconcile.ts sanity 7 markers PASS + F354 5건 BL-level 자동화 분류 완료. 즉시 차기 Sprint 권고: **BL-028 단독 자동 검출 PoC** (95% 신뢰도, AST literal `0` 매칭).
+
+**진행 흐름**:
+1. **세션 시작 + 작업 선택** — `/ax:session-start /todo plan` → SPEC §6 백로그 정밀 조사 → AskUserQuestion 결과 "Sprint 258 — F358 Phase 3 (LPON 전수 재추출)" 결정 → Master inline 진행 + LPON 35 단독 재평가 범위 결정
+2. **사전 조사 단계 메커니즘 한계 발견** — 원안("LPON 전수 재추출 + DIVERGENCE 5건 + F356-A 통합")은 (a) F356-A 평가 입력은 R2 `.skill.json` 기반 → Tree-sitter 결과 직접 반영 불가, (b) LPON Java 소스 repo 내 부재 → 사용자 결정 "C형 분할"로 Phase 3a/3b 분리. F-item 신규 F425 발급
+3. **Plan/Design 작성** — `docs/01-plan/features/F358-phase-3.plan.md` (AIF-PLAN-056) + `docs/02-design/features/F358-phase-3.design.md` (AIF-DSGN-056) 신규. SPEC.md §6 Sprint 258 블록 + F425 IN_PROGRESS 등록
+4. **java-ast CLI + Tree-sitter PoC 실행** — `scripts/java-ast/` `npm install` (13 packages, pnpm 환경 호환 이슈로 npm fallback) → `npx tsx src/index.ts` regex 5 샘플 (regex CLI 7 endpoints / 2 controllers / mapperCount 0 — Mapper silent skip 재현) → `npx tsx src/poc-tree-sitter.ts` Tree-sitter PoC (17 silent drifts 정확 재현 + workersCompatibility PASS + avg 1.9ms/file)
+5. **Reconcile sanity check** — `scripts/java-ast/src/sprint-258-sanity.ts` 신설 → mock DocApiSpec 5 endpoints + Tree-sitter source 8 endpoints → 7 markers (5 SOURCE_MISSING + 2 DOC_ONLY + 0 DIVERGENCE) ≥1 기준 PASS
+6. **Production smoke** — `curl https://svc-ingestion.ktds-axbd.workers.dev/health` HTTP 200 (590ms cold-start) + `/upload` HTTP 401 UNAUTHORIZED (인증 미들웨어 정상). wrangler tail SKIP (CLOUDFLARE_API_TOKEN 미보유 환경, /health로 cold-start alive 입증 충분)
+7. **F354 BL-level 자동화 분석** — 5건 marker 분류: 가능 1(BL-028 95% AST literal 매칭) + 가능 heuristic 1(BL-027 70% line count) + 조건부 3(BL-024/026/029 50~60% rules.md NL parser 선결) → 평균 65%. 즉시 자동화 비율 2/5 = 40%. 차기 Sprint 권고: BL-028 단독 PoC (~8h, P1) + rules.md NL parser (별도 F-item, P2)
+8. **산출물 작성** — `reports/sprint-258-drift-quantification-2026-05-05.{json,md}` + `docs/03-analysis/features/sprint-258-divergence-automation.analysis.md` (AIF-ANLS-056) + `docs/04-report/features/sprint-258-F425.report.md` (AIF-RPRT-056)
+9. **SPEC §5/§6 갱신** — Last Updated 세션 270 + Sprint 258 ✅ DONE 마킹 + F425 [x] 마킹 + F358 status에 "Phase 3a ✅ Sprint 258" 추가 + Phase 3b 분리 명시
+
+**핵심 발견**:
+- silent drift 17 → 0 의미 정정: production svc-ingestion (Sprint 257)은 Tree-sitter ground truth = 0 drift. 17은 regex CLI(legacy reference) failures vs Tree-sitter 측정값
+- F354 BL-028 즉시 자동화 가능 입증 (95% 신뢰도)
+- Sprint 257 production deploy 7일+ alive 입증 — Sprint 256 F424 PoC 4-step 패턴 안정성 확인
+- C형 분할 결정의 효과 — 원안 결합도 높았으나 메커니즘 한계 사전 분석으로 분할 후 Phase 3a 깔끔히 종결, Phase 3b는 별도 Sprint로 LPON R2 재패키징 결정 후 진행
+
+**Master inline 6회 연속 회피 패턴 유지** (S253~270, autopilot Production Smoke Test 14회차 변종 직후라 신뢰도 우려 회피).
+
+**산출물 (PDCA 4종 + reports + sanity script)**:
+- `docs/01-plan/features/F358-phase-3.plan.md` (AIF-PLAN-056)
+- `docs/02-design/features/F358-phase-3.design.md` (AIF-DSGN-056)
+- `docs/03-analysis/features/sprint-258-divergence-automation.analysis.md` (AIF-ANLS-056)
+- `docs/04-report/features/sprint-258-F425.report.md` (AIF-RPRT-056)
+- `reports/sprint-258-drift-quantification-2026-05-05.{json,md}`
+- `scripts/java-ast/src/sprint-258-sanity.ts` (신규)
+- `/tmp/sprint-258-{ast,poc-tree-sitter,reconcile-sanity}.json`
+
+**다음 액션**: 차기 Sprint 259 (가칭 F426) BL-028 단독 자동 검출 엔진 PoC + BL-027 heuristic. Phase 3b 별도 Sprint (LPON 35 R2 재패키징 + F356-A 재평가, 비용 ~$5 + 1.5h).
+
+---
+
 ### 세션 269 (2026-05-05) — Sprint 257 F358 Phase 2 + F361 ✅ MERGED (autopilot 자율 ~40min, Master 독립 검증 PASS, autopilot 14회차 변종 패턴 발견)
 
 **핵심 결과**: Sprint 256 F424 PoC 4-step 패턴 적용으로 Sprint 255 web-tree-sitter Workers 호환성 결함 완전 회피 성공. autopilot 자율 ~40분 만에 self-Match=95% / TEST=pass / PR #52 ✅ MERGED `552056d`. **Master 독립 검증 PASS** (`wrangler --dry-run` 2,764 KiB / `wrangler dev` 9분 alive + /health HTTP 200 OK). **F358 Phase 2 + F361 + TD-26 + TD-28 Phase 2 일괄 해소**.

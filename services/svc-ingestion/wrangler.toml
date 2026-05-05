@@ -3,11 +3,6 @@ main = "src/index.ts"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 
-# WASM bundling for Tree-sitter Java parser (F358 Phase 2)
-[[rules]]
-globs = ["**/*.wasm"]
-type = "Data"
-
 [dev]
 port = 8701
 inspector_port = 9201

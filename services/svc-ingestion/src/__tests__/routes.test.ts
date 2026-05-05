@@ -2,11 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { handleUpload, handleGetDocument } from "../routes/upload.js";
 import type { Env } from "../env.js";
 
-// Prevent WASM static imports in loader-workers.ts from breaking Vitest's Node.js env
-vi.mock("@ai-foundry/utils/java-parsing/loader-workers", () => ({
-  initJavaParserWorkers: vi.fn().mockResolvedValue(undefined),
-}));
-
 // ── Helpers ──────────────────────────────────────────────────────
 
 function mockDb(overrides?: {

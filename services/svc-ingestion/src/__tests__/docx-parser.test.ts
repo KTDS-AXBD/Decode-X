@@ -1,13 +1,16 @@
 // Test-only file using Node.js fs/path APIs via Bun runtime.
 // Not deployed to Cloudflare Workers; excluded from Workers type scope.
 import { describe, it, expect } from "vitest";
+// @ts-expect-error — Bun provides Node.js fs module at runtime (not in Workers types)
 import { readFileSync, existsSync } from "fs";
+// @ts-expect-error — Bun provides Node.js path module at runtime (not in Workers types)
 import { resolve } from "path";
 import { parseDocx } from "../parsing/docx.js";
 import { zipSync } from "fflate";
 
 // ── File setup ──────────────────────────────────────────────────
 
+// @ts-expect-error — __dirname is available in Bun test runtime
 const testDir: string = __dirname;
 const DOCX_DIR = resolve(
   testDir,

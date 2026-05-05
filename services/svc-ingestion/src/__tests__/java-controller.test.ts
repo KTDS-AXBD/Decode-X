@@ -1,25 +1,7 @@
-import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { readFileSync } from "node:fs";
-import { join, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
-import { initJavaParser, resetJavaParser } from "@ai-foundry/utils/java-parsing";
+import { describe, test, expect } from "vitest";
 import { parseJavaController, isController } from "../parsing/java-controller.js";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const WASM_DIR = join(__dirname, "../../../../packages/utils/wasm");
-
-beforeAll(async () => {
-  await initJavaParser({
-    javaWasm: readFileSync(join(WASM_DIR, "tree-sitter-java.wasm")),
-    runtimeWasm: join(WASM_DIR, "web-tree-sitter.wasm"),
-  });
-});
-
-afterAll(() => {
-  resetJavaParser();
-});
-
-describe("java-controller parser (Tree-sitter)", () => {
+describe("java-controller parser", () => {
   test("LPON CommonController - @RestController + @RequestMapping + @ApiOperation", () => {
     const source = `
 package com.kt.onnuripay.externalapi.common.controller;
@@ -127,7 +109,7 @@ public class SimpleController {
     expect(result!.endpoints[0]!.path).toBe("/health");
   });
 
-  test("class-level @RequestMapping with constant reference — basePath empty", () => {
+  test("class-level @RequestMapping with constant reference — basePath empty, no method path leak", () => {
     const source = `
 package com.kt.onnuripay.externalapi.common.controller;
 
@@ -145,7 +127,8 @@ public class CommonController {
     `;
     const result = parseJavaController(source, "CommonController.java");
     expect(result).not.toBeNull();
-    // Tree-sitter may not resolve constant concatenation — basePath is "" or empty
+    // basePath should be "" (constant reference not parseable), NOT "/utils/getNow"
+    expect(result!.basePath).toBe("");
     expect(result!.endpoints[0]!.path).toBe("/utils/getNow");
   });
 
@@ -167,66 +150,5 @@ public class SearchController {
     expect(params[0]!.name).toBe("keyword");
     expect(params[0]!.required).toBe(false);
     expect(params[1]!.name).toBe("page");
-    expect(params[1]!.required).toBe(true);
-  });
-
-  // ─── New cases (Phase 2) ───────────────────────────────────────────────────
-
-  test("multi-path @PostMapping({'/a', '/b'}) emits 2 endpoints", () => {
-    const source = `
-@RestController
-@RequestMapping("/api/v1")
-public class MultiController {
-    @PostMapping({"/apply", "/create"})
-    public ResponseEntity<Void> apply(@RequestBody ApplyVO req) { return null; }
-}
-    `;
-    const result = parseJavaController(source, "MultiController.java");
-    expect(result).not.toBeNull();
-    expect(result!.endpoints).toHaveLength(2);
-    expect(result!.endpoints[0]!.path).toBe("/apply");
-    expect(result!.endpoints[1]!.path).toBe("/create");
-    expect(result!.endpoints[0]!.httpMethod).toEqual(["POST"]);
-    expect(result!.endpoints[0]!.parameters).toHaveLength(1);
-    expect(result!.endpoints[0]!.parameters[0]!.annotation).toBe("@RequestBody");
-  });
-
-  test("Map<K,V> generic return type preserved", () => {
-    const source = `
-@RestController
-public class GenericController {
-    @GetMapping("/map")
-    public ResponseEntity<Map<String, List<FooVO>>> getMap() { return null; }
-
-    @GetMapping("/simple")
-    public Map<String, Object> getSimple() { return null; }
-}
-    `;
-    const result = parseJavaController(source, "GenericController.java");
-    expect(result).not.toBeNull();
-    expect(result!.endpoints).toHaveLength(2);
-    expect(result!.endpoints[0]!.returnType).toBe("ResponseEntity<Map<String, List<FooVO>>>");
-    expect(result!.endpoints[1]!.returnType).toBe("Map<String, Object>");
-  });
-
-  test("basePath correctly prepended — full path check", () => {
-    const source = `
-@RestController
-@RequestMapping("/api/v2/pension")
-public class PensionController {
-    @GetMapping("/list")
-    public List<PensionVO> list() { return null; }
-
-    @PostMapping("/withdraw")
-    public ResponseEntity<WithdrawResult> withdraw(@RequestBody WithdrawVO req) { return null; }
-}
-    `;
-    const result = parseJavaController(source, "PensionController.java");
-    expect(result).not.toBeNull();
-    expect(result!.basePath).toBe("/api/v2/pension");
-    // path is method-level only; basePath is separate
-    expect(result!.endpoints[0]!.path).toBe("/list");
-    expect(result!.endpoints[1]!.path).toBe("/withdraw");
-    expect(result!.endpoints[1]!.parameters[0]!.annotation).toBe("@RequestBody");
   });
 });

@@ -1,0 +1,17 @@
+name = "td-62-poc"
+main = "src/index.ts"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Option B: alias web-tree-sitter to CJS entry (avoids ESM import.meta.url)
+[alias]
+"web-tree-sitter" = "./node_modules/web-tree-sitter/web-tree-sitter.cjs"
+
+# WASM compiled at build time as WebAssembly.Module (CF Workers requires this — runtime instantiate disallowed)
+[[rules]]
+type = "CompiledWasm"
+globs = ["**/*.wasm"]
+fallthrough = true
+
+[dev]
+port = 8799

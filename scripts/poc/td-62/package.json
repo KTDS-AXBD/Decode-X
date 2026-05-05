@@ -1,0 +1,15 @@
+{
+  "name": "td-62-poc",
+  "version": "0.0.1",
+  "private": true,
+  "description": "TD-62 web-tree-sitter Workers polyfill PoC",
+  "dependencies": {
+    "web-tree-sitter": "0.26.8"
+  },
+  "scripts": {
+    "dev": "wrangler dev --port 8799",
+    "build:a": "esbuild src/index.ts --bundle --platform=browser --define:import.meta.url='\"file:///worker.js\"' --external:node:module --outfile=dist/index.js",
+    "deploy:staging": "wrangler deploy --env staging",
+    "deploy:dry": "wrangler deploy --dry-run"
+  }
+}

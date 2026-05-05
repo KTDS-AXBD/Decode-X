@@ -1,9 +1,18 @@
 import { createLogger, ok, unauthorized, notFound, badRequest, verifyInternalSecret, errFromUnknown, extractRbacContext, checkPermission, logAuditLocal } from "@ai-foundry/utils";
+import { initJavaParserWorkers } from "@ai-foundry/utils/java-parsing/loader-workers";
 import type { DocumentUploadedEvent } from "@ai-foundry/types";
 import type { Env } from "./env.js";
 import { handleHealth } from "./routes/health.js";
 import { handleUpload, handleGetDocument } from "./routes/upload.js";
 import { processQueueEvent } from "./queue.js";
+
+// Initialize Java parser WASM at module load time (cold-start, once per Worker instance)
+// Silently skips in non-Workers environments (e.g. Vitest) where WASM is unavailable
+try {
+  await initJavaParserWorkers();
+} catch {
+  // parser not available — isController() will fall back to regex, parseJavaController() will throw
+}
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {

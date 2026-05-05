@@ -1,5 +1,15 @@
-import { describe, test, expect } from "vitest";
+import { describe, test, expect, beforeAll } from "vitest";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { initJavaParserNode } from "@ai-foundry/utils/java-parsing";
 import { parseJavaController, isController } from "../parsing/java-controller.js";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const WASM_DIR = resolve(__dirname, "../../../../packages/utils/wasm");
+
+beforeAll(async () => {
+  await initJavaParserNode(WASM_DIR);
+});
 
 describe("java-controller parser", () => {
   test("LPON CommonController - @RestController + @RequestMapping + @ApiOperation", () => {
@@ -150,5 +160,85 @@ public class SearchController {
     expect(params[0]!.name).toBe("keyword");
     expect(params[0]!.required).toBe(false);
     expect(params[1]!.name).toBe("page");
+  });
+
+  test("multi-path @PostMapping({'/create', '/add'})", () => {
+    const source = `
+@RestController
+@RequestMapping("/api/items")
+public class ItemController {
+    @PostMapping({"/create", "/add"})
+    public String createItem() { return null; }
+}
+    `;
+    const result = parseJavaController(source, "ItemController.java");
+    expect(result).not.toBeNull();
+    expect(result!.endpoints).toHaveLength(2);
+    const paths = result!.endpoints.map((e) => e.path).sort();
+    expect(paths).toEqual(["/add", "/create"]);
+    expect(result!.endpoints[0]!.httpMethod).toEqual(["POST"]);
+  });
+
+  test("Map<K,V> generic return type preserved", () => {
+    const source = `
+@RestController
+@RequestMapping("/api/data")
+public class DataController {
+    @GetMapping("/stats")
+    public Map<String, List<StatVO>> getStats() { return null; }
+}
+    `;
+    const result = parseJavaController(source, "DataController.java");
+    expect(result).not.toBeNull();
+    const ep = result!.endpoints[0]!;
+    expect(ep.returnType).toContain("Map<");
+    expect(ep.returnType).toContain("List<");
+  });
+
+  test("fullPath combines basePath + methodPath correctly", () => {
+    const source = `
+@RestController
+@RequestMapping("/api/v2/pension")
+public class PensionController {
+    @PostMapping("/apply")
+    public String apply() { return null; }
+
+    @GetMapping("/status")
+    public String status() { return null; }
+}
+    `;
+    const result = parseJavaController(source, "PensionController.java");
+    expect(result).not.toBeNull();
+    expect(result!.basePath).toBe("/api/v2/pension");
+    expect(result!.endpoints).toHaveLength(2);
+    expect(result!.endpoints[0]!.path).toBe("/apply");
+    expect(result!.endpoints[1]!.path).toBe("/status");
+  });
+
+  test("@PutMapping + @PatchMapping HTTP methods", () => {
+    const source = `
+@RestController
+@RequestMapping("/api/v1/users")
+public class UserUpdateController {
+    @PutMapping("/{id}")
+    public UserVO replaceUser(@PathVariable Long id, @RequestBody UserVO user) { return null; }
+
+    @PatchMapping("/{id}/status")
+    public void updateStatus(@PathVariable Long id, @RequestParam String status) { return; }
+}
+    `;
+    const result = parseJavaController(source, "UserUpdateController.java");
+    expect(result).not.toBeNull();
+    expect(result!.endpoints).toHaveLength(2);
+
+    const put = result!.endpoints[0]!;
+    expect(put.httpMethod).toEqual(["PUT"]);
+    expect(put.parameters).toHaveLength(2);
+    expect(put.parameters[0]!.annotation).toBe("@PathVariable");
+    expect(put.parameters[1]!.annotation).toBe("@RequestBody");
+
+    const patch = result!.endpoints[1]!;
+    expect(patch.httpMethod).toEqual(["PATCH"]);
+    expect(patch.parameters).toHaveLength(2);
   });
 });

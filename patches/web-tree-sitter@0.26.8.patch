@@ -1,0 +1,31 @@
+diff --git a/web-tree-sitter.cjs b/web-tree-sitter.cjs
+index 961b6c1378cdc0d7ab5d9add22fda9e4ec7da0e1..4c493b3b89d1b444bfcb7894985f107535189240 100644
+--- a/web-tree-sitter.cjs
++++ b/web-tree-sitter.cjs
+@@ -42,7 +42,7 @@ var require_web_tree_sitter = __commonJS({
+         var Module = moduleArg;
+         var ENVIRONMENT_IS_WEB = typeof window == "object";
+         var ENVIRONMENT_IS_WORKER = typeof WorkerGlobalScope != "undefined";
+-        var ENVIRONMENT_IS_NODE = typeof process == "object" && process.versions?.node && process.type != "renderer";
++        var ENVIRONMENT_IS_NODE = typeof process == "object" && process.versions?.node && process.type != "renderer" && typeof __dirname !== "undefined";
+         Module.currentQueryProgressCallback = null;
+         Module.currentProgressCallback = null;
+         Module.currentLogCallback = null;
+@@ -55,7 +55,7 @@ var require_web_tree_sitter = __commonJS({
+         if (typeof __filename != "undefined") {
+           _scriptName = __filename;
+         } else if (ENVIRONMENT_IS_WORKER) {
+-          _scriptName = self.location.href;
++          _scriptName = (typeof self !== "undefined" && self.location) ? self.location.href : void 0;
+         }
+         var scriptDirectory = "";
+         function locateFile(path) {
+@@ -3152,7 +3152,7 @@ var Language = class _Language {
+    */
+   static async load(input) {
+     let binary2;
+-    if (input instanceof Uint8Array) {
++    if (input instanceof WebAssembly.Module) { binary2 = input; } else if (input instanceof Uint8Array) {
+       binary2 = input;
+     } else if (globalThis.process?.versions.node) {
+       const fs2 = await import("fs/promises");

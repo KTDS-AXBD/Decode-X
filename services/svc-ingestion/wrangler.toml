@@ -3,6 +3,16 @@ main = "src/index.ts"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 
+# CJS alias — avoids ESM import.meta.url crash in CF Workers (web-tree-sitter patch P2)
+[alias]
+"web-tree-sitter" = "../../packages/utils/node_modules/web-tree-sitter/web-tree-sitter.cjs"
+
+# Pre-compile WASM at build time as WebAssembly.Module (CF Workers: runtime compile disallowed)
+[[rules]]
+type = "CompiledWasm"
+globs = ["**/*.wasm"]
+fallthrough = true
+
 [dev]
 port = 8701
 inspector_port = 9201

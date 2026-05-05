@@ -5,13 +5,10 @@
  * 파일 위치: docs/LPON 전자식 온누리상품권 플랫폼/LPON-D106_온누리상품권_정책정의서.xlsx
  */
 import { describe, it, expect } from "vitest";
-// @ts-expect-error — Bun provides Node.js fs module at runtime (not in Workers types)
 import { readFileSync, existsSync } from "fs";
-// @ts-expect-error — Bun provides Node.js path module at runtime (not in Workers types)
 import { resolve } from "path";
 import { parsePolicyWorkbook } from "../parsing/policy.js";
 
-// @ts-expect-error — __dirname is available in Bun test runtime
 const testDir: string = __dirname;
 const FILE_PATH = resolve(
   testDir,

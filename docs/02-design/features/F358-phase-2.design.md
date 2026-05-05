@@ -1,16 +1,17 @@
 ---
 id: AIF-DSGN-054
 title: "F358 Phase 2 Design — Tree-sitter Java parser production 통합 설계"
-sprint: 255
+sprint: 257
 f_items: [F358, F361]
 req: AIF-REQ-035
 plan: AIF-PLAN-054
-td: [TD-26, TD-28]
+td: [TD-26, TD-28, TD-62]
 status: Active
 created: "2026-05-05"
-author: "Master (session 267, post-merge retroactive)"
-retroactive: true
-retroactive_reason: "Sprint 255 autopilot이 코드 구현은 완결했으나 PDCA Design/Analysis/Report 3건 미작성. PR #50 MERGED 후 Master inline 작성."
+updated: "2026-05-05"
+author: "Master (session 269, Sprint 257 PoC-corrected)"
+retroactive: false
+note: "Sprint 255 original (AIF-DSGN-054 §3 Data path) was REVERTED due to import.meta.url crash. Sprint 257 applies Sprint 256 F424 4-step PoC pattern — supersedes Sprint 255 §3."
 ---
 
 # F358 Phase 2 — Tree-sitter Java parser production 통합 설계
@@ -46,18 +47,34 @@ git tracked binary로 commit (CI/배포에서 reliable 참조).
 
 | 파일 | 변경 |
 |------|------|
-| `src/index.ts` | top-level `await initJavaParserWorkers()` — Workers cold-start 1회 init |
-| `src/parsing/java-controller.ts` | regex (288줄) → `getJavaParser()` + `extractClasses()` 호출 (50줄) |
-| `wrangler.toml` | `[[rules]] globs=["**/*.wasm"] type="Data"` (top-level only — staging/production env에 별도 등록 불요, top-level inheritance) |
+| `src/index.ts` | top-level `await initJavaParserWorkers()` (try/catch — WASM null 시 regex fallback 유지) |
+| `src/parsing/java-controller.ts` | regex (288줄) → `getJavaParser()` + `extractClasses()` 호출 (55줄) |
+| `wrangler.toml` | `[alias]` CJS redirect + `[[rules]] globs=["**/*.wasm"] type="CompiledWasm"` |
 
-## §3 WASM 번들 결정 — Plan 명시 `CompiledWasm` → 실제 `Data`
+## §3 WASM 번들 결정 — Sprint 256 F424 4-step PoC 패턴 적용
 
-| 옵션 | 동작 | Tree-sitter 호환성 |
-|------|------|------------------|
-| `type="CompiledWasm"` | wrangler가 WASM을 자동 컴파일하여 `WebAssembly.Module` 반환 | ❌ Tree-sitter `Language.load(Uint8Array)`는 raw bytes 필요 |
-| **`type="Data"`** ✅ | wrangler가 .wasm을 ArrayBuffer로 import 처리 | ✅ `new Uint8Array(buf)`로 `Language.load()` 호출 가능 |
+Sprint 255 설계에서는 `type="Data"` + Uint8Array 경로를 가정했으나, Sprint 256 PoC로 `type="CompiledWasm"` + `instantiateWasm` hook이 필수임을 확인. Sprint 257에서 이 패턴을 적용.
 
-Plan(AIF-PLAN-054)이 명시한 `CompiledWasm`은 부정확한 가정. 구현 단계에서 `Data`로 정정. 향후 wrangler API 변경 시 재평가.
+### 4-step 패턴 (reports/td-62-poc-2026-05-05.md §5 참조)
+
+| Step | 구성 | 이유 |
+|------|------|------|
+| **1. CJS alias** | `wrangler.toml [alias] "web-tree-sitter" = "../../packages/utils/node_modules/web-tree-sitter/web-tree-sitter.cjs"` | ESM `import.meta.url` crash 우회 |
+| **2. pnpm patch (3 hunks)** | `patches/web-tree-sitter@0.26.8.patch` — P1: ENVIRONMENT_IS_NODE, P2: self.location.href null guard, P3: `Language.load()` WebAssembly.Module 분기 | CJS 번들이 Workers에서 안전하게 실행되도록 |
+| **3. CompiledWasm rule** | `[[rules]] type="CompiledWasm" globs=["**/*.wasm"]` | wrangler가 build time에 WASM 사전 컴파일 → runtime `WebAssembly.instantiate(bytes)` 금지 우회 |
+| **4. instantiateWasm hook** | `Parser.init({ instantiateWasm(imports, receive) { WebAssembly.instantiate(runtimeWasm as Module, imports).then(...) } })` | CF Workers 허용 API: `instantiate(Module, imports)` (compile-from-bytes 금지) |
+
+`Language.load(javaWasm)` — Patch 3이 `Language.load(input)` 내부에 `if (input instanceof WebAssembly.Module)` 분기를 추가하여, CompiledWasm으로 import된 Module을 직접 `new WebAssembly.Instance(binary, info)`로 초기화.
+
+### 이전 설계(Sprint 255) `Data` 경로와의 차이점
+
+| 항목 | Sprint 255 (REVERTED) | Sprint 257 ✅ |
+|------|----------------------|--------------|
+| wrangler rule type | `"Data"` (ArrayBuffer) | `"CompiledWasm"` (WebAssembly.Module) |
+| Language.load 인자 | `new Uint8Array(javaWasmBuf)` | `javaWasm as WebAssembly.Module` (Patch 3) |
+| Parser.init 인자 | `{wasmBinary: bytes}` | `{instantiateWasm: hook}` (Patch 4) |
+| CJS alias | 없음 | `[alias]` (Patch 1) |
+| pnpm patch | 없음 | 3 hunks (Patch 2) |
 
 ## §4 Cold-start init 전략
 
@@ -99,16 +116,19 @@ PoC `getReturnType()`에서 `generic_type` 노드의 `text`를 그대로 반환 
 |--------|------|----------|
 | packages/utils java-parsing | `packages/utils/src/__tests__/java-parsing.test.ts` | 6건 (loader init/parser singleton/extractClasses 기본 동작) |
 | svc-ingestion java-controller | `services/svc-ingestion/src/__tests__/java-controller.test.ts` | 10건 (LPON CommonController + multi-path + Map<K,V> + basePath 정확 추출 등) |
-| svc-ingestion routes | `services/svc-ingestion/src/__tests__/routes.test.ts` | 기존 + `vi.mock("loader-workers")` 추가 (WASM ESM 회피) |
+| svc-ingestion routes | `services/svc-ingestion/src/__tests__/routes.test.ts` | 기존 유지. vitest.config.ts `wasmNullPlugin` + try/catch + initJavaParserWorkers() null guard로 WASM ESM 회피 |
 
 ## §8 위험 + 대응 (구현 후 회고)
 
 | 위험 | 대응 결과 |
 |------|---------|
-| ESBuild가 web-tree-sitter runtime WASM 자동 처리 못 함 | `[[rules]] type="Data"`로 양 wasm 파일 모두 ArrayBuffer 처리 → loader-workers.ts에서 `wasmBinary` 옵션 전달 |
-| 호출부 동기 → Tree-sitter init 비동기 | top-level await + module singleton으로 해결. cold-start 후엔 `getJavaParser()`이 동기 |
-| Vitest WASM ESM import 실패 | `vi.mock(loader-workers)` + `loader.ts` 직접 사용. PoC도 `Parser.init({locateFile})` 패턴으로 호환 |
-| F361 외 java-service.ts/java-datamodel.ts/mybatis-mapper.ts 잔존 regex | Sprint 256 후속 (P3, scope 폭주 방지) |
+| web-tree-sitter ESM `import.meta.url` crash (Sprint 255 revert 원인) | `[alias]` → CJS + pnpm patch 3 hunks (Sprint 256 F424 PoC 4-step 패턴) |
+| CF Workers runtime WASM compile 금지 | `type="CompiledWasm"` (build-time pre-compile) + `instantiateWasm` hook |
+| `Language.load()` WebAssembly.Module 미지원 | Patch hunk 3: `Language.load(input)` 내부에 `instanceof WebAssembly.Module` 분기 추가 |
+| 호출부 동기 → Tree-sitter init 비동기 | top-level await + try/catch + module singleton으로 해결 |
+| Vitest WASM ESM import 실패 | `vitest.config.ts` `wasmNullPlugin` (.wasm → `null` 반환) + `initJavaParserWorkers()` null guard (`if (!runtimeWasm) return`) |
+| `@types/node` 미설치로 `node:fs`/`node:path` TS 오류 | packages/utils + svc-ingestion devDependencies에 `@types/node` 추가, tsconfig types 배열에 `"node"` 추가 |
+| F361 외 java-service.ts/java-datamodel.ts/mybatis-mapper.ts 잔존 regex | 후속 Sprint (P3, scope 확장 방지) |
 
 ## §9 참조
 

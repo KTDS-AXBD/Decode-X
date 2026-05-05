@@ -1,4 +1,8 @@
 import { createLogger, ok, unauthorized, notFound, badRequest, verifyInternalSecret, errFromUnknown, extractRbacContext, checkPermission, logAuditLocal } from "@ai-foundry/utils";
+import { initJavaParserWorkers } from "@ai-foundry/utils/java-parsing/loader-workers";
+
+// One-time WASM init at module load — Workers top-level await runs before first request.
+await initJavaParserWorkers();
 import type { DocumentUploadedEvent } from "@ai-foundry/types";
 import type { Env } from "./env.js";
 import { handleHealth } from "./routes/health.js";

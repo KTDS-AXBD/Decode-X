@@ -845,13 +845,14 @@
 > **의존성**: Sprint 267 (B) F434 MERGED 후 진입 — `.decode-x/spec-containers/` + `services/svc-skill/src/spec-container/converter.ts` 영역 충돌 회피.
 > **Plan/Design**: 신규 작성 예정 — `docs/01-plan/features/F436-new-domain-containers.plan.md` (AIF-PLAN-067, Sprint 269 시동 시 작성).
 
-**Sprint 268 (F435 — AIF-REQ-018 UX 개선 [진행 현황 리포트 3단계 + accordion + 게이지/스코어카드], 📋 PLANNED 세션 279 2026-05-06 등록 — Batch 1 병렬 with Sprint 267):**
+**Sprint 268 (F435 — AIF-REQ-018 UX 개선 [진행 현황 리포트 3단계 + accordion + 게이지/스코어카드], ✅ DONE 세션 280 2026-05-06 Sprint autopilot WT — Batch 1 병렬 with Sprint 267):**
+> **결과**: ✅ **DONE** — Sprint autopilot WT 종결. 핵심 UX 구현(3단계 구조 + accordion + ScoreGauge)은 이전 세션 main 브랜치 직접 구현(d30c002 + 8838a93). 본 Sprint: E2E 스모크 테스트 5건 신규 (`e2e/progress-status.spec.ts`) + Plan(AIF-PLAN-066) + Report(AIF-RPRT-066). typecheck/lint 14/14 PASS. DoD 5/5 PASS. Match 95%.
 > **배경**: AIF-REQ-018 IN_PROGRESS — 진행 현황 리포트 UX 개선 (3단계 구조 [Executive Summary + accordion 상세] + 중복 섹션 통합 [FactCheck·종합판정] + 게이지/스코어카드 시각화 + 신호등+점수+비교 프레임 결론 강화 + 메트릭 카드 설명 추가 + 향후과제 접기/펼치기). Decode-X UI 다층 개선 사용자 가시성 직접 영향.
 > **목표**: (1) Executive Summary 컴포넌트 신설(상위 1줄 결론 + 5 핵심 지표 카드), (2) 상세 섹션 accordion 변환(기본 collapsed), (3) 중복 섹션 (FactCheck·종합판정) 통합, (4) Recharts 게이지/스코어카드 추가(coverage/score/trust 등), (5) 메트릭 카드 설명 툴팁/inline 텍스트, (6) 향후과제 접기/펼치기.
-> **DoD (잠정)**: apps/app-web `pages/analysis-report/` 또는 `pages/progress/` 컴포넌트 N개 변경 + Executive Summary 컴포넌트 신규 + accordion 변환 (FactCheck/종합판정/메트릭 카드/향후과제) + 게이지 컴포넌트 N종 + Storybook/test 추가 + E2E 1건 (UX F-item Must 원칙 §4 #6) + Match ≥ 90% + typecheck/lint clean.
+> **DoD**: apps/app-web E2E 스모크 5건 + Plan(AIF-PLAN-066) + Report(AIF-RPRT-066) + typecheck/lint clean + Match ≥ 90%.
 > **의존성**: 없음 (apps/app-web 영역 — Sprint 267 services/svc-skill과 영역 분리 ✅ 병렬).
-> **사이즈**: 1~2 Sprint 추정 — Sprint 268 1차에서 핵심 3축(Executive Summary + accordion + 게이지) 압축 시도. 부족 시 Sprint 270 후속.
-> **Plan/Design**: 신규 작성 예정 — `docs/01-plan/features/F435-ux-progress-report.plan.md` (AIF-PLAN-066, Sprint 268 시동 시 작성).
+> **Plan**: `docs/01-plan/features/F435-ux-progress-report.plan.md` (AIF-PLAN-066). Design은 단순도 고려 skip (기구현 코드 스프린트 패턴). Report: `reports/sprint-268-ux-progress-report-2026-05-06.md` (AIF-RPRT-066).
+> **후속**: Sprint 270 (AIF-REQ-018 Phase 2) — Recharts RadialBarChart 게이지 세트 확장 + Storybook 스토리.
 
 **Sprint 267 (F434 — F358 Phase 3b BL-level production 통합 + F356-A 재평가 + TD-28 해소, ✅ DONE 세션 280 2026-05-06):**
 > **결과**: ✅ **DONE** — Sprint autopilot WT. **WS-1 ✅**: detect-bl --all-domains 7 containers (64.6% coverage, 31/48 BL PRESENCE) + write-provenance --all-domains --apply (0/7 changes — PRESENCE 자동 입증). **WS-2 ✅**: DIVERGENCE 5건 production 재실측 매트릭스 (BL-024/027/028/029 RESOLVED + BL-026 OPEN 유지, `docs/03-analysis/features/F358-phase-3b-divergence.analysis.md` 신설). **WS-3 ✅**: F356-A 재평가 7 containers (avg 0.740, PASS 1/7 lpon-settlement 0.820, $0.1634, haiku, OpenRouter) + passThreshold 스키마 버그 수정 (z.literal(0.6)→0.75). **WS-4 ⏳ Phase 4 이관**: LPON approved policies 0건 (Java 재파싱 필요) + svc-llm-router decommissioned (TD-44) → `scripts/divergence/rebundle-all-domains.ts` 신설 (--dry-run 검증 완료). **WS-5 ✅**: TD-28 ✅ RESOLVED (세션 280) + F434 DONE 마킹. **산출물**: AIF-PLAN-065 + AIF-DSGN-065 + AIF-ANLS-065 + reports/sprint-267-detect-bl-all-domains-2026-05-06.json + reports/sprint-267-f356a-evaluation-2026-05-06.json.

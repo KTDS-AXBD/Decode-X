@@ -2,6 +2,42 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 279 (2026-05-06) — daily-check + Sprint 267 inline (TD-31/32 §8 정합성 보정)
+
+**핵심 결과**: `/ax:daily-check` 9-항목 풀 점검 → 14항목 OK + sprint-265 dirty WT 정리 + Foundry-X stale signals 11개 자동 삭제. Sprint 267 시동 사전 조사 중 **TD-32(P0) + TD-31(P1)이 이미 Sprint 228 F397/F398로 superseded됨**을 발견 (SPEC §6 라인 497/498 명시 vs §8 entry stale OPEN). 별도 Sprint 시동 없이 Master inline ~5분으로 §8 entry 양 항목 모두 ✅ RESOLVED 마킹.
+
+**진행 흐름**:
+1. `/ax:daily-check` full 모드 — Runtime/tmux/Git/Worktree/Branch/Signals/Deps/TS/Hooks/D1/SPEC/Plugin/Disk 13항목 점검
+2. 자동 보정: Foundry-X stale signals 11개 삭제 (`/tmp/sprint-signals/Foundry-X-336~347.signal`)
+3. Sprint 265 cleanup (사용자 승인) — PR #53 MERGED 확인 → `git worktree remove --force` + `git branch -D sprint/265` + GitHub remote 자동 삭제 확인
+4. 차기 작업 후보 분석 + AskUserQuestion 2건 → 사용자 선택: Sprint 267 = F362 후속 (TD-32 P0) Master inline
+5. 사전 조사 — `.decode-x/spec-containers/`, `services/svc-skill/`, SkillPackageSchema, F362 PDCA 문서, scripts/package-spec-containers.ts (470 lines)
+6. **중대 발견**: F362 endpoint(`POST /skills/from-spec-container`), converter.ts, 0008_spec_container_ref.sql migration 모두 이미 production 적용 + 7 lpon-* containers packaging 완료(AI-Ready mean 0.916) + Production handoff E2E 7/7 PASS (Sprint 228 F397/F398, 세션 230)
+7. Task list cleanup (#2~#7 deleted) + 방향 재선택: TD-32 §8 정합성 보정만 inline 처리
+8. SPEC §8 라인 1145 `TD-32` → `~~TD-32~~` ✅ RESOLVED Sprint 228 F397/F398 마킹 (취소선 + 세션 231 reference + §6 라인 498 cross-reference)
+9. AskUserQuestion 추가: TD-31(인증 모델 미스매치)도 Service Binding으로 자연 해소된 사실 확인 → 양 항목 동시 RESOLVED 마킹
+10. SPEC §8 라인 1144 `TD-31` 동일 패턴 마킹 (Service Binding `SVC_FOUNDRY_X` 우회로 갭 #5 자연 해소 명시)
+11. commit `fdd25f9` (4 lines diff, 2 insertions / 2 deletions) + push (`c0f427e..fdd25f9 main -> main`)
+
+**산출물**:
+- SPEC.md §8: TD-31 + TD-32 두 entry 모두 ✅ RESOLVED 마킹 (~~취소선~~ + 세션 231 reference, 등록일 2026-04-21 유지, risk-governance.md 표준 준수)
+- daily-check 자동 보정: stale signals 11개 정리
+
+**메타 학습**:
+- **MEMORY.md "차기 후보" 섹션 stale 사례** — TD-32가 14일 전 (세션 231) Sprint 228에서 자연 해소됐음에도 §8 entry 미갱신 상태로 stale OPEN 유지. 차기 세션 시동 전 **SPEC §8 OPEN entry vs §6 superseded 명시 cross-check**가 필수임을 입증. memory-lifecycle.md "Stale Retirement" 규칙 적용 사례.
+- **잔여 진짜 작업 후보**: F358 Phase 3b (TD-28 클로징, P1) / AIF-REQ-018 UX (P1) / AIF-REQ-036 Phase 3 (PLANNED) / 신규 도메인 BL containers (P2) / TD-52 backfill (보류 권고) / 보안 후속 4건 (사용자 콘솔)
+
+**검증 결과**:
+- ✅ daily-check 13항목 OK + 자동 보정 1건
+- ✅ Sprint 265 worktree + branch + remote 정리 완료 (S253 4-layer 표준)
+- ✅ SPEC.md edit 정상 + git diff stat 4 lines
+- ✅ commit + push 성공
+- ⏭️ 코드 변경 0건 (services/ 무수정) → CI deploy 트리거 없음 예상
+
+**총 commits**: 1건 (`fdd25f9`)
+
+---
+
 ### 세션 278 (2026-05-06) — Sprint 266 F433 (budget·purchase parser 보강 + source PoC) ✅ DONE (Master inline ~3.5h, Match 95%)
 
 **핵심 결과**: parser regex 확장(`/^(?:BL|BB|BP|BG|BS)-[A-Z]?\d{1,3}$/`)으로 BL 인식 38 → **48** + budget/purchase 합성 source 작성. detector REGISTRY 21 → **31종** (**신규 detector 0개** — withRuleId 재사용 5/6번째 도메인). detect-bl --all-domains coverage **55.3% → 64.6%** (+9.3%p, 31/48 BL). 10 BL (BB-001~005 + BP-001~005) 모두 PRESENCE 자동 입증.

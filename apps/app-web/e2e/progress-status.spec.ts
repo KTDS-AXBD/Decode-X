@@ -29,7 +29,8 @@ test.describe("진행 현황 탭 UX (F435)", () => {
       '[data-testid="executive-summary"], section:has(svg circle), .text-2xl.font-bold',
     ).first();
     // 구조가 렌더링되는지 확인 (빈 데이터여도 상태 구조는 표시됨)
-    await expect(page.locator("text=/파이프라인 현황|현황 데이터|로딩/")).toBeVisible({
+    // .first() — 페이지에 동일 텍스트 다중 등장 가능, strict mode 회피
+    await expect(page.locator("text=/파이프라인 현황|현황 데이터|로딩/").first()).toBeVisible({
       timeout: 8_000,
     });
   });

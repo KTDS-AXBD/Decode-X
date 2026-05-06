@@ -63,6 +63,12 @@ export const DETECTOR_SUPPORTED_RULES = new Set<string>([
   "BL-014",
   "BL-015",
   "BL-022",
+  // Sprint 264 (F431) — gift domain
+  "BL-G002",
+  "BL-G003",
+  "BL-G004",
+  "BL-G005",
+  "BL-G006",
 ]);
 
 /**

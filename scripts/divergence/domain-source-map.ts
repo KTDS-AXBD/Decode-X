@@ -50,9 +50,17 @@ export const DOMAIN_MAP: DomainMapping[] = [
   {
     container: "lpon-gift",
     rulesPath: `${SPEC_CONTAINER_BASE}/lpon-gift/rules/gift-rules.md`,
-    sourcePath: null,
+    // Sprint 264 (F431): gift source PoC — 5 BL G002~G006 PRESENCE 자동 입증.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/gift.ts`,
     provenancePath: `${SPEC_CONTAINER_BASE}/lpon-gift/provenance.yaml`,
-    sourceCodeStatus: "spec-only",
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "acceptGift",
+      "rejectGift",
+      "expireGift",
+      "cancelGift",
+      "transferGiftBalance",
+    ],
   },
   {
     container: "lpon-settlement",

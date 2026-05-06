@@ -2,6 +2,45 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 276 (2026-05-06) — Sprint 264 F431 (gift source PoC) ✅ DONE (Master inline ~2.5h, Match 95%)
+
+**핵심 결과**: lpon-gift 합성 source 240 lines + test 240 lines (15/15 PASS). detector REGISTRY 12 → **17종** 확장 (**신규 detector 0개** — withRuleId helper 재사용). detect-bl --all-domains coverage **31.6% → 44.7%** (+13.1%p, 17/38 BL). gift 5 BL G002~G006 모두 PRESENCE 자동 입증 (0 ABSENCE markers). Sprint 262에서 정량 분석한 도달치 정확 실증.
+
+**진행 흐름**:
+1. **Sprint 264 시작 + AskUserQuestion 2회 (총 5건 결정)** — Q1: 차기 작업 = 옵션 A gift source PoC (Recommended), Q2: 모드 = Master inline (Recommended), Q3: Scope = Code+Test 두 축 (Recommended), Q4: BL-G001 = Skip (Recommended), Q5: Provenance = Step 5 apply 즉시 (Recommended)
+2. **Plan 작성** — AIF-PLAN-062 (Design skip — refund.ts/charging.ts 일관 패턴이라 Plan 인터페이스 명시로 충분)
+3. **SPEC §6 Sprint 264 블록 + §1/§5 등록 (F431 PLANNED → DONE 전환)**
+4. **gift.ts source 240 lines** — 5 함수 (acceptGift/rejectGift/expireGift/cancelGift/transferGiftBalance) + GiftError. 합성 schema 가정 (gift_transactions/gift_ledger_entries/vouchers). ES-GIFT-001/002 보호 분기 명시 (accepted 후 만료/취소 거부)
+5. **gift.test.ts 240 lines** — 15 cases. in-memory better-sqlite3 + 합성 schema CREATE TABLE. BL-G002~G006 정상/HTTP 422/atomic rollback/insufficient balance 모두 검증. better-sqlite3 native binding rebuild 1회 필요 (NODE_MODULE_VERSION 137 vs 127 mismatch — `npm rebuild better-sqlite3`로 해소)
+6. **DOMAIN_MAP 갱신** — lpon-gift entry sourcePath null → present + underImplTargets 5 함수 화이트리스트
+7. **BL_DETECTOR_REGISTRY 5 신규 매핑** — BL-G002~G005 → withRuleId(detectStatusTransition, ...) + BL-G006 → withRuleId(detectAtomicTransaction, ...). DETECTOR_SUPPORTED_RULES 12 → 17 entries
+8. **bl-detector.test.ts +7 cases** — gift fixture PRESENCE 5건 + ABSENCE 2건 + REGISTRY 17종 검증. utils 138 → **145 PASS**
+9. **detect-bl --all-domains 실측** — 17/38 = 44.7% 정확 도달 + gift 0 ABSENCE markers (PRESENCE 입증)
+10. **provenance.yaml apply** — lpon-gift no changes (manual markers 부재 자연 결과, Sprint 263 6 containers 패턴 동일). idempotency 재실행 dry-run 0 changes 입증
+11. **typecheck 14/14 + lint 9/9 PASS**
+12. **Report MD + JSON 작성** — AIF-RPRT-062 + reports/sprint-264-gift-source-poc-2026-05-06.{json,md}
+
+**산출물 요약**:
+- `반제품-스펙/pilot-lpon-cancel/working-version/src/domain/gift.ts` (240 lines, 5 함수 + GiftError)
+- `반제품-스펙/pilot-lpon-cancel/working-version/src/__tests__/gift.test.ts` (15 cases PASS)
+- `scripts/divergence/domain-source-map.ts` lpon-gift entry sourcePath/underImplTargets
+- `packages/utils/src/divergence/bl-detector.ts` BL-G002~G006 withRuleId 5 entries
+- `packages/utils/src/divergence/provenance-cross-check.ts` SUPPORTED_RULES +5
+- `packages/utils/test/bl-detector.test.ts` +7 cases (138 → 145 PASS)
+- `docs/01-plan/features/F431-gift-source-poc.plan.md` (AIF-PLAN-062)
+- `reports/sprint-264-gift-source-poc-2026-05-06.{json,md}` (17/38 = 44.7%)
+
+**DoD 8/9 PASS + 약화 1건**: provenance apply 0 changes (manual markers 부재 자연 결과 — Sprint 263 6 containers 동일 패턴, PRESENCE evidence는 reports/*.json에 보존).
+
+**메타**: 신규 detector 0개로 +13.1%p 달성. Sprint 261(150 lines) → 262(+3 detector) → 263(430 lines) → **264(0 신규 detector + source 240 + test 240)** — 인프라 누적 재활용 패턴 정점. **Master inline 12회 연속 회피 패턴 유지** (S253~276).
+
+**차기 후보**:
+- settlement source PoC (BL-031~036, +6 BL coverage 60%+ 도달 예상)
+- LPON 35 R2 재패키징 (production smoke 직접 검증 가능, production risk)
+- F358 Phase 3 (LPON 전수 production 재추출 + DIVERGENCE 5건 + F356-A 통합)
+
+---
+
 ### 세션 274 (2026-05-05) — Sprint 262 F429 (보편 detector 3종 Threshold/Status transition/Atomic transaction) ✅ DONE (Master inline ~3.5h, Match 95%)
 
 **핵심 결과**: 보편 detector 3종 도입 + BL_DETECTOR_REGISTRY 5 → **12종** 확장 + withRuleId helper 패턴(1 detector → N BL 매핑). **Detector coverage 13.2% → 31.6%** (+18.4%p). 현 source **7 BL 모두 PRESENCE 자동 입증** (RESOLVED).

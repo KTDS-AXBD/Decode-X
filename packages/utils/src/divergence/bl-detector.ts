@@ -616,6 +616,7 @@ function withRuleId(
  * Sprint 259 (F426): BL-027/028 (refund domain stubs).
  * Sprint 260 (F427): BL-024/026/029 (refund domain temporal/expiry/cashback).
  * Sprint 262 (F429): BL-005/006/007/008/014/015/022 (universal patterns via withRuleId).
+ * Sprint 264 (F431): BL-G002/G003/G004/G005/G006 (gift domain via withRuleId).
  *
  * 미등록 BL-ID는 detector scope 외 — provenance cross-check에서 UNKNOWN 분류.
  */
@@ -636,4 +637,10 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "BL-014": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BL-014"),
   // Sprint 262 (F429) — universal atomic
   "BL-022": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BL-022"),
+  // Sprint 264 (F431) — gift domain (status transitions + atomic transfer)
+  "BL-G002": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BL-G002"),
+  "BL-G003": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BL-G003"),
+  "BL-G004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BL-G004"),
+  "BL-G005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BL-G005"),
+  "BL-G006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BL-G006"),
 };

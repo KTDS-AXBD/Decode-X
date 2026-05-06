@@ -409,8 +409,87 @@ describe("BL-022 — detectAtomicTransaction", () => {
   });
 });
 
+describe("BL-G002~G006 — gift domain (Sprint 264 F431)", () => {
+  // Sprint 264: gift.ts에 5 BL이 모두 status transition + atomic transaction 패턴.
+  // detector는 file-level PRESENCE 판정이라 5 BL 모두 같은 결과 (RESOLVED 빈 배열).
+  const giftSrc = `
+    function acceptGift(db, giftId, receiverId) {
+      const gift = db.prepare("SELECT status FROM gift_transactions WHERE id = ?").get(giftId);
+      if (gift.status !== 'pending') {
+        throw new GiftError('E422', 'already processed', 422);
+      }
+      const tx = db.transaction(() => {
+        db.prepare("UPDATE gift_transactions SET status = 'accepted' WHERE id = ?").run(giftId);
+      });
+      tx();
+    }
+  `;
+
+  it("BL-G002 (status transition pending → accepted) — PRESENCE → 0 markers", () => {
+    const sf = parseTypeScriptSource("gift.ts", giftSrc);
+    const fn = BL_DETECTOR_REGISTRY["BL-G002"];
+    expect(fn).toBeDefined();
+    const markers = fn!(sf, "gift.ts");
+    expect(markers).toEqual([]);
+  });
+
+  it("BL-G003 (status transition pending → rejected) — PRESENCE → 0 markers", () => {
+    const sf = parseTypeScriptSource("gift.ts", giftSrc);
+    const fn = BL_DETECTOR_REGISTRY["BL-G003"];
+    expect(fn).toBeDefined();
+    expect(fn!(sf, "gift.ts")).toEqual([]);
+  });
+
+  it("BL-G004 (status transition pending → expired) — PRESENCE → 0 markers", () => {
+    const sf = parseTypeScriptSource("gift.ts", giftSrc);
+    const fn = BL_DETECTOR_REGISTRY["BL-G004"];
+    expect(fn).toBeDefined();
+    expect(fn!(sf, "gift.ts")).toEqual([]);
+  });
+
+  it("BL-G005 (status transition pending → canceled) — PRESENCE → 0 markers", () => {
+    const sf = parseTypeScriptSource("gift.ts", giftSrc);
+    const fn = BL_DETECTOR_REGISTRY["BL-G005"];
+    expect(fn).toBeDefined();
+    expect(fn!(sf, "gift.ts")).toEqual([]);
+  });
+
+  it("BL-G006 (atomic transaction db.transaction()) — PRESENCE → 0 markers + ruleId tagged", () => {
+    const sf = parseTypeScriptSource("gift.ts", giftSrc);
+    const fn = BL_DETECTOR_REGISTRY["BL-G006"];
+    expect(fn).toBeDefined();
+    expect(fn!(sf, "gift.ts")).toEqual([]);
+  });
+
+  it("BL-G002 ABSENCE — status comparison only, no assignment → 1 marker with ruleId BL-G002", () => {
+    const partial = `
+      function check(db) {
+        const row = db.prepare("SELECT status FROM gift_transactions").get();
+        if (row.status !== 'pending') throw new Error('bad');
+      }
+    `;
+    const sf = parseTypeScriptSource("gift.ts", partial);
+    const markers = BL_DETECTOR_REGISTRY["BL-G002"]!(sf, "gift.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BL-G002");
+  });
+
+  it("BL-G006 ABSENCE — sequential writes (no db.transaction) → 1 marker with ruleId BL-G006", () => {
+    const partial = `
+      function nonAtomic(db) {
+        db.prepare("UPDATE vouchers SET balance = balance - 100").run();
+        db.prepare("UPDATE vouchers SET balance = balance + 100").run();
+      }
+    `;
+    const sf = parseTypeScriptSource("gift.ts", partial);
+    const markers = BL_DETECTOR_REGISTRY["BL-G006"]!(sf, "gift.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BL-G006");
+  });
+});
+
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 12 detectors (Sprint 262 expanded)", () => {
+  it("exposes 17 detectors (Sprint 264 F431 — gift 5 BL added)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "BL-005",
       "BL-006",
@@ -424,6 +503,11 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "BL-027",
       "BL-028",
       "BL-029",
+      "BL-G002",
+      "BL-G003",
+      "BL-G004",
+      "BL-G005",
+      "BL-G006",
     ]);
   });
 

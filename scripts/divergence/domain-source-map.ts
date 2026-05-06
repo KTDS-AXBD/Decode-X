@@ -65,9 +65,15 @@ export const DOMAIN_MAP: DomainMapping[] = [
   {
     container: "lpon-settlement",
     rulesPath: `${SPEC_CONTAINER_BASE}/lpon-settlement/rules/settlement-rules.md`,
-    sourcePath: null,
+    sourcePath: `${DOMAIN_SOURCE_BASE}/settlement.ts`,
     provenancePath: `${SPEC_CONTAINER_BASE}/lpon-settlement/provenance.yaml`,
-    sourceCodeStatus: "spec-only",
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "runBatchSettlement",
+      "processCalculations",
+      "getSettlementCheck",
+      "applyFeeAdjustment",
+    ],
   },
   {
     container: "lpon-budget",

@@ -69,6 +69,11 @@ export const DETECTOR_SUPPORTED_RULES = new Set<string>([
   "BL-G004",
   "BL-G005",
   "BL-G006",
+  // Sprint 265 (F432) — settlement domain
+  "BL-033",
+  "BL-034",
+  "BL-035",
+  "BL-036",
 ]);
 
 /**

@@ -1,0 +1,820 @@
+{
+  "detectorVersion": "2.1.0",
+  "measuredAt": "2026-05-06T07:58:01.641Z",
+  "mode": "all-domains",
+  "totalContainers": 7,
+  "totalBLs": 48,
+  "totalApplicableDetectors": 31,
+  "coverage": 0.6458333333333334,
+  "results": [
+    {
+      "container": "lpon-refund",
+      "rulesPath": ".decode-x/spec-containers/lpon-refund/rules/refund-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/refund.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 11,
+      "parsedBLs": [
+        "BL-020",
+        "BL-021",
+        "BL-022",
+        "BL-023",
+        "BL-024",
+        "BL-025",
+        "BL-026",
+        "BL-027",
+        "BL-028",
+        "BL-029",
+        "BL-030"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "BL-020",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-020",
+            "condition": "거래 환불 요청이 접수될 때",
+            "criteria": "거래의 환불 가능 여부(rfndPsbltyYn) = 'Y'",
+            "outcome": "환불 처리를 진행한다",
+            "exception": "rfndPsbltyYn = 'N'이면 환불 거부"
+          }
+        },
+        {
+          "ruleId": "BL-021",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-021",
+            "condition": "환불 가능 여부 체크를 통과한 경우",
+            "criteria": "환불 가능 조건 충족",
+            "outcome": "입금 처리를 진행한다",
+            "exception": "조건 미충족 시 환불 거부"
+          }
+        },
+        {
+          "ruleId": "BL-022",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-022",
+            "condition": "입금이 정상적으로 완료된 경우",
+            "criteria": "입금 프로세스가 에러 없이 종료됨",
+            "outcome": "환불 완료 처리한다",
+            "exception": "[미정의]"
+          }
+        },
+        {
+          "ruleId": "BL-023",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-023",
+            "condition": "입금이 실패한 경우",
+            "criteria": "입금 프로세스에서 오류 발생",
+            "outcome": "에러를 반환한다",
+            "exception": "[미정의]"
+          }
+        },
+        {
+          "ruleId": "BL-024",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-024",
+            "condition": "미사용 상품권 환불 요청 시",
+            "criteria": "구매 후 7일 이내 환불 요청",
+            "outcome": "전액 환불 처리한다",
+            "exception": "7일 초과 시 환불 불가"
+          }
+        },
+        {
+          "ruleId": "BL-025",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-025",
+            "condition": "기 사용 상품권 잔액 환불 요청 시",
+            "criteria": "전체 금액의 60% 이상 사용",
+            "outcome": "잔액 환불이 가능하다",
+            "exception": "60% 미만 사용 시 잔액 환불 불가"
+          }
+        },
+        {
+          "ruleId": "BL-026",
+          "detected": 1,
+          "markers": [
+            {
+              "ruleId": "BL-026",
+              "severity": "MEDIUM",
+              "pattern": "missing_alt_branch",
+              "sourceFile": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/refund.ts",
+              "sourceLine": 0,
+              "detail": "BL-026: No cashback/discount branch with reject/alt outcome found. Expected: if (voucher.cashback_amount > 0) { throw new RefundError('CASHBACK_REFUND_DENIED', ...) } or equivalent ALT outcome.",
+              "confidence": 0.65,
+              "autoDetected": true
+            }
+          ],
+          "rule": {
+            "id": "BL-026",
+            "condition": "캐시백 또는 할인보전 금액 환불 요청 시",
+            "criteria": "캐시백 및 할인보전 금액에 해당",
+            "outcome": "현금 환불 불가",
+            "exception": "[미정의 — 포인트 전환 등 대안 검토 필요]"
+          }
+        },
+        {
+          "ruleId": "BL-027",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-027",
+            "condition": "계좌 오류로 환불 실패 시",
+            "criteria": "환불계좌 오류 발생",
+            "outcome": "소비자가 환불계좌 재등록 또는 고객센터 수기 접수로 환불 처리한다",
+            "exception": "[미정의]"
+          }
+        },
+        {
+          "ruleId": "BL-028",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-028",
+            "condition": "환불 요청 시 제외금액 산정이 필요할 때",
+            "criteria": "환불요청액에서 제외금액을 차감",
+            "outcome": "입금액 = 환불요청액 − 제외금액으로 계산한다",
+            "exception": "제외금액이 0이면 전액 환불"
+          }
+        },
+        {
+          "ruleId": "BL-029",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-029",
+            "condition": "유효기간 만료 상품권 환불 요청 시",
+            "criteria": "원칙적으로 환불 불가",
+            "outcome": "환불을 거부한다. 단, 강성 민원 시 강제환불 기능을 활용한다",
+            "exception": "[미정의]"
+          }
+        },
+        {
+          "ruleId": "BL-030",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-030",
+            "condition": "상품권 유효기간 연장 요청 시",
+            "criteria": "소진공 요청사항에 해당",
+            "outcome": "유효기간 연장 불가",
+            "exception": "[미정의]"
+          }
+        }
+      ],
+      "crossCheck": [
+        {
+          "ruleId": "BL-024",
+          "manualStatus": "RESOLVED",
+          "autoDetectionCount": 0,
+          "recommendedStatus": "RESOLVED",
+          "detectorSupported": true,
+          "reason": "Status consistent — RESOLVED in both manual and auto."
+        },
+        {
+          "ruleId": "BL-028",
+          "manualStatus": "RESOLVED",
+          "autoDetectionCount": 0,
+          "recommendedStatus": "RESOLVED",
+          "detectorSupported": true,
+          "reason": "Status consistent — RESOLVED in both manual and auto."
+        },
+        {
+          "ruleId": "BL-026",
+          "manualStatus": "OPEN",
+          "autoDetectionCount": 1,
+          "recommendedStatus": "OPEN",
+          "detectorSupported": true,
+          "reason": "Manual=OPEN and auto-detector confirms 1 occurrences. Status consistent."
+        },
+        {
+          "ruleId": "BL-029",
+          "manualStatus": "RESOLVED",
+          "autoDetectionCount": 0,
+          "recommendedStatus": "RESOLVED",
+          "detectorSupported": true,
+          "reason": "Status consistent — RESOLVED in both manual and auto."
+        },
+        {
+          "ruleId": "BL-027",
+          "manualStatus": "RESOLVED",
+          "autoDetectionCount": 0,
+          "recommendedStatus": "RESOLVED",
+          "detectorSupported": true,
+          "reason": "Status consistent — RESOLVED in both manual and auto."
+        }
+      ],
+      "summary": {
+        "totalMarkers": 1,
+        "presenceCount": 5,
+        "absenceCount": 1,
+        "notApplicableCount": 5
+      }
+    },
+    {
+      "container": "lpon-charge",
+      "rulesPath": ".decode-x/spec-containers/lpon-charge/rules/charge-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/charging.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 8,
+      "parsedBLs": [
+        "BL-001",
+        "BL-002",
+        "BL-003",
+        "BL-004",
+        "BL-005",
+        "BL-006",
+        "BL-007",
+        "BL-008"
+      ],
+      "applicableDetectors": 4,
+      "perRule": [
+        {
+          "ruleId": "BL-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-001",
+            "condition": "충전 요청 시 출금계좌에서 출금을 시도하는 경우",
+            "criteria": "출금계좌 잔액 ≥ 충전 요청 금액",
+            "outcome": "출금 처리를 진행한다",
+            "exception": "잔액 부족 시 출금 실패 에러를 반환한다"
+          }
+        },
+        {
+          "ruleId": "BL-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-002",
+            "condition": "출금이 정상적으로 완료된 경우",
+            "criteria": "출금 프로세스가 에러 없이 종료됨",
+            "outcome": "충전 완료 처리한다",
+            "exception": "—"
+          }
+        },
+        {
+          "ruleId": "BL-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-003",
+            "condition": "출금이 실패한 경우",
+            "criteria": "출금 프로세스에서 오류 발생",
+            "outcome": "에러를 반환하고 충전 프로세스를 중단한다",
+            "exception": "—"
+          }
+        },
+        {
+          "ruleId": "BL-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-004",
+            "condition": "출금 요청 후 응답이 타임아웃된 경우",
+            "criteria": "출금 요청 후 응답 대기 시간 > 타임아웃 기준",
+            "outcome": "5분 후 출금상태조회 API를 호출하여 처리 결과를 확인하고 후속 처리를 진행한다",
+            "exception": "—"
+          }
+        },
+        {
+          "ruleId": "BL-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-005",
+            "condition": "이용자가 충전을 요청하는 경우",
+            "criteria": "충전 요청 금액 ≤ 충전 가능 금액 한도",
+            "outcome": "충전 확정 처리를 진행한다",
+            "exception": "한도 초과 시 충전 거부"
+          }
+        },
+        {
+          "ruleId": "BL-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-006",
+            "condition": "회사가 충전을 요청하는 경우",
+            "criteria": "충전 요청 금액 ≤ 회사별 충전 한도",
+            "outcome": "충전 원장 처리를 진행한다",
+            "exception": "한도 초과 시 충전 거부"
+          }
+        },
+        {
+          "ruleId": "BL-007",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-007",
+            "condition": "이용자가 포인트 충전을 요청한 경우",
+            "criteria": "포인트 충전 요청이 유효하고 한도 내",
+            "outcome": "포인트 충전 확정 처리한다",
+            "exception": "유효하지 않거나 한도 초과 시 거부"
+          }
+        },
+        {
+          "ruleId": "BL-008",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-008",
+            "condition": "자동충전 금액이 설정될 때",
+            "criteria": "blceCondAmt(잔액 조건), ymdCondAmt(일자 조건), condSmAmt(복합 조건) 중 하나 이상 충족",
+            "outcome": "조건에 따라 자동충전 금액(stngAmt)이 산정되어 적용된다",
+            "exception": "조건 미충족 시 자동충전 미실행"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 4,
+        "absenceCount": 0,
+        "notApplicableCount": 4
+      }
+    },
+    {
+      "container": "lpon-payment",
+      "rulesPath": ".decode-x/spec-containers/lpon-payment/rules/payment-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/payment.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 7,
+      "parsedBLs": [
+        "BL-013",
+        "BL-014",
+        "BL-015",
+        "BL-016",
+        "BL-017",
+        "BL-018",
+        "BL-019"
+      ],
+      "applicableDetectors": 2,
+      "perRule": [
+        {
+          "ruleId": "BL-013",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-013",
+            "condition": "회사가 충전 환불을 요청하는 경우",
+            "criteria": "환불 요청이 유효함",
+            "outcome": "충전 환불 처리를 진행한다",
+            "exception": "유효하지 않은 요청 시 거부"
+          }
+        },
+        {
+          "ruleId": "BL-014",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-014",
+            "condition": "결제가 정상적으로 완료된 경우",
+            "criteria": "결제 완료 상태 확인 (status='PAID')",
+            "outcome": "결제취소가 가능하다 (부분취소, 망취소 포함)",
+            "exception": "결제 미완료(PENDING/FAILED) 시 취소 불가 (E409)"
+          }
+        },
+        {
+          "ruleId": "BL-015",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-015",
+            "condition": "결제 금액이 50,000원 이상인 경우",
+            "criteria": "결제 요청 금액 ≥ 50,000원",
+            "outcome": "SMS를 발송한다",
+            "exception": "50,000원 미만 시 SMS 미발송"
+          }
+        },
+        {
+          "ruleId": "BL-016",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-016",
+            "condition": "결제 승인 취소 요청이 접수된 경우",
+            "criteria": "취소 요청이 정상적으로 접수됨",
+            "outcome": "카드사에 취소 요청을 전달하고 거래 기록을 업데이트한다",
+            "exception": "접수 실패 시 에러 반환"
+          }
+        },
+        {
+          "ruleId": "BL-017",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-017",
+            "condition": "가맹점주가 온누리앱에서 결제내역 확인 후 취소버튼을 클릭한 경우",
+            "criteria": "취소버튼 클릭 이벤트 발생",
+            "outcome": "BC카드 MPM으로 결제 취소전문을 전송한다",
+            "exception": "전송 실패 시 재시도"
+          }
+        },
+        {
+          "ruleId": "BL-018",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-018",
+            "condition": "QR 결제 취소 요청이 생성된 경우",
+            "criteria": "가맹점주가 취소 승인 처리를 완료",
+            "outcome": "취소 처리가 완료된다",
+            "exception": "가맹점주 미승인 시 취소 보류"
+          }
+        },
+        {
+          "ruleId": "BL-019",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-019",
+            "condition": "탈퇴 후 결제 또는 매입 취소가 발생한 경우",
+            "criteria": "탈퇴 회원의 취소 발생",
+            "outcome": "AP06(지급형 상품권 조회/지급) API를 통해 취소 처리한다",
+            "exception": "API 실패 시 수기처리"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 2,
+        "absenceCount": 0,
+        "notApplicableCount": 5
+      }
+    },
+    {
+      "container": "lpon-gift",
+      "rulesPath": ".decode-x/spec-containers/lpon-gift/rules/gift-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/gift.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "BL-G001",
+        "BL-G002",
+        "BL-G003",
+        "BL-G004",
+        "BL-G005",
+        "BL-G006"
+      ],
+      "applicableDetectors": 5,
+      "perRule": [
+        {
+          "ruleId": "BL-G001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-G001",
+            "condition": "발송자가 선물 발송 요청 시",
+            "criteria": "발송 금액 ≤ 발송자 잔액 AND 수신자 계정이 유효",
+            "outcome": "발송자 잔액에서 선물 금액 차감 후 `gift_transactions` 생성, `status=pending`",
+            "exception": "잔액 부족 또는 수신자 미존재 시 에러 반환"
+          }
+        },
+        {
+          "ruleId": "BL-G002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-G002",
+            "condition": "수신자가 선물 수락 요청 시",
+            "criteria": "`gift_transactions.status = 'pending'` AND `expires_at > NOW()`",
+            "outcome": "수신자 잔액 증가 + `status → 'accepted'` + `GiftAccepted` 이벤트",
+            "exception": "이미 수락/거절/만료/취소된 경우 HTTP 422"
+          }
+        },
+        {
+          "ruleId": "BL-G003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-G003",
+            "condition": "수신자가 선물 거절 요청 시",
+            "criteria": "`gift_transactions.status = 'pending'`",
+            "outcome": "발송자 잔액 복원 + `status → 'rejected'` + `GiftRejected` 이벤트",
+            "exception": "이미 처리된 선물 → HTTP 422"
+          }
+        },
+        {
+          "ruleId": "BL-G004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-G004",
+            "condition": "선물 만료 시점 도달 시",
+            "criteria": "`expires_at < NOW()` AND `status = 'pending'`",
+            "outcome": "발송자 잔액 복원 + `status → 'expired'` + `GiftExpired` 이벤트",
+            "exception": "이미 수락된 경우 만료 처리 불가 (ES-GIFT-001)"
+          }
+        },
+        {
+          "ruleId": "BL-G005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-G005",
+            "condition": "발송자가 선물 취소 요청 시",
+            "criteria": "`status = 'pending'` (수락 전)",
+            "outcome": "발송자 잔액 즉시 복원 + `status → 'canceled'` + `GiftCanceled` 이벤트",
+            "exception": "`status = 'accepted'` 이면 취소 불가 → HTTP 422 (ES-GIFT-002)"
+          }
+        },
+        {
+          "ruleId": "BL-G006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-G006",
+            "condition": "수신자 선물 수락으로 잔액 이전 시",
+            "criteria": "발송자 차감 + 수신자 증가 단일 원자 처리",
+            "outcome": "`gift_ledger_entries` 2행 (debit_sender + credit_receiver) 원자 삽입",
+            "exception": "한쪽 실패 시 전체 롤백 + `GiftTransferFailed` (ES-GIFT-003)"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 5,
+        "absenceCount": 0,
+        "notApplicableCount": 1
+      }
+    },
+    {
+      "container": "lpon-settlement",
+      "rulesPath": ".decode-x/spec-containers/lpon-settlement/rules/settlement-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/settlement.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "BL-031",
+        "BL-032",
+        "BL-033",
+        "BL-034",
+        "BL-035",
+        "BL-036"
+      ],
+      "applicableDetectors": 4,
+      "perRule": [
+        {
+          "ruleId": "BL-031",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-031",
+            "condition": "충전 또는 환불 거래 발생 시",
+            "criteria": "충전 건수, 금액, 할인금액, 환불 건수, 금액, 수수료 집계",
+            "outcome": "충전/환불 내역 집계하여 `settlement_summaries` 갱신",
+            "exception": "거래 0건 시 집계 생략"
+          }
+        },
+        {
+          "ruleId": "BL-032",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-032",
+            "condition": "포인트 충전 또는 환불 거래 발생 시",
+            "criteria": "포인트 충전 건수/금액, 환불 건수/금액 집계",
+            "outcome": "포인트 충전/환불 현황을 `settlement_summaries`에 집계",
+            "exception": "거래 0건 시 집계 생략"
+          }
+        },
+        {
+          "ruleId": "BL-033",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-033",
+            "condition": "BATCH_004 실행 시",
+            "criteria": "스케줄 또는 수동 실행",
+            "outcome": "`calculations`, `calculation_transactions` 조회 후 반복 갱신",
+            "exception": "배치 실패 시 알림 발송 (ES-SETTLE-001, 003)"
+          }
+        },
+        {
+          "ruleId": "BL-034",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-034",
+            "condition": "계산 데이터 처리 필요 시",
+            "criteria": "`calculations`, `calculation_transactions` 존재",
+            "outcome": "거래 데이터 반복 처리 후 두 테이블 갱신",
+            "exception": "데이터 미존재 시 스킵"
+          }
+        },
+        {
+          "ruleId": "BL-035",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-035",
+            "condition": "특정 기간 산정 점검 데이터 조회 요청 시",
+            "criteria": "기간 파라미터 유효",
+            "outcome": "해당 기간 산정 점검 데이터 반환",
+            "exception": "기간 파라미터 무효 → 에러"
+          }
+        },
+        {
+          "ruleId": "BL-036",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-036",
+            "condition": "수수료 산출 시",
+            "criteria": "`fee_reflected IN ('Y', 'N')` **[Fill: ES-SETTLE-002]**",
+            "outcome": "Y → 수수료 차감 후 정산 / N → 전액 정산",
+            "exception": "NULL 또는 이외 값 → `INVALID_FEE_FLAG` 에러"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 4,
+        "absenceCount": 0,
+        "notApplicableCount": 2
+      }
+    },
+    {
+      "container": "lpon-budget",
+      "rulesPath": ".decode-x/spec-containers/lpon-budget/rules/budget-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/budget.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 5,
+      "parsedBLs": [
+        "BB-001",
+        "BB-002",
+        "BB-003",
+        "BB-004",
+        "BB-005"
+      ],
+      "applicableDetectors": 5,
+      "perRule": [
+        {
+          "ruleId": "BB-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BB-001",
+            "condition": "회사가 예산을 배정 요청하는 경우",
+            "criteria": "배정 금액 > 0 AND 배정 금액 ≤ 회사 최대 한도",
+            "outcome": "예산 원장(`budget_ledger`)에 배정 기록 생성, 예산 잔액 갱신",
+            "exception": "한도 초과 또는 음수 금액 시 거부, E422 반환"
+          }
+        },
+        {
+          "ruleId": "BB-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BB-002",
+            "condition": "직원이 상품권 충전 요청 시 예산 차감",
+            "criteria": "해당 직원의 예산 잔액 ≥ 충전 요청 금액",
+            "outcome": "예산 잔액 차감 후 lpon-charge 충전 프로세스 진행",
+            "exception": "예산 부족 시 충전 거부 (E422 BUDGET_INSUFFICIENT)"
+          }
+        },
+        {
+          "ruleId": "BB-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BB-003",
+            "condition": "예산 잔액이 임계치 이하로 감소할 때",
+            "criteria": "예산 잔액 ≤ 배정 금액의 10%",
+            "outcome": "담당자(company admin)에게 소진 임박 알림(LMS) 발송",
+            "exception": "알림 설정 비활성 시 미발송"
+          }
+        },
+        {
+          "ruleId": "BB-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BB-004",
+            "condition": "예산 배정 기간이 종료되는 경우",
+            "criteria": "이월 정책(`rollover_yn`)이 'Y'로 설정됨",
+            "outcome": "미사용 잔액을 다음 기간으로 이월 처리",
+            "exception": "`rollover_yn = 'N'` 시 잔액 소멸(status=EXPIRED)"
+          }
+        },
+        {
+          "ruleId": "BB-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BB-005",
+            "condition": "예산 차감 후 충전 프로세스가 실패한 경우",
+            "criteria": "외부 출금 API 오류 또는 충전 확정 실패 확인",
+            "outcome": "차감된 예산을 즉시 원복(복구), 잔액 롤백",
+            "exception": "복구 실패 시 수기처리 에스컬레이션 (ES-BUDGET-002)"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 5,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "lpon-purchase",
+      "rulesPath": ".decode-x/spec-containers/lpon-purchase/rules/purchase-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/purchase.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 5,
+      "parsedBLs": [
+        "BP-001",
+        "BP-002",
+        "BP-003",
+        "BP-004",
+        "BP-005"
+      ],
+      "applicableDetectors": 5,
+      "perRule": [
+        {
+          "ruleId": "BP-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BP-001",
+            "condition": "이용자가 상품권 구매를 요청하는 경우",
+            "criteria": "구매 금액 > 0 AND 구매 금액 ≤ 1회 구매 한도",
+            "outcome": "결제 처리 진행 후 신규 상품권(`vouchers`) 발행",
+            "exception": "한도 초과 시 E422 반환"
+          }
+        },
+        {
+          "ruleId": "BP-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BP-002",
+            "condition": "구매 결제가 정상 완료된 경우",
+            "criteria": "결제 프로세스가 에러 없이 종료됨",
+            "outcome": "상품권 발행 (`vouchers` INSERT, purchased_at 설정, expires_at = purchased_at + 유효기간)",
+            "exception": "결제 실패 시 상품권 미발행"
+          }
+        },
+        {
+          "ruleId": "BP-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BP-003",
+            "condition": "이용자의 월별 구매 한도 검증 시",
+            "criteria": "해당 월 누적 구매 금액 + 신규 금액 ≤ 월 구매 한도",
+            "outcome": "구매 허용 진행",
+            "exception": "한도 초과 시 E422 MONTHLY_LIMIT_EXCEEDED"
+          }
+        },
+        {
+          "ruleId": "BP-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BP-004",
+            "condition": "동일 구매 요청이 재전송된 경우",
+            "criteria": "`purchaseRequestId`가 `purchase_transactions`에 이미 존재하고 `status = 'completed'`",
+            "outcome": "기존 voucher_id를 반환 (이중 발행 방지)",
+            "exception": "`status = 'processing'` 시 HTTP 409 + PURCHASE_IN_PROGRESS"
+          }
+        },
+        {
+          "ruleId": "BP-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BP-005",
+            "condition": "구매 완료 후 7일 이내 미사용 환불 요청 시",
+            "criteria": "상품권 잔액 = 액면가 (미사용) AND 구매일로부터 7일 이내",
+            "outcome": "전액 환불 처리 (BL-024 연동, lpon-charge 취소 흐름 준용)",
+            "exception": "7일 초과 또는 일부 사용 시 환불 불가"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 5,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    }
+  ]
+}

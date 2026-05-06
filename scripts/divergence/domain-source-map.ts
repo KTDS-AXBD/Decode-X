@@ -78,16 +78,32 @@ export const DOMAIN_MAP: DomainMapping[] = [
   {
     container: "lpon-budget",
     rulesPath: `${SPEC_CONTAINER_BASE}/lpon-budget/rules/budget-rules.md`,
-    sourcePath: null,
+    // Sprint 266 (F433): budget source PoC — 5 BL BB-001~005 PRESENCE 자동 입증.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/budget.ts`,
     provenancePath: `${SPEC_CONTAINER_BASE}/lpon-budget/provenance.yaml`,
-    sourceCodeStatus: "spec-only",
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "allocateBudget",
+      "deductForCharge",
+      "checkLowBalanceAlert",
+      "rolloverBudget",
+      "refundDeductedBudget",
+    ],
   },
   {
     container: "lpon-purchase",
     rulesPath: `${SPEC_CONTAINER_BASE}/lpon-purchase/rules/purchase-rules.md`,
-    sourcePath: null,
+    // Sprint 266 (F433): purchase source PoC — 5 BL BP-001~005 PRESENCE 자동 입증.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/purchase.ts`,
     provenancePath: `${SPEC_CONTAINER_BASE}/lpon-purchase/provenance.yaml`,
-    sourceCodeStatus: "spec-only",
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "requestPurchase",
+      "completePurchase",
+      "checkMonthlyLimit",
+      "handleIdempotentPurchase",
+      "refundUnusedPurchase",
+    ],
   },
 ];
 

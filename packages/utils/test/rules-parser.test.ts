@@ -82,6 +82,26 @@ describe("rules-parser — parseRulesMarkdown", () => {
     expect(rules[0]?.exception).toBe("d");
   });
 
+  it("matches budget BB-NNN prefix (Sprint 266 F433)", () => {
+    const md = `| ID | condition | criteria | outcome | exception |
+|----|-----------|----------|---------|-----------|
+| BB-001 | a | b | c | d |
+| BB-005 | a | b | c | d |
+`;
+    const rules = parseRulesMarkdown(md);
+    expect(rules.map((r) => r.id)).toEqual(["BB-001", "BB-005"]);
+  });
+
+  it("matches purchase BP-NNN prefix (Sprint 266 F433)", () => {
+    const md = `| ID | condition | criteria | outcome | exception |
+|----|-----------|----------|---------|-----------|
+| BP-001 | a | b | c | d |
+| BP-004 | a | b | c | d |
+`;
+    const rules = parseRulesMarkdown(md);
+    expect(rules.map((r) => r.id)).toEqual(["BP-001", "BP-004"]);
+  });
+
   it("rejects invalid prefix patterns (BL- without digits, BL-A only)", () => {
     const md = `| ID | condition | criteria | outcome | exception |
 |----|-----------|----------|---------|-----------|

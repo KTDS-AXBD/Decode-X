@@ -74,6 +74,18 @@ export const DETECTOR_SUPPORTED_RULES = new Set<string>([
   "BL-034",
   "BL-035",
   "BL-036",
+  // Sprint 266 (F433) — budget domain
+  "BB-001",
+  "BB-002",
+  "BB-003",
+  "BB-004",
+  "BB-005",
+  // Sprint 266 (F433) — purchase domain
+  "BP-001",
+  "BP-002",
+  "BP-003",
+  "BP-004",
+  "BP-005",
 ]);
 
 /**

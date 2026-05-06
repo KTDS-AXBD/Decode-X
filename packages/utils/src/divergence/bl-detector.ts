@@ -648,4 +648,16 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "BL-034": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BL-034"),
   "BL-035": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "BL-035"),
   "BL-036": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BL-036"),
+  // Sprint 266 (F433) — budget domain (threshold × 3, status × 1, atomic × 1)
+  "BB-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "BB-001"),
+  "BB-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "BB-002"),
+  "BB-003": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "BB-003"),
+  "BB-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BB-004"),
+  "BB-005": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BB-005"),
+  // Sprint 266 (F433) — purchase domain (threshold × 3, status × 2)
+  "BP-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "BP-001"),
+  "BP-002": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BP-002"),
+  "BP-003": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "BP-003"),
+  "BP-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BP-004"),
+  "BP-005": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "BP-005"),
 };

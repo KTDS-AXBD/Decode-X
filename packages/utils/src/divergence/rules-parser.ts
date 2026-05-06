@@ -15,7 +15,8 @@
 import type { BLRule } from "@ai-foundry/types";
 
 // F428 (Sprint 261): optional 1자 prefix (gift `BL-G001`) + 1~3 digit
-const BL_ID_PATTERN = /^BL-[A-Z]?\d{1,3}$/;
+// F433 (Sprint 266): BB/BP/BG/BS prefix 추가 (budget/purchase/gift-alt/settlement-alt)
+const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS)-[A-Z]?\d{1,3}$/;
 const HEADER_PATTERN =
   /\|\s*ID\s*\|\s*condition[^|]*\|\s*criteria[^|]*\|\s*outcome[^|]*\|\s*exception[^|]*\|/i;
 const SEPARATOR_PATTERN = /^\s*\|[\s:|-]+\|\s*$/;

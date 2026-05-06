@@ -2,6 +2,56 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 278 (2026-05-06) — Sprint 266 F433 (budget·purchase parser 보강 + source PoC) ✅ DONE (Master inline ~3.5h, Match 95%)
+
+**핵심 결과**: parser regex 확장(`/^(?:BL|BB|BP|BG|BS)-[A-Z]?\d{1,3}$/`)으로 BL 인식 38 → **48** + budget/purchase 합성 source 작성. detector REGISTRY 21 → **31종** (**신규 detector 0개** — withRuleId 재사용 5/6번째 도메인). detect-bl --all-domains coverage **55.3% → 64.6%** (+9.3%p, 31/48 BL). 10 BL (BB-001~005 + BP-001~005) 모두 PRESENCE 자동 입증.
+
+**진행 흐름**:
+1. AskUserQuestion 2건 — BL Coverage = 10 BL 전체 (Recommended), 모드 = Master inline (Recommended)
+2. Plan AIF-PLAN-064 작성 + SPEC §6 등록
+3. parser regex 확장 (BL_ID_PATTERN: BB/BP/BG/BS prefix 추가) + rules-parser.test.ts +2 cases
+4. budget.ts 200 lines (allocateBudget BB-001 / deductForCharge BB-002 / checkLowBalanceAlert BB-003 / rolloverBudget BB-004 / refundDeductedBudget BB-005 + BudgetError)
+5. budget.test.ts 13 cases (in-memory better-sqlite3, 합성 schema budget_ledger)
+6. purchase.ts 220 lines (requestPurchase BP-001 / completePurchase BP-002 / checkMonthlyLimit BP-003 / handleIdempotentPurchase BP-004 / refundUnusedPurchase BP-005 + PurchaseError)
+7. purchase.test.ts 13 cases (합성 schema purchase_transactions/vouchers)
+8. DOMAIN_MAP 양쪽 활성화 (lpon-budget + lpon-purchase) + underImplTargets 5 함수씩
+9. BL_DETECTOR_REGISTRY +10 entries (BB×5 + BP×5 withRuleId)
+10. DETECTOR_SUPPORTED_RULES 21 → 31 + bl-detector.test.ts budget/purchase fixture +6 cases + REGISTRY size 31 검증
+11. detect-bl --all-domains → **31/48 = 64.6%** + 10 BL 0 ABSENCE markers
+12. write-provenance.ts --container lpon-budget --apply + lpon-purchase --apply (자연 0 changes)
+13. typecheck 14/14 + lint 9/9 + utils 151 → 159 PASS
+
+**산출물 요약**:
+- `반제품-스펙/.../src/domain/budget.ts` (200 lines, 5 함수 + BudgetError)
+- `반제품-스펙/.../src/domain/purchase.ts` (220 lines, 5 함수 + PurchaseError)
+- `반제품-스펙/.../src/__tests__/budget.test.ts` (13 cases PASS)
+- `반제품-스펙/.../src/__tests__/purchase.test.ts` (13 cases PASS)
+- `packages/utils/src/divergence/rules-parser.ts` BL_ID_PATTERN 확장
+- `packages/utils/src/divergence/bl-detector.ts` REGISTRY +10
+- `packages/utils/src/divergence/provenance-cross-check.ts` SUPPORTED_RULES +10
+- `packages/utils/test/{rules-parser,bl-detector}.test.ts` +8 cases (utils 151→159)
+- `scripts/divergence/domain-source-map.ts` lpon-budget + lpon-purchase 활성화
+- `docs/01-plan/features/F433-budget-purchase-poc.plan.md` (AIF-PLAN-064)
+- `reports/sprint-266-budget-purchase-poc-2026-05-06.{json,md}` (AIF-RPRT-064)
+
+**BL 신뢰도**:
+- Budget: BB-001/002/003 Threshold 70% + BB-004 Status 75% + BB-005 Atomic 85%
+- Purchase: BP-001/003/005 Threshold 70% + BP-002/004 Status 75%
+- 평균 **74%**
+
+**메타**: Sprint 261(150 lines) → 262(+3 detector) → 263(430 lines) → 264(0 detector + gift 480 lines) → 265(0 detector + settlement 340 lines) → **266(parser regex 1 line + budget 200 + purchase 220 + tests 530)** — 6 Sprint 연속 인프라 누적 재활용 패턴 정점. **Master inline 13회 연속 회피 패턴 유지** (S253~278).
+
+**잔여 spec-only 0건** — 7 containers 전부 source 활성화 완료 (refund/charge/payment/gift/settlement/budget/purchase). 신규 도메인 추가 시 동일 패턴 재사용 가능 (parser 매칭 + source 작성 + DOMAIN_MAP/REGISTRY 매핑).
+
+**차기 후보**:
+- F358 Phase 3 (LPON 전수 production 재추출 + DIVERGENCE 5건 + F356-A 통합) ~1 Sprint
+- 보안 후속 (1Password 갱신, op signin 정상화)
+- TD-52 backfill (P3, R2 zip 재read 2~3h)
+
+---
+
+
+
 ### 세션 277 (2026-05-06) — Sprint 265 F432 (settlement source PoC) ✅ MERGED PR #53 (Sprint autopilot WT, Match 95%)
 
 **핵심 결과**: lpon-settlement 합성 source 170 lines + test 14 cases. detector REGISTRY 17 → **21종** (**신규 detector 0개** — withRuleId 재사용 4번째 도메인). detect-bl --all-domains coverage **44.7% → 55.3%** (+10.6%p, 21/38 BL). settlement 4 BL BL-033/034/035/036 모두 PRESENCE 자동 입증 (0 ABSENCE markers).

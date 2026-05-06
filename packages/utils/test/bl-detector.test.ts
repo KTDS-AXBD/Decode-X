@@ -488,9 +488,82 @@ describe("BL-G002~G006 — gift domain (Sprint 264 F431)", () => {
   });
 });
 
+describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
+  // budget.ts/purchase.ts 모두 status check + threshold + atomic transaction 패턴.
+  // file-level PRESENCE 판정으로 동일 파일 내 모든 BL 동일 결과.
+  const budgetSrc = `
+    function allocateBudget(db, companyId, amount, MAX_LIMIT) {
+      if (amount > MAX_LIMIT) throw new Error('limit');
+      const tx = db.transaction(() => {
+        db.prepare("INSERT INTO budget_ledger (status) VALUES ('active')").run();
+      });
+      tx();
+    }
+    function rollover(db, ledgerId) {
+      const row = db.prepare("SELECT status, rollover_yn FROM budget_ledger").get();
+      if (row.status !== 'active') throw new Error('bad');
+      if (row.rollover_yn === 'Y') {
+        db.prepare("UPDATE budget_ledger SET status = 'rolled_over'").run();
+      }
+    }
+  `;
+
+  it("BB-001 (threshold) — PRESENCE → 0 markers", () => {
+    const sf = parseTypeScriptSource("budget.ts", budgetSrc);
+    expect(BL_DETECTOR_REGISTRY["BB-001"]!(sf, "budget.ts")).toEqual([]);
+  });
+
+  it("BB-004 (status transition rollover_yn) — PRESENCE → 0 markers", () => {
+    const sf = parseTypeScriptSource("budget.ts", budgetSrc);
+    expect(BL_DETECTOR_REGISTRY["BB-004"]!(sf, "budget.ts")).toEqual([]);
+  });
+
+  it("BB-005 (atomic transaction) — PRESENCE → 0 markers", () => {
+    const sf = parseTypeScriptSource("budget.ts", budgetSrc);
+    expect(BL_DETECTOR_REGISTRY["BB-005"]!(sf, "budget.ts")).toEqual([]);
+  });
+
+  const purchaseSrc = `
+    const PER_PURCHASE_LIMIT = 500_000;
+    function requestPurchase(db, userId, amount) {
+      if (amount > PER_PURCHASE_LIMIT) throw new Error('limit');
+      const row = db.prepare("SELECT status FROM purchase_transactions").get();
+      if (row.status !== 'pending') throw new Error('bad');
+      db.prepare("UPDATE purchase_transactions SET status = 'completed'").run(userId, amount);
+    }
+  `;
+
+  it("BP-001 (threshold per-purchase limit) — PRESENCE → 0 markers", () => {
+    const sf = parseTypeScriptSource("purchase.ts", purchaseSrc);
+    expect(BL_DETECTOR_REGISTRY["BP-001"]!(sf, "purchase.ts")).toEqual([]);
+  });
+
+  it("BP-002 (status transition pending → completed) — PRESENCE → 0 markers", () => {
+    const sf = parseTypeScriptSource("purchase.ts", purchaseSrc);
+    expect(BL_DETECTOR_REGISTRY["BP-002"]!(sf, "purchase.ts")).toEqual([]);
+  });
+
+  it("BB-001 ABSENCE — no threshold + UPPERCASE_CONSTANT → 1 marker with ruleId BB-001", () => {
+    const partial = `
+      function f(amount) {
+        return amount + 1;
+      }
+    `;
+    const sf = parseTypeScriptSource("budget.ts", partial);
+    const markers = BL_DETECTOR_REGISTRY["BB-001"]!(sf, "budget.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BB-001");
+  });
+});
+
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 21 detectors (Sprint 265 F432 — settlement 4 BL added)", () => {
+  it("exposes 31 detectors (Sprint 266 F433 — budget 5 + purchase 5 BL added)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
+      "BB-001",
+      "BB-002",
+      "BB-003",
+      "BB-004",
+      "BB-005",
       "BL-005",
       "BL-006",
       "BL-007",
@@ -512,6 +585,11 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "BL-G004",
       "BL-G005",
       "BL-G006",
+      "BP-001",
+      "BP-002",
+      "BP-003",
+      "BP-004",
+      "BP-005",
     ]);
   });
 

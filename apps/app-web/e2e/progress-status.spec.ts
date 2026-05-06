@@ -4,7 +4,7 @@ import { test, expect } from "@playwright/test";
 
 test.describe("진행 현황 탭 UX (F435)", () => {
   test("status tab renders Executive Summary section", async ({ page }) => {
-    await page.goto("/analysis?view=status");
+    await page.goto("/analysis-report?view=status");
 
     // 페이지 헤딩 확인
     await expect(
@@ -18,7 +18,7 @@ test.describe("진행 현황 탭 UX (F435)", () => {
   });
 
   test("status tab shows Executive Summary with score or verdict", async ({ page }) => {
-    await page.goto("/analysis?view=status");
+    await page.goto("/analysis-report?view=status");
 
     // Level 1 Executive Summary — 네트워크 응답을 기다림
     await page.waitForLoadState("networkidle");
@@ -35,7 +35,7 @@ test.describe("진행 현황 탭 UX (F435)", () => {
   });
 
   test("pipeline section accordion can be toggled", async ({ page }) => {
-    await page.goto("/analysis?view=status");
+    await page.goto("/analysis-report?view=status");
     await page.waitForLoadState("networkidle");
 
     // "파이프라인 현황" CollapsibleSection — defaultOpen=true이므로 처음엔 열려있음
@@ -51,7 +51,7 @@ test.describe("진행 현황 탭 UX (F435)", () => {
   });
 
   test("fact-check section is present", async ({ page }) => {
-    await page.goto("/analysis?view=status");
+    await page.goto("/analysis-report?view=status");
     await page.waitForLoadState("networkidle");
 
     // FactCheck 커버리지 분석 섹션
@@ -62,7 +62,7 @@ test.describe("진행 현황 탭 UX (F435)", () => {
   });
 
   test("detailed report section is present", async ({ page }) => {
-    await page.goto("/analysis?view=status");
+    await page.goto("/analysis-report?view=status");
     await page.waitForLoadState("networkidle");
 
     // Level 3 상세 분석 보고서 CollapsibleSection

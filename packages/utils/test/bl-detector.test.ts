@@ -489,7 +489,7 @@ describe("BL-G002~G006 — gift domain (Sprint 264 F431)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 17 detectors (Sprint 264 F431 — gift 5 BL added)", () => {
+  it("exposes 21 detectors (Sprint 265 F432 — settlement 4 BL added)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "BL-005",
       "BL-006",
@@ -503,6 +503,10 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "BL-027",
       "BL-028",
       "BL-029",
+      "BL-033",
+      "BL-034",
+      "BL-035",
+      "BL-036",
       "BL-G002",
       "BL-G003",
       "BL-G004",
@@ -572,5 +576,105 @@ divergenceMarkers:
     const bl028 = recs.find((r) => r.ruleId === "BL-028");
     expect(bl028?.recommendedStatus).toBe("OPEN");
     expect(bl028?.autoDetectionCount).toBe(1);
+  });
+});
+
+describe("BL-033~036 — settlement domain (Sprint 265 F432)", () => {
+  // settlement.ts: runBatchSettlement + processCalculations 둘 다 db.transaction() 사용 (BL-033/034 atomic).
+  // getSettlementCheck MAX_PERIOD_DAYS 비교 (BL-035 threshold).
+  // applyFeeAdjustment fee_reflected === 'Y'/'N' 분기 (BL-036 status transition).
+  const settlementSrc = `
+    const MAX_PERIOD_DAYS = 60;
+
+    function runBatchSettlement(db, periodStart, periodEnd) {
+      const tx = db.transaction(() => {
+        db.prepare("UPDATE settlement_summaries SET charge_count = ? WHERE period_start = ?").run(5, periodStart);
+      });
+      tx();
+    }
+
+    function processCalculations(db, calculationIds) {
+      for (const id of calculationIds) {
+        const tx = db.transaction(() => {
+          db.prepare("UPDATE calculations SET status = 'processed' WHERE id = ?").run(id);
+          db.prepare("UPDATE calculation_transactions SET processed = 1 WHERE calculation_id = ?").run(id);
+        });
+        tx();
+      }
+    }
+
+    function getSettlementCheck(db, fromDate, toDate) {
+      const dayCount = Math.ceil((new Date(toDate) - new Date(fromDate)) / 86400000);
+      if (dayCount > MAX_PERIOD_DAYS) {
+        throw new SettlementError('E422-THRESHOLD', 'exceeded', 422);
+      }
+      return db.prepare("SELECT * FROM calculations WHERE period_start >= ?").all(fromDate);
+    }
+
+    function applyFeeAdjustment(db, summaryId, feeReflected) {
+      const status = feeReflected;
+      if (status === 'Y') {
+        db.prepare("UPDATE settlement_summaries SET fee_reflected = 'Y' WHERE id = ?").run(summaryId);
+        return { status: 'applied', feeReflected: 'Y' };
+      }
+      if (status === 'N') {
+        db.prepare("UPDATE settlement_summaries SET fee_reflected = 'N' WHERE id = ?").run(summaryId);
+        return { status: 'gross', feeReflected: 'N' };
+      }
+      throw new SettlementError('E422-FEE', 'INVALID_FEE_FLAG', 422);
+    }
+  `;
+
+  it("BL-033 (BATCH atomic — db.transaction) — PRESENCE → 0 markers", () => {
+    const sf = parseTypeScriptSource("settlement.ts", settlementSrc);
+    const fn = BL_DETECTOR_REGISTRY["BL-033"];
+    expect(fn).toBeDefined();
+    expect(fn!(sf, "settlement.ts")).toEqual([]);
+  });
+
+  it("BL-034 (반복 atomic — db.transaction per row) — PRESENCE → 0 markers", () => {
+    const sf = parseTypeScriptSource("settlement.ts", settlementSrc);
+    const fn = BL_DETECTOR_REGISTRY["BL-034"];
+    expect(fn).toBeDefined();
+    expect(fn!(sf, "settlement.ts")).toEqual([]);
+  });
+
+  it("BL-035 (기간 threshold MAX_PERIOD_DAYS) — PRESENCE → 0 markers", () => {
+    const sf = parseTypeScriptSource("settlement.ts", settlementSrc);
+    const fn = BL_DETECTOR_REGISTRY["BL-035"];
+    expect(fn).toBeDefined();
+    expect(fn!(sf, "settlement.ts")).toEqual([]);
+  });
+
+  it("BL-036 (fee_reflected Y/N status transition) — PRESENCE → 0 markers", () => {
+    const sf = parseTypeScriptSource("settlement.ts", settlementSrc);
+    const fn = BL_DETECTOR_REGISTRY["BL-036"];
+    expect(fn).toBeDefined();
+    expect(fn!(sf, "settlement.ts")).toEqual([]);
+  });
+
+  it("BL-033 ABSENCE — sequential writes (no db.transaction) → 1 marker", () => {
+    const noTxSrc = `
+      function runBatch(db, start, end) {
+        db.prepare("UPDATE calculations SET status = 'done'").run();
+        db.prepare("UPDATE settlement_summaries SET charge_count = 1").run();
+      }
+    `;
+    const sf = parseTypeScriptSource("settlement.ts", noTxSrc);
+    const markers = BL_DETECTOR_REGISTRY["BL-033"]!(sf, "settlement.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BL-033");
+  });
+
+  it("BL-035 ABSENCE — no threshold constant/comparison → 1 marker", () => {
+    const noThresholdSrc = `
+      function getSettlementCheck(db, fromDate, toDate) {
+        return db.prepare("SELECT * FROM calculations").all();
+      }
+    `;
+    const sf = parseTypeScriptSource("settlement.ts", noThresholdSrc);
+    const markers = BL_DETECTOR_REGISTRY["BL-035"]!(sf, "settlement.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BL-035");
   });
 });

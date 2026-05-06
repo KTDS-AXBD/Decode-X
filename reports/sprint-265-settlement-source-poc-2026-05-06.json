@@ -1,0 +1,85 @@
+{
+  "sprint": 265,
+  "feature": "F432",
+  "title": "settlement source PoC — BL-033/034/035/036 PRESENCE 입증",
+  "date": "2026-05-06",
+  "session": 277,
+  "plan_ref": "AIF-PLAN-063",
+  "report_ref": "AIF-RPRT-063",
+  "approach": "Sprint 264(F431 gift) 패턴 동일 적용. 신규 detector 0개, withRuleId 재사용으로 settlement 4 BL PRESENCE 자동 입증.",
+  "coverage": {
+    "before": { "detected": 17, "total": 38, "rate": "44.7%" },
+    "after": { "detected": 21, "total": 38, "rate": "55.3%" },
+    "delta": "+10.6%p"
+  },
+  "bl_results": {
+    "BL-033": "PRESENCE",
+    "BL-034": "PRESENCE",
+    "BL-035": "PRESENCE",
+    "BL-036": "PRESENCE",
+    "absence_markers": 0
+  },
+  "registry": {
+    "before": 17,
+    "after": 21,
+    "new_entries": ["BL-033", "BL-034", "BL-035", "BL-036"]
+  },
+  "detector_pattern": {
+    "BL-033": "detectAtomicTransaction (runBatchSettlement db.transaction)",
+    "BL-034": "detectAtomicTransaction (processCalculations per-row db.transaction)",
+    "BL-035": "detectThresholdCheck (dayCount > MAX_PERIOD_DAYS, UPPERCASE_CONSTANT)",
+    "BL-036": "detectStatusTransition (status === 'Y'/'N', status: 'applied'/'gross')"
+  },
+  "test_results": {
+    "settlement_test": { "total": 14, "passed": 14, "failed": 0 },
+    "bl_detector_test": { "total": 151, "passed": 151, "failed": 0 },
+    "typecheck": "PASS",
+    "lint": "PASS"
+  },
+  "files_created": [
+    "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/settlement.ts",
+    "반제품-스펙/pilot-lpon-cancel/working-version/src/__tests__/settlement.test.ts",
+    "docs/01-plan/features/F432-settlement-source-poc.plan.md",
+    "docs/02-design/features/F432-settlement-source-poc.design.md",
+    "reports/sprint-265-settlement-source-poc-2026-05-06.json",
+    "reports/sprint-265-settlement-source-poc-2026-05-06.md"
+  ],
+  "files_modified": [
+    "scripts/divergence/domain-source-map.ts",
+    "packages/utils/src/divergence/bl-detector.ts",
+    "packages/utils/src/divergence/provenance-cross-check.ts",
+    "packages/utils/test/bl-detector.test.ts"
+  ],
+  "dod": {
+    "settlement_ts_4_functions": true,
+    "settlement_test_14_cases": true,
+    "domain_map_activated": true,
+    "registry_4_new": true,
+    "detector_supported_rules_21": true,
+    "bl_detector_test_6_settlement_cases": true,
+    "coverage_55_3pct": true,
+    "provenance_apply_0_changes": true,
+    "match_rate_ge90": true
+  },
+  "risk_notes": {
+    "R1": "BL-033/034 같은 파일에 atomic transaction 1회 → 양쪽 모두 PRESENCE. 의도된 동작 (Sprint 264 BL-G002~G005 동일 패턴).",
+    "R2": "BL-035 threshold: dayCount (THRESHOLD_VAR_PATTERN count 매칭) > MAX_PERIOD_DAYS (UPPERCASE_CONSTANT) 패턴으로 해소.",
+    "R3": "BL-036 fee_reflected: status 정규화 변수 도입 (const status = feeReflected) + status: 'applied'/'gross' PropertyAssignment으로 해소.",
+    "R4": "Master 독립 검증: detect-bl 실행 + ls reports/ 실파일 확인으로 evidence 첨부 완결."
+  },
+  "detect_bl_output": {
+    "command": "npx tsx scripts/divergence/detect-bl.ts --all-domains",
+    "result": "21/38 = 55.3% (lpon-settlement 0 ABSENCE)"
+  },
+  "provenance_apply": {
+    "command": "npx tsx scripts/divergence/write-provenance.ts --container lpon-settlement --apply",
+    "result": "0 changes (manual markers 부재 자연 패턴, Sprint 263/264 동일)"
+  },
+  "confidence": {
+    "BL-033": 0.85,
+    "BL-034": 0.85,
+    "BL-035": 0.70,
+    "BL-036": 0.75,
+    "average": 0.79
+  }
+}

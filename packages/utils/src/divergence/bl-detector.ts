@@ -643,4 +643,9 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "BL-G004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BL-G004"),
   "BL-G005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BL-G005"),
   "BL-G006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BL-G006"),
+  // Sprint 265 (F432) — settlement domain (atomic × 2, threshold × 1, status × 1)
+  "BL-033": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BL-033"),
+  "BL-034": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BL-034"),
+  "BL-035": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "BL-035"),
+  "BL-036": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BL-036"),
 };

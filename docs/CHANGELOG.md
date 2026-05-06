@@ -2,6 +2,41 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 280 (2026-05-06) — Sprint Pipeline 267+268 Batch 1 ✅ 47분 완료 (2 PR MERGED, main `f504329`)
+
+**핵심 결과**: `/ax:sprint-pipeline 267 268` Batch 1 병렬 실행 — Sprint 268 F435 (UX) + Sprint 267 F434 (F358 Phase 3b BL-level production 통합) 양쪽 MERGED. 평균 Match 95%, feature coverage 5/5, Phase 7 SKIP, Phase 8 session-end 완결. **TD-28 ✅ RESOLVED** (Tree-sitter Java 파서 14주 누적 작업의 정점). Master fix-forward 3회 (S268 URL + S268 strict mode + S267 conflict).
+
+**Sprint 268 (F435 UX, autopilot Sonnet 4.6 17분 + Master fix-forward 2회 → MERGED PR #54 `763fb05`)**:
+- autopilot의 정확한 인식: AIF-REQ-018 컴포넌트(Executive Summary + ScoreGauge + CollapsibleSection + Recharts BarChart/LineChart)는 **2026-03-10 commit `d30c002`에서 이미 구현 완료**된 상태 → 잔여 E2E 5 cases + Plan AIF-PLAN-066 + Report AIF-RPRT-066 추가로 적절히 종결
+- Master fix-forward #1: E2E URL `/analysis` → `/analysis-report` 5건 정정 (autopilot이 `app.tsx:160` redirect 미인지)
+- Master fix-forward #2: Playwright strict mode `.first()` 추가 (`text=/파이프라인 현황|.../` 2개 요소 매칭)
+- 메타 학습: `feedback_sprint_pre_registration_audit.md` 신규 정착 — Master 사전 등록 시 코드 실재 점검 필수 (autopilot의 "기구현" claim을 즉시 거짓 의심하는 것이 항상 옳지 않음)
+
+**Sprint 267 (F434 Phase 3b, autopilot Sonnet 4.6 47분 + Master conflict 1회 → MERGED PR #55 `0136244`)**:
+- detect-bl --all-domains 7 containers 31/48 = **64.6%** + write-provenance 0/7 changes (PRESENCE 자동 입증)
+- DIVERGENCE 5건 production 재실측 매트릭스 (4 RESOLVED + 1 OPEN BL-026)
+- F356-A 재평가 7 containers (avg 0.740, $0.1634, haiku, OpenRouter) + passThreshold 스키마 수정 (0.6→0.75)
+- `rebundle-all-domains.ts` wrapper 신설 (WS-4 LPON R2 실 실행은 Phase 4 이관 — acknowledged gap)
+- TD-28 ✅ RESOLVED, F358 ✅ DONE (Phase 1 Sprint 254 → Phase 2 Sprint 257 → Phase 3a Sprint 258 → Phase 3b Sprint 267)
+- Master conflict #3: `.sprint-context` Sprint 268 squash merge 후 stale → 양쪽 cat 재작성 + merge commit `a2f57dc`
+- 산출물: AIF-PLAN-065 + AIF-DSGN-065 + AIF-ANLS-065 + AIF-RPRT-065 + reports/sprint-267-*.json 2개
+
+**Phase 6 통합 분석 (Master inline)**:
+- 통합 문서 `docs/03-analysis/features/phase-3b-pipeline.analysis.md` (AIF-ANLS-066) 작성
+- 평균 Match Rate 95% (267: 95% / 268: 95%) → Phase 7 SKIP
+- E2E feature coverage 5/5 (100%), HIGH gap 0건, 품질 anti-pattern 0건
+- gap-detector agent 미사용 (token 효율 — autopilot Reports 본문 기반 inline 분석)
+
+**메타 학습 (feedback memory + lifecycle)**:
+- **stale `.sprint-context` 8회차 누적**: 병렬 Sprint 시동 시 양쪽 worktree 모두 동시 stale 패턴 추가 발견. `feedback_sprint_stale_context.md`에 S280 8회차 entry 추가. rules/development-workflow.md 이미 승격 완료 (S269)
+- **Sprint 사전 등록 audit**: 신규 `feedback_sprint_pre_registration_audit.md` 정착 — `/ax:todo plan` Pipeline 구성 시 코드 실재 grep/find 점검 필수
+- **양 Sprint 병렬 merge conflict 표준 절차**: `.sprint-context` cat 재작성 + `git merge --no-edit` (자동 SPEC.md merge OK)
+
+**잔여**:
+- WS-4 LPON R2 실 실행 (`scripts/divergence/rebundle-all-domains.ts` 실행 + 5/5 HTTP 200 검증) — 별도 Sprint 또는 ad-hoc
+- Sprint 269 F436 (신규 도메인 BL containers) — Batch 2 순차, Sprint 267 의존 해소됨, Sprint 시동 가능
+- 보안 후속 3건 (1Password CLI signin / Master PW 변경 / CHANGELOG 평문 prefix)
+
 ### 세션 279 (2026-05-06) — daily-check + 정합성 보정 8건 + Sprint 267~269 사전 등록 (todo plan)
 
 **핵심 결과**: `/ax:daily-check` 9-항목 풀 점검 → 14항목 OK + sprint-265 dirty WT 정리 + Foundry-X stale signals 11개 자동 삭제. Sprint 267 시동 사전 조사 중 **TD-32(P0) + TD-31(P1)이 이미 Sprint 228 F397/F398로 superseded됨**을 발견 (SPEC §6 라인 497/498 명시 vs §8 entry stale OPEN). 별도 Sprint 시동 없이 Master inline ~5분으로 §8 entry 양 항목 모두 ✅ RESOLVED 마킹.

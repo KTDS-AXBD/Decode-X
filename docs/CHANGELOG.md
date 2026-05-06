@@ -2,7 +2,7 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
-### 세션 279 (2026-05-06) — daily-check + Sprint 267 inline (TD-31/32 §8 정합성 보정)
+### 세션 279 (2026-05-06) — daily-check + 정합성 보정 8건 + Sprint 267~269 사전 등록 (todo plan)
 
 **핵심 결과**: `/ax:daily-check` 9-항목 풀 점검 → 14항목 OK + sprint-265 dirty WT 정리 + Foundry-X stale signals 11개 자동 삭제. Sprint 267 시동 사전 조사 중 **TD-32(P0) + TD-31(P1)이 이미 Sprint 228 F397/F398로 superseded됨**을 발견 (SPEC §6 라인 497/498 명시 vs §8 entry stale OPEN). 별도 Sprint 시동 없이 Master inline ~5분으로 §8 entry 양 항목 모두 ✅ RESOLVED 마킹.
 
@@ -35,6 +35,62 @@
 - ⏭️ 코드 변경 0건 (services/ 무수정) → CI deploy 트리거 없음 예상
 
 **총 commits**: 1건 (`fdd25f9`)
+
+---
+
+### 세션 279 (2026-05-06, 2nd half) — `/ax:todo plan` 추가 작업
+
+**핵심 결과**: 1차 종료(`fdd25f9`) 후 사용자가 `/ax:todo plan` 호출 → 정합성 보정 추가 6건 + Sprint 267~269 사전 등록 + Pipeline 구성. **메타 패턴 재확장 적용** — TD-31/32 stale 보정 직후 동일 패턴(F-item entry stale)이 4건 더 발견되어 일관 처리.
+
+**추가 정합성 보정 6건** (commit `40c8b2c`):
+1. **F358 Phase 2** (line 778): ~~PARTIAL_FAIL~~ → ✅ DONE Sprint 257 PR #52 (세션 269)
+2. **F361** (line 779): ~~PARTIAL_FAIL~~ → ✅ DONE Sprint 257 PR #52 (세션 269)
+3. **AIF-REQ-040** (line 1080): PLANNED → DONE (F413 Sprint 241 MERGED 세션 254)
+4. **Sprint 245 헤더**: 📋 PLANNED → ✅ MERGED PR #42 (F414 TD-56 fix)
+5. **Sprint 246 헤더**: 📋 PLANNED → ✅ MERGED PR #41 (F415 TD-55 fix)
+6. **Sprint 247 헤더**: 📋 PLANNED → ✅ DONE 우회 경로 (F416 single eval loop)
+
+**Sprint 267~269 사전 등록** (Pipeline 계획):
+
+| Sprint | F-item | 트랙 | 영역 | 우선 | 사이즈 | 의존성 |
+|--------|--------|------|------|------|--------|--------|
+| **267** | F434 | B — F358 Phase 3b (TD-28 클로징) | `services/svc-skill/`, `scripts/`, `.decode-x/`, `infra/migrations/db-skill/` | P1 | ~1 Sprint | Phase 3a Sprint 258 ✅ |
+| **268** | F435 | C — AIF-REQ-018 UX 개선 (3단계 + accordion + 게이지) | `apps/app-web/` | P1 | 1~2 Sprint | 없음 (병렬 가능) |
+| **269** | F436 | F — 신규 도메인 BL containers (도메인 추후 결정) | `.decode-x/spec-containers/`, `converter.ts` | P2 | ~1 Sprint | Sprint 267 MERGED 의존 |
+
+**Pipeline 배치 구성**:
+- **Batch 1 (병렬)**: Sprint 267 (services/svc-skill 영역) + Sprint 268 (apps/app-web 영역) — 영역 분리 ✅
+- **Batch 2 (순차)**: Sprint 269 (.decode-x 영역) — Sprint 267 MERGED 후
+
+**다음 세션 시동 명령**:
+- 병렬 WT autopilot: `/ax:sprint-pipeline 267 268`
+- 순차 (Sprint 267 MERGED 후): `/ax:sprint 269`
+- 또는 단일 Master inline: `/ax:sprint 267`
+
+**진행 흐름** (todo plan):
+1. Step 1 작업 현황 수집 — SPEC F-items 5건 🔧 + 9건 📋 / GH Issues 0건 / Marker.io 0건
+2. **추가 stale 발견 (메타 패턴 재확장)** — F358 Phase 2/F361/AIF-REQ-040/F414~F416 6건 stale 잔존
+3. Step 2 피드백 처리 — SKIP (피드백 0건)
+4. Step 3 후보군 분석 → AskUserQuestion 트랙 선택 (multiSelect: A+B+C+F)
+5. Step 4-5 Sprint 그룹화 + 의존성 매트릭스 분석 (파일 충돌 / D1 / 모듈 의존)
+6. AskUserQuestion 시동 방식 (Recommended: Master inline A 먼저 → 나머지 다음 세션)
+7. AskUserQuestion 신규 도메인 (Recommended: 추후 결정)
+8. SPEC §6 정합성 보정 6건 + Sprint 267~269 신규 블록 등록 (line 840 위)
+9. commit `40c8b2c` (29 insertions, 6 deletions) + push (`e005194..40c8b2c`)
+
+**메타 학습 강화**:
+- **MEMORY.md "차기 후보" stale 패턴이 일회성 아님** — TD-31/32 보정 직후 동일 패턴 6건 추가 발견. 이는 Sprint MERGED 시 SPEC §6 ✅ 마킹은 자동이지만 §7/§8 cross-link entry 갱신은 누락 가능성 상시 존재함을 입증.
+- **차기 세션 시동 전 통상 절차**: SPEC §6 superseded 명시 ↔ §7 REQ status ↔ §8 TD entry ↔ Sprint 헤더 4축 cross-check 필수. memory-lifecycle.md "Stale Retirement" 규칙의 정량 적용 사례.
+- **Pipeline plan 가치**: 단순 "다음 작업 후보 나열" → 사전 SPEC 등록 + 의존성 분석 + Pipeline 명령까지 자동화로 다음 세션 시동 효율 극대화.
+
+**검증 결과**:
+- ✅ SPEC.md edit 8건 정상 (정합성 보정 6 + Sprint 신규 3 entry)
+- ✅ commit + push 성공
+- ✅ Pipeline 명령 사용자 확인
+- ⏭️ 코드 변경 0건 → CI deploy 트리거 없음 예상
+
+**총 commits (todo plan)**: 1건 (`40c8b2c`)
+**누적 commits (세션 279 전체)**: 3건 (`fdd25f9` + `e005194` + `40c8b2c`)
 
 ---
 

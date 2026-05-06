@@ -2,6 +2,62 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 277 (2026-05-06) — Sprint 265 F432 (settlement source PoC) ✅ MERGED PR #53 (Sprint autopilot WT, Match 95%)
+
+**핵심 결과**: lpon-settlement 합성 source 170 lines + test 14 cases. detector REGISTRY 17 → **21종** (**신규 detector 0개** — withRuleId 재사용 4번째 도메인). detect-bl --all-domains coverage **44.7% → 55.3%** (+10.6%p, 21/38 BL). settlement 4 BL BL-033/034/035/036 모두 PRESENCE 자동 입증 (0 ABSENCE markers).
+
+**진행 흐름**:
+1. **AskUserQuestion 2건** — BL Coverage = 핵심 4건 (BL-031/032 upsert detector 모호 skip), 모드 = Sprint autopilot WT
+2. **Plan AIF-PLAN-063 사전 작성 + SPEC §6 등록** — Master에서 commit `606bf71` push
+3. **WT 생성** (`bash -i -c "sprint 265"`) — `/home/sinclair/work/worktrees/Decode-X/sprint-265` (branch `sprint/265`)
+4. **stale .sprint-context F_ITEMS 7회차 패턴 발현** (S269 표준 보정 절차) — signal/.sprint-context 양쪽 sed/cat 재작성 (F358-phase-2,F361 → F432)
+5. **autopilot 시동** — tmux pane `%71` ccs --model sonnet → `/ax:sprint-autopilot` 주입
+6. **autopilot 진행 추적** — Master Monitor 도구 task `bb279jpiv` persistent
+   - STATUS=CREATED → IN_PROGRESS → MERGING(CHECKPOINT=session-end, PR #53, MATCH=95) → MERGED
+7. **Master pull** (`git pull --ff-only origin main` → commit `9eb3507`) + production health check (7 workers /health all 200) + Deploy Workers Services run #25419953353 12 jobs SUCCESS
+
+**산출물 (PR #53 commit 9eb3507)**:
+- `반제품-스펙/pilot-lpon-cancel/working-version/src/domain/settlement.ts` (170 lines, 4 함수 + SettlementError)
+- `반제품-스펙/pilot-lpon-cancel/working-version/src/__tests__/settlement.test.ts` (14 cases PASS)
+- `scripts/divergence/domain-source-map.ts` lpon-settlement entry sourcePath/underImplTargets
+- `packages/utils/src/divergence/bl-detector.ts` BL-033/034 atomic + BL-035 threshold + BL-036 status withRuleId 4 entries
+- `packages/utils/src/divergence/provenance-cross-check.ts` SUPPORTED_RULES +4 (17→21)
+- `packages/utils/test/bl-detector.test.ts` settlement fixture +6 cases (utils 145→151 PASS)
+- `docs/01-plan/features/F432-settlement-source-poc.plan.md` (AIF-PLAN-063)
+- `docs/04-report/features/sprint-265-F432.report.md` (AIF-RPRT-063)
+- `reports/sprint-265-settlement-source-poc-2026-05-06.{json,md}` (21/38 = 55.3%)
+
+**BL 신뢰도**:
+| BL | Detector | 신뢰도 |
+|----|----------|--------|
+| BL-033 | detectAtomicTransaction (runBatchSettlement db.transaction) | 85% |
+| BL-034 | detectAtomicTransaction (processCalculations per-row db.transaction) | 85% |
+| BL-035 | detectThresholdCheck (dayCount > MAX_PERIOD_DAYS=60) | 70% |
+| BL-036 | detectStatusTransition (fee_reflected Y/N + status transition) | 75% |
+
+평균 79% (Sprint 264 77% 대비 +2%p).
+
+**메타**: Sprint 261(150 lines) → 262(+3 detector) → 263(430 lines) → 264(0 detector + gift 480 lines) → **265(0 detector + settlement 340 lines)** — 인프라 누적 재활용 5 Sprint 연속 성공.
+
+**stale F_ITEMS 7회차 패턴**: rules/development-workflow.md S269 승격 후 표준 보정 절차 즉시 적용 — bashrc `sprint()` 함수 fix 후보 잔존 (근본 fix 미수행).
+
+**검증**:
+- working-version vitest run settlement.test.ts → 14/14 PASS
+- packages/utils pnpm test → 145 → 151 PASS (+6)
+- typecheck/lint clean
+- CI Run #25419953376 SUCCESS
+- Deploy Workers Services Run #25419953353 12/12 jobs SUCCESS
+- 7 production workers /health all HTTP 200
+
+**차기 후보**:
+- F358 Phase 3 (LPON 전수 production 재추출 + DIVERGENCE 5건 + F356-A 통합) ~1 Sprint
+- budget·purchase parser 보강 후 source PoC (현재 parser 미인식)
+- LPON 35 R2 재패키징 (production smoke 직접 검증)
+
+---
+
+
+
 ### 세션 276 (2026-05-06) — Sprint 264 F431 (gift source PoC) ✅ DONE (Master inline ~2.5h, Match 95%)
 
 **핵심 결과**: lpon-gift 합성 source 240 lines + test 240 lines (15/15 PASS). detector REGISTRY 12 → **17종** 확장 (**신규 detector 0개** — withRuleId helper 재사용). detect-bl --all-domains coverage **31.6% → 44.7%** (+13.1%p, 17/38 BL). gift 5 BL G002~G006 모두 PRESENCE 자동 입증 (0 ABSENCE markers). Sprint 262에서 정량 분석한 도달치 정확 실증.

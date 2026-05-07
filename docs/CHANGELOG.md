@@ -2,6 +2,29 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 281 (2026-05-08) — Daily-check + Sprint 267/268 WT/branch cleanup ✅ DONE
+
+**핵심 결과**: `/ax:daily-check` (full 모드) 실행 + 세션 280 Pipeline 잔존 자원 표준 절차 자동 정리. 코드 변경 0건, 점검·정리 전용 짧은 세션.
+
+**Daily-check 결과 (full 모드, 18 항목)**:
+- ✅ Runtime / tmux 3.6a (S307 fix 유지) / Git Sync clean / Dependencies / TypeScript 14 tasks pass / Hooks 3 executable / D1 5 DBs 29 migrations (latest db-skill 0013) / Plugin Drift 0 / 모델 SSOT (sonnet 4-6 / haiku 4-5 / opus 4-7) / dist Orphan 0 / Sonnet alias=SSOT
+- ✅ SPEC.md "마지막 실측" 수치 모두 일치 (Workers 12 svc-* / D1 29 / latest db-skill 0013)
+- ⏭️ 콘텐츠 sync (hero.md/landing.tsx/footer.tsx Decode-X 미존재, Foundry-X 패턴) SKIP
+- ⚠️ CLAUDE.md `7 Workers` 하드코딩 2건 (line 22 Status + line 65 트리 주석) — 의도적(`SPEC.md §2 참조` 명시), drift 위험 낮음
+
+**자동 보정 (3건, rules/development-workflow.md "Git 고아 리소스 방지" L4 정상 동작)**:
+- Sprint 268 stale `.sprint-context` discard (`.sprint-context` 8회차 stale 패턴, S269 rules/ 승격 절차 일치)
+- Sprint 267/268 worktree remove (PR #54/#55 MERGED gh API 검증 후 squash-aware cleanup)
+- sprint/267, sprint/268 local branch -D (origin gone + squash merged 양쪽 충족)
+
+**메타 관찰**:
+- 세션 280 Pipeline 후 자원 cleanup이 표준 절차로 무수동 진행 — Master 직접 수동 보정이 표준 path가 됨 (squash merge는 `git branch --merged` 미감지라 PR API squash-aware 판정 필수)
+- CLAUDE.md `7 Workers` 하드코딩은 추후 정리 후보로 관찰만 (SSOT 위반 패턴이지만 `SPEC.md §2 참조` 안전망 작동 중)
+
+**차기 후보** (세션 280에서 이월): Sprint 269 F436 (신규 도메인, Batch 2 의존 해소) / WS-4 LPON R2 실 실행 / AIF-REQ-018 사전 등록 audit 표준화 / 보안 후속 3건 (1Password CLI signin / Master PW / CHANGELOG 평문 prefix)
+
+---
+
 ### 세션 280 (2026-05-06) — Sprint Pipeline 267+268 Batch 1 ✅ 47분 완료 (2 PR MERGED, main `f504329`)
 
 **핵심 결과**: `/ax:sprint-pipeline 267 268` Batch 1 병렬 실행 — Sprint 268 F435 (UX) + Sprint 267 F434 (F358 Phase 3b BL-level production 통합) 양쪽 MERGED. 평균 Match 95%, feature coverage 5/5, Phase 7 SKIP, Phase 8 session-end 완결. **TD-28 ✅ RESOLVED** (Tree-sitter Java 파서 14주 누적 작업의 정점). Master fix-forward 3회 (S268 URL + S268 strict mode + S267 conflict).

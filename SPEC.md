@@ -838,12 +838,21 @@
 > **DoD**: 10 항목 — Plan/Design + SPEC + pattern enum 3종 추가 + 3 detector 구현 + BL_DETECTOR_REGISTRY 12종 + DETECTOR_SUPPORTED_RULES 12종 + 단위 테스트 ≥9건 + 합성 fixture 확장 + 현 source 7 BL PRESENCE 자동 입증 + reports JSON+MD + Match ≥ 90%.
 > **Plan/Design**: `docs/01-plan/features/F429-universal-detectors.plan.md` (AIF-PLAN-060) + `docs/02-design/features/F429-universal-detectors.design.md` (AIF-DSGN-060) 신규.
 
-**Sprint 269 (F436 — 신규 도메인 BL containers 추가, 📋 PLANNED 세션 279 2026-05-06 등록 — Batch 2 순차 Sprint 267 MERGED 의존):**
+**Sprint 269 (F436 — 신규 도메인 BL containers 추가 [Miraeasset 퇴직연금 확정], 🔧 IN_PROGRESS 세션 282 2026-05-08 시동 — Batch 2 순차 Sprint 267 MERGED 의존 ✅ 해소):**
 > **배경**: Sprint 261~266 6 Sprint 연속 spec-only 0건 도달 + 인프라 누적 재활용 패턴 정점(`/^(?:BL|BB|BP|BG|BS)-[A-Z]?\d{1,3}$/` parser regex + 31종 REGISTRY + withRuleId helper). 7 lpon-* containers source 활성화 100% 완료된 정점에서 신규 도메인(lpon-* 외) 자연 확장으로 (1) F356-B 자연 누적 효과 검증 + (2) F418 신규 inference exception 자연 채움 입증(세션 265 Smoke 5/8=62.5%) production scale 입증.
-> **도메인 후보 (Sprint 269 시동 시 결정)**: (a) Miraeasset 퇴직연금 (D1 production 2,827 policies + chunks 2건 PoC 완료) / (b) Generic Voucher (gift-card/prepaid-card lpon 증일반화) / (c) Sample/Test 도메인 (인프라 검증용). 사용자 결정: **추후 결정** (Sprint 269 시동 시점에 접근성 높은 도메인 재선택).
-> **DoD (잠정)**: 신규 도메인 1개 spec-container 디렉토리 작성 + provenance/rules/runbooks/tests 구조 + source.ts + tests + DOMAIN_MAP entry 활성화 + REGISTRY 매핑 (신규 detector 0개 목표) + detect-bl --all-domains coverage 신규 BL 100% PRESENCE + reports + Match ≥ 90% + typecheck/lint clean.
-> **의존성**: Sprint 267 (B) F434 MERGED 후 진입 — `.decode-x/spec-containers/` + `services/svc-skill/src/spec-container/converter.ts` 영역 충돌 회피.
-> **Plan/Design**: 신규 작성 예정 — `docs/01-plan/features/F436-new-domain-containers.plan.md` (AIF-PLAN-067, Sprint 269 시동 시 작성).
+> **도메인 결정 ✅ Miraeasset 퇴직연금** (세션 282 2026-05-08 사용자 확정): (a) D1 production 2,827 policies + chunks 2건 PoC 완료 (세션 265 Smoke 1건 — exception 자연 채움 5/8=62.5% 입증) / (b) F418 신규 inference exception 자연 채움 production scale 검증 동시 가능 / (c) AIF-REQ-043 PARTIAL_FAIL 정량 DoD 자연 누적 효과 측정 동시 진행. 후순위 후보 (Generic Voucher / Sample) Sprint 271+ 차후 검토.
+> **DoD**: miraeasset-pension/ spec-container 디렉토리 작성 + provenance/rules/runbooks/tests 구조 + source.ts (BL 매핑 핵심 5~10건) + tests (in-memory better-sqlite3) + DOMAIN_MAP entry 활성화 + REGISTRY 매핑 (신규 detector 0개 목표 — withRuleId 재사용 7번째 도메인) + detect-bl --all-domains coverage 신규 BL 100% PRESENCE + provenance apply 0 changes (PRESENCE 자동 입증) + reports + Match ≥ 90% + typecheck/lint clean.
+> **의존성**: Sprint 267 (B) F434 MERGED ✅ — `.decode-x/spec-containers/` + `services/svc-skill/src/spec-container/converter.ts` 영역 충돌 회피.
+> **병렬**: Sprint 270 (F437 — apps/app-web AIF-REQ-018 Phase 2 Recharts/Storybook) 영역 분리 ✅ Batch 1 병렬.
+> **Plan**: `docs/01-plan/features/F436-miraeasset-pension-containers.plan.md` (AIF-PLAN-067).
+
+**Sprint 270 (F437 — AIF-REQ-018 Phase 2 [Recharts RadialBarChart 게이지 세트 확장 + Storybook 스토리], 🔧 IN_PROGRESS 세션 282 2026-05-08 시동 — Batch 1 병렬 with Sprint 269):**
+> **배경**: AIF-REQ-018 Phase 1 ✅ Sprint 268 F435 완결 (3단계 구조 + accordion + ScoreGauge 단일 게이지). Phase 2 후속 — RadialBarChart 게이지 세트 확장 (coverage / score / trust 3종 동시 표시) + Storybook 스토리 작성으로 컴포넌트 문서화 + 회귀 검증.
+> **목표**: (1) `<GaugeSet>` 컴포넌트 신설 — 3종 게이지 가로 배치 + 색상/임계값 별도 설정, (2) Recharts RadialBarChart 적용, (3) `apps/app-web/.storybook/` Storybook 7+ 셋업 (없을 시 신규), (4) Storybook 스토리 4건 (ScoreGauge / GaugeSet / CollapsibleSection / ExecutiveSummary), (5) 진행 현황 리포트 페이지 GaugeSet 통합.
+> **DoD**: GaugeSet 컴포넌트 + 4 Storybook 스토리 + 진행 현황 페이지 통합 + E2E 1건 (GaugeSet 렌더링 + 3 gauge value 검증) + Plan(AIF-PLAN-068) + Report(AIF-RPRT-068) + typecheck/lint clean + Match ≥ 90%.
+> **의존성**: Sprint 268 F435 MERGED ✅ — apps/app-web 영역.
+> **병렬**: Sprint 269 (svc-skill spec-container) 영역 분리 ✅ Batch 1 병렬.
+> **Plan**: `docs/01-plan/features/F437-ux-progress-report-phase-2.plan.md` (AIF-PLAN-068).
 
 **Sprint 268 (F435 — AIF-REQ-018 UX 개선 [진행 현황 리포트 3단계 + accordion + 게이지/스코어카드], ✅ DONE 세션 280 2026-05-06 Sprint autopilot WT — Batch 1 병렬 with Sprint 267):**
 > **결과**: ✅ **DONE** — Sprint autopilot WT 종결. 핵심 UX 구현(3단계 구조 + accordion + ScoreGauge)은 이전 세션 main 브랜치 직접 구현(d30c002 + 8838a93). 본 Sprint: E2E 스모크 테스트 5건 신규 (`e2e/progress-status.spec.ts`) + Plan(AIF-PLAN-066) + Report(AIF-RPRT-066). typecheck/lint 14/14 PASS. DoD 5/5 PASS. Match 95%.

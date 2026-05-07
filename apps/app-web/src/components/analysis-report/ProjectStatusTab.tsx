@@ -17,6 +17,7 @@ import { MetricCard } from "./MetricCard";
 import { SectionHeader, SourceFileInfo } from "./StatusReportWidgets";
 import { CollapsibleSection } from "./CollapsibleSection";
 import { ScoreGauge } from "./ScoreGauge";
+import { GaugeSet } from "./GaugeSet";
 import { ReadinessBar } from "./ReadinessBar";
 import { DynamicStatusReport } from "./DynamicStatusReport";
 import { FactCheckAnalysisSection } from "./FactCheckAnalysisSection";
@@ -221,6 +222,7 @@ export function ProjectStatusTab() {
   const totalSkills = counts?.totalSkills ?? 0;
   const approvalRate = totalPolicies > 0 ? approvedPolicies / totalPolicies : 0;
   const score = counts ? computeScore(counts) : 0;
+  const trustScore = totalTerms > 100 ? 85 : totalTerms > 0 ? 60 : 0;
   const verdict = generateVerdict(score);
   const readinessSegments = computeReadinessSegments(approvalRate, approvedPolicies);
   const comparison = computeComparisonItems(approvalRate, totalTerms);
@@ -249,11 +251,23 @@ export function ProjectStatusTab() {
           {verdict.detail}
         </p>
 
-        {/* Score Gauge + Readiness Bar + Key Numbers */}
-        <div className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-6 items-center">
-          {/* Gauge */}
+        {/* Score Gauge + GaugeSet + Readiness Bar */}
+        <div className="grid grid-cols-1 md:grid-cols-[auto_auto_1fr] gap-6 items-center">
+          {/* Single score gauge */}
           <div className="flex justify-center">
             <ScoreGauge score={score} label="활용 준비도" />
+          </div>
+
+          {/* Multi-dimension gauge set */}
+          <div data-testid="gauge-set" className="flex justify-center">
+            <GaugeSet
+              gauges={[
+                { key: "coverage", label: "정책 승인율", value: Math.round(approvalRate * 100) },
+                { key: "score", label: "활용 준비도", value: score },
+                { key: "trust", label: "신뢰도", value: trustScore },
+              ]}
+              size={90}
+            />
           </div>
 
           {/* Right side: traffic light + key numbers */}

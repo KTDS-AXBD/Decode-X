@@ -1,0 +1,20 @@
+# Test Scenarios — P-005: 세액공제 적용
+ruleId: P-005
+scenarios:
+  - id: TC-PENSION-005-01
+    name: 한도 이내 납입 → 전액 세액공제
+    given: { annualContribution: 7000000 }
+    when: tax_benefit_requested
+    then: { eligibleAmount: 7000000, excessAmount: 0 }
+
+  - id: TC-PENSION-005-02
+    name: 한도 초과 납입 → 한도분만 세액공제
+    given: { annualContribution: 12000000 }
+    when: tax_benefit_requested
+    then: { eligibleAmount: 9000000, excessAmount: 3000000 }
+
+  - id: TC-PENSION-005-03
+    name: 정확히 한도 금액 → 전액 세액공제
+    given: { annualContribution: 9000000 }
+    when: tax_benefit_requested
+    then: { eligibleAmount: 9000000, excessAmount: 0 }

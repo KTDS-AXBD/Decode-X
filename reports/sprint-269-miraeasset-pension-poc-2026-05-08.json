@@ -1,0 +1,96 @@
+{
+  "sprint": 269,
+  "feature": "F436",
+  "title": "Miraeasset 퇴직연금 신규 도메인 BL containers 추가",
+  "date": "2026-05-08",
+  "domain": "miraeasset-pension",
+  "bl_ids": ["P-001", "P-002", "P-003", "P-004", "P-005", "P-006", "P-007"],
+  "detector_type_mapping": {
+    "P-001": "Threshold (min* pattern)",
+    "P-002": "Threshold (amount + UPPERCASE constant)",
+    "P-003": "Status Transition (comparison + SQL assignment)",
+    "P-004": "Threshold (min* pattern × 2)",
+    "P-005": "Threshold (total* pattern)",
+    "P-006": "Status Transition (comparison + SQL inline string)",
+    "P-007": "Atomic Transaction (db.transaction())"
+  },
+  "results": {
+    "new_detectors_added": 0,
+    "withRuleId_mappings_added": 7,
+    "absence_markers": 0,
+    "presence_auto_proved": 7,
+    "provenance_changes": 0
+  },
+  "coverage": {
+    "before": {
+      "containers": 7,
+      "applicable_bls": 48,
+      "absence_markers": 1,
+      "coverage_pct": 64.6
+    },
+    "after": {
+      "containers": 8,
+      "applicable_bls": 55,
+      "absence_markers": 1,
+      "coverage_pct": 69.1
+    },
+    "delta_pct": 4.5
+  },
+  "tests": {
+    "utils_bl_detector": {
+      "total": 170,
+      "passed": 170,
+      "pension_cases": 9
+    },
+    "utils_rules_parser": {
+      "pension_prefix_cases": 2
+    },
+    "domain_pension_ts": {
+      "total": 28,
+      "passed": 28
+    }
+  },
+  "files_created": [
+    "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/pension.ts",
+    "반제품-스펙/pilot-lpon-cancel/working-version/src/__tests__/pension.test.ts",
+    ".decode-x/spec-containers/miraeasset-pension/rules/pension-rules.md",
+    ".decode-x/spec-containers/miraeasset-pension/provenance.yaml",
+    ".decode-x/spec-containers/miraeasset-pension/runbooks/P-001.md",
+    ".decode-x/spec-containers/miraeasset-pension/runbooks/P-002.md",
+    ".decode-x/spec-containers/miraeasset-pension/runbooks/P-003.md",
+    ".decode-x/spec-containers/miraeasset-pension/runbooks/P-004.md",
+    ".decode-x/spec-containers/miraeasset-pension/runbooks/P-005.md",
+    ".decode-x/spec-containers/miraeasset-pension/runbooks/P-006.md",
+    ".decode-x/spec-containers/miraeasset-pension/runbooks/P-007.md",
+    ".decode-x/spec-containers/miraeasset-pension/tests/P-001.yaml",
+    ".decode-x/spec-containers/miraeasset-pension/tests/P-002.yaml",
+    ".decode-x/spec-containers/miraeasset-pension/tests/P-003.yaml",
+    ".decode-x/spec-containers/miraeasset-pension/tests/P-004.yaml",
+    ".decode-x/spec-containers/miraeasset-pension/tests/P-005.yaml",
+    ".decode-x/spec-containers/miraeasset-pension/tests/P-006.yaml",
+    ".decode-x/spec-containers/miraeasset-pension/tests/P-007.yaml",
+    ".decode-x/spec-containers/miraeasset-pension/tests/contract/pension-contract.yaml"
+  ],
+  "files_modified": [
+    "packages/utils/src/divergence/rules-parser.ts",
+    "packages/utils/src/divergence/bl-detector.ts",
+    "packages/utils/src/divergence/provenance-cross-check.ts",
+    "scripts/divergence/domain-source-map.ts",
+    "packages/utils/test/bl-detector.test.ts",
+    "packages/utils/test/rules-parser.test.ts"
+  ],
+  "dod_checklist": {
+    "spec_container_dirs": true,
+    "pension_ts_7_functions": true,
+    "pension_test_ts_24plus_cases": true,
+    "domain_map_entry": true,
+    "registry_extension_7_bls": true,
+    "detector_supported_rules_updated": true,
+    "rules_parser_p_prefix": true,
+    "detect_bl_all_domains_0_absence": true,
+    "write_provenance_0_changes": true,
+    "typecheck_pass": true,
+    "utils_170_pass": true,
+    "domain_107_pass": true
+  }
+}

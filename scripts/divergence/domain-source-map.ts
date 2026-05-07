@@ -105,6 +105,23 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "refundUnusedPurchase",
     ],
   },
+  {
+    container: "miraeasset-pension",
+    rulesPath: `${SPEC_CONTAINER_BASE}/miraeasset-pension/rules/pension-rules.md`,
+    // Sprint 269 (F436): Miraeasset 퇴직연금 source PoC — 7 BL P-001~P-007 PRESENCE 자동 입증.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/pension.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/miraeasset-pension/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "validateEnrollmentEligibility",
+      "checkAnnualAccumulationLimit",
+      "requestEarlyWithdrawal",
+      "initiateReceiptPayout",
+      "applyTaxBenefit",
+      "terminatePlan",
+      "disbursePrincipalAndInterest",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

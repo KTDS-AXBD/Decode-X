@@ -1,0 +1,20 @@
+# Test Scenarios — P-007: 원리금 지급 원자성
+ruleId: P-007
+scenarios:
+  - id: TC-PENSION-007-01
+    name: 정상 원리금 지급 → 원자 처리 성공
+    given: { principal: 10000000, interest: 500000, type: MATURITY }
+    when: disburse_requested
+    then: { disbursed: true, totalAmount: 10500000 }
+
+  - id: TC-PENSION-007-02
+    name: 원금 0 → E422-INVALID_PRINCIPAL
+    given: { principal: 0, interest: 0, type: TERMINATION }
+    when: disburse_requested
+    then: { error: E422-INVALID_PRINCIPAL }
+
+  - id: TC-PENSION-007-03
+    name: 이자 0인 중도인출 → 원금만 지급 성공
+    given: { principal: 3000000, interest: 0, type: EARLY_WITHDRAWAL }
+    when: disburse_requested
+    then: { disbursed: true, totalAmount: 3000000 }

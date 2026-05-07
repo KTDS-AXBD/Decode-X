@@ -86,6 +86,14 @@ export const DETECTOR_SUPPORTED_RULES = new Set<string>([
   "BP-003",
   "BP-004",
   "BP-005",
+  // Sprint 269 (F436) — miraeasset-pension domain
+  "P-001",
+  "P-002",
+  "P-003",
+  "P-004",
+  "P-005",
+  "P-006",
+  "P-007",
 ]);
 
 /**

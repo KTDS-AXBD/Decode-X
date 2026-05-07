@@ -1,0 +1,20 @@
+# Test Scenarios — P-001: 가입 자격 검증
+ruleId: P-001
+scenarios:
+  - id: TC-PENSION-001-01
+    name: 정상 가입 — 근속 1년 이상, 연령 18세 이상
+    given: { yearsOfService: 2, age: 30, employmentStatus: ACTIVE }
+    when: enroll_requested
+    then: { result: APPROVED, accountCreated: true }
+
+  - id: TC-PENSION-001-02
+    name: 근속 부족 → E422-INELIGIBLE
+    given: { yearsOfService: 0.5, age: 25, employmentStatus: ACTIVE }
+    when: enroll_requested
+    then: { error: E422-INELIGIBLE }
+
+  - id: TC-PENSION-001-03
+    name: 미성년자 → E422-INELIGIBLE
+    given: { yearsOfService: 1, age: 17, employmentStatus: ACTIVE }
+    when: enroll_requested
+    then: { error: E422-INELIGIBLE }

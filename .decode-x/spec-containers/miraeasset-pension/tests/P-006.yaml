@@ -1,0 +1,20 @@
+# Test Scenarios — P-006: 해지 처리
+ruleId: P-006
+scenarios:
+  - id: TC-PENSION-006-01
+    name: 진행 중 인출 없음 → TERMINATED 전환
+    given: { accountStatus: ACTIVE, pendingWithdrawals: 0 }
+    when: terminate_requested
+    then: { status: TERMINATED }
+
+  - id: TC-PENSION-006-02
+    name: 진행 중 인출 존재 → E409-WITHDRAWAL_IN_PROGRESS
+    given: { accountStatus: ACTIVE, pendingWithdrawals: 1 }
+    when: terminate_requested
+    then: { error: E409-WITHDRAWAL_IN_PROGRESS }
+
+  - id: TC-PENSION-006-03
+    name: 이미 해지됨 → E409-ALREADY_TERMINATED
+    given: { accountStatus: TERMINATED, pendingWithdrawals: 0 }
+    when: terminate_requested
+    then: { error: E409-ALREADY_TERMINATED }

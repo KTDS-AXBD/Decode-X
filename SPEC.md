@@ -1025,7 +1025,7 @@
 
 | ID | 유형 | 도메인 | 우선순위 | 상태 | 제목 |
 |----|------|--------|:--------:|:----:|------|
-| AIF-REQ-018 | Improvement | UX | P1 | IN_PROGRESS | 진행 현황 리포트 UX 개선 — 3단계 구조(Executive Summary + accordion 상세), 중복 섹션 통합(FactCheck·종합판정), 게이지/스코어카드 시각화, 신호등+점수+비교 프레임 결론 강화, 메트릭 카드 설명 추가, 향후과제 접기/펼치기 |
+| AIF-REQ-018 | Improvement | UX | P1 | DONE | 진행 현황 리포트 UX 개선 — **세션 282 ✅ DONE** (Phase 1 + Phase 2 양쪽 완결): (1) **Phase 1 ✅ Sprint 268 F435 PR #54** — 3단계 구조 (Executive Summary + accordion 상세, `ProjectStatusTab.tsx` Level 1/2/3) + 중복 섹션 통합 (`DynamicStatusReport.tsx` SKIP_SECTION_KEYS — FactCheck·종합판정 제거) + 단일 ScoreGauge + TrafficCard (신호등) + ComparisonCard (비교 프레임) + MetricCard `explanation` prop (설명 추가) + COLLAPSIBLE_SECTION_KEYS + TaskListWithFold (향후과제 접기/펼치기) + E2E 5건. (2) **Phase 2 ✅ Sprint 270 F437 PR #56** — `<GaugeSet>` Recharts RadialBarChart 3종 게이지 세트 (coverage / score / trust) + thresholdColor (green ≥80 / yellow ≥50 / red <50) + Storybook 7+ 셋업 + 4 스토리 (ScoreGauge / GaugeSet / CollapsibleSection / ExecutiveSummary) + ProjectStatusTab.tsx 통합 + E2E 1건. **충족 근거 6/6 항목**: 3단계 구조 ✅ + 중복 섹션 통합 ✅ + 게이지/스코어카드 시각화 ✅ (ScoreGauge + GaugeSet 3종) + 신호등+점수+비교 프레임 결론 강화 ✅ + 메트릭 카드 설명 추가 ✅ + 향후과제 접기/펼치기 ✅. **Bonus**: Storybook 7+ 도입 (회귀 검증 + 디자인 리뷰 인프라). 평균 Match 95.4% (Phase 1 95% + Phase 2 97%). |
 
 ### Working Mock-up 사이트 (신규 등록)
 

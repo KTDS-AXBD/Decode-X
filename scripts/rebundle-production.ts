@@ -10,11 +10,12 @@
  *   CLOUDFLARE_API_TOKEN=xxx ORG_ID=Miraeasset DOMAIN=pension bun run scripts/rebundle-production.ts
  */
 
-const POLICY_API = "https://svc-policy-production.ktds-axbd.workers.dev";
-const LLM_API = "https://svc-llm-router-production.ktds-axbd.workers.dev";
-const SKILL_API = "https://svc-skill-production.ktds-axbd.workers.dev";
-const SECRET = "e2e-test-secret-2026";
+const POLICY_API = process.env["SVC_POLICY_URL"] ?? "https://svc-policy.ktds-axbd.workers.dev";
+const SKILL_API = process.env["SVC_SKILL_URL"] ?? "https://svc-skill.ktds-axbd.workers.dev";
+const SECRET = process.env["INTERNAL_API_SECRET"] ?? "e2e-test-secret-2026";
 const CF_TOKEN = process.env["CLOUDFLARE_API_TOKEN"] ?? "";
+const OPENROUTER_API_KEY = process.env["OPENROUTER_API_KEY"] ?? "";
+const CF_AI_GATEWAY_URL = process.env["CLOUDFLARE_AI_GATEWAY_URL"] ?? "https://api.openrouter.ai/api/v1/chat/completions";
 const ORG_ID = process.env["ORG_ID"] ?? "LPON";
 const DOMAIN = process.env["DOMAIN"] ?? "giftvoucher";
 
@@ -118,27 +119,34 @@ function stripMarkdownFence(text: string): string {
   return text.replace(/^```(?:json)?\s*\n?/m, "").replace(/\n?```\s*$/m, "");
 }
 
+const TIER_MODELS: Record<string, string> = {
+  haiku: "anthropic/claude-haiku-4-5",
+  sonnet: "anthropic/claude-sonnet-4-6",
+  opus: "anthropic/claude-opus-4-7",
+};
+
 async function callLlm(tier: string, system: string, userContent: string, maxTokens = 4096): Promise<string> {
-  const resp = await fetch(`${LLM_API}/complete`, {
+  const model = TIER_MODELS[tier] ?? TIER_MODELS["sonnet"]!;
+  const resp = await fetch(CF_AI_GATEWAY_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-Internal-Secret": SECRET,
+      "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
     },
     body: JSON.stringify({
-      tier,
-      messages: [{ role: "user", content: userContent }],
-      system,
-      callerService: "svc-skill",
-      maxTokens,
+      model,
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: userContent },
+      ],
+      max_tokens: maxTokens,
       temperature: 0.1,
     }),
   });
 
   if (!resp.ok) throw new Error(`LLM error ${resp.status}: ${await resp.text()}`);
-  const json = await resp.json() as { success: boolean; data?: { content?: string }; error?: { message?: string } };
-  if (!json.success) throw new Error(json.error?.message ?? "LLM failed");
-  return json.data?.content ?? "";
+  const json = await resp.json() as { choices?: Array<{ message?: { content?: string } }> };
+  return json.choices?.[0]?.message?.content ?? "";
 }
 
 async function classifyBatch(policies: PolicyRow[]): Promise<ClassificationResult[]> {
@@ -398,7 +406,7 @@ function buildBundlesLocal(
 
 async function runWrangler(args: string): Promise<string> {
   const proc = Bun.spawn(["npx", "wrangler", ...args.split(" ")], {
-    cwd: "/home/sinclair/work/axbd/res-ai-foundry/services/svc-skill",
+    cwd: "/home/sinclair/work/axbd/Decode-X/services/svc-skill",
     env: { ...process.env, CLOUDFLARE_API_TOKEN: CF_TOKEN },
     stdout: "pipe",
     stderr: "pipe",
@@ -435,7 +443,7 @@ async function runD1Command(sql: string): Promise<void> {
   const proc = Bun.spawn(
     ["npx", "wrangler", "d1", "execute", "db-skill", "--remote", "--env", "production", "--command", sql],
     {
-      cwd: "/home/sinclair/work/axbd/res-ai-foundry/services/svc-skill",
+      cwd: "/home/sinclair/work/axbd/Decode-X/services/svc-skill",
       env: { ...process.env, CLOUDFLARE_API_TOKEN: CF_TOKEN },
       stdout: "pipe",
       stderr: "pipe",
@@ -477,7 +485,7 @@ async function saveResults(
     const proc = Bun.spawn(
       ["npx", "wrangler", "r2", "object", "put", `ai-foundry-skill-packages/${r2Key}`, "--file", tmpPath, "--remote"],
       {
-        cwd: "/home/sinclair/work/axbd/res-ai-foundry/services/svc-skill",
+        cwd: "/home/sinclair/work/axbd/Decode-X/services/svc-skill",
         env: { ...process.env, CLOUDFLARE_API_TOKEN: CF_TOKEN },
         stdout: "pipe",
         stderr: "pipe",

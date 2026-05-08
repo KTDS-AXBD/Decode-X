@@ -1,0 +1,81 @@
+{
+  "sprint": 276,
+  "feature": "F442",
+  "title": "F358 Phase 4 1 container PoC — lpon-charge 종단 검증",
+  "date": "2026-05-08",
+  "orgId": "LPON-poc-1778226015",
+  "domain": "lpon-charge",
+  "executor": "autopilot (Sonnet 4.6) + Master verification",
+  "e2e_pipeline": {
+    "step1_ingest": {
+      "status": "PASS",
+      "candidates_returned": 7,
+      "duration_ms": 29467,
+      "fixture": "scripts/smoke/fixtures/exception-chunks/lpon-charge.json",
+      "chunks_count": 2,
+      "extraction_id": "c9b84d7c-d74b-4d47-8eb6-f63423320704"
+    },
+    "step2_force_approve": {
+      "status": "PASS",
+      "method": "wrangler d1 execute --remote",
+      "changes": 7,
+      "sql": "UPDATE policies SET status='approved' WHERE organization_id='LPON-poc-1778226015' AND status='candidate'"
+    },
+    "step3_rebundle": {
+      "status": "PASS",
+      "total_policies": 7,
+      "classified": 7,
+      "bundles_created": 2,
+      "duration_sec": 21.6,
+      "llm_calls": {
+        "classify": { "tier": "haiku", "batch": 7, "model": "anthropic/claude-haiku-4-5" },
+        "descriptions": { "tier": "sonnet", "count": 2, "model": "anthropic/claude-sonnet-4-6" }
+      },
+      "categories": {
+        "charging": { "policy_count": 6, "name": "충전 관리" },
+        "notification": { "policy_count": 1, "name": "충전알림" }
+      }
+    }
+  },
+  "dod_verification": {
+    "dod_1_llm_openrouter": "PASS - callLlm() 교체: svc-llm-router → OpenRouter direct (CF AI Gateway)",
+    "dod_2_cwd_path": "PASS - res-ai-foundry → Decode-X (3곳)",
+    "dod_3_ingest_script": "PASS - scripts/poc/lpon-charge-ingest.ts 신규",
+    "dod_4_candidate_gte5": "PASS - 7 >= 5",
+    "dod_5_force_approve_gte5": "PASS - 7 approved",
+    "dod_6_rebundle_exit0": "PASS - '🎉 Rebundle 완료!' 출력",
+    "dod_7_r2_bundle_valid": "PASS - policies[] length 6 (charging) + 1 (notification)",
+    "dod_8_skills_d1_bundled": "PASS - 2 rows, status='bundled'",
+    "dod_9_reports_realfiles": "PASS - sprint-276-phase-4-poc-2026-05-08.{json,md}",
+    "dod_10_analysis": "PASS - docs/03-analysis/features/sprint-276-F442.analysis.md",
+    "dod_11_report": "PASS - docs/04-report/features/sprint-276-F442.report.md",
+    "dod_12_typecheck_lint": "PASS - svc-skill/svc-policy/packages typecheck OK (scripts/ is runtime-only, pre-existing pattern)"
+  },
+  "r2_bundles": [
+    {
+      "skillId": "8a532f89-6ccf-44e8-9c9b-1da109d1f6e3",
+      "r2_key": "skill-packages/bundle-8a532f89-6ccf-44e8-9c9b-1da109d1f6e3.skill.json",
+      "subdomain": "charging",
+      "policy_count": 6,
+      "status": "bundled"
+    },
+    {
+      "skillId": "001a1065-4485-4e8b-bc75-63b528202d8d",
+      "r2_key": "skill-packages/bundle-001a1065-4485-4e8b-bc75-63b528202d8d.skill.json",
+      "subdomain": "notification",
+      "policy_count": 1,
+      "status": "bundled"
+    }
+  ],
+  "llm_cost_estimate": {
+    "ingest_opus": "$0.05~0.10",
+    "classify_haiku": "$0.001",
+    "describe_sonnet": "$0.003",
+    "total_estimate": "~$0.06~0.11",
+    "within_budget": true,
+    "budget_dod": "$0.15"
+  },
+  "td_44_status": "RESOLVED",
+  "match_rate_target": 90,
+  "notes": "force-approve는 wrangler d1 execute --remote 방식 사용 (CF REST API D1 쿼리도 OAuth token으로 동작 확인). CLOUDFLARE_ACCOUNT_ID 환경변수 rebundle-production.ts에 필요"
+}

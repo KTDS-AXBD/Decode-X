@@ -1,0 +1,60 @@
+# Test Scenarios — BL-042: 결제 망 취소 처리
+ruleId: BL-042
+domain: lpon-cancel
+function: processNetworkCancel
+detector: AtomicTransaction
+
+scenarios:
+  - id: TC-CANCEL-042-01
+    name: 정상 망 취소 (PAID → NETWORK_CANCELED + 잔액 복구)
+    given:
+      payment: { id: pay-1, status: PAID, amount: 5000, voucher_id: vch-1 }
+      idempotencyKey: idem-net-001
+    when: processNetworkCancel(db, "pay-1", "idem-net-001")
+    then:
+      result: { cancelId: "<uuid>", status: NETWORK_CANCELED }
+      payments.status: NETWORK_CANCELED
+      cancel_transactions: { count: 1, cancel_type: NETWORK, requester_type: SYSTEM, status: COMPLETED }
+      vouchers.balance_delta: +5000
+
+  - id: TC-CANCEL-042-02
+    name: 멱등 처리 — 이미 처리된 idempotencyKey 재호출
+    given:
+      payment: { id: pay-1, status: NETWORK_CANCELED }
+      idempotencyKey: idem-net-001 (이미 사용됨)
+    when: processNetworkCancel(db, "pay-1", "idem-net-001")
+    then:
+      result: { cancelId: pay-1, status: ALREADY_PROCESSED }
+      payments.status: NETWORK_CANCELED (변화 없음)
+      cancel_transactions: { count: 1 } (추가 INSERT 없음)
+
+  - id: TC-CANCEL-042-03
+    name: 잘못된 상태 (PENDING) 망 취소 시도 → E409
+    given:
+      payment: { id: pay-2, status: PENDING, amount: 3000 }
+      idempotencyKey: idem-net-002
+    when: processNetworkCancel(db, "pay-2", "idem-net-002")
+    then:
+      error: { code: E409, message: "Payment not cancelable via network cancel" }
+      payments.status: PENDING (변화 없음)
+      cancel_transactions: { count: 0 }
+
+  - id: TC-CANCEL-042-04
+    name: 미존재 paymentId 망 취소 시도 → E409
+    given:
+      payment: null (id=pay-X 미존재)
+      idempotencyKey: idem-net-003
+    when: processNetworkCancel(db, "pay-X", "idem-net-003")
+    then:
+      error: { code: E409, message: "Payment not cancelable via network cancel" }
+
+  - id: TC-CANCEL-042-05
+    name: Atomic 보장 — voucher UPDATE 실패 시 cancel_transactions 흔적 없음
+    given:
+      payment: { id: pay-3, status: PAID, amount: 2000, voucher_id: vch-missing }
+      idempotencyKey: idem-net-004
+    when: processNetworkCancel — vouchers UPDATE 0 rows (FK or row missing)
+    then:
+      transaction: rolled back
+      cancel_transactions: { count: 0 } (INSERT 흔적 없음)
+      payments.status: PAID (변화 없음)

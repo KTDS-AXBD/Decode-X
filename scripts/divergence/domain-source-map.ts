@@ -156,6 +156,20 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "clawbackOnRefund",
     ],
   },
+  {
+    container: "lpon-cancel",
+    rulesPath: `${SPEC_CONTAINER_BASE}/lpon-cancel/rules/cancel-rules.md`,
+    // Sprint 277 (F443): lpon-payment의 cancel sub-flow 분리 — 11번째 도메인 활성화.
+    // 신규 BL은 BL-042 (network cancel) 1건. BL-014/016/017은 lpon-payment reference.
+    // 신규 detector 0개 — withRuleId 재사용 (AtomicTransaction).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/cancel.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/lpon-cancel/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "processCancel",
+      "processNetworkCancel",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

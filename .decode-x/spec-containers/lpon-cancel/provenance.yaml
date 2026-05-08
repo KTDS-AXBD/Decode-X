@@ -1,0 +1,45 @@
+---
+# Provenance — LPON-CANCEL-001
+# 11번째 도메인 — lpon-payment의 cancel sub-flow 분리 활성화 PoC
+
+skillId: LPON-CANCEL-001
+extractedAt: "2026-05-08T17:30:00+09:00"
+extractedBy: "Decode-X Sprint 277 F443 — withRuleId 재사용 11번째 도메인 활성화"
+
+sources:
+  - type: spec-reference
+    path: ".decode-x/spec-containers/lpon-payment/rules/payment-rules.md"
+    section: "BL-014 / BL-016 / BL-017 (취소 관련)"
+    businessRules: [BL-014, BL-016, BL-017]
+    confidence: 1.00
+    sourceMarker: REFERENCE
+    note: "lpon-payment 도메인에 정의된 취소 흐름 BL을 본 도메인이 cancel sub-flow로 재사용. ID 중복 방지를 위해 본 도메인은 reference만 유지."
+
+  - type: synthetic
+    path: ".decode-x/spec-containers/lpon-cancel/rules/cancel-rules.md"
+    section: "BL-042 (결제 망 취소 처리) — 신규"
+    businessRules: [BL-042]
+    confidence: 0.95
+    sourceMarker: PRESENCE
+    note: "11번째 도메인 신규 BL. processNetworkCancel 함수 — 멱등성 키 기반 중복 처리 방지 + atomic transaction (cancel_transactions INSERT + payments status UPDATE + vouchers balance 복구)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/cancel.ts"
+    functions: [processCancel, processNetworkCancel]
+    test: "src/__tests__/cancel.test.ts (deferred — 본 PoC는 source 활성화만)"
+    sourceMarker: PRESENCE
+    note: "BL-042 detector 자동 PRESENCE 입증 — 신규 detector 0개, withRuleId 재사용 (AtomicTransaction). BL-014/016/017은 lpon-payment 영역."
+
+inputCompleteness:
+  sInput: 0.85
+  deficiencyFlag: false
+  components:
+    rulesCoverage: 0.95
+    testCoverage: 0.50
+    provenanceLink: 1.00
+
+note: |
+  Sprint 277 F443: lpon-payment의 cancel sub-flow를 별도 도메인으로 분리.
+  신규 BL은 BL-042 (network cancel) 1건만이며, BL-014/016/017은 lpon-payment 도메인에 이미 정의됨.
+  본 도메인은 detector coverage 산정에서 BL-042 PRESENCE 입증만 추가 (+1.5%pp 예상).
+  부트스트래핑 효율 최고 — cancel.ts source 이미 존재하므로 spec-container만 신규 작성.

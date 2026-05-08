@@ -557,7 +557,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 50 detectors (Sprint 275 F441 — loyalty-points 6 BL added)", () => {
+  it("exposes 51 detectors (Sprint 277 F443 — lpon-cancel BL-042 added, 11번째 도메인)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "BB-001",
       "BB-002",
@@ -580,6 +580,7 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "BL-034",
       "BL-035",
       "BL-036",
+      "BL-042",
       "BL-G002",
       "BL-G003",
       "BL-G004",

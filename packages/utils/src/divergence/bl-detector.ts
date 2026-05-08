@@ -682,4 +682,6 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "LP-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "LP-004"),
   "LP-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "LP-005"),
   "LP-006": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "LP-006"),
+  // Sprint 277 (F443) — lpon-cancel domain (atomic × 1 — 11번째 도메인 활성화, BL-042 신규)
+  "BL-042": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BL-042"),
 };

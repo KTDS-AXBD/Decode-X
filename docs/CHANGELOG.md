@@ -13,6 +13,33 @@ author: Sinclair Seo
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 284 후속 2 (2026-05-08) — `.sprint-context` conflict 패턴 근본 회피 (S280 10회 재현 종결)
+
+**핵심 결과**: `git rm --cached .sprint-context` 1줄로 S280 후행 conflict 패턴(10회 재현) 영구 종결.
+
+**진단**:
+- `.gitignore` line 95에 `.sprint-context` 이미 등록 (이전 세션)
+- 그러나 commit `3da6e70` (Recon-X MSA 재조정 Sprint 1)에서 `.sprint-context` git tracked 시점에 .gitignore 무력화
+- 이후 모든 Sprint PR이 .sprint-context를 squash merge로 main에 반영 → 다음 Sprint와 conflict
+- S280 (Sprint 268) ~ S284 (Sprint 271) 누적 **10회 재현**, 매번 표준 보정 5분 소요
+
+**Fix**:
+- `git rm --cached .sprint-context` (working tree 보존)
+- commit + push (`70a6c4c`)
+- 검증: `git ls-files | grep -E "^\.sprint-context$"` → 0건
+
+**효과**:
+- 이후 Sprint Pipeline 병렬 시동 시 .sprint-context는 working tree에만 존재 + git이 추적 안 함
+- autopilot session-end가 어떤 git add 패턴을 써도 .gitignore가 차단
+- 후행 Sprint PR에서 conflict 발생 0건 — 표준 보정 절차 unnecessary
+
+**메타 학습**:
+- **`.gitignore` 등록만으로는 부족** — 이미 tracked인 파일은 historical tracking이 .gitignore를 무력화. `git rm --cached` 명시적 untrack 필수.
+- **conflict 회피의 가치** — Sprint Pipeline 병렬 실행 시 5분 × N회 보정 비용 영구 제거. autopilot 신뢰도 향상 (conflict 발생 자체가 자동화 한계 신호).
+- **검증 절차** — `.gitignore` 등록 + `git ls-files | grep <pattern>` 0건 확인 양쪽 충족 시에만 정확. 한쪽만 충족이면 무력 가능.
+
+---
+
 ### 세션 284 후속 (2026-05-08) — F438 stdDev 후속 검증 ✅ PASS
 
 **핵심 결과**: Sprint 271 F438 단일 미달 항목 (DoD #5 stdDev 25.7%pp ≤15%pp 미달)을 단일 도메인 패턴으로 재검증 — **lpon-charge × N=10**: 평균 **93.1%** + stdDev **10.2%pp** ✅ PASS. AIF-REQ-043 후속 모니터링 (a) **완전 종결**.

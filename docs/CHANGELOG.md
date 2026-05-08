@@ -13,6 +13,39 @@ author: Sinclair Seo
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 284 (2026-05-08) — Sprint Pipeline 271+272 Batch 1 완결 (평균 Match 96.5%)
+
+**핵심 결과**: Sprint 271 F438 + Sprint 272 F439 양쪽 MERGED. F438 = AIF-REQ-043 후속 모니터링 (a) 정량 입증 종결 / F439 = TD-29 RESOLVED.
+
+**Sprint 271 F438** (PR #59, Match 93%):
+- scripts/smoke/policy-inference-smoke.ts (414 lines) + 6 fixtures (Miraeasset 1 + LPON 5)
+- Smoke n=10 (58 candidates) → fill rate **65.5%** (Wilson CI [52.7%, 76.4%], z=2.36 p=0.0091)
+- 메인 정책 73.8% / EX-type 27.6% — LLM dual-output 패턴 재현
+- DoD 11/12 PASS (#5 stdDev 25.7%pp 미달 — Plan R4 시나리오 발현, 후속 검증 필요)
+- **AIF-REQ-043 후속 모니터링 (a) ✅ 종결** (production scale 통계적 유의 입증)
+
+**Sprint 272 F439** (PR #58, Match 100%):
+- scripts/gov/backfill-frontmatter.ts (327 lines) + CATEGORY_MAP.ts (61 lines) + 단위 테스트 39 cases
+- 8 필드 자동 추론 + dry-run/apply + idempotent + 9 디렉토리 매핑 + 4 토큰 + fallback + 3 면제 패턴
+- Apply 시점 실측 182/455=40% 누락 → **0건** (DoD ≤5건 초과 달성)
+- DoD 12/12 PASS — **TD-29 ✅ RESOLVED**
+
+**통합 분석**: `docs/03-analysis/features/sprint-271-272-pipeline.analysis.md` (AIF-ANLS-070) — 평균 Match **96.5%**, E2E HIGH gap 0건, Phase 7 skip.
+
+**메타 학습**:
+- **stale F_ITEMS 9회차 재현** — Sprint 시동 시 직전 Sprint 컨텍스트 (F436) stale 잔존, S269 표준 보정 절차 즉시 적용 (sed signal F_ITEMS + cat .sprint-context 재작성)
+- **S280 후행 conflict 10회차 재현 + 표준 보정 절차 정립** — Sprint 272 먼저 MERGED → Sprint 271 PR #59 `.sprint-context` conflict (mergeable=CONFLICTING + CI checks 0건). 표준 절차: WT에서 `git merge origin/main --no-edit` + `.sprint-context` cat 재작성 + push → mergeable CONFLICTING → MERGEABLE 즉시 전환 → CI 3/3 SUCCESS → 자동 squash merge. 5분 내 해소.
+- **autopilot Plan 정확 + fs 실측 패턴 누적 3회** (S280 + S282 + S284) — Sprint 272 autopilot이 Plan §10 R1 fs 실측 + CATEGORY_MAP 자체 설계 정확.
+
+**차기 후보**:
+1. F438 stdDev 후속 검증 (단일 도메인 × N=10 fixture 정규화, ~$0.6)
+2. `.sprint-context` conflict 자동화 회피 (.gitignore 등록 또는 autopilot session-end commit 차단)
+3. F358 Phase 4 LPON 전수 production 재추출
+4. 신규 도메인 PoC
+5. 보안 후속 2건 (1Password CLI signin + Master Password 변경)
+
+---
+
 ### 세션 283 후속 (2026-05-08) — AIF-REQ-043 PARTIAL_FAIL → DONE 전환
 
 **핵심 결과**: AIF-ANLS-068 회고 결론 기반 AIF-REQ-043 (F418 PolicyCandidateSchema exception 필드) PARTIAL_FAIL → DONE. **DoD 재정의** + 신규 inference 정성 입증 (Smoke n=1 5/8=62.5%) 충족 근거.

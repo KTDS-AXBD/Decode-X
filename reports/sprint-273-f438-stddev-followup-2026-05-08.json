@@ -1,0 +1,707 @@
+{
+  "meta": {
+    "feature": "F438",
+    "plan": "AIF-PLAN-069",
+    "n": 10,
+    "orgPrefix": "org-smoke-f438-stddev",
+    "svcPolicyUrl": "https://svc-policy.ktds-axbd.workers.dev",
+    "startedAt": "2026-05-08T02:00:27.333Z",
+    "finishedAt": "2026-05-08T02:04:34.882Z",
+    "totalDurationSec": 247.549
+  },
+  "fixtures": [
+    {
+      "domain": "lpon-charge",
+      "label": "온누리상품권 충전",
+      "chunkCount": 2
+    }
+  ],
+  "runs": [
+    {
+      "seq": 1,
+      "fixture": "lpon-charge",
+      "organizationId": "org-smoke-f438-stddev-001",
+      "extractionId": "effc8d84-a4e8-4c8f-adcb-4ca1e553f830",
+      "candidatesReturned": 8,
+      "storedPolicies": [
+        {
+          "policy_id": "2a837d3b-397d-4c6c-9246-f4ff8f90d3ce",
+          "organization_id": "org-smoke-f438-stddev-001",
+          "policy_code": "POL-PENSION-CT-006",
+          "title": "잔액 임계치 도달 시 자동 충전 실행",
+          "exception": "자동 충전 미설정 시 수동 충전만 가능"
+        },
+        {
+          "policy_id": "1a37f3be-455d-471a-bf41-eba4c49423a7",
+          "organization_id": "org-smoke-f438-stddev-001",
+          "policy_code": "POL-PENSION-EX-002",
+          "title": "본인 인증 실패 누적 시 충전 차단",
+          "exception": "24시간 경과 후 인증 차단 자동 해제"
+        },
+        {
+          "policy_id": "1366af4f-0316-4820-86ee-84cac266fb1f",
+          "organization_id": "org-smoke-f438-stddev-001",
+          "policy_code": "POL-PENSION-EX-007",
+          "title": "결제 수단 만료/정지 시 자동 충전 중단",
+          "exception": "결제 수단 정상 상태 시 자동 충전 지속 실행"
+        },
+        {
+          "policy_id": "182e97c0-34d4-43ec-a741-ad9e6cbc59c8",
+          "organization_id": "org-smoke-f438-stddev-001",
+          "policy_code": "POL-PENSION-NF-005",
+          "title": "결제 수단 인증 실패 시 충전 미완료 처리",
+          "exception": "결제 수단 정상 인증 시 충전 완료 처리"
+        },
+        {
+          "policy_id": "c2d13a7a-0aa2-4d52-8433-ecd371a1bf8d",
+          "organization_id": "org-smoke-f438-stddev-001",
+          "policy_code": "POL-PENSION-RG-001",
+          "title": "온누리상품권 본인 인증 후 충전 처리",
+          "exception": "본인 인증 미완료 또는 인증 실패 시 충전 신청 차단"
+        },
+        {
+          "policy_id": "8388fd0c-d733-4d9e-b831-f72d156d62ee",
+          "organization_id": "org-smoke-f438-stddev-001",
+          "policy_code": "POL-PENSION-RG-003",
+          "title": "1일 충전 한도 초과 처리",
+          "exception": "한도 이내 신청 시 정상 처리"
+        },
+        {
+          "policy_id": "765eaf58-feee-40db-bcb5-3464d1b2e4ed",
+          "organization_id": "org-smoke-f438-stddev-001",
+          "policy_code": "POL-PENSION-RG-004",
+          "title": "월 충전 한도 초과 처리",
+          "exception": "차월 1일 한도 초기화 시 충전 재개"
+        },
+        {
+          "policy_id": "3ea7f6aa-b7cb-4067-bc58-551d7099dfb7",
+          "organization_id": "org-smoke-f438-stddev-001",
+          "policy_code": "POL-PENSION-RG-008",
+          "title": "월 한도 도달 시 자동 충전 일시 정지",
+          "exception": "차월 한도 초기화 시 자동 충전 재개"
+        }
+      ],
+      "exceptionFilledMain": 6,
+      "exceptionFilledTotal": 8,
+      "exTypePolicyCount": 2,
+      "durationMs": 28019,
+      "httpStatus": 201,
+      "error": null
+    },
+    {
+      "seq": 2,
+      "fixture": "lpon-charge",
+      "organizationId": "org-smoke-f438-stddev-002",
+      "extractionId": "8205ed26-f5c0-4d93-a721-fd2a525eb3e8",
+      "candidatesReturned": 6,
+      "storedPolicies": [
+        {
+          "policy_id": "90783575-bcf8-4bdd-819b-4aac91d958d7",
+          "organization_id": "org-smoke-f438-stddev-002",
+          "policy_code": "POL-PENSION-CT-001",
+          "title": "온누리상품권 본인 인증 후 충전 처리",
+          "exception": "본인 인증 미완료 또는 인증 실패가 3회 누적된 경우 충전 신청 차단 + 24시간 후 재시도 가능"
+        },
+        {
+          "policy_id": "9bf2608f-72e7-4470-9736-d2dcae7fb687",
+          "organization_id": "org-smoke-f438-stddev-002",
+          "policy_code": "POL-PENSION-EX-006",
+          "title": "자동 충전 월 한도 도달 시 일시 정지",
+          "exception": "차월 한도 리셋 시점에 자동 충전 재개"
+        },
+        {
+          "policy_id": "4210dd7c-8f30-44e8-9b6b-0af924310557",
+          "organization_id": "org-smoke-f438-stddev-002",
+          "policy_code": "POL-PENSION-MG-005",
+          "title": "자동 충전 임계치 기반 실행",
+          "exception": "결제 수단이 만료 또는 정지된 경우 자동 충전 즉시 중단 + 사용자에게 알림 발송"
+        },
+        {
+          "policy_id": "3dfcb4b2-f368-4134-b5aa-2a833c1650aa",
+          "organization_id": "org-smoke-f438-stddev-002",
+          "policy_code": "POL-PENSION-NF-004",
+          "title": "결제 수단 인증 실패 시 충전 처리",
+          "exception": "잔고 부족 또는 카드 한도 초과 등 결제 수단 인증 실패 시 충전 미완료 처리 + 실패 사유 통보"
+        },
+        {
+          "policy_id": "bd7f10b1-59ee-4cea-8284-8ef5073e1528",
+          "organization_id": "org-smoke-f438-stddev-002",
+          "policy_code": "POL-PENSION-RG-002",
+          "title": "온누리상품권 1일 충전 한도 관리",
+          "exception": "1일 한도 50만원 초과 시 초과분 충전 거절 + 익일 0시 한도 리셋 안내"
+        },
+        {
+          "policy_id": "e94fc72d-2041-41b8-b249-06119c9a9606",
+          "organization_id": "org-smoke-f438-stddev-002",
+          "policy_code": "POL-PENSION-RG-003",
+          "title": "온누리상품권 월 충전 한도 관리",
+          "exception": "월 한도 200만원 초과 시 차월까지 추가 충전 불가"
+        }
+      ],
+      "exceptionFilledMain": 5,
+      "exceptionFilledTotal": 6,
+      "exTypePolicyCount": 1,
+      "durationMs": 20234,
+      "httpStatus": 201,
+      "error": null
+    },
+    {
+      "seq": 3,
+      "fixture": "lpon-charge",
+      "organizationId": "org-smoke-f438-stddev-003",
+      "extractionId": "f4738185-4682-402f-91ae-5ffe4238eec3",
+      "candidatesReturned": 7,
+      "storedPolicies": [
+        {
+          "policy_id": "f5206433-9f49-4da1-af94-0c88f86f0ab0",
+          "organization_id": "org-smoke-f438-stddev-003",
+          "policy_code": "POL-PENSION-CT-004",
+          "title": "결제 수단 인증 후 즉시 충전 처리",
+          "exception": "결제 수단 인증 실패(잔고 부족, 카드 한도 초과) 시 충전 미완료 + 사유 통보"
+        },
+        {
+          "policy_id": "c589aa34-371e-4db3-963b-4051fc2a115a",
+          "organization_id": "org-smoke-f438-stddev-003",
+          "policy_code": "POL-PENSION-EX-006",
+          "title": "자동 충전 월 한도 도달 시 일시 정지",
+          "exception": "차월 시작 시 한도 리셋과 함께 자동 충전 재개"
+        },
+        {
+          "policy_id": "fb0ca5f0-7f7b-4e50-bf37-02edea1e2b0a",
+          "organization_id": "org-smoke-f438-stddev-003",
+          "policy_code": "POL-PENSION-MG-005",
+          "title": "잔액 임계치 기반 자동 충전 실행",
+          "exception": "결제 수단이 만료/정지된 경우 자동 충전 즉시 중단 + 사용자 알림 발송"
+        },
+        {
+          "policy_id": "4f22444f-36cf-408e-a643-a456c8e88aa8",
+          "organization_id": "org-smoke-f438-stddev-003",
+          "policy_code": "POL-PENSION-NF-007",
+          "title": "결제 수단 만료/정지 시 자동 충전 중단 통보",
+          "exception": null
+        },
+        {
+          "policy_id": "a8003a54-f418-48ca-81eb-f02dca30056c",
+          "organization_id": "org-smoke-f438-stddev-003",
+          "policy_code": "POL-PENSION-RG-001",
+          "title": "온누리상품권 본인 인증 후 충전 처리",
+          "exception": "본인 인증 미완료 또는 인증 실패 3회 누적 시 충전 신청 차단, 24시간 후 재시도 가능"
+        },
+        {
+          "policy_id": "654a185e-b4f9-4c92-bbb3-779efff00d85",
+          "organization_id": "org-smoke-f438-stddev-003",
+          "policy_code": "POL-PENSION-RG-002",
+          "title": "온누리상품권 1일 충전 한도 관리",
+          "exception": "1일 한도 50만원 초과 시 초과분 거절 + 익일 0시 한도 리셋 안내"
+        },
+        {
+          "policy_id": "3decaa78-e22d-499e-a027-21a337397b5f",
+          "organization_id": "org-smoke-f438-stddev-003",
+          "policy_code": "POL-PENSION-RG-003",
+          "title": "온누리상품권 월 충전 한도 관리",
+          "exception": "월 한도 200만원 초과 시 차월까지 추가 충전 불가"
+        }
+      ],
+      "exceptionFilledMain": 5,
+      "exceptionFilledTotal": 6,
+      "exTypePolicyCount": 1,
+      "durationMs": 23197,
+      "httpStatus": 201,
+      "error": null
+    },
+    {
+      "seq": 4,
+      "fixture": "lpon-charge",
+      "organizationId": "org-smoke-f438-stddev-004",
+      "extractionId": "89bc688c-8bfd-4710-8253-189ca95d72ff",
+      "candidatesReturned": 7,
+      "storedPolicies": [
+        {
+          "policy_id": "3607c3bb-1c0d-4eaa-99ae-c54eed4f50cf",
+          "organization_id": "org-smoke-f438-stddev-004",
+          "policy_code": "POL-PENSION-CT-004",
+          "title": "온누리상품권 결제 수단 처리",
+          "exception": "잔고 부족 또는 카드 한도 초과 등 결제 인증 실패 시 충전 미완료 처리 + 사유 통보"
+        },
+        {
+          "policy_id": "9b696443-7110-4669-91b5-1042ab301bf3",
+          "organization_id": "org-smoke-f438-stddev-004",
+          "policy_code": "POL-PENSION-MG-005",
+          "title": "잔액 임계치 기반 자동 충전 실행",
+          "exception": "임계치 초과 잔액 유지 시 자동 충전 미실행"
+        },
+        {
+          "policy_id": "7f718046-a0e7-4218-8dcf-52427eb7df6b",
+          "organization_id": "org-smoke-f438-stddev-004",
+          "policy_code": "POL-PENSION-MG-007",
+          "title": "월 한도 도달 시 자동 충전 일시 정지",
+          "exception": "월 한도 미달 시 자동 충전 정상 운영"
+        },
+        {
+          "policy_id": "4d5f14ef-2bbd-4e24-8a8b-65579a7a4a9b",
+          "organization_id": "org-smoke-f438-stddev-004",
+          "policy_code": "POL-PENSION-NF-006",
+          "title": "결제 수단 만료/정지 시 자동 충전 중단",
+          "exception": "결제 수단이 정상 상태이면 자동 충전 정상 진행"
+        },
+        {
+          "policy_id": "37b3b770-4edd-45a9-84df-530b66e86e9d",
+          "organization_id": "org-smoke-f438-stddev-004",
+          "policy_code": "POL-PENSION-RG-001",
+          "title": "온누리상품권 본인 인증 후 충전 처리",
+          "exception": "본인 인증 미완료 또는 인증 실패가 3회 누적된 경우 충전 신청 차단 + 24시간 후 재시도 가능 안내"
+        },
+        {
+          "policy_id": "1d0562cd-6ffb-408d-8895-8a96dcded1b9",
+          "organization_id": "org-smoke-f438-stddev-004",
+          "policy_code": "POL-PENSION-RG-002",
+          "title": "온누리상품권 1일 충전 한도 적용",
+          "exception": "1일 50만원 초과 시 초과분 거절 + 익일 0시 한도 리셋 안내"
+        },
+        {
+          "policy_id": "c6321d2c-f74e-4a6e-b1f8-c3ef14290eb1",
+          "organization_id": "org-smoke-f438-stddev-004",
+          "policy_code": "POL-PENSION-RG-003",
+          "title": "온누리상품권 월 충전 한도 적용",
+          "exception": "월 한도 200만원 초과 시 차월까지 추가 충전 불가"
+        }
+      ],
+      "exceptionFilledMain": 7,
+      "exceptionFilledTotal": 7,
+      "exTypePolicyCount": 0,
+      "durationMs": 23903,
+      "httpStatus": 201,
+      "error": null
+    },
+    {
+      "seq": 5,
+      "fixture": "lpon-charge",
+      "organizationId": "org-smoke-f438-stddev-005",
+      "extractionId": "c19760ee-9a25-40dc-b2e0-3d81bbbfcccc",
+      "candidatesReturned": 6,
+      "storedPolicies": [
+        {
+          "policy_id": "70ba1695-9c6c-41b1-a24f-3c0b4184f6c8",
+          "organization_id": "org-smoke-f438-stddev-005",
+          "policy_code": "POL-PENSION-EX-006",
+          "title": "월 한도 도달 시 자동 충전 일시 정지",
+          "exception": "차월 진입 시 한도 리셋과 함께 자동 충전 재개"
+        },
+        {
+          "policy_id": "121636a1-3d70-4e9c-a826-e1fb942dae72",
+          "organization_id": "org-smoke-f438-stddev-005",
+          "policy_code": "POL-PENSION-MG-005",
+          "title": "잔액 임계치 기반 자동 충전 실행",
+          "exception": "결제 수단이 만료 또는 정지된 경우 자동 충전 즉시 중단 및 사용자 알림 발송"
+        },
+        {
+          "policy_id": "c0c580e3-3779-4471-bda0-5d08bf0f40c6",
+          "organization_id": "org-smoke-f438-stddev-005",
+          "policy_code": "POL-PENSION-NF-004",
+          "title": "결제 수단 인증 기반 충전 처리",
+          "exception": "잔고 부족 또는 카드 한도 초과 등 결제 수단 인증 실패 시 충전 미완료 처리 및 사유 통보"
+        },
+        {
+          "policy_id": "ecf55a44-9046-4f1a-9d13-fc6bcba88546",
+          "organization_id": "org-smoke-f438-stddev-005",
+          "policy_code": "POL-PENSION-RG-001",
+          "title": "온누리상품권 본인 인증 기반 충전 승인",
+          "exception": "본인 인증 미완료 또는 인증 실패가 3회 누적된 경우 충전 신청 차단 및 24시간 후 재시도 가능 안내"
+        },
+        {
+          "policy_id": "c06a18ae-7fb0-443c-8232-9909b57ad05c",
+          "organization_id": "org-smoke-f438-stddev-005",
+          "policy_code": "POL-PENSION-RG-002",
+          "title": "온누리상품권 1일 충전 한도 관리",
+          "exception": "1일 한도 50만원 초과 시 초과분은 거절되며 익일 0시 한도 리셋 안내"
+        },
+        {
+          "policy_id": "b1f30e0c-5cb6-4a29-85dd-1c75ff69bd07",
+          "organization_id": "org-smoke-f438-stddev-005",
+          "policy_code": "POL-PENSION-RG-003",
+          "title": "온누리상품권 월 충전 한도 관리",
+          "exception": "월 한도 200만원 초과 시 차월까지 추가 충전 불가"
+        }
+      ],
+      "exceptionFilledMain": 5,
+      "exceptionFilledTotal": 6,
+      "exTypePolicyCount": 1,
+      "durationMs": 21323,
+      "httpStatus": 201,
+      "error": null
+    },
+    {
+      "seq": 6,
+      "fixture": "lpon-charge",
+      "organizationId": "org-smoke-f438-stddev-006",
+      "extractionId": "d2a087b9-e0c2-4945-b149-b0d80d41022b",
+      "candidatesReturned": 7,
+      "storedPolicies": [
+        {
+          "policy_id": "92204460-c0c2-4b81-ba00-1fd1f6302b3f",
+          "organization_id": "org-smoke-f438-stddev-006",
+          "policy_code": "POL-PENSION-EX-007",
+          "title": "월 한도 도달 시 자동 충전 일시 정지",
+          "exception": "월 한도 도달 시 차월까지 자동 충전 일시 정지"
+        },
+        {
+          "policy_id": "bc81f353-fc40-4237-ace9-158e209f7d47",
+          "organization_id": "org-smoke-f438-stddev-006",
+          "policy_code": "POL-PENSION-MG-005",
+          "title": "잔액 임계치 기반 자동 충전 실행",
+          "exception": "잔액이 임계치를 초과하는 경우 자동 충전 미실행"
+        },
+        {
+          "policy_id": "1e5baf4a-39e0-49f5-85fd-cfd5afd0b913",
+          "organization_id": "org-smoke-f438-stddev-006",
+          "policy_code": "POL-PENSION-NF-004",
+          "title": "결제 수단 검증 기반 충전 처리",
+          "exception": "잔고 부족 또는 카드 한도 초과 시 충전 미완료 처리 + 사유 통보"
+        },
+        {
+          "policy_id": "7ec66daf-b1cf-4f17-9c7c-1bc7518382a9",
+          "organization_id": "org-smoke-f438-stddev-006",
+          "policy_code": "POL-PENSION-NF-006",
+          "title": "결제 수단 상태 기반 자동 충전 중단",
+          "exception": "결제 수단 만료 또는 정지 시 자동 충전 즉시 중단 + 사용자 알림 발송"
+        },
+        {
+          "policy_id": "d84f2ffc-3ebf-4e51-a243-79272f8fa8b0",
+          "organization_id": "org-smoke-f438-stddev-006",
+          "policy_code": "POL-PENSION-RG-001",
+          "title": "온누리상품권 본인 인증 기반 충전 승인",
+          "exception": "본인 인증 미완료 또는 인증 실패 3회 누적 시 충전 신청 차단 + 24시간 후 재시도 가능 안내"
+        },
+        {
+          "policy_id": "17f34f2c-c818-4d3a-8e0c-048a3eb4545d",
+          "organization_id": "org-smoke-f438-stddev-006",
+          "policy_code": "POL-PENSION-RG-002",
+          "title": "온누리상품권 1일 충전 한도 관리",
+          "exception": "1일 한도 50만원 초과 시 초과분 거절 + 익일 0시 한도 리셋 안내"
+        },
+        {
+          "policy_id": "39da96fe-a579-475f-83db-99126e6d3353",
+          "organization_id": "org-smoke-f438-stddev-006",
+          "policy_code": "POL-PENSION-RG-003",
+          "title": "온누리상품권 월 충전 한도 관리",
+          "exception": "월 한도 200만원 초과 시 차월까지 추가 충전 불가 처리"
+        }
+      ],
+      "exceptionFilledMain": 6,
+      "exceptionFilledTotal": 7,
+      "exTypePolicyCount": 1,
+      "durationMs": 22919,
+      "httpStatus": 201,
+      "error": null
+    },
+    {
+      "seq": 7,
+      "fixture": "lpon-charge",
+      "organizationId": "org-smoke-f438-stddev-007",
+      "extractionId": "8e18a04f-b6a8-4a17-87d1-4db0bb69831e",
+      "candidatesReturned": 8,
+      "storedPolicies": [
+        {
+          "policy_id": "1ee2c721-1410-424b-8f3d-a335b166c307",
+          "organization_id": "org-smoke-f438-stddev-007",
+          "policy_code": "POL-PENSION-CT-004",
+          "title": "결제 수단 인증 기반 충전 완료 처리",
+          "exception": "잔고 부족, 카드 한도 초과 등 결제 수단 인증 실패 시 충전 미완료 + 사유 통보"
+        },
+        {
+          "policy_id": "1499d352-6c82-4ead-952d-e8fda9012323",
+          "organization_id": "org-smoke-f438-stddev-007",
+          "policy_code": "POL-PENSION-EX-006",
+          "title": "월 한도 도달 시 자동 충전 일시 정지",
+          "exception": "차월 한도 리셋 시 자동 충전 재개"
+        },
+        {
+          "policy_id": "b648a6f2-eefd-478d-af8d-47914ee10f86",
+          "organization_id": "org-smoke-f438-stddev-007",
+          "policy_code": "POL-PENSION-EX-008",
+          "title": "본인 인증 실패 누적에 따른 충전 차단",
+          "exception": null
+        },
+        {
+          "policy_id": "2b672ccd-e685-4be3-b5b8-cd373698ef7e",
+          "organization_id": "org-smoke-f438-stddev-007",
+          "policy_code": "POL-PENSION-MG-005",
+          "title": "잔액 임계치 기반 자동 충전 실행",
+          "exception": "결제 수단 만료/정지 시 자동 충전 즉시 중단 + 사용자 알림 발송"
+        },
+        {
+          "policy_id": "43e7757e-7f54-4731-a618-1fca7be20f95",
+          "organization_id": "org-smoke-f438-stddev-007",
+          "policy_code": "POL-PENSION-NF-007",
+          "title": "결제 수단 만료·정지에 따른 자동 충전 중단 통보",
+          "exception": null
+        },
+        {
+          "policy_id": "256e6691-8d9b-4791-9db9-d06ead422801",
+          "organization_id": "org-smoke-f438-stddev-007",
+          "policy_code": "POL-PENSION-RG-001",
+          "title": "온누리상품권 본인 인증 후 충전 처리",
+          "exception": "본인 인증 미완료 또는 인증 실패 3회 누적 시 충전 신청 차단 + 24시간 후 재시도 가능 안내"
+        },
+        {
+          "policy_id": "bcc6e7bd-fdcf-484e-83ba-be212e963495",
+          "organization_id": "org-smoke-f438-stddev-007",
+          "policy_code": "POL-PENSION-RG-002",
+          "title": "온누리상품권 1일 충전 한도 적용",
+          "exception": "1일 한도 50만원 초과 시 초과분 거절 + 익일 0시 한도 리셋 안내"
+        },
+        {
+          "policy_id": "9175f4bb-962d-4fc7-9a5c-fd30ccd0b578",
+          "organization_id": "org-smoke-f438-stddev-007",
+          "policy_code": "POL-PENSION-RG-003",
+          "title": "온누리상품권 월 충전 한도 적용",
+          "exception": "월 한도 200만원 초과 시 차월까지 추가 충전 불가"
+        }
+      ],
+      "exceptionFilledMain": 5,
+      "exceptionFilledTotal": 6,
+      "exTypePolicyCount": 2,
+      "durationMs": 24640,
+      "httpStatus": 201,
+      "error": null
+    },
+    {
+      "seq": 8,
+      "fixture": "lpon-charge",
+      "organizationId": "org-smoke-f438-stddev-008",
+      "extractionId": "875d9942-2d88-4448-a922-7a7e72f62ba9",
+      "candidatesReturned": 7,
+      "storedPolicies": [
+        {
+          "policy_id": "cdbb1645-7cbc-4383-87e1-581fb841d186",
+          "organization_id": "org-smoke-f438-stddev-008",
+          "policy_code": "POL-PENSION-EX-007",
+          "title": "월 한도 도달 시 자동 충전 정지",
+          "exception": "월 한도 도달 시 자동 충전 차월까지 일시 정지"
+        },
+        {
+          "policy_id": "a3262e29-11f0-4582-bfa2-ca641267d8e2",
+          "organization_id": "org-smoke-f438-stddev-008",
+          "policy_code": "POL-PENSION-MG-005",
+          "title": "잔액 임계치 기반 자동 충전 실행",
+          "exception": "임계치 초과 잔액 유지 시 자동 충전 미실행"
+        },
+        {
+          "policy_id": "51e2eea4-3b84-4e5a-ad42-92d7b24223cc",
+          "organization_id": "org-smoke-f438-stddev-008",
+          "policy_code": "POL-PENSION-NF-004",
+          "title": "충전 결제 수단 인증 처리",
+          "exception": "잔고 부족, 카드 한도 초과 등 결제 수단 인증 실패 시 충전 미완료 + 사유 통보"
+        },
+        {
+          "policy_id": "f3b9cb00-e5bb-4d66-aed7-f2a544addfcf",
+          "organization_id": "org-smoke-f438-stddev-008",
+          "policy_code": "POL-PENSION-NF-006",
+          "title": "자동 충전 결제 수단 유효성 관리",
+          "exception": "결제 수단이 만료/정지된 경우 자동 충전 즉시 중단 + 사용자에게 알림 발송"
+        },
+        {
+          "policy_id": "dc5f4953-debe-47ef-8bea-bd8b7b1a4f46",
+          "organization_id": "org-smoke-f438-stddev-008",
+          "policy_code": "POL-PENSION-RG-001",
+          "title": "온누리상품권 충전 본인 인증 요건",
+          "exception": "본인 인증 미완료 또는 인증 실패 3회 누적 시 충전 신청 차단 + 24시간 후 재시도 가능 안내"
+        },
+        {
+          "policy_id": "0b9366f0-2561-4e3e-a5ae-05aa24e6241f",
+          "organization_id": "org-smoke-f438-stddev-008",
+          "policy_code": "POL-PENSION-RG-002",
+          "title": "온누리상품권 1일 충전 한도 관리",
+          "exception": "1일 한도 50만원 초과 시 초과분 거절 + 익일 0시 한도 리셋 안내"
+        },
+        {
+          "policy_id": "c07cd044-34d1-42c1-975d-76603c69a9e7",
+          "organization_id": "org-smoke-f438-stddev-008",
+          "policy_code": "POL-PENSION-RG-003",
+          "title": "온누리상품권 월 충전 한도 관리",
+          "exception": "월 한도 200만원 초과 시 차월까지 추가 충전 불가"
+        }
+      ],
+      "exceptionFilledMain": 6,
+      "exceptionFilledTotal": 7,
+      "exTypePolicyCount": 1,
+      "durationMs": 23749,
+      "httpStatus": 201,
+      "error": null
+    },
+    {
+      "seq": 9,
+      "fixture": "lpon-charge",
+      "organizationId": "org-smoke-f438-stddev-009",
+      "extractionId": "db42cc0b-fcec-4bc9-bcea-438ca24d0ff1",
+      "candidatesReturned": 8,
+      "storedPolicies": [
+        {
+          "policy_id": "fba25c39-00ea-44c7-a3d0-a899031daa53",
+          "organization_id": "org-smoke-f438-stddev-009",
+          "policy_code": "POL-PENSION-CT-004",
+          "title": "결제 수단 인증 및 충전 완료 처리",
+          "exception": "결제 수단 인증 실패(잔고 부족, 카드 한도 초과) 시 충전 미완료 처리 + 사유 통보"
+        },
+        {
+          "policy_id": "63a6307d-b5b2-4528-9adf-24dcfaed61a8",
+          "organization_id": "org-smoke-f438-stddev-009",
+          "policy_code": "POL-PENSION-EX-006",
+          "title": "월 한도 도달 시 자동 충전 일시 정지",
+          "exception": "월 한도 도달 시 자동 충전 차월까지 일시 정지"
+        },
+        {
+          "policy_id": "c0f75c2e-a404-4504-bd63-ba8bb9acbbb7",
+          "organization_id": "org-smoke-f438-stddev-009",
+          "policy_code": "POL-PENSION-EX-007",
+          "title": "본인 인증 실패 누적 시 차단",
+          "exception": "24시간 미경과 상태에서 재시도 시 차단 유지"
+        },
+        {
+          "policy_id": "d014aa3c-9fbf-47ae-b676-01008927e2bf",
+          "organization_id": "org-smoke-f438-stddev-009",
+          "policy_code": "POL-PENSION-MG-005",
+          "title": "잔액 임계치 기반 자동 충전 실행",
+          "exception": "결제 수단이 만료/정지된 경우 자동 충전 즉시 중단 + 사용자 알림 발송"
+        },
+        {
+          "policy_id": "a3b36ae6-a27d-4196-b039-2fbacc01417c",
+          "organization_id": "org-smoke-f438-stddev-009",
+          "policy_code": "POL-PENSION-NF-008",
+          "title": "결제 수단 만료/정지 시 자동 충전 중단 통보",
+          "exception": "결제 수단 만료/정지 시 자동 충전 즉시 중단 + 사용자 알림 발송"
+        },
+        {
+          "policy_id": "86ded741-7871-4d04-bdbd-e36dd1d87767",
+          "organization_id": "org-smoke-f438-stddev-009",
+          "policy_code": "POL-PENSION-RG-001",
+          "title": "온누리상품권 본인 인증 후 충전 처리",
+          "exception": "본인 인증 미완료 또는 인증 실패 3회 누적 시 충전 신청 차단 + 24시간 후 재시도 가능 안내"
+        },
+        {
+          "policy_id": "b34ee2ee-7292-4bf9-8aab-e3dc82ff283b",
+          "organization_id": "org-smoke-f438-stddev-009",
+          "policy_code": "POL-PENSION-RG-002",
+          "title": "온누리상품권 1일 충전 한도 검증",
+          "exception": "1일 한도 50만원 초과 시 초과분 거절 + 익일 0시 한도 리셋 안내"
+        },
+        {
+          "policy_id": "15420fc7-4b58-4e5f-ab3b-79e7b104e4c5",
+          "organization_id": "org-smoke-f438-stddev-009",
+          "policy_code": "POL-PENSION-RG-003",
+          "title": "온누리상품권 월 충전 한도 검증",
+          "exception": "월 한도 200만원 초과 시 차월까지 추가 충전 불가 + 사유 통보"
+        }
+      ],
+      "exceptionFilledMain": 6,
+      "exceptionFilledTotal": 8,
+      "exTypePolicyCount": 2,
+      "durationMs": 26016,
+      "httpStatus": 201,
+      "error": null
+    },
+    {
+      "seq": 10,
+      "fixture": "lpon-charge",
+      "organizationId": "org-smoke-f438-stddev-010",
+      "extractionId": "6a1ffc95-0770-4001-977c-b4f9fbd70038",
+      "candidatesReturned": 8,
+      "storedPolicies": [
+        {
+          "policy_id": "b88e3f8b-a073-4e6d-8e92-567c80a87aa1",
+          "organization_id": "org-smoke-f438-stddev-010",
+          "policy_code": "POL-PENSION-CT-001",
+          "title": "온누리상품권 본인 인증 충전 승인",
+          "exception": "본인 인증 미완료 또는 결제 수단 인증 실패(잔고 부족, 카드 한도 초과) 시 충전 미완료 처리 및 사유 통보"
+        },
+        {
+          "policy_id": "41a2d0c9-52e5-4faf-ae77-4c91dce3b0c7",
+          "organization_id": "org-smoke-f438-stddev-010",
+          "policy_code": "POL-PENSION-MG-006",
+          "title": "잔액 임계치 기반 자동 충전 실행",
+          "exception": "결제 수단 만료/정지 시 자동 충전 중단 및 알림 발송, 월 한도 도달 시 차월까지 자동 충전 일시 정지"
+        },
+        {
+          "policy_id": "a5533d79-8716-4f29-8277-bfa5fc7b4e7c",
+          "organization_id": "org-smoke-f438-stddev-010",
+          "policy_code": "POL-PENSION-MG-008",
+          "title": "월 한도 도달 시 자동 충전 일시 정지",
+          "exception": "차월 진입 시 자동 충전 재개"
+        },
+        {
+          "policy_id": "7faa20f7-b3e6-4ba4-a9a8-b505284145db",
+          "organization_id": "org-smoke-f438-stddev-010",
+          "policy_code": "POL-PENSION-NF-005",
+          "title": "결제 수단 인증 실패 시 충전 미완료 통보",
+          "exception": null
+        },
+        {
+          "policy_id": "b4bd6e94-c8e3-44e4-95fc-06cb29939ccd",
+          "organization_id": "org-smoke-f438-stddev-010",
+          "policy_code": "POL-PENSION-NF-007",
+          "title": "결제 수단 만료/정지 시 자동 충전 중단",
+          "exception": null
+        },
+        {
+          "policy_id": "b752b87d-4f46-408c-b65e-63b8ca998369",
+          "organization_id": "org-smoke-f438-stddev-010",
+          "policy_code": "POL-PENSION-RG-002",
+          "title": "본인 인증 실패 누적 시 충전 차단",
+          "exception": "24시간 경과 후 인증 재시도 허용"
+        },
+        {
+          "policy_id": "8f7f8547-7199-4a63-b656-c21d4fb9814c",
+          "organization_id": "org-smoke-f438-stddev-010",
+          "policy_code": "POL-PENSION-RG-003",
+          "title": "1일 충전 한도 초과 거절",
+          "exception": "익일 0시 이후 한도가 리셋되어 재충전 가능"
+        },
+        {
+          "policy_id": "8a1232fc-1aec-4f89-ab95-7efcb76d0075",
+          "organization_id": "org-smoke-f438-stddev-010",
+          "policy_code": "POL-PENSION-RG-004",
+          "title": "월 충전 한도 초과 제한",
+          "exception": "차월 진입 시 월 한도 리셋되어 재충전 가능"
+        }
+      ],
+      "exceptionFilledMain": 6,
+      "exceptionFilledTotal": 6,
+      "exTypePolicyCount": 0,
+      "durationMs": 27888,
+      "httpStatus": 201,
+      "error": null
+    }
+  ],
+  "stats": {
+    "successfulRuns": 10,
+    "failedRuns": 0,
+    "totalCandidates": 72,
+    "overallExceptionFillRate": 0.9305555555555556,
+    "overallExceptionFillRateStdDev": 0.10202040612204072,
+    "mainPolicyExceptionFillRate": 0.9344262295081968,
+    "exTypePolicyRatio": 0.1527777777777778,
+    "perRunFillRates": [
+      1,
+      1,
+      0.8571428571428571,
+      1,
+      1,
+      1,
+      0.75,
+      1,
+      1,
+      0.75
+    ]
+  },
+  "cleanupSql": "-- F438 Smoke cleanup (run from a CF API token환경 with wrangler):\n-- cd services/svc-policy && npx wrangler d1 execute db-policy --remote --command \"<SQL below>\"\nDELETE FROM hitl_sessions WHERE policy_id IN (SELECT policy_id FROM policies WHERE organization_id IN ('org-smoke-f438-stddev-001', 'org-smoke-f438-stddev-002', 'org-smoke-f438-stddev-003', 'org-smoke-f438-stddev-004', 'org-smoke-f438-stddev-005', 'org-smoke-f438-stddev-006', 'org-smoke-f438-stddev-007', 'org-smoke-f438-stddev-008', 'org-smoke-f438-stddev-009', 'org-smoke-f438-stddev-010'));\nDELETE FROM policies WHERE organization_id IN ('org-smoke-f438-stddev-001', 'org-smoke-f438-stddev-002', 'org-smoke-f438-stddev-003', 'org-smoke-f438-stddev-004', 'org-smoke-f438-stddev-005', 'org-smoke-f438-stddev-006', 'org-smoke-f438-stddev-007', 'org-smoke-f438-stddev-008', 'org-smoke-f438-stddev-009', 'org-smoke-f438-stddev-010');\n-- Verify:\nSELECT COUNT(*) FROM policies WHERE organization_id IN ('org-smoke-f438-stddev-001', 'org-smoke-f438-stddev-002', 'org-smoke-f438-stddev-003', 'org-smoke-f438-stddev-004', 'org-smoke-f438-stddev-005', 'org-smoke-f438-stddev-006', 'org-smoke-f438-stddev-007', 'org-smoke-f438-stddev-008', 'org-smoke-f438-stddev-009', 'org-smoke-f438-stddev-010');  -- expect 0\n",
+  "productionImpactCheck": {
+    "healthBeforeRun": {
+      "status": 200,
+      "body": "{\"status\":\"ok\",\"service\":\"svc-policy\"}"
+    },
+    "healthAfterRun": {
+      "status": 200,
+      "body": "{\"status\":\"ok\",\"service\":\"svc-policy\"}"
+    }
+  }
+}

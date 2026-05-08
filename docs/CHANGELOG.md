@@ -13,6 +13,40 @@ author: Sinclair Seo
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 284 후속 (2026-05-08) — F438 stdDev 후속 검증 ✅ PASS
+
+**핵심 결과**: Sprint 271 F438 단일 미달 항목 (DoD #5 stdDev 25.7%pp ≤15%pp 미달)을 단일 도메인 패턴으로 재검증 — **lpon-charge × N=10**: 평균 **93.1%** + stdDev **10.2%pp** ✅ PASS. AIF-REQ-043 후속 모니터링 (a) **완전 종결**.
+
+**실행**:
+- Smoke runner v2 확장 — `scripts/smoke/policy-inference-smoke.ts` `--single-domain <name>` 옵션 추가 (+18 lines)
+- lpon-charge × N=10 (Master inline, ~10분, ~$0.5)
+- 72 candidates (10 inference × 평균 7.2 candidates)
+
+**결과**:
+- Fill rate **93.1%** (Sprint 271 65.5% → +27.6pp, Wilson CI 상향)
+- stdDev **10.2%pp** (Sprint 271 25.7%pp → -15.5pp ✅ DoD PASS)
+- Per-run 분포: 100% × 7회 / 85.7% × 1회 / 75.0% × 2회 — 매우 균일
+- 메인 정책 fill 93.4% / EX-type 비율 15.3%
+
+**Variance decomposition**:
+- LLM temperature noise (within-domain) ~10.2%pp ✅
+- Domain effect (between-domain) ~15.5%pp (multi-domain 분산 요인)
+- Total Sprint 271 stdDev 25.7%pp = 합산 자연 결과
+
+**산출물**:
+- `scripts/smoke/policy-inference-smoke.ts` v2 (`--single-domain` 옵션)
+- `reports/sprint-273-f438-stddev-followup-2026-05-08.{md,json}` (AIF-RPRT-071)
+- `reports/sprint-273-f438-stddev-followup-2026-05-08-cleanup.sql`
+
+**SPEC §7 갱신**: AIF-REQ-043 후속 모니터링 (a) ✅ **완전 종결** — Sprint 271 평균 검증 + Sprint 273 stdDev 검증 양축 PASS.
+
+**메타 학습**:
+- variance decomposition 가치 — multi-domain Smoke는 평균 검증 우선 + single-domain은 stdDev 검증 우선
+- Plan §리스크 R4 시나리오 정확 진단 (fixture 도메인 다양성이 stdDev 주 원인)
+- Master inline ~10분 우회 — autopilot 14회차 Production Smoke 회피 패턴 유지
+
+---
+
 ### 세션 284 (2026-05-08) — Sprint Pipeline 271+272 Batch 1 완결 (평균 Match 96.5%)
 
 **핵심 결과**: Sprint 271 F438 + Sprint 272 F439 양쪽 MERGED. F438 = AIF-REQ-043 후속 모니터링 (a) 정량 입증 종결 / F439 = TD-29 RESOLVED.

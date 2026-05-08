@@ -1,0 +1,6 @@
+-- F438 Smoke cleanup (run from a CF API token환경 with wrangler):
+-- cd services/svc-policy && npx wrangler d1 execute db-policy --remote --command "<SQL below>"
+DELETE FROM hitl_sessions WHERE policy_id IN (SELECT policy_id FROM policies WHERE organization_id IN ('org-smoke-f438-stddev-001', 'org-smoke-f438-stddev-002', 'org-smoke-f438-stddev-003', 'org-smoke-f438-stddev-004', 'org-smoke-f438-stddev-005', 'org-smoke-f438-stddev-006', 'org-smoke-f438-stddev-007', 'org-smoke-f438-stddev-008', 'org-smoke-f438-stddev-009', 'org-smoke-f438-stddev-010'));
+DELETE FROM policies WHERE organization_id IN ('org-smoke-f438-stddev-001', 'org-smoke-f438-stddev-002', 'org-smoke-f438-stddev-003', 'org-smoke-f438-stddev-004', 'org-smoke-f438-stddev-005', 'org-smoke-f438-stddev-006', 'org-smoke-f438-stddev-007', 'org-smoke-f438-stddev-008', 'org-smoke-f438-stddev-009', 'org-smoke-f438-stddev-010');
+-- Verify:
+SELECT COUNT(*) FROM policies WHERE organization_id IN ('org-smoke-f438-stddev-001', 'org-smoke-f438-stddev-002', 'org-smoke-f438-stddev-003', 'org-smoke-f438-stddev-004', 'org-smoke-f438-stddev-005', 'org-smoke-f438-stddev-006', 'org-smoke-f438-stddev-007', 'org-smoke-f438-stddev-008', 'org-smoke-f438-stddev-009', 'org-smoke-f438-stddev-010');  -- expect 0

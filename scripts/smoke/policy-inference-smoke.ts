@@ -291,6 +291,7 @@ function computeStats(runs: InferRunResult[]): SmokeReport["stats"] {
 async function main(): Promise<void> {
   const n = parseInt(arg("--n", "10"), 10);
   const orgPrefix = arg("--org-prefix", "org-smoke-f438");
+  const singleDomain = arg("--single-domain", "");
   const reportPath = arg("--report", `reports/sprint-271-f418-smoke-n${String(n)}.json`);
   const dryRun = flag("--dry-run");
 
@@ -298,11 +299,21 @@ async function main(): Promise<void> {
   const secret = process.env["INTERNAL_API_SECRET"];
   if (!secret) throw new Error("INTERNAL_API_SECRET required");
 
-  const fixtures = await loadFixtures();
-  if (fixtures.length === 0) throw new Error(`No fixtures found in ${FIXTURE_DIR}`);
+  const allFixtures = await loadFixtures();
+  if (allFixtures.length === 0) throw new Error(`No fixtures found in ${FIXTURE_DIR}`);
 
-  console.log("=== F438 Smoke n>=10 — F418 신규 inference exception 자연 채움 검증 ===\n");
-  console.log(`  n=${String(n)}  orgPrefix=${orgPrefix}  fixtures=${String(fixtures.length)}  base=${base}`);
+  const fixtures = singleDomain
+    ? allFixtures.filter((f) => f.domain === singleDomain)
+    : allFixtures;
+  if (fixtures.length === 0) {
+    throw new Error(
+      `--single-domain="${singleDomain}" 매칭 fixture 없음. 사용 가능: ${allFixtures.map((f) => f.domain).join(", ")}`,
+    );
+  }
+
+  const modeLabel = singleDomain ? `single-domain=${singleDomain} × N=${String(n)}` : `multi-domain rotate, N=${String(n)}`;
+  console.log("=== F438 Smoke — F418 신규 inference exception 자연 채움 검증 ===\n");
+  console.log(`  mode=${modeLabel}  orgPrefix=${orgPrefix}  base=${base}`);
   console.log(`  fixtures: ${fixtures.map((f) => f.domain).join(", ")}\n`);
 
   if (dryRun) {

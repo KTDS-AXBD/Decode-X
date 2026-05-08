@@ -13,6 +13,37 @@ author: Sinclair Seo
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 284 후속 4 (2026-05-08) — Sprint 275 F441 Loyalty Points 10번째 도메인 PoC ✅ DONE
+
+**핵심 결과**: Loyalty Points 10번째 도메인 추가. **신규 detector 0개** (withRuleId 재사용 8 Sprint 연속 정점). detector coverage 72.1% → **74.6%** (+2.5%pp). DoD 12/12 PASS. Match 95%. Master inline ~1.3h.
+
+**산출물**:
+- `반제품-스펙/.../src/domain/loyalty.ts` (260 lines, 6 함수 + LoyaltyError code-in-message)
+- `loyalty.test.ts` (18 cases PASS — 첫 시도 모두 통과)
+- `.decode-x/spec-containers/loyalty-points/` 16 sub-files
+- DOMAIN_MAP 10번째 entry + REGISTRY LP-001~LP-006 + parser regex 2글자 prefix `LP`
+- AIF-PLAN-073 + AIF-RPRT-073
+
+**비즈니스 룰 (LP-001~LP-006)**:
+- LP-001: 적립 일일 한도 ≤ 10,000P — ThresholdCheck
+- LP-002: 사용 잔액 검증 — ThresholdCheck
+- LP-003: 사용 차감 atomic — AtomicTransaction
+- LP-004: 만료 자동 소멸 1년 — StatusTransition
+- LP-005: 등급 승급 (BRONZE/SILVER/GOLD) — StatusTransition
+- LP-006: 환불 회수 30일 이내 — ThresholdCheck
+
+**검증**: detect-bl --all-domains 10 containers / 6 BL LP PRESENCE 자동 입증 / write-provenance --apply 0 changes / utils 170/170 PASS (회귀 0)
+
+**메타 학습**:
+- **withRuleId 재사용 10번째 도메인 정점** — 8 Sprint 연속 인프라 누적 (S264~S275)
+- **2글자 prefix `LP` alternation 우선순위 검증** — `(?:BL|BB|BP|BG|BS|LP|P|V)` longer-match first (LP가 P보다 먼저 시도)
+- **VoucherError code-in-message 패턴 표준화** — S274 M3 LoyaltyError 적용으로 18 cases 첫 시도 PASS (S274 1차 시 8 fail 비교 입증)
+- **합성 도메인 부트스트래핑 효율** — S274 1.5h → S275 1.3h (-13%, template 직접 재사용)
+
+**차기 후보**: Credit Card / Delivery / F358 Phase 4 LPON 전수 재추출 / 보안 후속 2건
+
+---
+
 ### 세션 284 후속 3 (2026-05-08) — Sprint 274 F440 Generic Voucher 9번째 도메인 PoC ✅ DONE
 
 **핵심 결과**: LPON 7 + miraeasset-pension 8 도메인 패턴을 Generic Voucher (합성) 9번째 도메인으로 확장. **신규 detector 0개** (withRuleId 재사용 9번째 도메인 정점). detector coverage 69.1% → **72.1%** (+3.0%pp). DoD 14/14 PASS. Match 95%.

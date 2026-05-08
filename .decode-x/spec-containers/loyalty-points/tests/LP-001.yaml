@@ -1,0 +1,20 @@
+# Test Scenarios — LP-001: 적립 한도
+ruleId: LP-001
+scenarios:
+  - id: TC-LOYALTY-001-01
+    name: 정상 적립 — 한도 이내
+    given: { userId: user-A, todayEarned: 5000, amount: 3000 }
+    when: earn_requested
+    then: { result: APPROVED, newBalance: 8000 }
+
+  - id: TC-LOYALTY-001-02
+    name: 일일 한도 초과 → E429-LIMIT
+    given: { userId: user-A, todayEarned: 9000, amount: 2000 }
+    when: earn_requested
+    then: { error: E429-LIMIT }
+
+  - id: TC-LOYALTY-001-03
+    name: 다른 사용자 한도 별도
+    given: { userId: user-B, todayEarned_A: 10000, amount: 5000 }
+    when: earn_requested
+    then: { result: APPROVED }

@@ -1,0 +1,14 @@
+# Test Scenarios — LP-003: 사용 시 차감 (atomic)
+ruleId: LP-003
+scenarios:
+  - id: TC-LOYALTY-003-01
+    name: atomic 차감 + ledger
+    given: { balance: 5000, redeemAmount: 1500 }
+    when: redeem_requested
+    then: { remainingBalance: 3500, ledgerCount: 1, direction: REDEEM }
+
+  - id: TC-LOYALTY-003-02
+    name: 잔액 부족 → E422-BAL
+    given: { balance: 1000, redeemAmount: 5000 }
+    when: redeem_requested
+    then: { error: E422-BAL }

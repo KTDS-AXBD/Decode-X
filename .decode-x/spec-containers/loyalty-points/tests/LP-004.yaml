@@ -1,0 +1,14 @@
+# Test Scenarios — LP-004: 만료 자동 소멸
+ruleId: LP-004
+scenarios:
+  - id: TC-LOYALTY-004-01
+    name: 1년 경과 → expired
+    given: { status: active, daysUntilExpire: -1 }
+    when: expire_check
+    then: { expired: true, status: expired, finalBalance: 0 }
+
+  - id: TC-LOYALTY-004-02
+    name: 만료 전 → active 유지
+    given: { status: active, daysUntilExpire: 100 }
+    when: expire_check
+    then: { expired: false, status: active }

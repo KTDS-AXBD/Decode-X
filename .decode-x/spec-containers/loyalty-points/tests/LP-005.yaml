@@ -1,0 +1,20 @@
+# Test Scenarios — LP-005: 등급 승급
+ruleId: LP-005
+scenarios:
+  - id: TC-LOYALTY-005-01
+    name: SILVER 승급 (50,000P)
+    given: { totalEarned: 50000, grade: BRONZE }
+    when: promote_check
+    then: { promoted: true, newGrade: SILVER }
+
+  - id: TC-LOYALTY-005-02
+    name: GOLD 승급 (200,000P)
+    given: { totalEarned: 250000, grade: SILVER }
+    when: promote_check
+    then: { promoted: true, newGrade: GOLD }
+
+  - id: TC-LOYALTY-005-03
+    name: 임계 미달 → 등급 유지
+    given: { totalEarned: 10000, grade: BRONZE }
+    when: promote_check
+    then: { promoted: false, newGrade: BRONZE }

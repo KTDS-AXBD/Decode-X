@@ -1,0 +1,42 @@
+# Provenance — LOYALTY-POINTS-001
+# 합성 도메인 PoC (LPON 외 일반화 검증, 10번째 도메인)
+
+skillId: LOYALTY-POINTS-001
+extractedAt: "2026-05-08T13:30:00+09:00"
+extractedBy: "Decode-X Sprint 275 F441 — withRuleId 재사용 10번째 도메인 PoC"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/loyalty-points/rules/loyalty-rules.md"
+    section: "Loyalty Points 합성 비즈니스 룰 — LP-001~LP-006"
+    businessRules: [LP-001, LP-002, LP-003, LP-004, LP-005, LP-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — Loyalty Points (멤버십 포인트) 일반화 PoC. 적립/사용/만료/등급/환불 회수 추상화. 10번째 도메인."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/loyalty.ts"
+    functions: [earnPoints, usePoints, redeemPoints, expirePoints, promoteGrade, clawbackOnRefund]
+    test: "src/__tests__/loyalty.test.ts (18 cases PASS)"
+    sourceMarker: PRESENCE
+    note: "BL-detector 자동 PRESENCE 입증 — 신규 detector 0개, withRuleId 재사용 (Threshold × 4 + Atomic × 1 + Status × 2)"
+
+inputCompleteness:
+  sInput: 0.95
+  deficiencyFlag: false
+  components:
+    rulesCoverage: 1.00
+    testCoverage: 0.95
+    provenanceLink: 1.00
+  notes:
+    - "withRuleId 재사용 10번째 도메인 — 인프라 누적 재활용 8 Sprint 연속 (S264~S275)"
+    - "VoucherError code-in-message 패턴 (S274 메타 학습 M3) 표준 적용"
+    - "2글자 prefix 'LP' 첫 도입 — parser regex `(?:BL|BB|BP|BG|BS|LP|P|V)` 우선순위"
+
+handoffTarget: Foundry-X
+handoffVersion: "FX-SPEC-003 v1.0"
+
+sprint: 275
+feature: F441
+plan: AIF-PLAN-073
+masterCommit: "TBD-on-commit"

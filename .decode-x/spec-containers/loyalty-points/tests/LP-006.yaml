@@ -1,0 +1,26 @@
+# Test Scenarios — LP-006: 환불 회수
+ruleId: LP-006
+scenarios:
+  - id: TC-LOYALTY-006-01
+    name: 30일 이내 정상 회수
+    given: { daysSinceEarn: 5, balance: 5000, earnedAmount: 5000 }
+    when: clawback_requested
+    then: { clawbackAmount: 5000, balance: 0, totalEarned: 0 }
+
+  - id: TC-LOYALTY-006-02
+    name: 30일 초과 → E422-WINDOW
+    given: { daysSinceEarn: 31 }
+    when: clawback_requested
+    then: { error: E422-WINDOW }
+
+  - id: TC-LOYALTY-006-03
+    name: 이미 사용 → E422-USED
+    given: { balance: 0, earnedAmount: 5000 }
+    when: clawback_requested
+    then: { error: E422-USED }
+
+  - id: TC-LOYALTY-006-04
+    name: 미존재 ledger → E404-LEDGER
+    given: { ledgerId: nonexistent }
+    when: clawback_requested
+    then: { error: E404-LEDGER }

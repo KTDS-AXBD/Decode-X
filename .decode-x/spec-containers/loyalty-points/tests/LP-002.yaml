@@ -1,0 +1,26 @@
+# Test Scenarios — LP-002: 사용 가능 검증
+ruleId: LP-002
+scenarios:
+  - id: TC-LOYALTY-002-01
+    name: 잔액 충분 + active → canUse=true
+    given: { balance: 5000, status: active, amount: 1000 }
+    when: use_check
+    then: { canUse: true }
+
+  - id: TC-LOYALTY-002-02
+    name: 계정 미존재 → E404-ACCOUNT
+    given: { userId: nonexistent }
+    when: use_check
+    then: { error: E404-ACCOUNT }
+
+  - id: TC-LOYALTY-002-03
+    name: 잔액 부족 → E422-BAL
+    given: { balance: 500, amount: 1000 }
+    when: use_check
+    then: { error: E422-BAL }
+
+  - id: TC-LOYALTY-002-04
+    name: 비활성 → E409-STATUS
+    given: { status: expired }
+    when: use_check
+    then: { error: E409-STATUS }

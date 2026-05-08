@@ -139,6 +139,23 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "transferVoucher",
     ],
   },
+  {
+    container: "loyalty-points",
+    rulesPath: `${SPEC_CONTAINER_BASE}/loyalty-points/rules/loyalty-rules.md`,
+    // Sprint 275 (F441): Loyalty Points 합성 도메인 PoC — 6 BL LP-001~LP-006 PRESENCE 자동 입증.
+    // 10번째 도메인. 신규 detector 0개. 2글자 prefix 'LP' 첫 도입.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/loyalty.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/loyalty-points/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "earnPoints",
+      "usePoints",
+      "redeemPoints",
+      "expirePoints",
+      "promoteGrade",
+      "clawbackOnRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

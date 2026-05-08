@@ -557,7 +557,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 44 detectors (Sprint 274 F440 — generic-voucher 6 BL added)", () => {
+  it("exposes 50 detectors (Sprint 275 F441 — loyalty-points 6 BL added)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "BB-001",
       "BB-002",
@@ -590,6 +590,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "BP-003",
       "BP-004",
       "BP-005",
+      "LP-001",
+      "LP-002",
+      "LP-003",
+      "LP-004",
+      "LP-005",
+      "LP-006",
       "P-001",
       "P-002",
       "P-003",

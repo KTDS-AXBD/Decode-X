@@ -1,0 +1,21 @@
+# Contract — Loyalty Points (FX-SPEC-003 v1.0)
+contractVersion: FX-SPEC-003
+contractDate: 2026-05-08
+domain: loyalty-points
+sourceMarker: SYNTHETIC
+
+specToTest:
+  - LP-001: TC-LOYALTY-001-01, TC-LOYALTY-001-02, TC-LOYALTY-001-03
+  - LP-002: TC-LOYALTY-002-01, TC-LOYALTY-002-02, TC-LOYALTY-002-03, TC-LOYALTY-002-04
+  - LP-003: TC-LOYALTY-003-01, TC-LOYALTY-003-02
+  - LP-004: TC-LOYALTY-004-01, TC-LOYALTY-004-02
+  - LP-005: TC-LOYALTY-005-01, TC-LOYALTY-005-02, TC-LOYALTY-005-03
+  - LP-006: TC-LOYALTY-006-01, TC-LOYALTY-006-02, TC-LOYALTY-006-03, TC-LOYALTY-006-04
+
+implementationContract:
+  source: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/loyalty.ts"
+  test: "src/__tests__/loyalty.test.ts (18 cases PASS)"
+  detector: "BL_DETECTOR_REGISTRY 6 entries (LP-001~LP-006, withRuleId 재사용)"
+
+handoffTarget: Foundry-X
+provenanceMarker: SYNTHETIC + PRESENCE

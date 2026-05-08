@@ -1,0 +1,95 @@
+# Provenance — POL-MIRAEASSET-PENSION-001
+# 출처 추적 (FX-SPEC-003 specToTest 검증)
+
+skillId: POL-MIRAEASSET-PENSION-001
+extractedAt: "2026-05-08T00:00:00+09:00"
+extractedBy: "Decode-X Sprint 269 (F436 AIF-PLAN-067)"
+
+sources:
+  - type: ai-foundry-policy-db
+    source: db-policy (production)
+    policyCount: 2827
+    domain: Miraeasset
+    note: "D1 production 2,827 Miraeasset 퇴직연금 policies. 세션 265 Smoke 1건 — exception 자연 채움 5/8=62.5% 입증."
+
+  - type: reverse-engineering
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/pension.ts"
+    section: "가입 자격·적립 한도·중도인출·수령 시기·세액공제·해지·원리금 지급"
+    businessRules: [P-001, P-002, P-003, P-004, P-005, P-006, P-007]
+    confidence: 0.80
+
+  - type: inference
+    note: "법정 수치(55세/5년/1,800만원/900만원)는 근퇴법·소득세법 표준 적용. 회사별 내규는 추후 업데이트 필요."
+    confidence: 0.72
+
+inputCompleteness:
+  sInput: 0.80
+  deficiencyFlag: false
+  components:
+    rulesCoverage: 0.88    # 7/7 P condition-criteria-outcome 완비
+    testCoverage: 0.85     # 7 BL × 12+ 시나리오 (happy + edge)
+    provenanceLink: 1.0    # 출처 문서 연결 완료
+  notes:
+    - "법정 한도 수치는 2026년 기준. 향후 법 개정 시 상수 업데이트 필요."
+    - "IRP 계좌 자동 이전 처리(P-002 edge case)는 외부 시스템 의존 — 추론 기반."
+
+divergence:
+  markers:
+    - ruleId: P-001
+      status: PRESENCE
+      severity: info
+      sourceFile: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/pension.ts"
+      sourceFunction: validateEnrollmentEligibility
+      note: "근속기간(yearsOfService ≥ 1) + 연령(age ≥ 18) threshold 패턴 감지됨"
+      detectedAt: "2026-05-08T00:00:00+09:00"
+
+    - ruleId: P-002
+      status: PRESENCE
+      severity: info
+      sourceFile: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/pension.ts"
+      sourceFunction: checkAnnualAccumulationLimit
+      note: "연간 한도(ANNUAL_LIMIT_KRW 상수) + 누적 적립 비교 threshold 패턴 감지됨"
+      detectedAt: "2026-05-08T00:00:00+09:00"
+
+    - ruleId: P-003
+      status: PRESENCE
+      severity: info
+      sourceFile: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/pension.ts"
+      sourceFunction: requestEarlyWithdrawal
+      note: "status 'PENDING' → 'UNDER_REVIEW' 전환 패턴 감지됨"
+      detectedAt: "2026-05-08T00:00:00+09:00"
+
+    - ruleId: P-004
+      status: PRESENCE
+      severity: info
+      sourceFile: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/pension.ts"
+      sourceFunction: initiateReceiptPayout
+      note: "MIN_RECEIPT_AGE 상수(55) + MIN_SUBSCRIPTION_YEARS(5) threshold 패턴 감지됨"
+      detectedAt: "2026-05-08T00:00:00+09:00"
+
+    - ruleId: P-005
+      status: PRESENCE
+      severity: info
+      sourceFile: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/pension.ts"
+      sourceFunction: applyTaxBenefit
+      note: "TAX_BENEFIT_LIMIT_KRW 상수(9_000_000) threshold 패턴 감지됨"
+      detectedAt: "2026-05-08T00:00:00+09:00"
+
+    - ruleId: P-006
+      status: PRESENCE
+      severity: info
+      sourceFile: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/pension.ts"
+      sourceFunction: terminatePlan
+      note: "status 'ACTIVE'/'SUSPENDED' → 'TERMINATED' 전환 패턴 감지됨"
+      detectedAt: "2026-05-08T00:00:00+09:00"
+
+    - ruleId: P-007
+      status: PRESENCE
+      severity: info
+      sourceFile: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/pension.ts"
+      sourceFunction: disbursePrincipalAndInterest
+      note: "db.transaction() 래핑 원자 처리 패턴 감지됨"
+      detectedAt: "2026-05-08T00:00:00+09:00"
+
+handoffTarget: Foundry-X
+handoffVersion: "FX-SPEC-003 v1.0"

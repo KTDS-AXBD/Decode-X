@@ -1,0 +1,81 @@
+# Contract Tests — POL-MIRAEASSET-PENSION-001 (퇴직연금 관리 서비스)
+# FX-SPEC-003 v1.0 triangle.codeToTest 검증 대상
+
+skillId: POL-MIRAEASSET-PENSION-001
+version: 1.0.0
+domain: miraeasset-pension
+
+scenarios:
+  - id: TC-CONTRACT-PENSION-001
+    name: 가입 자격 충족 시 계좌 개설
+    given:
+      yearsOfService: 2
+      age: 30
+      employmentStatus: ACTIVE
+    when: enroll_requested
+    then:
+      - approved: true
+      - accountCreated: true
+    ref: P-001
+
+  - id: TC-CONTRACT-PENSION-002
+    name: 연간 한도 이내 적립 성공
+    given:
+      accumulatedThisYear: 5000000
+      amount: 3000000
+    when: accumulate_requested
+    then:
+      - approved: true
+      - newBalance: 8000000
+    ref: P-002
+
+  - id: TC-CONTRACT-PENSION-003
+    name: 허용 사유 중도인출 → 심사 전환
+    given:
+      reason: HOUSING_PURCHASE
+      amount: 5000000
+    when: early_withdrawal_requested
+    then:
+      - status: UNDER_REVIEW
+    ref: P-003
+
+  - id: TC-CONTRACT-PENSION-004
+    name: 55세+5년 수령 개시
+    given:
+      applicantAge: 60
+      subscriptionYears: 10
+    when: receipt_initiate_requested
+    then:
+      - status: RECEIVING
+    ref: P-004
+
+  - id: TC-CONTRACT-PENSION-005
+    name: 세액공제 한도 이내 전액 적용
+    given:
+      annualContribution: 7000000
+    when: tax_benefit_requested
+    then:
+      - eligibleAmount: 7000000
+    ref: P-005
+
+  - id: TC-CONTRACT-PENSION-006
+    name: 진행 중 인출 없는 해지 성공
+    given:
+      accountStatus: ACTIVE
+      pendingWithdrawals: 0
+    when: terminate_requested
+    then:
+      - status: TERMINATED
+    ref: P-006
+
+  - id: TC-CONTRACT-PENSION-007
+    name: 원리금 지급 원자 처리
+    given:
+      principal: 10000000
+      interest: 500000
+      type: MATURITY
+    when: disburse_requested
+    then:
+      - disbursed: true
+      - totalAmount: 10500000
+    ref: P-007

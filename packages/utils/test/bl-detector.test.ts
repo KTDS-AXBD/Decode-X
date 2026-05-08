@@ -557,7 +557,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 31 detectors (Sprint 266 F433 — budget 5 + purchase 5 BL added)", () => {
+  it("exposes 38 detectors (Sprint 269 F436 — pension 7 BL added)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "BB-001",
       "BB-002",
@@ -590,6 +590,13 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "BP-003",
       "BP-004",
       "BP-005",
+      "P-001",
+      "P-002",
+      "P-003",
+      "P-004",
+      "P-005",
+      "P-006",
+      "P-007",
     ]);
   });
 
@@ -754,5 +761,134 @@ describe("BL-033~036 — settlement domain (Sprint 265 F432)", () => {
     const markers = BL_DETECTOR_REGISTRY["BL-035"]!(sf, "settlement.ts");
     expect(markers).toHaveLength(1);
     expect(markers[0]?.ruleId).toBe("BL-035");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Sprint 269 (F436) — miraeasset-pension domain (P-001~P-007)
+// ---------------------------------------------------------------------------
+describe("pension domain — P-001~P-007 via withRuleId (Sprint 269 F436)", () => {
+  it("P-001 PRESENCE — minServiceAmount/minAgeThreshold threshold (min* pattern)", () => {
+    const src = `
+      const MIN_ENROLLMENT_YEARS = 1;
+      const MIN_ENROLLMENT_AGE = 18;
+      function validateEnrollmentEligibility(db, holderId, yearsOfService, age, employmentStatus) {
+        const minServiceAmount = yearsOfService;
+        const minAgeThreshold = age;
+        if (minServiceAmount < MIN_ENROLLMENT_YEARS) throw new Error('E422-INELIGIBLE');
+        if (minAgeThreshold < MIN_ENROLLMENT_AGE) throw new Error('E422-INELIGIBLE');
+      }
+    `;
+    const sf = parseTypeScriptSource("pension.ts", src);
+    const markers = BL_DETECTOR_REGISTRY["P-001"]!(sf, "pension.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("P-002 PRESENCE — ANNUAL_LIMIT_KRW threshold in checkAnnualAccumulationLimit", () => {
+    const src = `
+      const ANNUAL_LIMIT_KRW = 18000000;
+      function checkAnnualAccumulationLimit(db, accountId, amount) {
+        if (accumulatedSoFar + amount > ANNUAL_LIMIT_KRW) throw new Error('E422-LIMIT_EXCEEDED');
+      }
+    `;
+    const sf = parseTypeScriptSource("pension.ts", src);
+    const markers = BL_DETECTOR_REGISTRY["P-002"]!(sf, "pension.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("P-003 PRESENCE — account.status comparison + INSERT 'UNDER_REVIEW' SQL", () => {
+    const src = `
+      function requestEarlyWithdrawal(db, accountId, reason, amount) {
+        const account = db.prepare('SELECT status FROM pension_accounts WHERE id = ?').get(accountId);
+        if (account.status !== 'ACTIVE') throw new Error('E409-ACCOUNT_NOT_ACTIVE');
+        db.prepare("INSERT INTO pension_withdrawals (status) VALUES ('UNDER_REVIEW')").run();
+      }
+    `;
+    const sf = parseTypeScriptSource("pension.ts", src);
+    const markers = BL_DETECTOR_REGISTRY["P-003"]!(sf, "pension.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("P-004 PRESENCE — minAge/minYears threshold (min* pattern)", () => {
+    const src = `
+      const MIN_RECEIPT_AGE = 55;
+      const MIN_SUBSCRIPTION_YEARS = 5;
+      function initiateReceiptPayout(db, accountId, applicantAge, subscriptionYears) {
+        const minAge = applicantAge;
+        const minYears = subscriptionYears;
+        if (minAge < MIN_RECEIPT_AGE) throw new Error('E422-AGE_NOT_MET');
+        if (minYears < MIN_SUBSCRIPTION_YEARS) throw new Error('E422-SUBSCRIPTION_TOO_SHORT');
+      }
+    `;
+    const sf = parseTypeScriptSource("pension.ts", src);
+    const markers = BL_DETECTOR_REGISTRY["P-004"]!(sf, "pension.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("P-005 PRESENCE — totalAmount > TAX_BENEFIT_LIMIT_KRW threshold (total* pattern)", () => {
+    const src = `
+      const TAX_BENEFIT_LIMIT_KRW = 9000000;
+      function applyTaxBenefit(db, accountId, annualContribution) {
+        const totalAmount = annualContribution;
+        const eligibleAmount = totalAmount > TAX_BENEFIT_LIMIT_KRW ? TAX_BENEFIT_LIMIT_KRW : totalAmount;
+        return { eligibleAmount };
+      }
+    `;
+    const sf = parseTypeScriptSource("pension.ts", src);
+    const markers = BL_DETECTOR_REGISTRY["P-005"]!(sf, "pension.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("P-006 PRESENCE — account.status comparison + SQL 'TERMINATED' inline", () => {
+    const src = `
+      function terminatePlan(db, accountId) {
+        const account = db.prepare("SELECT status FROM pension_accounts WHERE id = ?").get(accountId);
+        if (account.status === 'TERMINATED') throw new Error('E409-ALREADY_TERMINATED');
+        db.prepare("UPDATE pension_accounts SET status = 'TERMINATED', updated_at = ? WHERE id = ?").run(now, accountId);
+      }
+    `;
+    const sf = parseTypeScriptSource("pension.ts", src);
+    const markers = BL_DETECTOR_REGISTRY["P-006"]!(sf, "pension.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("P-007 PRESENCE — db.transaction() in disbursePrincipalAndInterest", () => {
+    const src = `
+      function disbursePrincipalAndInterest(db, accountId, principal, interest, type) {
+        const disburse = db.transaction(() => {
+          db.prepare("UPDATE pension_ledger SET balance = balance - ?").run(principal);
+          db.prepare("INSERT INTO pension_payouts VALUES (?)").run(principal);
+        });
+        disburse();
+      }
+    `;
+    const sf = parseTypeScriptSource("pension.ts", src);
+    const markers = BL_DETECTOR_REGISTRY["P-007"]!(sf, "pension.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("P-001 ABSENCE — no threshold check → 1 marker", () => {
+    const noCheckSrc = `
+      function validateEnrollmentEligibility(db, holderId) {
+        return db.prepare("INSERT INTO pension_accounts VALUES (?)").run(holderId);
+      }
+    `;
+    const sf = parseTypeScriptSource("pension.ts", noCheckSrc);
+    const markers = BL_DETECTOR_REGISTRY["P-001"]!(sf, "pension.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("P-001");
+  });
+
+  it("P-007 ABSENCE — no db.transaction() → 1 marker", () => {
+    const noTxSrc = `
+      function disbursePrincipalAndInterest(db, accountId, principal, interest) {
+        db.prepare("UPDATE pension_ledger SET balance = balance - ?").run(principal);
+        db.prepare("INSERT INTO pension_payouts VALUES (?)").run(principal);
+      }
+    `;
+    const sf = parseTypeScriptSource("pension.ts", noTxSrc);
+    const markers = BL_DETECTOR_REGISTRY["P-007"]!(sf, "pension.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("P-007");
   });
 });

@@ -1,0 +1,20 @@
+# Test Scenarios — P-003: 중도인출 사유
+ruleId: P-003
+scenarios:
+  - id: TC-PENSION-003-01
+    name: 허용 사유(주택구입) → UNDER_REVIEW 전환
+    given: { reason: HOUSING_PURCHASE, amount: 5000000 }
+    when: early_withdrawal_requested
+    then: { status: UNDER_REVIEW }
+
+  - id: TC-PENSION-003-02
+    name: 미허용 사유 → E403-INVALID_REASON
+    given: { reason: VACATION, amount: 1000000 }
+    when: early_withdrawal_requested
+    then: { error: E403-INVALID_REASON }
+
+  - id: TC-PENSION-003-03
+    name: 의료비 허용 → UNDER_REVIEW 전환
+    given: { reason: MEDICAL, amount: 2000000 }
+    when: early_withdrawal_requested
+    then: { status: UNDER_REVIEW }

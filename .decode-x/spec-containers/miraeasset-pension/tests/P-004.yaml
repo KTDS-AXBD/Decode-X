@@ -1,0 +1,20 @@
+# Test Scenarios — P-004: 수령 개시 시기
+ruleId: P-004
+scenarios:
+  - id: TC-PENSION-004-01
+    name: 연령+가입기간 충족 → RECEIVING 전환
+    given: { applicantAge: 60, subscriptionYears: 10 }
+    when: receipt_initiate_requested
+    then: { status: RECEIVING }
+
+  - id: TC-PENSION-004-02
+    name: 연령 미달 → E422-AGE_NOT_MET
+    given: { applicantAge: 50, subscriptionYears: 10 }
+    when: receipt_initiate_requested
+    then: { error: E422-AGE_NOT_MET }
+
+  - id: TC-PENSION-004-03
+    name: 가입 기간 부족 → E422-SUBSCRIPTION_TOO_SHORT
+    given: { applicantAge: 60, subscriptionYears: 3 }
+    when: receipt_initiate_requested
+    then: { error: E422-SUBSCRIPTION_TOO_SHORT }

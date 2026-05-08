@@ -660,4 +660,12 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "BP-003": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "BP-003"),
   "BP-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BP-004"),
   "BP-005": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "BP-005"),
+  // Sprint 269 (F436) — miraeasset-pension domain (threshold × 4, status × 2, atomic × 1)
+  "P-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "P-001"),
+  "P-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "P-002"),
+  "P-003": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "P-003"),
+  "P-004": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "P-004"),
+  "P-005": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "P-005"),
+  "P-006": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "P-006"),
+  "P-007": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "P-007"),
 };

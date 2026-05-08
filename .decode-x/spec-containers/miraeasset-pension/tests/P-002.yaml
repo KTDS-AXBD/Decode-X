@@ -1,0 +1,20 @@
+# Test Scenarios — P-002: 연간 적립 한도
+ruleId: P-002
+scenarios:
+  - id: TC-PENSION-002-01
+    name: 한도 이내 적립 성공
+    given: { accumulatedThisYear: 10000000, amount: 5000000 }
+    when: accumulate_requested
+    then: { result: APPROVED, newAccumulated: 15000000 }
+
+  - id: TC-PENSION-002-02
+    name: 한도 초과 → E422-LIMIT_EXCEEDED
+    given: { accumulatedThisYear: 16000000, amount: 3000000 }
+    when: accumulate_requested
+    then: { error: E422-LIMIT_EXCEEDED }
+
+  - id: TC-PENSION-002-03
+    name: 경계값 정확히 한도 도달 → 성공
+    given: { accumulatedThisYear: 0, amount: 18000000 }
+    when: accumulate_requested
+    then: { result: APPROVED, newAccumulated: 18000000 }

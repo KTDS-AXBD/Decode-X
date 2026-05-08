@@ -148,6 +148,24 @@ Delta: +7 BLs (P-001~P-007 모두), +7 applications, +4.5%p coverage
 
 **권고 우선순위**: D → A → B → C (비용 효율 + 즉시 가치 순)
 
+### A 옵션 ✅ 종결 (Sprint 271 F438 세션 284 2026-05-08, AIF-RPRT-069)
+
+본 회고에서 권고한 차기 Sprint 후보 **A. F418 신규 inference Smoke 확장**이 Sprint 271 F438로 즉시 실행되어 종결됐어요.
+
+| 차원 | 본 회고 권고 | 실 실행 결과 |
+|------|--------|--------|
+| 비용 | ~$0.6 | 추정 $0.6~$2.5 (token usage 미수집 — 후속 모니터링 (b)) |
+| 시간 | 30~45분 | autopilot WT ~25분 + Master 분석 ~20분 = 약 45분 |
+| 표본 | n=10 chunks | n=10 inference (58 candidates) |
+| 핵심 결과 | "통계적 유의성 보강" | **95% Wilson CI [52.7%, 76.4%], z=2.36 p=0.0091 (α=0.01)** |
+
+**입증 결론**:
+1. 본 회고 §6 가설 "F418 신규 inference 효과는 sample size 보강 시 ≥ 50% 도달 가능" → **65.5% 평균 + 통계적 유의 입증** ✅
+2. 본 회고 §6 가설 "LLM dual-output 패턴은 universal" → **EX-type 27.6% (16/58)로 production scale 재현** ✅
+3. 본 회고 §6 미해결 "fixture 도메인 다양성 vs LLM 변동성 분산 분해" → Sprint 271 결과 fixture-induced variance ≫ LLM variance (lpon-charge 같은 fixture 2회 동일 85.7% / lpon-payment 동일 25%)
+
+**AIF-REQ-043 후속 모니터링 (a) 종결** — Sprint 271 F438 결과로 충족. (b)~(d) 차기 모니터링은 SPEC §7 AIF-REQ-043 entry 갱신 참조.
+
 ## 8. 메타 학습
 
 - **분석 비용 ≪ 측정 비용**: 본 회고는 LLM 호출 0건으로 정량 결론 도출. 기존 데이터 cross-analysis가 신규 측정보다 ROI 高 (특히 sample size 충분 시)

@@ -1,0 +1,634 @@
+{
+  "meta": {
+    "feature": "F438",
+    "plan": "AIF-PLAN-069",
+    "n": 10,
+    "orgPrefix": "org-smoke-f438",
+    "svcPolicyUrl": "https://svc-policy.ktds-axbd.workers.dev",
+    "startedAt": "2026-05-08T01:30:04.314Z",
+    "finishedAt": "2026-05-08T01:33:35.715Z",
+    "totalDurationSec": 211.401
+  },
+  "fixtures": [
+    {
+      "domain": "lpon-charge",
+      "label": "온누리상품권 충전",
+      "chunkCount": 2
+    },
+    {
+      "domain": "lpon-gift",
+      "label": "온누리상품권 선물하기",
+      "chunkCount": 2
+    },
+    {
+      "domain": "lpon-payment",
+      "label": "온누리상품권 결제",
+      "chunkCount": 1
+    },
+    {
+      "domain": "lpon-refund",
+      "label": "온누리상품권 환불",
+      "chunkCount": 2
+    },
+    {
+      "domain": "lpon-settlement",
+      "label": "온누리상품권 가맹점 정산",
+      "chunkCount": 1
+    },
+    {
+      "domain": "miraeasset-pension",
+      "label": "미래에셋 퇴직연금",
+      "chunkCount": 2
+    }
+  ],
+  "runs": [
+    {
+      "seq": 1,
+      "fixture": "lpon-charge",
+      "organizationId": "org-smoke-f438-001",
+      "extractionId": "d1b304a9-85f2-49a7-a236-431a7ad31a3f",
+      "candidatesReturned": 7,
+      "storedPolicies": [
+        {
+          "policy_id": "e8bb6cd8-6c23-4d53-83af-45e90fbc931b",
+          "organization_id": "org-smoke-f438-001",
+          "policy_code": "POL-PENSION-CT-001",
+          "title": "결제 수단을 통한 즉시 충전 처리",
+          "exception": "결제 수단 인증 실패(잔고 부족, 카드 한도 초과) 시 충전 미완료 처리 + 사유 통보"
+        },
+        {
+          "policy_id": "d83045fb-5dfd-4610-92c9-2de958610459",
+          "organization_id": "org-smoke-f438-001",
+          "policy_code": "POL-PENSION-EX-001",
+          "title": "월 한도 도달 시 자동 충전 일시 정지",
+          "exception": "차월 진입 시 한도 리셋과 함께 자동 충전 재개"
+        },
+        {
+          "policy_id": "0bf6a354-df10-42b3-bd73-d4f545987f12",
+          "organization_id": "org-smoke-f438-001",
+          "policy_code": "POL-PENSION-MG-001",
+          "title": "잔액 임계치 기반 자동 충전 실행",
+          "exception": "결제 수단 만료/정지 시 자동 충전 즉시 중단 + 사용자 알림 발송"
+        },
+        {
+          "policy_id": "c5753e6c-0900-42b0-8693-d45c4384e85c",
+          "organization_id": "org-smoke-f438-001",
+          "policy_code": "POL-PENSION-NF-001",
+          "title": "결제 수단 상태 변경에 따른 사용자 알림",
+          "exception": null
+        },
+        {
+          "policy_id": "c5acddcc-863f-4db6-adeb-86ddeaefd39a",
+          "organization_id": "org-smoke-f438-001",
+          "policy_code": "POL-PENSION-RG-001",
+          "title": "온누리상품권 본인 인증 충전 승인",
+          "exception": "본인 인증 미완료 또는 인증 실패 3회 누적 시 충전 신청 차단 및 24시간 후 재시도 가능 안내"
+        },
+        {
+          "policy_id": "54e5fd15-3c69-442c-90bf-ac040881f738",
+          "organization_id": "org-smoke-f438-001",
+          "policy_code": "POL-PENSION-RG-002",
+          "title": "온누리상품권 1일 충전 한도 관리",
+          "exception": "1일 한도 50만원 초과 시 초과분 거절 + 익일 0시 한도 리셋 안내"
+        },
+        {
+          "policy_id": "50169e7f-d1bd-47f2-ac66-66a2909614a5",
+          "organization_id": "org-smoke-f438-001",
+          "policy_code": "POL-PENSION-RG-003",
+          "title": "온누리상품권 월 충전 한도 관리",
+          "exception": "월 한도 200만원 초과 시 차월까지 추가 충전 불가 안내"
+        }
+      ],
+      "exceptionFilledMain": 5,
+      "exceptionFilledTotal": 6,
+      "exTypePolicyCount": 1,
+      "durationMs": 25729,
+      "httpStatus": 201,
+      "error": null
+    },
+    {
+      "seq": 2,
+      "fixture": "lpon-gift",
+      "organizationId": "org-smoke-f438-002",
+      "extractionId": "26e7524d-7ad5-44d9-baca-eb1e9fb23e67",
+      "candidatesReturned": 6,
+      "storedPolicies": [
+        {
+          "policy_id": "e6b304a8-baa5-4ac5-8cb4-51f5ff5def81",
+          "organization_id": "org-smoke-f438-002",
+          "policy_code": "POL-PENSION-BN-001",
+          "title": "온누리상품권 선물 발송 및 수령",
+          "exception": "7일 이내 미수령 시 자동 만료 후 보낸 사람에게 환불 처리"
+        },
+        {
+          "policy_id": "d740819d-ee0d-4060-ab39-321becf9d1d3",
+          "organization_id": "org-smoke-f438-002",
+          "policy_code": "POL-PENSION-EX-004",
+          "title": "수신자 휴대폰 번호 유효성 검증",
+          "exception": "유효하지 않거나 차단된 번호인 경우 발송 실패 처리 및 보낸 사람에게 즉시 환불"
+        },
+        {
+          "policy_id": "1b42a17f-b8d9-4b4b-9a9f-8c949967d55d",
+          "organization_id": "org-smoke-f438-002",
+          "policy_code": "POL-PENSION-EX-005",
+          "title": "받는 사람 본인 인증 실패 시 보안 차단",
+          "exception": "본인 인증 5회 실패 시 해당 선물은 보안상 차단되며 보낸 사람에게 환불 처리"
+        },
+        {
+          "policy_id": "b57426eb-38e9-4a90-972a-3b436d4fe5a8",
+          "organization_id": "org-smoke-f438-002",
+          "policy_code": "POL-PENSION-NF-002",
+          "title": "선물 수령 거부 시 즉시 환불",
+          "exception": null
+        },
+        {
+          "policy_id": "8705033d-2497-412d-9e15-6eeabf2ab3b3",
+          "organization_id": "org-smoke-f438-002",
+          "policy_code": "POL-PENSION-RG-003",
+          "title": "선물 금액 한도 초과 처리",
+          "exception": "50만원 초과 시 분할 발송 안내 또는 거절 처리"
+        },
+        {
+          "policy_id": "37327a58-03a8-4a8f-ab2e-5dbe2bef8515",
+          "organization_id": "org-smoke-f438-002",
+          "policy_code": "POL-PENSION-RG-006",
+          "title": "미성년자 수령 시 보호자 동의 확인",
+          "exception": "보호자 동의 미확인 시 수령 거절 처리"
+        }
+      ],
+      "exceptionFilledMain": 3,
+      "exceptionFilledTotal": 5,
+      "exTypePolicyCount": 2,
+      "durationMs": 22959,
+      "httpStatus": 201,
+      "error": null
+    },
+    {
+      "seq": 3,
+      "fixture": "lpon-payment",
+      "organizationId": "org-smoke-f438-003",
+      "extractionId": "fc530028-d53b-49e7-af4e-b762187774a5",
+      "candidatesReturned": 4,
+      "storedPolicies": [
+        {
+          "policy_id": "6686ec80-4b2f-4529-8e61-2c6da4b4b33c",
+          "organization_id": "org-smoke-f438-003",
+          "policy_code": "POL-PENSION-EX-003",
+          "title": "통신 장애 시 결제 자동 취소",
+          "exception": null
+        },
+        {
+          "policy_id": "ef1de399-db27-448c-aa26-d27f7cddeea7",
+          "organization_id": "org-smoke-f438-003",
+          "policy_code": "POL-PENSION-EX-004",
+          "title": "사용 정지 상품권 결제 차단",
+          "exception": null
+        },
+        {
+          "policy_id": "774b5021-bd97-42ac-acc5-8dd35b8c9a20",
+          "organization_id": "org-smoke-f438-003",
+          "policy_code": "POL-PENSION-MG-001",
+          "title": "온누리상품권 1회 결제 한도 처리",
+          "exception": "결제 한도(50만원) 초과 시 분할 결제 처리, 분할 불가 시 결제 거절"
+        },
+        {
+          "policy_id": "cc864889-1960-45d9-87a5-f369f81bd49f",
+          "organization_id": "org-smoke-f438-003",
+          "policy_code": "POL-PENSION-MG-002",
+          "title": "상품권 잔액 부족 시 결제 처리",
+          "exception": null
+        }
+      ],
+      "exceptionFilledMain": 1,
+      "exceptionFilledTotal": 1,
+      "exTypePolicyCount": 2,
+      "durationMs": 12771,
+      "httpStatus": 201,
+      "error": null
+    },
+    {
+      "seq": 4,
+      "fixture": "lpon-refund",
+      "organizationId": "org-smoke-f438-004",
+      "extractionId": "3a8057ce-f125-4f22-8be9-24d47ab1828c",
+      "candidatesReturned": 6,
+      "storedPolicies": [
+        {
+          "policy_id": "614b23a3-b2fc-49cd-8e3e-f61fc6feff38",
+          "organization_id": "org-smoke-f438-004",
+          "policy_code": "POL-PENSION-EX-002",
+          "title": "가맹점 등록정보 미검증 시 환불 보류",
+          "exception": null
+        },
+        {
+          "policy_id": "2a00668d-7365-4943-85dd-6925273c72c1",
+          "organization_id": "org-smoke-f438-004",
+          "policy_code": "POL-PENSION-EX-005",
+          "title": "일부 사용 상품권 환불 거절",
+          "exception": null
+        },
+        {
+          "policy_id": "3b8f0b47-9911-4eb1-8d09-810937c7d036",
+          "organization_id": "org-smoke-f438-004",
+          "policy_code": "POL-PENSION-NF-003",
+          "title": "부정 사용 의심 가맹점 환불 차단",
+          "exception": null
+        },
+        {
+          "policy_id": "a9055f1e-4d17-46b6-adfd-68ee94007334",
+          "organization_id": "org-smoke-f438-004",
+          "policy_code": "POL-PENSION-NF-006",
+          "title": "도난·분실 신고 상품권 환불 차단",
+          "exception": null
+        },
+        {
+          "policy_id": "3cb119e0-4093-4ece-9b8d-cc8df1f47622",
+          "organization_id": "org-smoke-f438-004",
+          "policy_code": "POL-PENSION-WD-001",
+          "title": "가맹점 상품권 잔액 환불",
+          "exception": "사용률이 60% 미만인 경우 환불 불가 및 추가 사용 권장 안내"
+        },
+        {
+          "policy_id": "b565ac6c-e482-4578-b302-97e61e9cf6ca",
+          "organization_id": "org-smoke-f438-004",
+          "policy_code": "POL-PENSION-WD-004",
+          "title": "고객 미사용 상품권 환불",
+          "exception": "발행일로부터 1년을 초과한 상품권은 환불 불가하며 소멸 처리"
+        }
+      ],
+      "exceptionFilledMain": 2,
+      "exceptionFilledTotal": 2,
+      "exTypePolicyCount": 2,
+      "durationMs": 20335,
+      "httpStatus": 201,
+      "error": null
+    },
+    {
+      "seq": 5,
+      "fixture": "lpon-settlement",
+      "organizationId": "org-smoke-f438-005",
+      "extractionId": "a11d249d-fc02-490f-a47c-09de99b5a806",
+      "candidatesReturned": 5,
+      "storedPolicies": [
+        {
+          "policy_id": "6771e08f-0a81-4c3f-9bcb-7a157dfa4488",
+          "organization_id": "org-smoke-f438-005",
+          "policy_code": "POL-PENSION-CL-004",
+          "title": "가맹점 사유 거래 취소 정산 처리",
+          "exception": "차월 정산금이 부족하거나 없는 경우 별도 환수 절차 진행"
+        },
+        {
+          "policy_id": "5706d301-64a4-45b7-9774-b87c64d68070",
+          "organization_id": "org-smoke-f438-005",
+          "policy_code": "POL-PENSION-EX-002",
+          "title": "부정 거래 의심 건 정산 보류",
+          "exception": "조사 결과 정상 거래로 확인되면 정산 재개"
+        },
+        {
+          "policy_id": "8db608c7-0151-4dfd-ab21-c753a7393171",
+          "organization_id": "org-smoke-f438-005",
+          "policy_code": "POL-PENSION-EX-005",
+          "title": "가맹점 폐업/탈퇴 시 정산 종료",
+          "exception": "폐업/탈퇴 이후 발생한 정산 청구는 거절 처리"
+        },
+        {
+          "policy_id": "e901285f-583e-41d3-a36f-64bf453e6f69",
+          "organization_id": "org-smoke-f438-005",
+          "policy_code": "POL-PENSION-MG-001",
+          "title": "가맹점 정상 거래 정산 처리",
+          "exception": "부정 거래 의심 건은 정산 보류되며 조사 완료 시까지 최대 30일 정산 일시 정지"
+        },
+        {
+          "policy_id": "5835f2d9-75c4-4e5e-9970-4f08f3736ed0",
+          "organization_id": "org-smoke-f438-005",
+          "policy_code": "POL-PENSION-MG-003",
+          "title": "가맹점 등록 정보 미갱신 시 정산 보류",
+          "exception": "가맹점이 정보 갱신을 완료하면 보류된 정산 재개"
+        }
+      ],
+      "exceptionFilledMain": 3,
+      "exceptionFilledTotal": 5,
+      "exTypePolicyCount": 2,
+      "durationMs": 18181,
+      "httpStatus": 201,
+      "error": null
+    },
+    {
+      "seq": 6,
+      "fixture": "miraeasset-pension",
+      "organizationId": "org-smoke-f438-006",
+      "extractionId": "7788b0d6-72fb-4ac8-9948-59ba646ef980",
+      "candidatesReturned": 8,
+      "storedPolicies": [
+        {
+          "policy_id": "6f8fd020-ba32-4e4d-bd31-c499e0726275",
+          "organization_id": "org-smoke-f438-006",
+          "policy_code": "POL-PENSION-EX-006",
+          "title": "이전 신청 중 가입자 사망 처리",
+          "exception": null
+        },
+        {
+          "policy_id": "2ede8ece-afd3-4022-ad7c-592e71173da6",
+          "organization_id": "org-smoke-f438-006",
+          "policy_code": "POL-PENSION-TR-004",
+          "title": "퇴직연금 사업자 이전 처리 기한",
+          "exception": null
+        },
+        {
+          "policy_id": "7574526b-eb4c-4048-937f-f4f8be699372",
+          "organization_id": "org-smoke-f438-006",
+          "policy_code": "POL-PENSION-TR-005",
+          "title": "이전 신청자 신원 확인 검증",
+          "exception": "신원 확인 서류 미제출 또는 위조 의심 시 이전 처리 즉시 중단 및 보안팀 에스컬레이션"
+        },
+        {
+          "policy_id": "f91de9be-3017-4b25-b683-719a2a5e7929",
+          "organization_id": "org-smoke-f438-006",
+          "policy_code": "POL-PENSION-TR-007",
+          "title": "DC형에서 IRP로의 이전",
+          "exception": null
+        },
+        {
+          "policy_id": "b833c1f9-cb89-467f-bcff-44ec7d2be513",
+          "organization_id": "org-smoke-f438-006",
+          "policy_code": "POL-PENSION-TR-008",
+          "title": "DB형 적립금 이전 제한",
+          "exception": "회사 동의가 없는 경우 이전 불가 처리"
+        },
+        {
+          "policy_id": "037b5e81-702e-48f0-acb0-4d5d93431444",
+          "organization_id": "org-smoke-f438-006",
+          "policy_code": "POL-PENSION-WD-001",
+          "title": "무주택 세대주 주택구입 중도인출",
+          "exception": "매매계약서가 가족(배우자/부모/자녀) 명의인 경우 인출 반려"
+        },
+        {
+          "policy_id": "d469cacf-4480-4cbc-9f86-85d23fa197ab",
+          "organization_id": "org-smoke-f438-006",
+          "policy_code": "POL-PENSION-WD-002",
+          "title": "주택 매매계약서 유효기간 검증",
+          "exception": "작성일 6개월 이상 경과 시 신규 계약서 제출 요구, 미제출 시 거절 처리"
+        },
+        {
+          "policy_id": "b651fc43-2009-4653-a5d3-f39539a9e08e",
+          "organization_id": "org-smoke-f438-006",
+          "policy_code": "POL-PENSION-WD-003",
+          "title": "분양계약서 입주예정일 검증",
+          "exception": "입주예정일이 12개월을 초과하는 경우 사유 통보 후 거절 처리"
+        }
+      ],
+      "exceptionFilledMain": 5,
+      "exceptionFilledTotal": 5,
+      "exTypePolicyCount": 1,
+      "durationMs": 23728,
+      "httpStatus": 201,
+      "error": null
+    },
+    {
+      "seq": 7,
+      "fixture": "lpon-charge",
+      "organizationId": "org-smoke-f438-007",
+      "extractionId": "d75fae69-97f1-4b6e-a001-6635eec33401",
+      "candidatesReturned": 7,
+      "storedPolicies": [
+        {
+          "policy_id": "9dfa8dca-973c-4adf-a494-9f3b99f1bc3f",
+          "organization_id": "org-smoke-f438-007",
+          "policy_code": "POL-PENSION-CT-004",
+          "title": "결제 수단 인증 기반 충전 처리",
+          "exception": "잔고 부족 또는 카드 한도 초과 등 결제 수단 인증 실패 시 충전 미완료 + 사유 통보"
+        },
+        {
+          "policy_id": "fc1e9c5c-f3fe-4ec1-a8bf-99fa6fe1ec64",
+          "organization_id": "org-smoke-f438-007",
+          "policy_code": "POL-PENSION-EX-007",
+          "title": "월 한도 도달 시 자동 충전 일시 정지",
+          "exception": "차월 한도 리셋 시 자동 충전 재개"
+        },
+        {
+          "policy_id": "c0930ed7-d58b-447d-8896-19fad6e692f8",
+          "organization_id": "org-smoke-f438-007",
+          "policy_code": "POL-PENSION-MG-005",
+          "title": "잔액 임계치 기반 자동 충전 실행",
+          "exception": null
+        },
+        {
+          "policy_id": "3ae63ede-5c43-4bf4-98cc-67e235465575",
+          "organization_id": "org-smoke-f438-007",
+          "policy_code": "POL-PENSION-NF-006",
+          "title": "결제 수단 상태에 따른 자동 충전 중단",
+          "exception": "결제 수단이 만료 또는 정지된 경우 자동 충전 즉시 중단 + 사용자에게 알림 발송"
+        },
+        {
+          "policy_id": "6afa2841-cf9d-4619-8ccc-d2f96ff5ae78",
+          "organization_id": "org-smoke-f438-007",
+          "policy_code": "POL-PENSION-RG-001",
+          "title": "온누리상품권 본인 인증 후 충전 처리",
+          "exception": "본인 인증 미완료 또는 인증 실패 3회 누적 시 충전 신청 차단 + 24시간 후 재시도 가능 안내"
+        },
+        {
+          "policy_id": "04ecaf48-f6c1-4f71-9e04-e7009344988d",
+          "organization_id": "org-smoke-f438-007",
+          "policy_code": "POL-PENSION-RG-002",
+          "title": "온누리상품권 1일 충전 한도 관리",
+          "exception": "1일 한도 50만원 초과 시 초과분 거절 + 익일 0시 한도 리셋 안내"
+        },
+        {
+          "policy_id": "8627671d-3a67-4842-96bc-8bd15d93f1cd",
+          "organization_id": "org-smoke-f438-007",
+          "policy_code": "POL-PENSION-RG-003",
+          "title": "온누리상품권 월 충전 한도 관리",
+          "exception": "월 한도 200만원 초과 시 차월까지 추가 충전 불가"
+        }
+      ],
+      "exceptionFilledMain": 5,
+      "exceptionFilledTotal": 6,
+      "exTypePolicyCount": 1,
+      "durationMs": 23746,
+      "httpStatus": 201,
+      "error": null
+    },
+    {
+      "seq": 8,
+      "fixture": "lpon-gift",
+      "organizationId": "org-smoke-f438-008",
+      "extractionId": "b24b6e5e-0709-446d-b517-44235c754bce",
+      "candidatesReturned": 5,
+      "storedPolicies": [
+        {
+          "policy_id": "f44a2608-ec58-4232-8437-8ce23371ed26",
+          "organization_id": "org-smoke-f438-008",
+          "policy_code": "POL-PENSION-BN-001",
+          "title": "온누리상품권 선물하기 발송",
+          "exception": "선물 금액이 50만원 초과 시 분할 발송 안내 또는 거절, 휴대폰 번호가 유효하지 않거나 차단된 번호인 경우 발송 실패 + 즉시 환불"
+        },
+        {
+          "policy_id": "a3743cf2-b913-47ec-936a-dd71d43157c2",
+          "organization_id": "org-smoke-f438-008",
+          "policy_code": "POL-PENSION-EN-004",
+          "title": "받는 사람 본인 인증 후 잔액 충전",
+          "exception": "본인 인증 5회 실패 시 해당 선물은 보안상 차단 + 보낸 사람에게 환불"
+        },
+        {
+          "policy_id": "60183294-a9fd-4c16-bd7e-c191fa036986",
+          "organization_id": "org-smoke-f438-008",
+          "policy_code": "POL-PENSION-EX-002",
+          "title": "선물 미수령 자동 만료 처리",
+          "exception": null
+        },
+        {
+          "policy_id": "40c79a34-ea5e-4abc-8e61-b9c909ee6bbe",
+          "organization_id": "org-smoke-f438-008",
+          "policy_code": "POL-PENSION-NF-003",
+          "title": "받는 사람 수령 거부 처리",
+          "exception": null
+        },
+        {
+          "policy_id": "fb611084-4b1f-42c6-85d8-ba6ae732411a",
+          "organization_id": "org-smoke-f438-008",
+          "policy_code": "POL-PENSION-RG-005",
+          "title": "미성년자 수령 시 보호자 동의 확인",
+          "exception": "보호자 동의 미확인 시 수령 거절"
+        }
+      ],
+      "exceptionFilledMain": 3,
+      "exceptionFilledTotal": 3,
+      "exTypePolicyCount": 1,
+      "durationMs": 18444,
+      "httpStatus": 201,
+      "error": null
+    },
+    {
+      "seq": 9,
+      "fixture": "lpon-payment",
+      "organizationId": "org-smoke-f438-009",
+      "extractionId": "f11a7b49-97a9-4a59-88f3-8c0ff3127f1d",
+      "candidatesReturned": 4,
+      "storedPolicies": [
+        {
+          "policy_id": "a76c7edc-354f-442b-acd2-290e7e969cb4",
+          "organization_id": "org-smoke-f438-009",
+          "policy_code": "POL-PENSION-EX-003",
+          "title": "통신 장애 시 결제 자동 취소",
+          "exception": null
+        },
+        {
+          "policy_id": "b4b1a783-2f33-49c1-a13c-089cdf73875f",
+          "organization_id": "org-smoke-f438-009",
+          "policy_code": "POL-PENSION-EX-004",
+          "title": "사용 정지 상품권 부정사용 차단",
+          "exception": null
+        },
+        {
+          "policy_id": "6b353f6a-e39b-46cd-83f5-ce3d329c71ce",
+          "organization_id": "org-smoke-f438-009",
+          "policy_code": "POL-PENSION-MG-001",
+          "title": "온누리상품권 1회 결제 한도 처리",
+          "exception": "50만원 초과 시 분할 결제로 전환하며, 분할이 불가한 경우 결제 거절 처리"
+        },
+        {
+          "policy_id": "09b237ed-4746-43af-97d2-647c28ea7adc",
+          "organization_id": "org-smoke-f438-009",
+          "policy_code": "POL-PENSION-MG-002",
+          "title": "상품권 잔액 부족 시 부분 결제 처리",
+          "exception": null
+        }
+      ],
+      "exceptionFilledMain": 1,
+      "exceptionFilledTotal": 1,
+      "exTypePolicyCount": 2,
+      "durationMs": 19685,
+      "httpStatus": 201,
+      "error": null
+    },
+    {
+      "seq": 10,
+      "fixture": "lpon-refund",
+      "organizationId": "org-smoke-f438-010",
+      "extractionId": "2f44311d-bc81-4edd-8139-37d2e06c9b9a",
+      "candidatesReturned": 6,
+      "storedPolicies": [
+        {
+          "policy_id": "3c2c7a5e-735a-458a-abf8-701ef292b770",
+          "organization_id": "org-smoke-f438-010",
+          "policy_code": "POL-PENSION-EX-003",
+          "title": "부정 사용 의심 가맹점 환불 차단",
+          "exception": "조사 완료 후 정상 판정 시 환불 절차 재개"
+        },
+        {
+          "policy_id": "6a1359e8-c6fa-431b-9d46-0980e215b524",
+          "organization_id": "org-smoke-f438-010",
+          "policy_code": "POL-PENSION-EX-006",
+          "title": "도난/분실 신고 상품권 환불 차단",
+          "exception": null
+        },
+        {
+          "policy_id": "1696d765-26b8-4cf3-81b0-7b8643bb7c44",
+          "organization_id": "org-smoke-f438-010",
+          "policy_code": "POL-PENSION-MG-002",
+          "title": "가맹점 환불 신청 시 등록정보 검증",
+          "exception": "등록 정보가 만료되거나 검증되지 않은 경우 환불 보류 처리"
+        },
+        {
+          "policy_id": "7195378c-2e10-4ce5-b588-ced622ffe68b",
+          "organization_id": "org-smoke-f438-010",
+          "policy_code": "POL-PENSION-RG-005",
+          "title": "상품권 유효기간 경과 소멸 처리",
+          "exception": null
+        },
+        {
+          "policy_id": "72de2136-f08c-4fc9-9424-09f547cd9b24",
+          "organization_id": "org-smoke-f438-010",
+          "policy_code": "POL-PENSION-WD-001",
+          "title": "가맹점 상품권 잔액 환불",
+          "exception": "사용률 60% 미만인 경우 환불 불가 및 추가 사용 권장, 등록 정보 만료/미검증 시 환불 보류, 부정 사용 의심 시 조사 완료 시까지 환불 차단 및 30일 이내 사유 통보"
+        },
+        {
+          "policy_id": "6b874ae7-d631-40e5-93e8-0a544f5bc1bf",
+          "organization_id": "org-smoke-f438-010",
+          "policy_code": "POL-PENSION-WD-004",
+          "title": "고객 미사용 상품권 환불",
+          "exception": "발행일로부터 1년 초과 시 환불 불가 및 소멸 처리, 일부 사용 이력 있을 경우 환불 거절 및 잔액 사용 안내"
+        }
+      ],
+      "exceptionFilledMain": 3,
+      "exceptionFilledTotal": 4,
+      "exTypePolicyCount": 2,
+      "durationMs": 20149,
+      "httpStatus": 201,
+      "error": null
+    }
+  ],
+  "stats": {
+    "successfulRuns": 10,
+    "failedRuns": 0,
+    "totalCandidates": 58,
+    "overallExceptionFillRate": 0.6551724137931034,
+    "overallExceptionFillRateStdDev": 0.25698984093670163,
+    "mainPolicyExceptionFillRate": 0.7380952380952381,
+    "exTypePolicyRatio": 0.27586206896551724,
+    "perRunFillRates": [
+      0.8571428571428571,
+      0.8333333333333334,
+      0.25,
+      0.3333333333333333,
+      1,
+      0.625,
+      0.8571428571428571,
+      0.6,
+      0.25,
+      0.6666666666666666
+    ]
+  },
+  "cleanupSql": "-- F438 Smoke cleanup (run from a CF API token환경 with wrangler):\n-- cd services/svc-policy && npx wrangler d1 execute db-policy --remote --command \"<SQL below>\"\nDELETE FROM hitl_sessions WHERE policy_id IN (SELECT policy_id FROM policies WHERE organization_id IN ('org-smoke-f438-001', 'org-smoke-f438-002', 'org-smoke-f438-003', 'org-smoke-f438-004', 'org-smoke-f438-005', 'org-smoke-f438-006', 'org-smoke-f438-007', 'org-smoke-f438-008', 'org-smoke-f438-009', 'org-smoke-f438-010'));\nDELETE FROM policies WHERE organization_id IN ('org-smoke-f438-001', 'org-smoke-f438-002', 'org-smoke-f438-003', 'org-smoke-f438-004', 'org-smoke-f438-005', 'org-smoke-f438-006', 'org-smoke-f438-007', 'org-smoke-f438-008', 'org-smoke-f438-009', 'org-smoke-f438-010');\n-- Verify:\nSELECT COUNT(*) FROM policies WHERE organization_id IN ('org-smoke-f438-001', 'org-smoke-f438-002', 'org-smoke-f438-003', 'org-smoke-f438-004', 'org-smoke-f438-005', 'org-smoke-f438-006', 'org-smoke-f438-007', 'org-smoke-f438-008', 'org-smoke-f438-009', 'org-smoke-f438-010');  -- expect 0\n",
+  "productionImpactCheck": {
+    "healthBeforeRun": {
+      "status": 200,
+      "body": "{\"status\":\"ok\",\"service\":\"svc-policy\"}"
+    },
+    "healthAfterRun": {
+      "status": 200,
+      "body": "{\"status\":\"ok\",\"service\":\"svc-policy\"}"
+    }
+  }
+}

@@ -444,12 +444,25 @@ export function detectThresholdCheck(
     ) {
       const leftText = node.left.getText(sourceFile);
       const rightText = node.right.getText(sourceFile);
-      const leftIsVarLike =
-        THRESHOLD_VAR_PATTERN.test(leftText) || leftText.includes(".");
       const rightIsLiteral = ts.isNumericLiteral(node.right);
+      const leftIsLiteral = ts.isNumericLiteral(node.left);
       const rightIsConstant = /^[A-Z][A-Z_0-9]+$/.test(rightText);
+      const leftIsConstant = /^[A-Z][A-Z_0-9]+$/.test(leftText);
 
-      if (leftIsVarLike && (rightIsLiteral || rightIsConstant)) {
+      // F445 (Sprint 279) — Path A 확장: 한쪽이 UPPERCASE_CONSTANT 또는 numeric literal이면
+      //   var-like 검증 skip. UPPERCASE/literal은 거의 항상 threshold const 의미.
+      //   (CC-001 `creditScore < MIN_CREDIT_SCORE`, `annualIncome < MIN_INCOME_KRW` 대응)
+      if (rightIsConstant || rightIsLiteral || leftIsConstant || leftIsLiteral) {
+        foundThreshold = true;
+      }
+      // F445 (Sprint 279) — Path B 신규: var-vs-var 비교에서 양변 중 하나라도
+      //   THRESHOLD_VAR_PATTERN(amount/limit/threshold/...) 매칭 시 인정.
+      //   (CC-002 `remainingLimit < amount` 대응 — left에 `limit` 매칭)
+      //   `.` property access는 path B에서 제외 (false positive 회피, 예: `i < arr.length`).
+      else if (
+        THRESHOLD_VAR_PATTERN.test(leftText) ||
+        THRESHOLD_VAR_PATTERN.test(rightText)
+      ) {
         foundThreshold = true;
       }
     }

@@ -57,8 +57,10 @@ divergenceMarkers:
     confidence: 0.7
     autoDetected: true
     detectedBy: "F430 Sprint 263 provenance-writer"
-    status: OPEN
-    recommendation: "TODO: manual review (auto-detected by F430 Sprint 263 provenance-writer)"
+    status: RESOLVED
+    resolvedBy: "F445 Sprint 279 — Threshold detector 확장 (Path A var-vs-CONSTANT/literal var-like 검증 skip + Path B var-vs-var keyword 매칭)"
+    resolvedAt: "2026-05-08"
+    recommendation: "RESOLVED: F445 Sprint 279에서 detectThresholdCheck 확장 후 PRESENCE 자동 입증."
   - marker: DIVERGENCE
     ruleId: CC-002
     ruleName: "CC-002 — auto-detected by missing_threshold_check"
@@ -72,12 +74,19 @@ divergenceMarkers:
     confidence: 0.7
     autoDetected: true
     detectedBy: "F430 Sprint 263 provenance-writer"
-    status: OPEN
-    recommendation: "TODO: manual review (auto-detected by F430 Sprint 263 provenance-writer)"
+    status: RESOLVED
+    resolvedBy: "F445 Sprint 279 — Threshold detector 확장 (Path A var-vs-CONSTANT/literal var-like 검증 skip + Path B var-vs-var keyword 매칭)"
+    resolvedAt: "2026-05-08"
+    recommendation: "RESOLVED: F445 Sprint 279에서 detectThresholdCheck 확장 후 PRESENCE 자동 입증."
 
 divergenceSummary:
   totalMarkers: 2
+  resolvedMarkers: 2
+  openMarkers: 0
   bySeverity:
     HIGH: 0
     MEDIUM: 2
     LOW: 0
+  byStatus:
+    OPEN: 0
+    RESOLVED: 2

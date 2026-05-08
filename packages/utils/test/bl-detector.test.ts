@@ -322,6 +322,71 @@ describe("BL-005~008/015 — detectThresholdCheck", () => {
     expect(markers[0]?.pattern).toBe("missing_threshold_check");
     expect(markers[0]?.confidence).toBe(0.7);
   });
+
+  // ──────────────────────────────────────────────────────────────────────
+  // F445 (Sprint 279) — detector 확장 검증 (CC-001/002 ABSENCE 해소)
+  // ──────────────────────────────────────────────────────────────────────
+
+  it("F445 Path A: detects non-keyword var < UPPERCASE_CONSTANT (CC-001 case)", () => {
+    // CC-001 issueCard: `if (creditScore < MIN_CREDIT_SCORE) throw ...`
+    //   leftText='creditScore' (keyword 미매칭) — but rightIsConstant=true → Path A PASS
+    const src = parseTypeScriptSource(
+      "test.ts",
+      `function issueCard(creditScore: number) {
+  if (creditScore < MIN_CREDIT_SCORE) {
+    throw new Error("E422-CS");
+  }
+}`,
+    );
+    const markers = detectThresholdCheck(src, "test.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("F445 Path B: detects var-var with keyword on one side (CC-002 case)", () => {
+    // CC-002 checkPaymentLimit: `if (remainingLimit < amount) throw ...`
+    //   left='remainingLimit' matches `limit` keyword → Path B PASS
+    const src = parseTypeScriptSource(
+      "test.ts",
+      `function check(remainingLimit: number, amount: number) {
+  if (remainingLimit < amount) {
+    throw new Error("E422-LIMIT");
+  }
+}`,
+    );
+    const markers = detectThresholdCheck(src, "test.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("F445 false positive 회피: var-var with no keyword on either side (DIVERGENCE)", () => {
+    // 양변 모두 keyword 미매칭 → ABSENCE 유지 (i < j 같은 일반 비교는 threshold 아님)
+    const src = parseTypeScriptSource(
+      "test.ts",
+      `function loopCheck(i: number, j: number) {
+  if (i < j) {
+    return i;
+  }
+  return j;
+}`,
+    );
+    const markers = detectThresholdCheck(src, "test.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.pattern).toBe("missing_threshold_check");
+  });
+
+  it("F445 Path A reverse: detects literal < var (양변 어느 쪽이든 literal 인정)", () => {
+    // 0 < amount 같은 reverse direction도 PASS (CC-006 같은 sanity check)
+    const src = parseTypeScriptSource(
+      "test.ts",
+      `function check(amount: number) {
+  if (0 < amount) {
+    return amount;
+  }
+  return 0;
+}`,
+    );
+    const markers = detectThresholdCheck(src, "test.ts");
+    expect(markers).toHaveLength(0);
+  });
 });
 
 describe("BL-014 — detectStatusTransition", () => {

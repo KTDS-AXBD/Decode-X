@@ -1,0 +1,39 @@
+---
+# Provenance — DELIVERY-001
+# 13번째 도메인 — Delivery 산업 합성 도메인 PoC
+
+skillId: DELIVERY-001
+extractedAt: "2026-05-09T08:00:00+09:00"
+extractedBy: "Decode-X Sprint 283 F449 — withRuleId 재사용 13번째 도메인 (Delivery 산업)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/delivery/rules/delivery-rules.md"
+    section: "Delivery 합성 비즈니스 룰 — DV-001~DV-006"
+    businessRules: [DV-001, DV-002, DV-003, DV-004, DV-005, DV-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 배송(Delivery) 산업 일반화 PoC. 요청/한도/시작/상태/지연/취소-반품 추상화. 13번째 도메인. detector 신뢰도 5 Sprint cascade(S278~S282) 완전 활용."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/delivery.ts"
+    functions: [requestDelivery, checkRegionLimit, startShipping, transitionDeliveryStatus, markDelayedDeliveries, cancelAndReturn]
+    test: "src/__tests__/delivery.test.ts (후속 작성 가능, PoC 단계)"
+    sourceMarker: PRESENCE
+    note: "BL-detector 자동 PRESENCE 입증 — 신규 detector 0개, withRuleId 재사용 (Threshold × 2 + Atomic × 2 + Status × 2)"
+
+inputCompleteness:
+  sInput: 0.92
+  deficiencyFlag: false
+  components:
+    rulesCoverage: 1.00
+    testCoverage: 0.85
+    provenanceLink: 1.00
+
+note: |
+  Sprint 283 F449: 배송 산업 도메인 신규 — Delivery 산업 다양성 확장.
+  DV-001 무게 한도 / DV-002 지역별 한도 / DV-003 배송 시작 atomic /
+  DV-004 상태 전환 / DV-005 지연 자동 마킹 / DV-006 취소-반품 atomic.
+  분포: Threshold × 2 + Atomic × 2 + Status × 2 (균형 분포).
+  withRuleId 재사용 11 Sprint 연속 정점 (S264~S278+S283). 신규 detector 0개.
+  detector 신뢰도 5 Sprint cascade (S278 ABSENCE → S279 Path A/B → S280 SUPPORTED → S281 resolvedBy/At → S282 byStatus) 완전 활용.

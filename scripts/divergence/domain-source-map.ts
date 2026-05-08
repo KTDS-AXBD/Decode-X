@@ -188,6 +188,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "cancelTransaction",
     ],
   },
+  {
+    container: "delivery",
+    rulesPath: `${SPEC_CONTAINER_BASE}/delivery/rules/delivery-rules.md`,
+    // Sprint 283 (F449): Delivery 합성 도메인 — 13번째 도메인 (배송 산업 다양성).
+    // DV-001~DV-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 11 Sprint 연속 정점 (S264~S283).
+    // detector 신뢰도 5 Sprint cascade (S278~S282) 완전 활용.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/delivery.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/delivery/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "requestDelivery",
+      "checkRegionLimit",
+      "startShipping",
+      "transitionDeliveryStatus",
+      "markDelayedDeliveries",
+      "cancelAndReturn",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

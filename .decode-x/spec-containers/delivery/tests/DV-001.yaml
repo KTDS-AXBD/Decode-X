@@ -1,0 +1,70 @@
+# Test Scenarios — DV-001 ~ DV-006 (대표)
+ruleId: DV-001
+domain: delivery
+function: requestDelivery
+detector: ThresholdCheck (F445 Path A)
+
+scenarios:
+  - id: TC-DV-001-01
+    name: 정상 요청 (5kg, RURAL → 4일 후 도착)
+    given: { orderId: ord-1, address: "충북 단양", regionCode: RURAL, weightKg: 5 }
+    when: requestDelivery
+    then: { status: PENDING, expectedDays: 4 }
+
+  - id: TC-DV-001-02
+    name: 무게 미달 → E422-WT-MIN
+    given: { weightKg: 0.05 }
+    when: requestDelivery
+    then: { error: E422-WT-MIN }
+
+  - id: TC-DV-001-03
+    name: 무게 초과 → E422-WT-MAX
+    given: { weightKg: 35 }
+    when: requestDelivery
+    then: { error: E422-WT-MAX }
+
+  - id: TC-DV-002-01
+    name: RURAL 한도 충족 (8kg ≤ 10kg) → canShip
+    given: { delivery: { regionCode: RURAL, weight_kg: 8, status: PENDING } }
+    when: checkRegionLimit
+    then: { canShip: true, regionLimit: 10 }
+
+  - id: TC-DV-002-02
+    name: OVERSEAS 한도 초과 (25kg > 20kg) → E422-RGN-LIMIT
+    given: { delivery: { regionCode: OVERSEAS, weight_kg: 25 } }
+    when: checkRegionLimit
+    then: { error: E422-RGN-LIMIT }
+
+  - id: TC-DV-003-01
+    name: PENDING → SHIPPED atomic + delivery_events INSERT
+    given: { delivery: { status: PENDING } }
+    when: startShipping
+    then:
+      deliveries.status: SHIPPED
+      delivery_events: { event_type: SHIPPED, count: 1 }
+
+  - id: TC-DV-004-01
+    name: SHIPPED → DELIVERED 정상 완료
+    given: { delivery: { status: SHIPPED } }
+    when: transitionDeliveryStatus(DELIVERED)
+    then: { previousStatus: SHIPPED, newStatus: DELIVERED, delivered_at: <timestamp> }
+
+  - id: TC-DV-004-02
+    name: DELIVERED → SHIPPED 역전환 시도 → E409-TR
+    given: { delivery: { status: DELIVERED } }
+    when: transitionDeliveryStatus(SHIPPED)
+    then: { error: E409-TR }
+
+  - id: TC-DV-005-01
+    name: 3일 지연 SHIPPED → DELAYED 마킹
+    given: { delivery: { status: SHIPPED, expected_delivery_at: 5days_ago } }
+    when: markDelayedDeliveries
+    then: { markedCount: 1, status: DELAYED, delayed_since: now }
+
+  - id: TC-DV-006-01
+    name: SHIPPED → RETURNED atomic + return_requests INSERT
+    given: { delivery: { status: SHIPPED, weight_kg: 3, order_id: ord-9 } }
+    when: cancelAndReturn(reason="defective")
+    then:
+      deliveries.status: RETURNED
+      return_requests: { count: 1, refund_amount: 3000 }

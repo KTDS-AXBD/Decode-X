@@ -1,0 +1,39 @@
+---
+# Provenance — SUBSCRIPTION-001
+# 14번째 도메인 — SaaS 구독 산업 합성 도메인 PoC
+
+skillId: SUBSCRIPTION-001
+extractedAt: "2026-05-09T08:30:00+09:00"
+extractedBy: "Decode-X Sprint 284 F450 — withRuleId 재사용 14번째 도메인 (Subscription 산업)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/subscription/rules/subscription-rules.md"
+    section: "Subscription 합성 비즈니스 룰 — SB-001~SB-006"
+    businessRules: [SB-001, SB-002, SB-003, SB-004, SB-005, SB-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — SaaS 구독(Subscription) 산업 일반화 PoC. 생성/한도/갱신/상태/만료/취소-환불 추상화. 14번째 도메인. detector 5 Sprint cascade(S278~S282) + Delivery 입증 패턴(S283) 활용."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/subscription.ts"
+    functions: [createSubscription, checkAutoChargeLimit, autoRenew, transitionSubscriptionStatus, markExpiredSubscriptions, cancelWithRefund]
+    test: "src/__tests__/subscription.test.ts (후속 작성 가능, PoC 단계)"
+    sourceMarker: PRESENCE
+    note: "BL-detector 자동 PRESENCE 입증 — 신규 detector 0개, withRuleId 재사용 (Threshold × 2 + Atomic × 2 + Status × 2)"
+
+inputCompleteness:
+  sInput: 0.92
+  deficiencyFlag: false
+  components:
+    rulesCoverage: 1.00
+    testCoverage: 0.85
+    provenanceLink: 1.00
+
+note: |
+  Sprint 284 F450: SaaS 구독 산업 도메인 신규 — 14번째 도메인 (3번째 신규 산업 시리즈).
+  SB-001 가격/주기 한도 / SB-002 자동결제 한도 검증 / SB-003 자동 갱신 atomic /
+  SB-004 상태 전환 (active ↔ paused / cancelled) / SB-005 만료 자동 처리 / SB-006 취소-환불 atomic.
+  분포: Threshold × 2 + Atomic × 2 + Status × 2 (균형 분포).
+  withRuleId 재사용 12 Sprint 연속 정점 (S264~S278+S283+S284). 신규 detector 0개.
+  detector 신뢰도 5 Sprint cascade + Delivery 입증 패턴 활용 — 0 ABSENCE 예상.

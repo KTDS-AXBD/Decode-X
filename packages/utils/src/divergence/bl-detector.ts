@@ -711,4 +711,11 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "DV-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "DV-004"),
   "DV-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "DV-005"),
   "DV-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "DV-006"),
+  // Sprint 284 (F450) — subscription domain (threshold × 2, atomic × 2, status × 2 — 14번째 도메인, SaaS 구독 산업)
+  "SB-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "SB-001"),
+  "SB-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "SB-002"),
+  "SB-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "SB-003"),
+  "SB-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "SB-004"),
+  "SB-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "SB-005"),
+  "SB-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "SB-006"),
 };

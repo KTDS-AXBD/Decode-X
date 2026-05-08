@@ -207,6 +207,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "cancelAndReturn",
     ],
   },
+  {
+    container: "subscription",
+    rulesPath: `${SPEC_CONTAINER_BASE}/subscription/rules/subscription-rules.md`,
+    // Sprint 284 (F450): Subscription 합성 도메인 — 14번째 도메인 (SaaS 구독 산업 다양성).
+    // SB-001~SB-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 12 Sprint 연속 정점 (S264~S284).
+    // 3번째 신규 산업 도메인 (CC S278 + DV S283 + SB S284).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/subscription.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/subscription/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "createSubscription",
+      "checkAutoChargeLimit",
+      "autoRenew",
+      "transitionSubscriptionStatus",
+      "markExpiredSubscriptions",
+      "cancelWithRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

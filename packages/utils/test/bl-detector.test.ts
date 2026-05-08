@@ -622,7 +622,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 63 detectors (Sprint 283 F449 — delivery DV-001~DV-006 added, 13번째 도메인 배송 산업)", () => {
+  it("exposes 69 detectors (Sprint 284 F450 — subscription SB-001~SB-006 added, 14번째 도메인 SaaS 구독 산업)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "BB-001",
       "BB-002",
@@ -681,6 +681,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "P-005",
       "P-006",
       "P-007",
+      "SB-001",
+      "SB-002",
+      "SB-003",
+      "SB-004",
+      "SB-005",
+      "SB-006",
       "V-001",
       "V-002",
       "V-003",

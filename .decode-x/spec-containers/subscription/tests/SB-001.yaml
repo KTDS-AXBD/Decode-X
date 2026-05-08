@@ -1,0 +1,87 @@
+# Test Scenarios — SB-001 ~ SB-006 (대표)
+ruleId: SB-001
+domain: subscription
+function: createSubscription
+detector: ThresholdCheck (F445 Path A)
+
+scenarios:
+  - id: TC-SB-001-01
+    name: 정상 생성 (PRO 9,900 / 30일 / 한도 50,000)
+    given: { userId: u-1, planCode: PRO, priceKrw: 9900, cycleDays: 30, autoChargeLimit: 50000 }
+    when: createSubscription
+    then: { status: active, cycle_count: 0, nextChargeAt: <30일 후> }
+
+  - id: TC-SB-001-02
+    name: 가격 미달 → E422-PR
+    given: { priceKrw: 500 }
+    when: createSubscription
+    then: { error: E422-PR }
+
+  - id: TC-SB-001-03
+    name: 주기 미달 → E422-CY-MIN
+    given: { cycleDays: 3 }
+    when: createSubscription
+    then: { error: E422-CY-MIN }
+
+  - id: TC-SB-001-04
+    name: 주기 초과 → E422-CY-MAX
+    given: { cycleDays: 400 }
+    when: createSubscription
+    then: { error: E422-CY-MAX }
+
+  - id: TC-SB-002-01
+    name: 한도 충분 → canCharge
+    given: { sub: { price_krw: 9900, auto_charge_limit: 50000, status: active } }
+    when: checkAutoChargeLimit
+    then: { canCharge: true, remainingHeadroom: 40100 }
+
+  - id: TC-SB-002-02
+    name: 한도 미달 → E422-LIMIT
+    given: { sub: { price_krw: 50000, auto_charge_limit: 30000 } }
+    when: checkAutoChargeLimit
+    then: { error: E422-LIMIT }
+
+  - id: TC-SB-003-01
+    name: 자동 갱신 atomic — payment + cycle_count++ + next_charge_at
+    given: { sub: { price_krw: 9900, cycle_days: 30, cycle_count: 5, status: active } }
+    when: autoRenew
+    then:
+      paymentId: <uuid>
+      cycle_count: 6
+      subscription_payments: { status: success, cycle_index: 6, count: 1 }
+
+  - id: TC-SB-004-01
+    name: active → paused 전환
+    given: { sub: { status: active } }
+    when: transitionSubscriptionStatus(paused)
+    then: { previousStatus: active, newStatus: paused }
+
+  - id: TC-SB-004-02
+    name: cancelled → active 역전환 시도 → E409-TR
+    given: { sub: { status: cancelled } }
+    when: transitionSubscriptionStatus(active)
+    then: { error: E409-TR }
+
+  - id: TC-SB-005-01
+    name: expires_at 도달 → expired 마킹
+    given: { sub: { status: active, expires_at: 1day_ago } }
+    when: markExpiredSubscriptions
+    then: { markedCount: 1, status: expired }
+
+  - id: TC-SB-006-01
+    name: 14일 이내 취소 → 100% 환불 atomic
+    given: { sub: { price_krw: 9900, started_at: 5days_ago, status: active } }
+    when: cancelWithRefund(reason="dissatisfied")
+    then:
+      refundAmount: 9900
+      subscription_payments: { status: refunded, amount: -9900, count: 1 }
+      subscriptions.status: cancelled
+
+  - id: TC-SB-006-02
+    name: 14일 초과 취소 → 환불 0원, status만 cancelled
+    given: { sub: { price_krw: 9900, started_at: 30days_ago, status: active } }
+    when: cancelWithRefund
+    then:
+      refundAmount: 0
+      subscription_payments: { count: 0 }
+      subscriptions.status: cancelled

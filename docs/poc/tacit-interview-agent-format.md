@@ -1,3 +1,14 @@
+---
+code: AIF-POC-tacit-interview-agent-format
+title: "Tacit Interview Agent — 포맷 명세 (PoC)"
+version: 1.0
+status: active
+category: poc
+created: 2026-04-16
+updated: 2026-04-16
+author: AX BD팀
+---
+
 # Tacit Interview Agent — 포맷 명세 (PoC)
 
 > **상태**: PoC 포맷 명세 (2026-04-17 임원 발표용)

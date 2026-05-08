@@ -1,3 +1,14 @@
+---
+code: AIF-REQI-phase-0-kickoff
+title: "Decode-X Phase 0 Kick-off 설계서"
+version: 1.0
+status: active
+category: req-interview
+created: 2026-04-18
+updated: 2026-04-18
+author: Sinclair Seo
+---
+
 # Decode-X Phase 0 Kick-off 설계서
 
 **문서 유형**: 메타 문서 (Phase 0 착수 승인 근거)

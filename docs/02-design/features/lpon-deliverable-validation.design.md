@@ -1,3 +1,14 @@
+---
+code: AIF-DSGN-lpon-deliverable-validation-design
+title: "온누리상품권 분석 산출물 검증 및 문서화 Design Document"
+version: 1.0
+status: active
+category: design
+created: 2026-03-09
+updated: 2026-03-09
+author: Sinclair Seo
+---
+
 # 온누리상품권 분석 산출물 검증 및 문서화 Design Document
 
 > **Summary**: AI Foundry 역공학 데이터를 4종 SI 산출물 마크다운으로 변환하는 Export 시스템 설계

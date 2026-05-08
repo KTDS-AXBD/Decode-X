@@ -1,3 +1,14 @@
+---
+code: AIF-PLAN-skill-framework-2-plan
+title: "Skill Framework Phase 2 — Planning Document"
+version: 1.0
+status: active
+category: plan
+created: 2026-03-20
+updated: 2026-03-20
+author: Sinclair Seo
+---
+
 # Skill Framework Phase 2 — Planning Document
 
 > **Summary**: Phase 1a+1b 인프라(CLI 4종 + 가이드라인 + 템플릿 + 자동분류 65%) 위에 팀 배포 파이프라인 + 사용량 추적 훅 + 자동분류 정확도 향상 + 에러 핸들링 보강을 추가하여 팀 Adoption 준비를 완성

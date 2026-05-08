@@ -1,3 +1,14 @@
+---
+code: AIF-REQ-036
+title: "AIF-REQ-036 Planning Document — Phase 3 UX 재편 (듀얼 트랙 + AXIS DS 연동)"
+version: 1.0
+status: active
+category: plan
+created: 2026-04-21
+updated: 2026-04-22
+author: Sinclair Seo
+---
+
 # AIF-REQ-036 Planning Document — Phase 3 UX 재편 (듀얼 트랙 + AXIS DS 연동)
 
 > **Summary**: 본부장 3분 설득 + 엔지니어 Spec→Source 3클릭 역추적을 위한 듀얼 트랙 UX 레이어 + AXIS DS 첫 Full 소비자

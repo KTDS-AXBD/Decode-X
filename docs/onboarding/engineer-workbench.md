@@ -1,3 +1,14 @@
+---
+code: AIF-DOC-engineer-workbench
+title: "Engineer Workbench 사용 가이드"
+version: 1.0
+status: active
+category: general
+created: 2026-04-21
+updated: 2026-04-21
+author: AX BD팀
+---
+
 # Engineer Workbench 사용 가이드
 
 > **대상**: Analyst / Engineer 역할  

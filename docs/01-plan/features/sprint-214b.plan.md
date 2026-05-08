@@ -1,3 +1,14 @@
+---
+code: AIF-PLAN-S214
+title: "Sprint 214b Plan — Track A Fill: 결제 + 환불"
+version: 1.0
+status: active
+category: plan
+created: 2026-04-20
+updated: 2026-04-20
+author: 서민원(Sinclair)
+---
+
 # Sprint 214b Plan — Track A Fill: 결제 + 환불
 
 **Sprint**: 214b

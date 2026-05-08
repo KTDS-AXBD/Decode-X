@@ -1,3 +1,14 @@
+---
+code: AIF-DOC-prd-final
+title: "Recon-X MSA 재조정 PRD"
+version: 1.0
+status: active
+category: general
+created: 2026-04-07
+updated: 2026-04-16
+author: Sinclair Seo
+---
+
 # Recon-X MSA 재조정 PRD
 
 **버전:** final

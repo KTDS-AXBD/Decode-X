@@ -1,3 +1,14 @@
+---
+code: AIF-DSGN-skill-framework-3-design
+title: "Skill Framework Phase 3 — Design Document"
+version: 1.0
+status: active
+category: design
+created: 2026-03-20
+updated: 2026-03-20
+author: Sinclair Seo
+---
+
 # Skill Framework Phase 3 — Design Document
 
 > **Summary**: 기존 스킬 일괄 리팩토링(refactor.mjs) + 의존성 그래프(deps.mjs) + 10개 수동 분류 + threshold 수정의 기술 설계

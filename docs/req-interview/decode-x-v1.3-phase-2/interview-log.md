@@ -1,3 +1,14 @@
+---
+code: AIF-REQI-interview-log
+title: "Decode-X v1.3 Phase 2 — 인터뷰 로그"
+version: 1.0
+status: active
+category: req-interview
+created: 2026-04-19
+updated: 2026-04-19
+author: Sinclair Seo
+---
+
 # Decode-X v1.3 Phase 2 — 인터뷰 로그
 
 - **프로젝트 코드네임**: decode-x-v1.3-phase-2

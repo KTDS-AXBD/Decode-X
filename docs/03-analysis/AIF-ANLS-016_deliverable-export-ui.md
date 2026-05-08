@@ -1,3 +1,14 @@
+---
+code: AIF-ANLS-016
+title: "SI Deliverable Export UI - Gap Analysis Report"
+version: 1.0
+status: active
+category: analysis
+created: 2026-03-10
+updated: 2026-03-18
+author: Sinclair Seo
+---
+
 # SI Deliverable Export UI - Gap Analysis Report
 
 > **Analysis Type**: Design-Implementation Gap Analysis (PDCA Check)

@@ -1,3 +1,14 @@
+---
+code: AIF-POC-S3
+title: "Sprint 3 Exit Check — T3 결정적 생성 PoC 2종 + 재평가 Gate + ES-CHARGE-004/005/008 Fill"
+version: 1.0
+status: active
+category: poc
+created: 2026-04-19
+updated: 2026-04-19
+author: AX BD팀
+---
+
 # Sprint 3 Exit Check — T3 결정적 생성 PoC 2종 + 재평가 Gate + ES-CHARGE-004/005/008 Fill
 
 **문서 유형**: Sprint Exit Check (Sprint 3 출구 점검 결과)

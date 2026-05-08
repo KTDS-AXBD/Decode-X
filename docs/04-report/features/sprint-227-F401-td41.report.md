@@ -1,3 +1,14 @@
+---
+code: AIF-RPRT-S227
+title: "Sprint 227 — F401 TD-41 완전 해소 Report"
+version: 1.0
+status: active
+category: report
+created: 2026-04-22
+updated: 2026-04-22
+author: AX BD팀
+---
+
 # Sprint 227 — F401 TD-41 완전 해소 Report
 
 > **Sprint**: 227 | **Date**: 2026-04-22 | **Match Rate**: 100%

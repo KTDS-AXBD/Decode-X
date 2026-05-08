@@ -1,3 +1,14 @@
+---
+code: AIF-REQI-apply-diff
+title: "Apply Diff — Round 1"
+version: 1.0
+status: active
+category: req-interview
+created: 2026-04-21
+updated: 2026-04-21
+author: Sinclair Seo
+---
+
 # Apply Diff — Round 1
 
 **생성 시각:** 2026-04-20T23:35:35.608Z

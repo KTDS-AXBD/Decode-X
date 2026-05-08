@@ -1,3 +1,14 @@
+---
+code: AIF-REQI-scorecard
+title: "scorecard"
+version: 1.0
+status: active
+category: req-interview
+created: 2026-04-07
+updated: 2026-04-16
+author: Sinclair Seo
+---
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📊 착수 충분도 스코어카드 — Round 2
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

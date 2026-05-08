@@ -1,3 +1,14 @@
+---
+code: AIF-POC-S2
+title: "Sprint 2 — R2 LLM 예산 관측 스키마"
+version: 1.0
+status: active
+category: poc
+created: 2026-04-19
+updated: 2026-04-19
+author: AX BD팀
+---
+
 # Sprint 2 — R2 LLM 예산 관측 스키마
 
 **Sprint**: 2

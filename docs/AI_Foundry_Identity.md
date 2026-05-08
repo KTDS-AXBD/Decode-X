@@ -1,3 +1,14 @@
+---
+code: AIF-DOC-ai-foundry-identity
+title: "AI Foundry — 프로젝트 정체성 정의서"
+version: 1.0
+status: active
+category: general
+created: 2026-03-18
+updated: 2026-03-18
+author: Sinclair Seo
+---
+
 # AI Foundry — 프로젝트 정체성 정의서
 
 > 이 문서는 AI Foundry의 정체성, 포지셔닝, Foundry-X 제품군 내 역할을 정의한다.

@@ -1,3 +1,14 @@
+---
+code: AIF-DOC-ax-bd-msa-restructuring-plan
+title: "AX BD 서비스 그룹 MSA 재조정 설계서"
+version: 1.0
+status: active
+category: general
+created: 2026-04-07
+updated: 2026-04-07
+author: Sinclair Seo
+---
+
 # AX BD 서비스 그룹 MSA 재조정 설계서
 
 > **문서 ID**: FX-DSGN-MSA-001 v3 (실측 데이터 반영)

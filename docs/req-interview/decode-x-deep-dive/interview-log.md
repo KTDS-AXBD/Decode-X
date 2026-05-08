@@ -1,3 +1,14 @@
+---
+code: AIF-REQI-interview-log
+title: "Decode-X Deep Dive — 인터뷰 원문 기록"
+version: 1.0
+status: active
+category: req-interview
+created: 2026-04-16
+updated: 2026-04-16
+author: Sinclair Seo
+---
+
 # Decode-X Deep Dive — 인터뷰 원문 기록
 
 - **일자**: 2026-04-16

@@ -1,3 +1,14 @@
+---
+code: AIF-REQI-prd-final
+title: "Decode-X Deep Dive PRD"
+version: 1.0
+status: active
+category: req-interview
+created: 2026-04-16
+updated: 2026-04-16
+author: Sinclair Seo
+---
+
 # Decode-X Deep Dive PRD
 
 **버전:** v2

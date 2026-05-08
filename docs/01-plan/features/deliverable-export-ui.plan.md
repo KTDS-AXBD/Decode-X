@@ -1,3 +1,14 @@
+---
+code: AIF-PLAN-deliverable-export-ui-plan
+title: "SI 산출물 Export UI Planning Document"
+version: 1.0
+status: active
+category: plan
+created: 2026-03-10
+updated: 2026-03-10
+author: Sinclair Seo
+---
+
 # SI 산출물 Export UI Planning Document
 
 > **Summary**: AIF-REQ-017 확장 — 기존 Export Center 페이지에 "SI 산출물" 탭을 추가하여 5종 마크다운 산출물(D1~D5)을 미리보기·다운로드할 수 있는 UI를 제공한다.

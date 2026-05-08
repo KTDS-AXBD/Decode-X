@@ -1,3 +1,14 @@
+---
+code: AIF-REQI-deepseek-feedback
+title: "deepseek feedback"
+version: 1.0
+status: active
+category: req-interview
+created: 2026-04-19
+updated: 2026-04-19
+author: Sinclair Seo
+---
+
 ## DeepSeek 검토의견
 **모델:** deepseek/deepseek-chat-v3
 **역할:** 기술적 실현 가능성, 아키텍처 리뷰

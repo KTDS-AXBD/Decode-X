@@ -1,3 +1,14 @@
+---
+code: AIF-DSGN-skill-framework-plugin-design
+title: "Skill Framework Plugin — Design Document"
+version: 1.0
+status: active
+category: design
+created: 2026-03-20
+updated: 2026-03-20
+author: Sinclair Seo
+---
+
 # Skill Framework Plugin — Design Document
 
 > **Summary**: skill-framework/를 독립 CC 플러그인으로 패키징. 경로 전환(CWD→PLUGIN_ROOT) + plugin.json + 8 SKILL.md + README

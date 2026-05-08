@@ -1,3 +1,14 @@
+---
+code: AIF-PLAN-skill-framework-1b-plan
+title: "Skill Framework Phase 1b — Planning Document"
+version: 1.0
+status: active
+category: plan
+created: 2026-03-20
+updated: 2026-03-20
+author: Sinclair Seo
+---
+
 # Skill Framework Phase 1b — Planning Document
 
 > **Summary**: Phase 1a 인프라(CLI 4종 + 11 카테고리 + 210 스킬 레지스트리) 위에 스킬 작성 가이드라인·템플릿·lint --fix·플러그인 자동분류를 추가하여 프레임워크를 실용 수준으로 완성

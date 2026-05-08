@@ -1,3 +1,14 @@
+---
+code: AIF-RPRT-report-ux-improvement-report
+title: "AIF-REQ-018 Report UX Improvement — Completion Report"
+version: 1.0
+status: active
+category: report
+created: 2026-03-19
+updated: 2026-03-19
+author: Sinclair Seo
+---
+
 # AIF-REQ-018 Report UX Improvement — Completion Report
 
 > **Feature**: report-ux-improvement

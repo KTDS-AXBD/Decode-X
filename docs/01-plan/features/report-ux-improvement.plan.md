@@ -1,3 +1,14 @@
+---
+code: AIF-PLAN-report-ux-improvement-plan
+title: "AIF-REQ-018 진행 현황 리포트 UX 개선 — Planning Document"
+version: 1.0
+status: active
+category: plan
+created: 2026-03-19
+updated: 2026-03-19
+author: Sinclair Seo
+---
+
 # AIF-REQ-018 진행 현황 리포트 UX 개선 — Planning Document
 
 > **Summary**: ProjectStatusTab의 하드코딩 데이터를 동적화하고, 중복 섹션을 통합하며, 결론 프레임을 강화한다.

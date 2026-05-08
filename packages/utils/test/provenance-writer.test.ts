@@ -241,9 +241,13 @@ describe("provenance-writer / recomputeDivergenceSummary", () => {
     expect(text).toMatch(/LOW: 0/);
   });
 
-  it("idempotent — no change when counts already match", () => {
-    const { changed } = recomputeDivergenceSummary(SAMPLE_WITH_SECTION);
-    expect(changed).toBe(false);
+  it("idempotent — second call after F448 byStatus addition", () => {
+    // F448 (Sprint 282): SAMPLE_WITH_SECTION는 byStatus 없으므로 첫 호출은 changed=true (byStatus 자동 추가)
+    const first = recomputeDivergenceSummary(SAMPLE_WITH_SECTION);
+    expect(first.changed).toBe(true);
+    // 두 번째 호출은 변화 없음 (idempotent)
+    const second = recomputeDivergenceSummary(first.text);
+    expect(second.changed).toBe(false);
   });
 
   it("creates summary block when absent + markers exist", () => {
@@ -258,6 +262,46 @@ describe("provenance-writer / recomputeDivergenceSummary", () => {
     const { text, changed } = recomputeDivergenceSummary(SAMPLE_NO_SECTION);
     expect(changed).toBe(false);
     expect(text).toBe(SAMPLE_NO_SECTION);
+  });
+
+  // ------------------------------------------------------------------------
+  // F448 (Sprint 282) — byStatus 자동 추가/갱신 검증
+  // ------------------------------------------------------------------------
+
+  it("F448: byStatus 자동 추가 (기존 byStatus 없는 summary block)", () => {
+    // SAMPLE_WITH_SECTION는 byStatus 없음 → 자동 추가
+    const { text, changed } = recomputeDivergenceSummary(SAMPLE_WITH_SECTION);
+    expect(changed).toBe(true);
+    expect(text).toContain("byStatus:");
+    expect(text).toMatch(/OPEN: 2/);  // BL-024 + BL-028 모두 OPEN
+    expect(text).toMatch(/RESOLVED: 0/);
+  });
+
+  it("F448: byStatus 자동 update (status 변경 후 recompute)", () => {
+    // BL-024 OPEN → RESOLVED 전환 후 byStatus.OPEN 1, RESOLVED 1
+    const { text: updated } = updateMarkerStatus(SAMPLE_WITH_SECTION, "BL-024", "RESOLVED");
+    const { text, changed } = recomputeDivergenceSummary(updated);
+    expect(changed).toBe(true);
+    expect(text).toMatch(/OPEN: 1/);
+    expect(text).toMatch(/RESOLVED: 1/);
+  });
+
+  it("F448: 신규 summary block 생성 시 byStatus 포함", () => {
+    // SAMPLE_NO_SECTION에 marker append → recompute → summary 신규 + byStatus 포함
+    const { text: appended } = appendDivergenceMarker(SAMPLE_NO_SECTION, AUTO_MARKER);
+    const { text } = recomputeDivergenceSummary(appended);
+    expect(text).toContain("byStatus:");
+    expect(text).toMatch(/OPEN: 1/);  // append된 AUTO_MARKER는 OPEN
+    expect(text).toMatch(/RESOLVED: 0/);
+  });
+
+  it("F448: byStatus 일관성 — marker status와 카운트 일치", () => {
+    // 두 marker 다 RESOLVED로 전환 → byStatus.OPEN=0, RESOLVED=2
+    const step1 = updateMarkerStatus(SAMPLE_WITH_SECTION, "BL-024", "RESOLVED");
+    const step2 = updateMarkerStatus(step1.text, "BL-028", "RESOLVED");
+    const { text } = recomputeDivergenceSummary(step2.text);
+    expect(text).toMatch(/OPEN: 0/);
+    expect(text).toMatch(/RESOLVED: 2/);
   });
 });
 

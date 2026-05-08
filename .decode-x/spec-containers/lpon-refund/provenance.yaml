@@ -181,6 +181,9 @@ divergenceSummary:
     HIGH: 1     # BL-024 (실 TC 실패 증거 보유)
     MEDIUM: 3   # BL-026, BL-028, BL-029
     LOW: 1      # BL-027
+  byStatus:
+    OPEN: 1
+    RESOLVED: 4
   auditEvidenceCoverage: "1/5 with live TC failure (TC-REFUND-002). 1/5 with silent-PASS harness gap (TC-REFUND-006, TD-22). 3/5 with ES edge spec backing only."
   publishedAt: "2026-04-21T08:40:00+09:00"
   publishedBy: "Decode-X Sprint 218 F354 (TD-24)"

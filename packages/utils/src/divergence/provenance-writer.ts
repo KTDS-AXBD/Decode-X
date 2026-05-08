@@ -245,6 +245,13 @@ export function parseExistingMarkers(yamlText: string): ParsedExistingMarker[] {
   return out;
 }
 
+/**
+ * F448 (Sprint 282): byStatus 자동 계산/추가.
+ *
+ * parseExistingMarkers의 status 필드(OPEN/RESOLVED) 활용 → byStatus 자동 갱신.
+ * 기존 byStatus 블록 있으면 update, 없으면 bySeverity 다음에 append.
+ * 신규 summary 생성 시에도 byStatus 포함.
+ */
 export function recomputeDivergenceSummary(yamlText: string): {
   text: string;
   changed: boolean;
@@ -252,14 +259,19 @@ export function recomputeDivergenceSummary(yamlText: string): {
   const markers = parseExistingMarkers(yamlText);
   const total = markers.length;
   const bySev: Record<Severity, number> = { HIGH: 0, MEDIUM: 0, LOW: 0 };
-  for (const m of markers) bySev[m.severity]++;
+  const byStatus: Record<"OPEN" | "RESOLVED", number> = { OPEN: 0, RESOLVED: 0 };
+  for (const m of markers) {
+    bySev[m.severity]++;
+    byStatus[m.status]++;
+  }
 
   const summaryStart = yamlText.search(/^divergenceSummary:/m);
   if (summaryStart < 0) {
     if (total === 0) return { text: yamlText, changed: false };
     const block =
       `\ndivergenceSummary:\n  totalMarkers: ${total}\n  bySeverity:\n` +
-      `    HIGH: ${bySev.HIGH}\n    MEDIUM: ${bySev.MEDIUM}\n    LOW: ${bySev.LOW}\n`;
+      `    HIGH: ${bySev.HIGH}\n    MEDIUM: ${bySev.MEDIUM}\n    LOW: ${bySev.LOW}\n` +
+      `  byStatus:\n    OPEN: ${byStatus.OPEN}\n    RESOLVED: ${byStatus.RESOLVED}\n`;
     const padBefore = yamlText.endsWith("\n") ? "" : "\n";
     return { text: yamlText + padBefore + block, changed: true };
   }
@@ -293,6 +305,32 @@ export function recomputeDivergenceSummary(yamlText: string): {
         updated = updated.replace(re, `$1${bySev[sev]}`);
         changed = true;
       }
+    }
+  }
+
+  // F448 (Sprint 282) — byStatus update or insert
+  const hasByStatusBlock = /^\s+byStatus:\s*$/m.test(updated);
+  if (hasByStatusBlock) {
+    // 기존 byStatus 블록 update — OPEN/RESOLVED 카운트 갱신
+    for (const status of ["OPEN", "RESOLVED"] as const) {
+      const re = new RegExp(`^(\\s+${status}:\\s+)(\\d+)`, "m");
+      const statusMatch = updated.match(re);
+      if (statusMatch) {
+        const cur = Number(statusMatch[2]);
+        if (cur !== byStatus[status]) {
+          updated = updated.replace(re, `$1${byStatus[status]}`);
+          changed = true;
+        }
+      }
+    }
+  } else {
+    // byStatus 블록 신규 — bySeverity LOW 줄 다음에 append
+    // F448: LOW 줄에 주석 허용(`LOW: 1      # comment` 같은 패턴 매칭)
+    const lowLinePattern = /^(\s+LOW:\s+\d+[^\n]*\n)/m;
+    if (lowLinePattern.test(updated)) {
+      const insertion = `  byStatus:\n    OPEN: ${byStatus.OPEN}\n    RESOLVED: ${byStatus.RESOLVED}\n`;
+      updated = updated.replace(lowLinePattern, `$1${insertion}`);
+      changed = true;
     }
   }
 

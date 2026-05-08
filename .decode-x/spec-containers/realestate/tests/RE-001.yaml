@@ -1,0 +1,78 @@
+# Test Scenarios — RE-001 ~ RE-006 (대표)
+ruleId: RE-001
+domain: realestate
+function: listProperty
+detector: ThresholdCheck (F445 Path A)
+
+scenarios:
+  - id: TC-RE-001-01
+    name: 정상 등록 (APARTMENT 80m², 월세 1.2M, 보증금 30M)
+    given: { ownerId: o-1, address: "서울 강남구", propertyType: APARTMENT, sizeM2: 80, monthlyRentKrw: 1200000, depositKrw: 30000000 }
+    when: listProperty
+    then: { status: listed }
+
+  - id: TC-RE-001-02
+    name: 규모 미달 (3m²) → E422-SZ-MIN
+    given: { sizeM2: 3 }
+    when: listProperty
+    then: { error: E422-SZ-MIN }
+
+  - id: TC-RE-001-03
+    name: 규모 초과 (15,000m²) → E422-SZ-MAX
+    given: { sizeM2: 15000 }
+    when: listProperty
+    then: { error: E422-SZ-MAX }
+
+  - id: TC-RE-002-01
+    name: 임차 한도 충분 (월소득 4M × 40% = 1.6M ≥ 월세 1.2M)
+    given: { tenant: { monthly_income_krw: 4000000, status: verified }, monthlyRentKrw: 1200000 }
+    when: checkRentAffordabilityLimit
+    then: { canLease: true, remainingRentLimit: 400000 }
+
+  - id: TC-RE-002-02
+    name: 임차 한도 초과 (월소득 3M × 40% = 1.2M < 월세 2M) → E422-LIMIT
+    given: { tenant: { monthly_income_krw: 3000000 }, monthlyRentKrw: 2000000 }
+    when: checkRentAffordabilityLimit
+    then: { error: E422-LIMIT }
+
+  - id: TC-RE-003-01
+    name: 계약 체결 atomic — lease INSERT + property leased
+    given: { property: { status: listed, monthly_rent_krw: 1200000, deposit_krw: 30000000 }, startAt: 2026-06-01, endAt: 2027-05-31 }
+    when: signLease
+    then:
+      leaseId: <uuid>
+      leases.status: active
+      properties.status: leased
+
+  - id: TC-RE-004-01
+    name: active → expiring (만료 임박)
+    given: { lease: { status: active } }
+    when: transitionLeaseStatus(expiring)
+    then: { previousStatus: active, newStatus: expiring }
+
+  - id: TC-RE-004-02
+    name: terminated → active 역전환 → E409-TR
+    given: { lease: { status: terminated } }
+    when: transitionLeaseStatus(active)
+    then: { error: E409-TR }
+
+  - id: TC-RE-005-01
+    name: end_at 도달 → expiring 마킹
+    given: { lease: { status: active, end_at: 1day_ago } }
+    when: markExpiringLeases
+    then: { markedCount: 1, status: expiring }
+
+  - id: TC-RE-006-01
+    name: 시작 30일 이전 취소 → deposit 100% 환불
+    given: { lease: { status: active, deposit_krw: 30000000, start_at: 30days_after, property_id: p-1 } }
+    when: cancelLeaseWithRefund(reason="job relocation")
+    then:
+      refundAmount: 30000000
+      leases.status: terminated
+      properties.status: listed
+
+  - id: TC-RE-006-02
+    name: 시작 7일 전 취소 → 환불 0원
+    given: { lease: { deposit_krw: 30000000, start_at: 7days_after } }
+    when: cancelLeaseWithRefund
+    then: { refundAmount: 0, leases.status: terminated }

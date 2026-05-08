@@ -622,7 +622,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 87 detectors (Sprint 287 F453 — education ED-001~ED-006 added, 17번째 도메인 교육 산업, 6번째 신규)", () => {
+  it("exposes 93 detectors (Sprint 288 F454 — realestate RE-001~RE-006 added, 18번째 도메인 부동산 산업, 7번째 신규)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "BB-001",
       "BB-002",
@@ -699,6 +699,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "P-005",
       "P-006",
       "P-007",
+      "RE-001",
+      "RE-002",
+      "RE-003",
+      "RE-004",
+      "RE-005",
+      "RE-006",
       "SB-001",
       "SB-002",
       "SB-003",

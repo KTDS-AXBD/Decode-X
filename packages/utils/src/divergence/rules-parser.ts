@@ -25,7 +25,8 @@ import type { BLRule } from "@ai-foundry/types";
 // F451 (Sprint 285): IN prefix 추가 (insurance 합성 도메인, 15번째 — 보험 산업). 2글자 alternation 동일 우선순위
 // F452 (Sprint 286): HC prefix 추가 (healthcare 합성 도메인, 16번째 — 의료 산업). 2글자 alternation 동일 우선순위
 // F453 (Sprint 287): ED prefix 추가 (education 합성 도메인, 17번째 — 교육 산업). 2글자 alternation 동일 우선순위
-const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|LP|CC|DV|SB|IN|HC|ED|P|V)-[A-Z]?\d{1,3}$/;
+// F454 (Sprint 288): RE prefix 추가 (realestate 합성 도메인, 18번째 — 부동산 산업). 2글자 alternation 동일 우선순위
+const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|LP|CC|DV|SB|IN|HC|ED|RE|P|V)-[A-Z]?\d{1,3}$/;
 const HEADER_PATTERN =
   /\|\s*ID\s*\|\s*condition[^|]*\|\s*criteria[^|]*\|\s*outcome[^|]*\|\s*exception[^|]*\|/i;
 const SEPARATOR_PATTERN = /^\s*\|[\s:|-]+\|\s*$/;

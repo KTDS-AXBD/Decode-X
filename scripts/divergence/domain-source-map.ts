@@ -283,6 +283,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "withdrawEnrollmentWithRefund",
     ],
   },
+  {
+    container: "realestate",
+    rulesPath: `${SPEC_CONTAINER_BASE}/realestate/rules/realestate-rules.md`,
+    // Sprint 288 (F454): Real Estate 합성 도메인 — 18번째 도메인 (부동산 산업, 7번째 신규 산업).
+    // RE-001~RE-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 16 Sprint 연속 정점 (S264~S288).
+    // 7번째 신규 산업 도메인 (CC + DV + SB + IN + HC + ED + RE).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/realestate.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/realestate/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "listProperty",
+      "checkRentAffordabilityLimit",
+      "signLease",
+      "transitionLeaseStatus",
+      "markExpiringLeases",
+      "cancelLeaseWithRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

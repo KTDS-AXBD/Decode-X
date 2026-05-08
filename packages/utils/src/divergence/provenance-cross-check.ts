@@ -5,6 +5,7 @@
  * js-yaml 의존성 회피를 위해 정규식 기반 가벼운 파서 (ruleId + status 필드만 추출).
  */
 import type { CrossCheckRecommendation, BLDivergenceMarker } from "@ai-foundry/types";
+import { BL_DETECTOR_REGISTRY } from "./bl-detector.js";
 
 interface ParsedProvenanceMarker {
   ruleId: string;
@@ -42,59 +43,18 @@ export function parseProvenanceMarkers(yamlText: string): ParsedProvenanceMarker
 
 /**
  * Detector가 지원하는 ruleId 목록.
- * F426 Sprint 259: BL-027, BL-028.
- * F427 Sprint 260: BL-024, BL-026, BL-029 추가 → 5/5 (F354 자동화 완성).
  *
- * 미지원 ruleId(BL-020/021/022/023/025/030 등)는 본 detector scope 외 —
- * cross-check에서 UNKNOWN 처리. 추가 detector 작성 시 본 Set 확장.
+ * F446 (Sprint 280): BL_DETECTOR_REGISTRY를 source of truth로 자동 derive.
+ * - 이전: manual whitelist 유지(F426 Sprint 259~F436 Sprint 269 P-007까지) — 매 Sprint 동기화 필요했음.
+ *   V/LP/BL-042/CC 누락으로 write-provenance가 자동 status 전환 skip하는 부작용 발생.
+ * - 현재: `Object.keys(BL_DETECTOR_REGISTRY)` 자동 sync → 새 detector 등록 시 즉시 supported.
+ *
+ * 미지원 ruleId는 BL_DETECTOR_REGISTRY 미등록 BL — cross-check에서 UNKNOWN 처리.
+ * 추가 detector 작성 시 BL_DETECTOR_REGISTRY에만 등록 (본 Set 별도 갱신 불필요).
  */
-export const DETECTOR_SUPPORTED_RULES = new Set<string>([
-  // Sprint 260 (F427) — refund specific
-  "BL-024",
-  "BL-026",
-  "BL-027",
-  "BL-028",
-  "BL-029",
-  // Sprint 262 (F429) — universal patterns
-  "BL-005",
-  "BL-006",
-  "BL-007",
-  "BL-008",
-  "BL-014",
-  "BL-015",
-  "BL-022",
-  // Sprint 264 (F431) — gift domain
-  "BL-G002",
-  "BL-G003",
-  "BL-G004",
-  "BL-G005",
-  "BL-G006",
-  // Sprint 265 (F432) — settlement domain
-  "BL-033",
-  "BL-034",
-  "BL-035",
-  "BL-036",
-  // Sprint 266 (F433) — budget domain
-  "BB-001",
-  "BB-002",
-  "BB-003",
-  "BB-004",
-  "BB-005",
-  // Sprint 266 (F433) — purchase domain
-  "BP-001",
-  "BP-002",
-  "BP-003",
-  "BP-004",
-  "BP-005",
-  // Sprint 269 (F436) — miraeasset-pension domain
-  "P-001",
-  "P-002",
-  "P-003",
-  "P-004",
-  "P-005",
-  "P-006",
-  "P-007",
-]);
+export const DETECTOR_SUPPORTED_RULES: ReadonlySet<string> = new Set(
+  Object.keys(BL_DETECTOR_REGISTRY),
+);
 
 /**
  * Manual markers vs Auto markers cross-check 권고.

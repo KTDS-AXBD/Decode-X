@@ -11,7 +11,7 @@ import {
   parseTypeScriptSource,
   BL_DETECTOR_REGISTRY,
 } from "../src/divergence/bl-detector.js";
-import { crossCheck, parseProvenanceMarkers } from "../src/divergence/provenance-cross-check.js";
+import { crossCheck, parseProvenanceMarkers, DETECTOR_SUPPORTED_RULES } from "../src/divergence/provenance-cross-check.js";
 
 describe("BL-028 — detectHardCodedExclusion", () => {
   it("detects const exclusionAmount = 0", () => {
@@ -974,5 +974,49 @@ describe("pension domain — P-001~P-007 via withRuleId (Sprint 269 F436)", () =
     const markers = BL_DETECTOR_REGISTRY["P-007"]!(sf, "pension.ts");
     expect(markers).toHaveLength(1);
     expect(markers[0]?.ruleId).toBe("P-007");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// F446 (Sprint 280) — DETECTOR_SUPPORTED_RULES auto-sync (BL_DETECTOR_REGISTRY source of truth)
+// ---------------------------------------------------------------------------
+describe("F446 — DETECTOR_SUPPORTED_RULES auto-sync (Sprint 280)", () => {
+  it("includes ALL BL_DETECTOR_REGISTRY ruleIds (no manual whitelist drift)", () => {
+    // 이전: manual whitelist (P-007까지) — V/LP/BL-042/CC 누락으로 write-provenance status 전환 skip.
+    // 현재: BL_DETECTOR_REGISTRY 자동 derive → 매 Sprint 동기화 불필요.
+    const registryKeys = Object.keys(BL_DETECTOR_REGISTRY).sort();
+    const supportedKeys = Array.from(DETECTOR_SUPPORTED_RULES).sort();
+    expect(supportedKeys).toEqual(registryKeys);
+  });
+
+  it("CC-001 (Sprint 278) is now SUPPORTED (ABSENCE→RESOLVED 자동 전환 가능)", () => {
+    expect(DETECTOR_SUPPORTED_RULES.has("CC-001")).toBe(true);
+  });
+
+  it("BL-042 (Sprint 277), V-001 (Sprint 274), LP-001 (Sprint 275) all SUPPORTED", () => {
+    expect(DETECTOR_SUPPORTED_RULES.has("BL-042")).toBe(true);
+    expect(DETECTOR_SUPPORTED_RULES.has("V-001")).toBe(true);
+    expect(DETECTOR_SUPPORTED_RULES.has("LP-001")).toBe(true);
+  });
+
+  it("미등록 ID는 NOT supported (UNKNOWN cross-check 분기 유지)", () => {
+    expect(DETECTOR_SUPPORTED_RULES.has("BL-999-NONEXISTENT")).toBe(false);
+  });
+
+  it("crossCheck: PRESENCE 자동 입증 시 OPEN→RESOLVED 권고 (CC-001 시뮬레이션)", () => {
+    // provenance.yaml에 CC-001 status=OPEN인 상태 + autoMarkers 빈 배열(detector PRESENCE 입증)
+    // → 권고 RESOLVED
+    const yamlText = `divergenceMarkers:
+  - marker: DIVERGENCE
+    ruleId: CC-001
+    severity: MEDIUM
+    pattern: missing_threshold_check
+    status: OPEN
+`;
+    const recs = crossCheck(yamlText, []);
+    expect(recs).toHaveLength(1);
+    expect(recs[0]?.ruleId).toBe("CC-001");
+    expect(recs[0]?.detectorSupported).toBe(true);  // F446 fix — 이전엔 false였음
+    expect(recs[0]?.recommendedStatus).toBe("RESOLVED");
   });
 });

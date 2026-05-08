@@ -1,0 +1,72 @@
+# Test Scenarios — CC-001 ~ CC-006 (대표)
+ruleId: CC-001
+domain: credit-card
+function: issueCard
+detector: ThresholdCheck
+
+scenarios:
+  - id: TC-CC-001-01
+    name: 정상 발급 (점수 720, 소득 50M, 한도 30M 신청)
+    given: { creditScore: 720, annualIncome: 50000000, requestedLimit: 30000000 }
+    when: issueCard
+    then: { status: active, approvedLimit: 17000000 }  # min(30M, 50M*0.3 + 2M scoreBonus)
+
+  - id: TC-CC-001-02
+    name: 신용점수 미달 → E422-CS
+    given: { creditScore: 580, annualIncome: 30000000 }
+    when: issueCard
+    then: { error: E422-CS }
+
+  - id: TC-CC-001-03
+    name: 연소득 미달 → E422-IN
+    given: { creditScore: 700, annualIncome: 20000000 }
+    when: issueCard
+    then: { error: E422-IN }
+
+  - id: TC-CC-002-01
+    name: 한도 충분 → canPay=true
+    given: { card: { credit_limit: 1000000, used_amount: 300000, status: active }, amount: 500000 }
+    when: checkPaymentLimit
+    then: { canPay: true, remainingLimit: 700000 }
+
+  - id: TC-CC-002-02
+    name: 한도 초과 → E422-LIMIT
+    given: { card: { credit_limit: 500000, used_amount: 400000 }, amount: 200000 }
+    when: checkPaymentLimit
+    then: { error: E422-LIMIT }
+
+  - id: TC-CC-003-01
+    name: 결제 승인 atomic → used_amount 증가 + transaction insert
+    given: { card: { credit_limit: 1000000, used_amount: 100000 }, amount: 200000, merchant: M-1 }
+    when: approvePayment
+    then:
+      transactionId: <uuid>
+      credit_cards.used_amount: 300000
+      card_transactions: { status: approved, count: 1 }
+
+  - id: TC-CC-004-01
+    name: active → blocked (관리자 차단)
+    given: { card: { status: active } }
+    when: transitionCardStatus(blocked)
+    then: { previousStatus: active, newStatus: blocked }
+
+  - id: TC-CC-004-02
+    name: blocked → cancelled 전환 시도 → E409-TR
+    given: { card: { status: blocked } }
+    when: transitionCardStatus(cancelled)
+    then: { error: E409-TR }
+
+  - id: TC-CC-005-01
+    name: 30일 미결제 + used_amount 양수 → delinquent 마킹
+    given: { card: { status: active, used_amount: 500000, last_payment_at: 35days_ago } }
+    when: markDelinquentCards
+    then: { markedCount: 1, status: delinquent }
+
+  - id: TC-CC-006-01
+    name: 결제 취소 → 한도 복구 atomic
+    given: { transaction: { status: approved, amount: 200000, card_id: card-1 }, card: { used_amount: 300000 } }
+    when: cancelTransaction
+    then:
+      restoredAmount: 200000
+      card_transactions.status: cancelled
+      credit_cards.used_amount: 100000

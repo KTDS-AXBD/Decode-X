@@ -1,0 +1,83 @@
+---
+# Provenance — CREDIT-CARD-001
+# 12번째 도메인 — LPON 외 산업 (신용카드) 합성 도메인 PoC
+
+skillId: CREDIT-CARD-001
+extractedAt: "2026-05-08T18:00:00+09:00"
+extractedBy: "Decode-X Sprint 278 F444 — withRuleId 재사용 12번째 도메인 (LPON 외 산업 다양성)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/credit-card/rules/credit-card-rules.md"
+    section: "Credit Card 합성 비즈니스 룰 — CC-001~CC-006"
+    businessRules: [CC-001, CC-002, CC-003, CC-004, CC-005, CC-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 신용카드(Credit Card) 산업 일반화 PoC. 발급/한도/승인/상태/연체/취소 추상화. 12번째 도메인 (LPON cap 후 첫 신규 산업)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/credit-card.ts"
+    functions: [issueCard, checkPaymentLimit, approvePayment, transitionCardStatus, markDelinquentCards, cancelTransaction]
+    test: "src/__tests__/credit-card.test.ts (18 cases, 후속 작성 가능)"
+    sourceMarker: PRESENCE
+    note: "BL-detector 자동 PRESENCE 입증 — 신규 detector 0개, withRuleId 재사용 (Threshold × 2 + Atomic × 2 + Status × 2)"
+
+inputCompleteness:
+  sInput: 0.92
+  deficiencyFlag: false
+  components:
+    rulesCoverage: 1.00
+    testCoverage: 0.85
+    provenanceLink: 1.00
+
+note: |
+  Sprint 278 F444: 신용카드 산업 도메인 신규 — LPON 외 첫 산업 다양성 확장.
+  CC-001 발급 신용평가 / CC-002 결제 한도 검증 / CC-003 결제 승인 atomic /
+  CC-004 카드 상태 전환 / CC-005 연체 자동 마킹 / CC-006 결제 취소 한도 복구.
+  분포: Threshold × 2 + Atomic × 2 + Status × 2 (균형 분포).
+  withRuleId 재사용 10 Sprint 연속 정점 (S264~S278). 신규 detector 0개.
+
+# -----------------------------------------------------------------------------
+# Divergence Markers — Source-First Reconciliation
+# -----------------------------------------------------------------------------
+# Auto-detected by F430 Sprint 263 (provenance-writer).
+# Manual curation overrides — sourceReference detail은 추정값. 도메인 검토 필요.
+# -----------------------------------------------------------------------------
+divergenceMarkers:
+  - marker: DIVERGENCE
+    ruleId: CC-001
+    ruleName: "CC-001 — auto-detected by missing_threshold_check"
+    scope: business-rule
+    severity: MEDIUM
+    pattern: missing_threshold_check
+    sourceReference:
+      file: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/credit-card.ts"
+      line: 0
+      detail: "No threshold/limit comparison found. Expected: variable >|>=|<|<= literal or UPPERCASE_CONSTANT."
+    confidence: 0.7
+    autoDetected: true
+    detectedBy: "F430 Sprint 263 provenance-writer"
+    status: OPEN
+    recommendation: "TODO: manual review (auto-detected by F430 Sprint 263 provenance-writer)"
+  - marker: DIVERGENCE
+    ruleId: CC-002
+    ruleName: "CC-002 — auto-detected by missing_threshold_check"
+    scope: business-rule
+    severity: MEDIUM
+    pattern: missing_threshold_check
+    sourceReference:
+      file: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/credit-card.ts"
+      line: 0
+      detail: "No threshold/limit comparison found. Expected: variable >|>=|<|<= literal or UPPERCASE_CONSTANT."
+    confidence: 0.7
+    autoDetected: true
+    detectedBy: "F430 Sprint 263 provenance-writer"
+    status: OPEN
+    recommendation: "TODO: manual review (auto-detected by F430 Sprint 263 provenance-writer)"
+
+divergenceSummary:
+  totalMarkers: 2
+  bySeverity:
+    HIGH: 0
+    MEDIUM: 2
+    LOW: 0

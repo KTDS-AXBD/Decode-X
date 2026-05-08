@@ -684,4 +684,11 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "LP-006": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "LP-006"),
   // Sprint 277 (F443) — lpon-cancel domain (atomic × 1 — 11번째 도메인 활성화, BL-042 신규)
   "BL-042": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BL-042"),
+  // Sprint 278 (F444) — credit-card domain (threshold × 2, atomic × 2, status × 2 — 12번째 도메인, LPON 외 첫 산업)
+  "CC-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "CC-001"),
+  "CC-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "CC-002"),
+  "CC-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "CC-003"),
+  "CC-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "CC-004"),
+  "CC-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "CC-005"),
+  "CC-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "CC-006"),
 };

@@ -19,7 +19,8 @@ import type { BLRule } from "@ai-foundry/types";
 // F436 (Sprint 269): P prefix 추가 (miraeasset-pension)
 // F440 (Sprint 274): V prefix 추가 (generic-voucher 합성 도메인, 9번째)
 // F441 (Sprint 275): LP prefix 추가 (loyalty-points 합성 도메인, 10번째). 2글자 alternation 우선 (LP가 P보다 먼저 시도)
-const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|LP|P|V)-[A-Z]?\d{1,3}$/;
+// F444 (Sprint 278): CC prefix 추가 (credit-card 합성 도메인, 12번째 — LPON 외 첫 산업). 2글자 alternation 동일 우선순위
+const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|LP|CC|P|V)-[A-Z]?\d{1,3}$/;
 const HEADER_PATTERN =
   /\|\s*ID\s*\|\s*condition[^|]*\|\s*criteria[^|]*\|\s*outcome[^|]*\|\s*exception[^|]*\|/i;
 const SEPARATOR_PATTERN = /^\s*\|[\s:|-]+\|\s*$/;

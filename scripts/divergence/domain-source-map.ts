@@ -170,6 +170,24 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processNetworkCancel",
     ],
   },
+  {
+    container: "credit-card",
+    rulesPath: `${SPEC_CONTAINER_BASE}/credit-card/rules/credit-card-rules.md`,
+    // Sprint 278 (F444): Credit Card 합성 도메인 — 12번째 도메인 (LPON 외 첫 산업 다양성).
+    // CC-001~CC-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 10 Sprint 연속 정점 (S264~S278).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/credit-card.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/credit-card/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "issueCard",
+      "checkPaymentLimit",
+      "approvePayment",
+      "transitionCardStatus",
+      "markDelinquentCards",
+      "cancelTransaction",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

@@ -1,0 +1,20 @@
+# Test Scenarios — V-006: 양도 1회만
+ruleId: V-006
+scenarios:
+  - id: TC-VOUCHER-006-01
+    name: 1회 양도 정상 처리
+    given: { transferred_count: 0, status: active }
+    when: transfer_requested
+    then: { transferredCount: 1, status: transferred, owner: newOwner }
+
+  - id: TC-VOUCHER-006-02
+    name: 2회 양도 시도 → E423-LOCKED
+    given: { transferred_count: 1, status: transferred }
+    when: transfer_requested
+    then: { error: E423-LOCKED }
+
+  - id: TC-VOUCHER-006-03
+    name: 비활성 상태 → E409-STATUS
+    given: { transferred_count: 0, status: destroyed }
+    when: transfer_requested
+    then: { error: E409-STATUS }

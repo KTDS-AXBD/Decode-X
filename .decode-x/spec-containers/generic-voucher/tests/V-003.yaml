@@ -1,0 +1,20 @@
+# Test Scenarios — V-003: 사용 시 잔액 차감 (atomic)
+ruleId: V-003
+scenarios:
+  - id: TC-VOUCHER-003-01
+    name: atomic 차감 + ledger 기록
+    given: { balance: 10000, redeemAmount: 3000 }
+    when: redeem_requested
+    then: { remainingBalance: 7000, ledgerCount: 1, direction: DEBIT_REDEEM }
+
+  - id: TC-VOUCHER-003-02
+    name: 잔액 부족 → E422-BAL
+    given: { balance: 1000, redeemAmount: 5000 }
+    when: redeem_requested
+    then: { error: E422-BAL }
+
+  - id: TC-VOUCHER-003-03
+    name: integrity fail → rollback (atomic guarantee)
+    given: { voucherDeleted: true }
+    when: redeem_requested
+    then: { error: E500-INTEGRITY, ledgerCount: 0 }

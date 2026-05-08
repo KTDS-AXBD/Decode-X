@@ -1,0 +1,20 @@
+# Test Scenarios — V-004: 자동 소멸
+ruleId: V-004
+scenarios:
+  - id: TC-VOUCHER-004-01
+    name: 잔액 ≤ 1,000원 → status=destroyed
+    given: { balance: 800, status: active }
+    when: auto_destroy_check
+    then: { destroyed: true, status: destroyed, finalBalance: 0 }
+
+  - id: TC-VOUCHER-004-02
+    name: 경계값 1,000원 → destroy
+    given: { balance: 1000, status: active }
+    when: auto_destroy_check
+    then: { destroyed: true }
+
+  - id: TC-VOUCHER-004-03
+    name: 잔액 > 1,000원 → active 유지
+    given: { balance: 5000, status: active }
+    when: auto_destroy_check
+    then: { destroyed: false, status: active, finalBalance: 5000 }

@@ -1,0 +1,21 @@
+# Contract — Generic Voucher (FX-SPEC-003 v1.0)
+contractVersion: FX-SPEC-003
+contractDate: 2026-05-08
+domain: generic-voucher
+sourceMarker: SYNTHETIC
+
+specToTest:
+  - V-001: TC-VOUCHER-001-01, TC-VOUCHER-001-02, TC-VOUCHER-001-03
+  - V-002: TC-VOUCHER-002-01, TC-VOUCHER-002-02, TC-VOUCHER-002-03, TC-VOUCHER-002-04
+  - V-003: TC-VOUCHER-003-01, TC-VOUCHER-003-02, TC-VOUCHER-003-03
+  - V-004: TC-VOUCHER-004-01, TC-VOUCHER-004-02, TC-VOUCHER-004-03
+  - V-005: TC-VOUCHER-005-01, TC-VOUCHER-005-02, TC-VOUCHER-005-03
+  - V-006: TC-VOUCHER-006-01, TC-VOUCHER-006-02, TC-VOUCHER-006-03
+
+implementationContract:
+  source: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/voucher.ts"
+  test: "src/__tests__/voucher.test.ts (19 cases PASS)"
+  detector: "BL_DETECTOR_REGISTRY 6 entries (V-001~V-006, withRuleId 재사용)"
+
+handoffTarget: Foundry-X
+provenanceMarker: SYNTHETIC + PRESENCE

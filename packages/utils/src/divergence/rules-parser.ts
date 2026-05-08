@@ -17,7 +17,8 @@ import type { BLRule } from "@ai-foundry/types";
 // F428 (Sprint 261): optional 1자 prefix (gift `BL-G001`) + 1~3 digit
 // F433 (Sprint 266): BB/BP/BG/BS prefix 추가 (budget/purchase/gift-alt/settlement-alt)
 // F436 (Sprint 269): P prefix 추가 (miraeasset-pension)
-const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|P)-[A-Z]?\d{1,3}$/;
+// F440 (Sprint 274): V prefix 추가 (generic-voucher 합성 도메인, 9번째)
+const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|P|V)-[A-Z]?\d{1,3}$/;
 const HEADER_PATTERN =
   /\|\s*ID\s*\|\s*condition[^|]*\|\s*criteria[^|]*\|\s*outcome[^|]*\|\s*exception[^|]*\|/i;
 const SEPARATOR_PATTERN = /^\s*\|[\s:|-]+\|\s*$/;

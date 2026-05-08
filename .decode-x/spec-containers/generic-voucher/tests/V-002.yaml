@@ -1,0 +1,26 @@
+# Test Scenarios — V-002: 사용 가능 검증
+ruleId: V-002
+scenarios:
+  - id: TC-VOUCHER-002-01
+    name: 정상 active + 미만료
+    given: { status: active, daysUntilExpire: 364 }
+    when: use_check
+    then: { canUse: true }
+
+  - id: TC-VOUCHER-002-02
+    name: 미존재 voucher → E404
+    given: { voucherId: nonexistent }
+    when: use_check
+    then: { error: E404-VOUCHER }
+
+  - id: TC-VOUCHER-002-03
+    name: 만료 → E410-EXPIRED
+    given: { status: active, daysUntilExpire: -1 }
+    when: use_check
+    then: { error: E410-EXPIRED }
+
+  - id: TC-VOUCHER-002-04
+    name: 비활성 → E409-STATUS
+    given: { status: destroyed }
+    when: use_check
+    then: { error: E409-STATUS }

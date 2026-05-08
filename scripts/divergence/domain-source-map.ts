@@ -122,6 +122,23 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "disbursePrincipalAndInterest",
     ],
   },
+  {
+    container: "generic-voucher",
+    rulesPath: `${SPEC_CONTAINER_BASE}/generic-voucher/rules/voucher-rules.md`,
+    // Sprint 274 (F440): Generic Voucher 합성 도메인 PoC — 6 BL V-001~V-006 PRESENCE 자동 입증.
+    // 9번째 도메인 (LPON 7 + miraeasset-pension 8 + generic-voucher 9). 신규 detector 0개.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/voucher.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/generic-voucher/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "issueVoucher",
+      "useVoucher",
+      "redeemVoucher",
+      "autoDestroyVoucher",
+      "refundVoucher",
+      "transferVoucher",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

@@ -668,4 +668,11 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "P-005": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "P-005"),
   "P-006": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "P-006"),
   "P-007": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "P-007"),
+  // Sprint 274 (F440) — generic-voucher domain (threshold × 3, atomic × 1, status × 2 — 합성, 9번째 도메인)
+  "V-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "V-001"),
+  "V-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "V-002"),
+  "V-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "V-003"),
+  "V-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "V-004"),
+  "V-005": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "V-005"),
+  "V-006": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "V-006"),
 };

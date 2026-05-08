@@ -1,0 +1,43 @@
+# Provenance — GENERIC-VOUCHER-001
+# 합성 도메인 PoC (LPON 외 일반화 검증)
+
+skillId: GENERIC-VOUCHER-001
+extractedAt: "2026-05-08T11:00:00+09:00"
+extractedBy: "Decode-X Sprint 274 F440 — withRuleId 재사용 9번째 도메인 PoC"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/generic-voucher/rules/voucher-rules.md"
+    section: "Generic Voucher 합성 비즈니스 룰 — V-001~V-006"
+    businessRules: [V-001, V-002, V-003, V-004, V-005, V-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — LPON pattern 일반화 PoC. 카드/쿠폰/포인트 도메인 추상화. detector 재사용성 검증 + 비금융 일반화 가능성 입증 목적."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/voucher.ts"
+    functions: [issueVoucher, useVoucher, redeemVoucher, autoDestroyVoucher, refundVoucher, transferVoucher]
+    test: "src/__tests__/voucher.test.ts (19 cases PASS)"
+    sourceMarker: PRESENCE
+    note: "BL-detector 자동 PRESENCE 입증 가능 — 신규 detector 0개, withRuleId 재사용 (Threshold × 4 + Status × 2)"
+
+inputCompleteness:
+  sInput: 0.95
+  deficiencyFlag: false
+  components:
+    rulesCoverage: 1.00    # 6 BL 모두 명시 (합성)
+    testCoverage: 0.95     # 19 cases (V-001~006 happy + edge + error)
+    provenanceLink: 1.00   # SYNTHETIC + PRESENCE 양축 충족
+  notes:
+    - "합성 도메인 — 비즈니스 룰 직접 설계, 운영 schema 미존재 (in-memory better-sqlite3)"
+    - "withRuleId 재사용 9번째 도메인 — 인프라 누적 재활용 정점"
+    - "Sprint 264 gift / 265 settlement / 266 budget+purchase / 269 miraeasset-pension 패턴 일반화"
+
+handoffTarget: Foundry-X
+handoffVersion: "FX-SPEC-003 v1.0"
+
+# Sprint 274 (F440) 메타
+sprint: 274
+feature: F440
+plan: AIF-PLAN-072
+masterCommit: "TBD-on-commit"

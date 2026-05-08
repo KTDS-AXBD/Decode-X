@@ -1,0 +1,20 @@
+# Test Scenarios — V-005: 환불
+ruleId: V-005
+scenarios:
+  - id: TC-VOUCHER-005-01
+    name: 미사용 + 7일 이내 → 정상 환불
+    given: { used_count: 0, daysSinceIssue: 5 }
+    when: refund_requested
+    then: { refundable: true, status: refunded, balance: 0 }
+
+  - id: TC-VOUCHER-005-02
+    name: 1회 사용 → E422-USED 거부
+    given: { used_count: 1, daysSinceIssue: 3 }
+    when: refund_requested
+    then: { error: E422-USED }
+
+  - id: TC-VOUCHER-005-03
+    name: 7일 초과 → E422-WINDOW 거부
+    given: { used_count: 0, daysSinceIssue: 8 }
+    when: refund_requested
+    then: { error: E422-WINDOW }

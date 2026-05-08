@@ -13,6 +13,36 @@ author: Sinclair Seo
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 284 후속 3 (2026-05-08) — Sprint 274 F440 Generic Voucher 9번째 도메인 PoC ✅ DONE
+
+**핵심 결과**: LPON 7 + miraeasset-pension 8 도메인 패턴을 Generic Voucher (합성) 9번째 도메인으로 확장. **신규 detector 0개** (withRuleId 재사용 9번째 도메인 정점). detector coverage 69.1% → **72.1%** (+3.0%pp). DoD 14/14 PASS. Match 95%.
+
+**산출물**:
+- `반제품-스펙/.../src/domain/voucher.ts` (220 lines, 6 함수 + VoucherError)
+- `voucher.test.ts` (19 cases PASS)
+- `.decode-x/spec-containers/generic-voucher/` 16 sub-files (provenance + rules + runbooks + tests + contract)
+- DOMAIN_MAP entry 9번째 + REGISTRY V-001~V-006 + parser regex `V` prefix
+- AIF-PLAN-072 + AIF-RPRT-072
+
+**비즈니스 룰 (V-001~V-006)**:
+- V-001: 발행 한도 (issuer당 일일 ≤ 1,000건) — ThresholdCheck
+- V-002: 사용 기한 365일 — ThresholdCheck
+- V-003: 사용 시 잔액 차감 atomic — AtomicTransaction
+- V-004: 잔액 ≤ 1,000원 자동 소멸 — StatusTransition
+- V-005: 환불 (사용 0 + 7일) — ThresholdCheck
+- V-006: 양도 1회만 — StatusTransition
+
+**검증**: detect-bl --all-domains 9 containers / 6 BL PRESENCE 자동 입증 (0 ABSENCE) / write-provenance apply 0 changes / utils 170/170 PASS (회귀 0).
+
+**메타 학습**:
+- **withRuleId 재사용 9번째 도메인 정점** — Sprint 264~269+274 7 Sprint 연속 인프라 누적
+- **합성 도메인 PoC 가치** — LPON 외 일반화 + 신규 도메인 부트스트래핑 template + detector 일반화 입증
+- **VoucherError code-in-message 패턴** — `super(\`[\${code}] \${message}\`)` 차기 도메인 표준 권장 (regex matcher 호환)
+
+**차기 후보**: Credit Card / Loyalty Points / Delivery / F358 Phase 4 LPON 전수 재추출
+
+---
+
 ### 세션 284 후속 2 (2026-05-08) — `.sprint-context` conflict 패턴 근본 회피 (S280 10회 재현 종결)
 
 **핵심 결과**: `git rm --cached .sprint-context` 1줄로 S280 후행 conflict 패턴(10회 재현) 영구 종결.

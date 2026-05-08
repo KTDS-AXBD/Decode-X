@@ -1,0 +1,20 @@
+# Test Scenarios — V-001: 발행 한도
+ruleId: V-001
+scenarios:
+  - id: TC-VOUCHER-001-01
+    name: 정상 발행 — 한도 이내
+    given: { issuerId: issuer-A, todayIssued: 500, amount: 10000 }
+    when: issue_requested
+    then: { result: APPROVED, status: active }
+
+  - id: TC-VOUCHER-001-02
+    name: 한도 초과 → E429-LIMIT
+    given: { issuerId: issuer-A, todayIssued: 1000, amount: 1000 }
+    when: issue_requested
+    then: { error: E429-LIMIT }
+
+  - id: TC-VOUCHER-001-03
+    name: 다른 issuer 한도 별도
+    given: { issuerId: issuer-B, todayIssued_A: 1000, amount: 5000 }
+    when: issue_requested
+    then: { result: APPROVED }

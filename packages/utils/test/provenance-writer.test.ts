@@ -107,6 +107,72 @@ describe("provenance-writer / updateMarkerStatus", () => {
     expect(text).toContain("# Divergence Markers — Source-First Reconciliation");
     expect(text).toContain("# -----");
   });
+
+  // ------------------------------------------------------------------------
+  // F447 (Sprint 281) — opts.resolvedBy/At 자동 추가 검증
+  // ------------------------------------------------------------------------
+
+  it("F447: OPEN → RESOLVED 시 resolvedBy/At 자동 추가 (opts 제공 시)", () => {
+    const { text, changed } = updateMarkerStatus(SAMPLE_WITH_SECTION, "BL-024", "RESOLVED", {
+      resolvedBy: "F447 Sprint 281 test",
+      resolvedAt: "2026-05-09",
+    });
+    expect(changed).toBe(true);
+    // status 변경 + resolvedBy/At 삽입
+    expect(text.match(/ruleId: BL-024[\s\S]*?status: RESOLVED[\s\S]*?resolvedBy: "F447 Sprint 281 test"/)).toBeTruthy();
+    expect(text.match(/ruleId: BL-024[\s\S]*?resolvedAt: "2026-05-09"/)).toBeTruthy();
+    // 다른 marker(BL-028)는 영향 없음
+    expect(text.match(/ruleId: BL-028[\s\S]*?status: OPEN/)).toBeTruthy();
+    expect(text.match(/ruleId: BL-028[\s\S]*?resolvedBy/)).toBeFalsy();
+  });
+
+  it("F447: opts 없으면 status만 변경 (이전 동작 유지)", () => {
+    const { text, changed } = updateMarkerStatus(SAMPLE_WITH_SECTION, "BL-024", "RESOLVED");
+    expect(changed).toBe(true);
+    expect(text.match(/ruleId: BL-024[\s\S]*?status: RESOLVED/)).toBeTruthy();
+    expect(text).not.toContain("resolvedBy:");
+  });
+
+  it("F447: resolvedAt 생략 시 today (YYYY-MM-DD) 자동 사용", () => {
+    const { text } = updateMarkerStatus(SAMPLE_WITH_SECTION, "BL-024", "RESOLVED", {
+      resolvedBy: "auto",
+    });
+    const today = new Date().toISOString().slice(0, 10);
+    expect(text).toContain(`resolvedAt: "${today}"`);
+  });
+
+  it("F447: resolvedBy 이미 있는 block은 자동 추가 skip (manual annotation 우선)", () => {
+    // BL-024 block에 manual resolvedBy 이미 있는 fixture
+    const yamlWithExistingResolvedBy = SAMPLE_WITH_SECTION.replace(
+      /(ruleId: BL-024[\s\S]*?status: )OPEN/,
+      `$1OPEN\n    resolvedBy: "manual annotation (do not overwrite)"\n    resolvedAt: "2025-01-01"`,
+    );
+    const { text, changed } = updateMarkerStatus(yamlWithExistingResolvedBy, "BL-024", "RESOLVED", {
+      resolvedBy: "F447 auto (should be skipped)",
+    });
+    expect(changed).toBe(true);
+    // 기존 manual annotation 보존
+    expect(text).toContain(`resolvedBy: "manual annotation (do not overwrite)"`);
+    expect(text).toContain(`resolvedAt: "2025-01-01"`);
+    // F447 자동 entry는 추가되지 않음
+    expect(text).not.toContain("F447 auto (should be skipped)");
+  });
+
+  it("F447: RESOLVED → OPEN (역방향) 시 resolvedBy 추가 안 함", () => {
+    // BL-024를 OPEN→RESOLVED로 먼저 전환 (resolvedBy 자동 추가됨)
+    const step1 = updateMarkerStatus(SAMPLE_WITH_SECTION, "BL-024", "RESOLVED", {
+      resolvedBy: "step1",
+    });
+    expect(step1.text).toContain(`resolvedBy: "step1"`);
+    // 다시 RESOLVED → OPEN 역전환 시 resolvedBy 추가 안 함 (status만 변경)
+    const step2 = updateMarkerStatus(step1.text, "BL-024", "OPEN", {
+      resolvedBy: "step2",
+    });
+    expect(step2.changed).toBe(true);
+    // step1 resolvedBy는 audit trail로 유지 (단순 status field만 변경)
+    expect(step2.text).toContain(`resolvedBy: "step1"`);
+    expect(step2.text).not.toContain(`resolvedBy: "step2"`);
+  });
 });
 
 describe("provenance-writer / renderDivergenceMarker", () => {

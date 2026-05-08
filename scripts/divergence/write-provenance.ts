@@ -33,6 +33,7 @@ interface CliArgs {
   container: string;
   apply: boolean;
   verbose: boolean;
+  resolvedBy: string;
 }
 
 function parseArgs(): CliArgs {
@@ -42,6 +43,7 @@ function parseArgs(): CliArgs {
     container: "",
     apply: false,
     verbose: false,
+    resolvedBy: "",
   };
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
@@ -49,6 +51,7 @@ function parseArgs(): CliArgs {
     else if (a === "--container") out.container = args[++i] ?? "";
     else if (a === "--apply") out.apply = true;
     else if (a === "--verbose") out.verbose = true;
+    else if (a === "--resolved-by") out.resolvedBy = args[++i] ?? "";
     else if (a === "--help" || a === "-h") {
       printUsage();
       process.exit(0);
@@ -67,7 +70,12 @@ function printUsage(): void {
     `Usage:
   tsx scripts/divergence/write-provenance.ts \\
     {--all-domains | --container <name>} \\
-    [--apply] [--verbose]
+    [--apply] [--verbose] [--resolved-by "<context>"]
+
+Options:
+  --resolved-by  status OPEN→RESOLVED 자동 전환 시 resolvedBy/resolvedAt 메타필드 추가 (F447 Sprint 281)
+                 default 메시지 사용 시: "Detector auto-detected (write-provenance --apply)"
+                 explicit 권장: --resolved-by "F<N> Sprint <NUM> auto-detected (PRESENCE)"
 
 Defaults to dry-run. --apply writes files. Exit 1 if dry-run finds changes.
 `,
@@ -84,7 +92,7 @@ interface DomainPlan {
   afterYaml: string;
 }
 
-function planDomain(mapping: DomainMapping): DomainPlan | null {
+function planDomain(mapping: DomainMapping, resolvedBy?: string): DomainPlan | null {
   if (!existsSync(mapping.provenancePath)) {
     return null;
   }
@@ -146,7 +154,12 @@ function planDomain(mapping: DomainMapping): DomainPlan | null {
 
   let working = beforeYaml;
   for (const upd of statusUpdates) {
-    const r = updateMarkerStatus(working, upd.ruleId, upd.to);
+    // F447 (Sprint 281): OPEN → RESOLVED 자동 전환 시 resolvedBy/At 추가 (resolvedBy 옵션 있을 때만)
+    const opts =
+      upd.to === "RESOLVED" && resolvedBy
+        ? { resolvedBy }
+        : undefined;
+    const r = updateMarkerStatus(working, upd.ruleId, upd.to, opts);
     working = r.text;
   }
   for (const m of appends) {
@@ -205,9 +218,14 @@ function main(): void {
         return [m];
       })();
 
+  // F447 (Sprint 281): default resolvedBy 메시지 (explicit --resolved-by 미지정 시)
+  const effectiveResolvedBy =
+    args.resolvedBy ||
+    (args.apply ? "Detector auto-detected (write-provenance --apply)" : "");
+
   const plans: DomainPlan[] = [];
   for (const t of targets) {
-    const p = planDomain(t);
+    const p = planDomain(t, effectiveResolvedBy);
     if (p) plans.push(p);
     else process.stdout.write(`  ${t.container}: provenance.yaml missing — skip\n`);
   }

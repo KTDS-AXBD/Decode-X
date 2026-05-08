@@ -107,10 +107,18 @@ export function renderDivergenceMarker(
   return lines.join("\n") + "\n";
 }
 
+/**
+ * F447 (Sprint 281) — opts.resolvedBy/resolvedAt 자동 추가.
+ *
+ * status OPEN → RESOLVED 전환 시 resolvedBy/resolvedAt 메타필드를 자동으로 status 직후 삽입.
+ * 기존 resolvedBy 필드가 block에 이미 있으면 skip (manual annotation 우선).
+ * resolvedAt 생략 시 today (YYYY-MM-DD) 자동 사용.
+ */
 export function updateMarkerStatus(
   yamlText: string,
   ruleId: string,
   newStatus: "OPEN" | "RESOLVED",
+  opts?: { resolvedBy?: string; resolvedAt?: string },
 ): { text: string; changed: boolean } {
   const dmStart = findDivergenceMarkersStart(yamlText);
   if (dmStart < 0) return { text: yamlText, changed: false };
@@ -126,13 +134,40 @@ export function updateMarkerStatus(
   );
 
   let changed = false;
-  const newSection = section.replace(blockPattern, (full, prefix, curStatus) => {
+  let newSection = section.replace(blockPattern, (full, prefix, curStatus) => {
     if (curStatus === newStatus) return full;
     changed = true;
     return `${prefix}${newStatus}`;
   });
 
   if (!changed) return { text: yamlText, changed: false };
+
+  // F447 (Sprint 281): status OPEN → RESOLVED 시 resolvedBy/At 자동 추가 (best-effort).
+  // ruleId block 안에 resolvedBy 이미 존재 시 skip (manual annotation 우선).
+  if (newStatus === "RESOLVED" && opts?.resolvedBy) {
+    const resolvedBy = opts.resolvedBy;
+    const resolvedAt = opts.resolvedAt ?? new Date().toISOString().slice(0, 10);
+
+    // Block 추출: ruleId block 시작 ~ 다음 marker 시작 또는 section 끝까지
+    const blockExtractPattern = new RegExp(
+      `-\\s+marker:\\s+DIVERGENCE[\\s\\S]*?ruleId:\\s+${escapeRegex(ruleId)}\\b[\\s\\S]*?(?=\\n\\s*-\\s+marker:\\s+DIVERGENCE|$)`,
+    );
+    const blockMatch = newSection.match(blockExtractPattern);
+    if (blockMatch) {
+      const block = blockMatch[0];
+      if (!/\n\s+resolvedBy:/.test(block)) {
+        const insertion = `\n    resolvedBy: ${JSON.stringify(resolvedBy)}\n    resolvedAt: "${resolvedAt}"`;
+        const updatedBlock = block.replace(
+          /(status:\s+RESOLVED)(?=\n|$)/,
+          `$1${insertion}`,
+        );
+        if (updatedBlock !== block) {
+          newSection = newSection.replace(block, updatedBlock);
+        }
+      }
+    }
+  }
+
   return { text: before + newSection + after, changed: true };
 }
 

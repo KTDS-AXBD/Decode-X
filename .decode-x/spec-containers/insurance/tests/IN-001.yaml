@@ -1,0 +1,87 @@
+# Test Scenarios — IN-001 ~ IN-006 (대표)
+ruleId: IN-001
+domain: insurance
+function: issuePolicy
+detector: ThresholdCheck (F445 Path A)
+
+scenarios:
+  - id: TC-IN-001-01
+    name: 정상 가입 (HEALTH 50,000원/월, 35세, 보장 100M)
+    given: { userId: u-1, policyType: HEALTH, premiumKrw: 50000, coverageLimit: 100000000, insuredAge: 35 }
+    when: issuePolicy
+    then: { status: active, expires_at: <365일 후> }
+
+  - id: TC-IN-001-02
+    name: premium 미달 → E422-PR
+    given: { premiumKrw: 5000 }
+    when: issuePolicy
+    then: { error: E422-PR }
+
+  - id: TC-IN-001-03
+    name: 연령 미달 → E422-AGE-MIN
+    given: { insuredAge: 17 }
+    when: issuePolicy
+    then: { error: E422-AGE-MIN }
+
+  - id: TC-IN-001-04
+    name: 연령 초과 → E422-AGE-MAX
+    given: { insuredAge: 85 }
+    when: issuePolicy
+    then: { error: E422-AGE-MAX }
+
+  - id: TC-IN-002-01
+    name: 한도 충분 → canClaim
+    given: { policy: { coverage_limit: 100000000, reserved_amount: 30000000, status: active }, claim_amount: 50000000 }
+    when: checkClaimLimit
+    then: { canClaim: true, remainingCoverage: 70000000 }
+
+  - id: TC-IN-002-02
+    name: 한도 초과 → E422-LIMIT
+    given: { policy: { coverage_limit: 100000000, reserved_amount: 80000000 }, claim_amount: 30000000 }
+    when: checkClaimLimit
+    then: { error: E422-LIMIT }
+
+  - id: TC-IN-003-01
+    name: 청구 승인 atomic — claim approved + reserved_amount 증가
+    given: { claim: { status: pending, claim_amount: 5000000, policy_id: p-1 }, policy: { coverage_limit: 50000000, reserved_amount: 10000000, status: active } }
+    when: approveClaim
+    then:
+      claim.status: approved
+      policy.reserved_amount: 15000000
+      approvedAmount: 5000000
+
+  - id: TC-IN-004-01
+    name: active → suspended (보험료 미납)
+    given: { policy: { status: active } }
+    when: transitionPolicyStatus(suspended)
+    then: { previousStatus: active, newStatus: suspended }
+
+  - id: TC-IN-004-02
+    name: cancelled → active 역전환 시도 → E409-TR
+    given: { policy: { status: cancelled } }
+    when: transitionPolicyStatus(active)
+    then: { error: E409-TR }
+
+  - id: TC-IN-005-01
+    name: expires_at 도달 → expired 마킹
+    given: { policy: { status: active, expires_at: 1day_ago } }
+    when: markExpiredPolicies
+    then: { markedCount: 1, status: expired }
+
+  - id: TC-IN-006-01
+    name: 30일 이내 거절 → premium 환불 atomic
+    given: { claim: { status: pending, filed_at: 10days_ago, policy_id: p-1 }, policy: { premium_krw: 50000 } }
+    when: rejectClaimWithRefund(reason="documentation insufficient")
+    then:
+      refundAmount: 50000
+      claim_payments: { count: 1, payment_type: refund, amount: 50000 }
+      claim.status: rejected
+
+  - id: TC-IN-006-02
+    name: 30일 초과 거절 → 환불 0원, status만 rejected
+    given: { claim: { filed_at: 60days_ago }, policy: { premium_krw: 50000 } }
+    when: rejectClaimWithRefund
+    then:
+      refundAmount: 0
+      claim_payments: { count: 0 }
+      claim.status: rejected

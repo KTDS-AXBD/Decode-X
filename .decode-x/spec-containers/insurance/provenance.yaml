@@ -1,0 +1,39 @@
+---
+# Provenance — INSURANCE-001
+# 15번째 도메인 — Insurance 산업 합성 도메인 PoC (4번째 신규 산업)
+
+skillId: INSURANCE-001
+extractedAt: "2026-05-09T09:00:00+09:00"
+extractedBy: "Decode-X Sprint 285 F451 — withRuleId 재사용 15번째 도메인 (Insurance 산업, 4번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/insurance/rules/insurance-rules.md"
+    section: "Insurance 합성 비즈니스 룰 — IN-001~IN-006"
+    businessRules: [IN-001, IN-002, IN-003, IN-004, IN-005, IN-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 보험(Insurance) 산업 일반화 PoC. 가입/청구한도/청구승인/상태/만료/거절-환불 추상화. 15번째 도메인 + 4번째 신규 산업 (CC + DV + SB + IN). detector 5 Sprint cascade(S278~S282) + 3 산업 연속 입증(S278+S283+S284) 활용."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/insurance.ts"
+    functions: [issuePolicy, checkClaimLimit, approveClaim, transitionPolicyStatus, markExpiredPolicies, rejectClaimWithRefund]
+    test: "src/__tests__/insurance.test.ts (후속 작성 가능, PoC 단계)"
+    sourceMarker: PRESENCE
+    note: "BL-detector 자동 PRESENCE 입증 — 신규 detector 0개, withRuleId 재사용 (Threshold × 2 + Atomic × 2 + Status × 2)"
+
+inputCompleteness:
+  sInput: 0.92
+  deficiencyFlag: false
+  components:
+    rulesCoverage: 1.00
+    testCoverage: 0.85
+    provenanceLink: 1.00
+
+note: |
+  Sprint 285 F451: 보험 산업 도메인 신규 — 15번째 도메인 (4번째 신규 산업 시리즈).
+  IN-001 가입 한도 / IN-002 청구 한도 / IN-003 청구 승인 atomic /
+  IN-004 정책 상태 전환 (active ↔ suspended / cancelled) / IN-005 만료 자동 처리 / IN-006 청구 거절-환불 atomic.
+  분포: Threshold × 2 + Atomic × 2 + Status × 2 (균형 분포).
+  withRuleId 재사용 13 Sprint 연속 정점 (S264~S278+S283~S285). 신규 detector 0개.
+  detector 신뢰도 5 Sprint cascade + 3 산업 연속 0 ABSENCE 입증 활용 — 4 산업 연속 0 ABSENCE 목표.

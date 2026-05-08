@@ -226,6 +226,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "cancelWithRefund",
     ],
   },
+  {
+    container: "insurance",
+    rulesPath: `${SPEC_CONTAINER_BASE}/insurance/rules/insurance-rules.md`,
+    // Sprint 285 (F451): Insurance 합성 도메인 — 15번째 도메인 (보험 산업, 4번째 신규 산업).
+    // IN-001~IN-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 13 Sprint 연속 정점 (S264~S285).
+    // 4번째 신규 산업 도메인 (CC + DV + SB + IN).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/insurance.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/insurance/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "issuePolicy",
+      "checkClaimLimit",
+      "approveClaim",
+      "transitionPolicyStatus",
+      "markExpiredPolicies",
+      "rejectClaimWithRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

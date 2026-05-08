@@ -1,3 +1,14 @@
+---
+code: AIF-POC-spec-btq-sample
+title: "B/T/Q 3종 Spec 샘플 매핑 — 20건"
+version: 1.0
+status: active
+category: poc
+created: 2026-04-16
+updated: 2026-04-16
+author: Sinclair Seo
+---
+
 # B/T/Q 3종 Spec 샘플 매핑 — 20건
 
 **출처**: LPON 894건 채점 결과에서 다양한 overall 분포로 20건 샘플링 (top 5 + middle 10 + bottom 5)

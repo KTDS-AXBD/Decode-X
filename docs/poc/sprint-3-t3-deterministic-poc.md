@@ -1,3 +1,14 @@
+---
+code: AIF-POC-S3
+title: "Sprint 3 — T3 결정적 생성 PoC (Temperature=0 + Seed 고정)"
+version: 1.0
+status: active
+category: poc
+created: 2026-04-19
+updated: 2026-04-19
+author: AX BD팀
+---
+
 # Sprint 3 — T3 결정적 생성 PoC (Temperature=0 + Seed 고정)
 
 **Sprint**: 3

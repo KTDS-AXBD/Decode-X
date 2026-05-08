@@ -1,3 +1,14 @@
+---
+code: AIF-DSGN-skill-framework-1b-design
+title: "Skill Framework Phase 1b — Design Document"
+version: 1.0
+status: active
+category: design
+created: 2026-03-20
+updated: 2026-03-20
+author: Sinclair Seo
+---
+
 # Skill Framework Phase 1b — Design Document
 
 > **Summary**: Phase 1b 기술 설계 — 스킬 작성 가이드라인, 템플릿 3종, lint --fix, 플러그인 자동분류, 폐기 정책

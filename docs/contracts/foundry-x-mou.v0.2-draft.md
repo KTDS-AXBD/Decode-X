@@ -1,3 +1,14 @@
+---
+code: AIF-DOC-foundry-x-mou-v0-2-draft
+title: "Foundry-X ↔ Decode-X 통합 협력 MoU (초안 v0.2)"
+version: 1.0
+status: active
+category: contracts
+created: 2026-04-18
+updated: 2026-04-18
+author: Sinclair Seo
+---
+
 # Foundry-X ↔ Decode-X 통합 협력 MoU (초안 v0.2)
 
 **문서 유형**: Memorandum of Understanding — 협력 계약 초안

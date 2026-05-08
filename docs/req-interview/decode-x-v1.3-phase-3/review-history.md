@@ -1,3 +1,14 @@
+---
+code: AIF-REQI-review-history
+title: "Review History"
+version: 1.0
+status: active
+category: req-interview
+created: 2026-04-21
+updated: 2026-04-21
+author: Sinclair Seo
+---
+
 # Review History
 
 > PRD 검토 → 반영 누적 이력

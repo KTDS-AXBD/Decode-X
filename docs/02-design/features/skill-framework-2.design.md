@@ -1,3 +1,14 @@
+---
+code: AIF-DSGN-skill-framework-2-design
+title: "Skill Framework Phase 2 — Design Document"
+version: 1.0
+status: active
+category: design
+created: 2026-03-20
+updated: 2026-03-20
+author: Sinclair Seo
+---
+
 # Skill Framework Phase 2 — Design Document
 
 > **Summary**: 팀 배포 스크립트(deploy.mjs) + 사용량 추적 훅(usage-tracker.sh) + 리포트 CLI(usage.mjs) + 분류 정확도 향상 + 에러 핸들링 보강의 기술 설계

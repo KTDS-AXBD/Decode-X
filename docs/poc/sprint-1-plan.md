@@ -1,3 +1,14 @@
+---
+code: AIF-POC-S1
+title: "Sprint 1 Plan — T1 Foundry-X Plumb E2E + Tier-A(충전) Empty Slot 발굴 (v2.0 / 1.5일 압축판)"
+version: 1.0
+status: active
+category: poc
+created: 2026-04-18
+updated: 2026-04-19
+author: Sinclair Seo
+---
+
 # Sprint 1 Plan — T1 Foundry-X Plumb E2E + Tier-A(충전) Empty Slot 발굴 (v2.0 / 1.5일 압축판)
 
 **문서 유형**: Sprint Plan (Phase 1 PoC 5 Sprint 시간 블록 중 Sprint 1)

@@ -1,3 +1,14 @@
+---
+code: AIF-DSGN-recon-x-restructuring-design
+title: "Recon-X MSA 재조정 Design Document"
+version: 1.0
+status: active
+category: design
+created: 2026-04-07
+updated: 2026-04-07
+author: AX BD팀
+---
+
 # Recon-X MSA 재조정 Design Document
 
 > **Summary**: 플랫폼 SVC 5개 분리 + LLM 라우팅 전환 + 프론트엔드 정리 — Sprint 1 구현 상세 설계

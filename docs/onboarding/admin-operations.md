@@ -1,3 +1,14 @@
+---
+code: AIF-DOC-admin-operations
+title: "Admin Operations 가이드"
+version: 1.0
+status: active
+category: general
+created: 2026-04-21
+updated: 2026-04-21
+author: AX BD팀
+---
+
 # Admin Operations 가이드
 
 > **대상**: Admin 역할  

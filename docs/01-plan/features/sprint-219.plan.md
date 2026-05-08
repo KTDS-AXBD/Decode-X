@@ -1,3 +1,14 @@
+---
+code: AIF-PLAN-S219
+title: "Sprint 219 Plan — F355b + F362: Foundry-X 통합 완결"
+version: 1.0
+status: active
+category: plan
+created: 2026-04-21
+updated: 2026-04-21
+author: AX BD팀
+---
+
 # Sprint 219 Plan — F355b + F362: Foundry-X 통합 완결
 
 **Sprint**: 219

@@ -1,3 +1,14 @@
+---
+code: AIF-REQI-phase-0-closure-report
+title: "Decode-X Phase 0 Closure Report"
+version: 1.0
+status: active
+category: req-interview
+created: 2026-04-18
+updated: 2026-04-19
+author: Sinclair Seo
+---
+
 # Decode-X Phase 0 Closure Report
 
 **문서 유형**: Phase Gate Closure Report (Phase 0 종료 근거)

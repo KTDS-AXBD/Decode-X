@@ -1,3 +1,14 @@
+---
+code: AIF-DOC-review-history
+title: "Review History"
+version: 1.0
+status: active
+category: general
+created: 2026-04-07
+updated: 2026-04-16
+author: Sinclair Seo
+---
+
 # Review History
 
 > PRD 검토 → 반영 누적 이력

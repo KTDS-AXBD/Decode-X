@@ -1,3 +1,14 @@
+---
+code: AIF-DOC-index
+title: "문서 인덱스"
+version: 1.0
+status: active
+category: general
+created: 2026-03-08
+updated: 2026-04-21
+author: Sinclair Seo
+---
+
 # 문서 인덱스
 
 > 자동 생성: 2026-04-17 | 프로젝트: AIF (AI Foundry / Decode-X)

@@ -1,3 +1,14 @@
+---
+code: AIF-ANLS-S245
+title: "Sprint 245+246 Pipeline 통합 분석 (AIF-ANLS-035)"
+version: 1.0
+status: active
+category: analysis
+created: 2026-05-03
+updated: 2026-05-03
+author: Sinclair Seo
+---
+
 # Sprint 245+246 Pipeline 통합 분석 (AIF-ANLS-035)
 
 > **Phase 6 통합 Gap Analysis + E2E Audit** — Sprint 245(F414 TD-56) + Sprint 246(F415 TD-55) Batch 1 merge 후 master 기준 정합성 검증.

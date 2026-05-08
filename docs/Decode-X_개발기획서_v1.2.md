@@ -1,3 +1,14 @@
+---
+code: AIF-DOC-decode-x-v1-2
+title: "Decode-X: Reverse Engineering 기반 VibeCoding Spec 생성 시스템 개발기획서"
+version: 1.0
+status: active
+category: general
+created: 2026-04-18
+updated: 2026-04-18
+author: Sinclair Seo
+---
+
 # Decode-X: Reverse Engineering 기반 VibeCoding Spec 생성 시스템 개발기획서
 
 **문서 버전**: v1.2

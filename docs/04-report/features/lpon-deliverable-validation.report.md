@@ -1,3 +1,14 @@
+---
+code: AIF-RPRT-lpon-deliverable-validation-report
+title: "AIF-REQ-017 완료 보고서: 온누리상품권 분석 산출물 검증 및 문서화"
+version: 1.0
+status: active
+category: report
+created: 2026-03-09
+updated: 2026-03-09
+author: Sinclair Seo
+---
+
 # AIF-REQ-017 완료 보고서: 온누리상품권 분석 산출물 검증 및 문서화
 
 > **Feature**: 온누리상품권 분석 산출물 검증 및 문서화

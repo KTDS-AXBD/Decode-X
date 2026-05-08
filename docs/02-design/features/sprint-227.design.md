@@ -1,3 +1,14 @@
+---
+code: AIF-DSGN-S227
+title: "Sprint 227 Design — F401 TD-41 완전 해소"
+version: 1.0
+status: active
+category: design
+created: 2026-04-22
+updated: 2026-04-22
+author: AX BD팀
+---
+
 # Sprint 227 Design — F401 TD-41 완전 해소
 
 ## §1 F401 아키텍처

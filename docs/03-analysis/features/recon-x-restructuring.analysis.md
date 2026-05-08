@@ -1,3 +1,14 @@
+---
+code: AIF-ANLS-recon-x-restructuring-analysis
+title: "Recon-X MSA 재조정 Sprint 1 — Analysis Report"
+version: 1.0
+status: active
+category: analysis
+created: 2026-04-07
+updated: 2026-04-07
+author: AX BD팀
+---
+
 # Recon-X MSA 재조정 Sprint 1 — Analysis Report
 
 > **Feature**: AIF-REQ-030 Recon-X MSA Restructuring

@@ -1,3 +1,14 @@
+---
+code: AIF-PLAN-recon-x-restructuring-plan
+title: "Recon-X MSA 재조정 Planning Document"
+version: 1.0
+status: active
+category: plan
+created: 2026-04-07
+updated: 2026-04-07
+author: Sinclair Seo
+---
+
 # Recon-X MSA 재조정 Planning Document
 
 > **Summary**: res-ai-foundry를 Recon-X(역공학 전담)로 전환 — 플랫폼 SVC 5개 분리 + RE 파이프라인 집중 + 서비스 연동 인터페이스 정의

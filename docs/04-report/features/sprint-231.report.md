@@ -1,3 +1,14 @@
+---
+code: AIF-RPRT-S231
+title: "Sprint 231 Report — F384 Guest/Demo 모드"
+version: 1.0
+status: active
+category: report
+created: 2026-04-22
+updated: 2026-04-22
+author: AX BD팀
+---
+
 # Sprint 231 Report — F384 Guest/Demo 모드
 
 > **Sprint**: 231 | **Date**: 2026-04-22 | **Match Rate**: 100%

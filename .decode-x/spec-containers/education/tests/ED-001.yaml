@@ -1,0 +1,84 @@
+# Test Scenarios — ED-001 ~ ED-006 (대표)
+ruleId: ED-001
+domain: education
+function: registerStudent
+detector: ThresholdCheck (F445 Path A)
+
+scenarios:
+  - id: TC-ED-001-01
+    name: 정상 등록 (대학 학부생, 22세)
+    given: { userId: u-1, studentAge: 22, gradeLevel: UNDERGRAD }
+    when: registerStudent
+    then: { status: active }
+
+  - id: TC-ED-001-02
+    name: 연령 미달 (5세) → E422-AGE-MIN
+    given: { studentAge: 5 }
+    when: registerStudent
+    then: { error: E422-AGE-MIN }
+
+  - id: TC-ED-001-03
+    name: 비현실적 연령 (105세) → E422-AGE-MAX
+    given: { studentAge: 105 }
+    when: registerStudent
+    then: { error: E422-AGE-MAX }
+
+  - id: TC-ED-002-01
+    name: 학점 충분 (15 + 6 ≤ 24) → canEnroll
+    given: { student: { status: active }, term: { enrolledCredits: 15 }, requested: 6 }
+    when: checkCreditsLimit
+    then: { canEnroll: true, remainingCreditsLimit: 3 }
+
+  - id: TC-ED-002-02
+    name: 학점 한도 초과 (20 + 6 > 24) → E422-LIMIT
+    given: { term: { enrolledCredits: 20 }, requested: 6 }
+    when: checkCreditsLimit
+    then: { error: E422-LIMIT }
+
+  - id: TC-ED-003-01
+    name: 수강 신청 atomic — enrollment INSERT + course enrolled_count++
+    given: { course: { capacity: 30, enrolled_count: 25, status: open }, credits: 3, fee: 100000 }
+    when: enrollCourse
+    then:
+      enrollmentId: <uuid>
+      enrollments.status: enrolled
+      courses.enrolled_count: 26
+
+  - id: TC-ED-003-02
+    name: course full → E422-FULL
+    given: { course: { capacity: 30, enrolled_count: 30 } }
+    when: enrollCourse
+    then: { error: E422-FULL }
+
+  - id: TC-ED-004-01
+    name: enrolled → completed (정상 수료)
+    given: { enrollment: { status: enrolled } }
+    when: transitionEnrollmentStatus(completed)
+    then: { previousStatus: enrolled, newStatus: completed }
+
+  - id: TC-ED-004-02
+    name: graded → enrolled 역전환 → E409-TR
+    given: { enrollment: { status: graded } }
+    when: transitionEnrollmentStatus(enrolled)
+    then: { error: E409-TR }
+
+  - id: TC-ED-005-01
+    name: 학기 종료 후 enrolled 잔존 → failed 마킹
+    given: { term: { term_end: 1day_ago }, enrollments: [{ status: enrolled }] }
+    when: markFailedEnrollmentsByTerm
+    then: { markedCount: 1, status: failed }
+
+  - id: TC-ED-006-01
+    name: 학기 시작 14일 이전 취소 → 100% 환불
+    given: { enrollment: { status: enrolled, fee_krw: 500000, course_id: c-1 }, termStart: 14days_after }
+    when: withdrawEnrollmentWithRefund(reason="schedule conflict")
+    then:
+      refundAmount: 500000
+      enrollments.status: withdrawn
+      courses.enrolled_count: -1
+
+  - id: TC-ED-006-02
+    name: 학기 시작 3일 전 취소 → 환불 0원
+    given: { enrollment: { fee_krw: 500000 }, termStart: 3days_after }
+    when: withdrawEnrollmentWithRefund
+    then: { refundAmount: 0, enrollments.status: withdrawn }

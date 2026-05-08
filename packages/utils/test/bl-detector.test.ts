@@ -622,7 +622,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 81 detectors (Sprint 286 F452 — healthcare HC-001~HC-006 added, 16번째 도메인 의료 산업, 5번째 신규)", () => {
+  it("exposes 87 detectors (Sprint 287 F453 — education ED-001~ED-006 added, 17번째 도메인 교육 산업, 6번째 신규)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "BB-001",
       "BB-002",
@@ -668,6 +668,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "DV-004",
       "DV-005",
       "DV-006",
+      "ED-001",
+      "ED-002",
+      "ED-003",
+      "ED-004",
+      "ED-005",
+      "ED-006",
       "HC-001",
       "HC-002",
       "HC-003",

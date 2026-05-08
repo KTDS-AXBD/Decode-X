@@ -264,6 +264,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "cancelAppointmentWithRefund",
     ],
   },
+  {
+    container: "education",
+    rulesPath: `${SPEC_CONTAINER_BASE}/education/rules/education-rules.md`,
+    // Sprint 287 (F453): Education 합성 도메인 — 17번째 도메인 (교육 산업, 6번째 신규 산업).
+    // ED-001~ED-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 15 Sprint 연속 정점 (S264~S287).
+    // 6번째 신규 산업 도메인 (CC + DV + SB + IN + HC + ED).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/education.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/education/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "registerStudent",
+      "checkCreditsLimit",
+      "enrollCourse",
+      "transitionEnrollmentStatus",
+      "markFailedEnrollmentsByTerm",
+      "withdrawEnrollmentWithRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

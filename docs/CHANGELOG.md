@@ -2,6 +2,39 @@
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 283 후속 (2026-05-08) — F436 자연 누적 검증 분석 (AIF-ANLS-068)
+
+**핵심 결과**: 기존 데이터 cross-analysis로 F436/F418/F356-B 효과 분리 측정. LLM 호출 0건, 30분, **3/4 정량 DoD 충족** (n=1 한정). AIF-REQ-043 PARTIAL_FAIL → DONE 전환 후보 도출.
+
+**3가지 메커니즘 분리 측정**:
+| 효과 | 메커니즘 | LLM 영향 | 결과 |
+|------|---------|:---:|------|
+| F436 spec-container | detect-bl + Foundry-X handoff metadata | ❌ 직접 영향 없음 | coverage 64.6% → 69.1% (+4.5%p) ✅ |
+| F418 schema 정공 | PolicyCandidateSchema exception 필드 + prompt | ✅ 신규 inference 한정 | 세션 265 Smoke 5/8=62.5% (n=1) ✅ |
+| F356-B 자연 누적 | 신규 도메인 ingestion 누적 → AI-Ready baseline | ✅ 시점 영향 | Miraeasset 0.507 ≈ LPON 0.506 (universal pattern) ✅ |
+
+**핵심 통찰**:
+- Sprint 269 spec-container 추가가 LLM inference 입력에 **직접 영향 안 줌** (detect-bl 도구 + handoff metadata + provenance 추적용)
+- AI-Ready score 변화는 **F418 schema 정공의 신규 inference 효과**로 발현 (Sprint 269와 별개 메커니즘)
+- 6 criteria universal pattern 입증 — Miraeasset 첫 측정에서 LPON과 0.001 차이로 일치
+- exception_handling/testability 0% pass는 기존 superseded skill의 F418 schema 적용 전 ingestion 영향 (세션 264 backfill 한정 무효 결론 재확인)
+
+**산출물**: `docs/03-analysis/features/F436-natural-accumulation.analysis.md` (AIF-ANLS-068)
+
+**권고 우선순위 (차기 Sprint 후보)**:
+- **D** ad-hoc rebundle-all-domains (Sprint 267 잔여, $0, 30분)
+- **A** F418 신규 inference Smoke 확장 10건 (~$0.6, 30~45분, n=1 → n≥10 통계적 유의성)
+- B 신규 도메인 source PoC (1 Sprint)
+- C F358 Phase 4 LPON 전수 production 재추출 (1~2 Sprint)
+
+**즉시 조치 후보**:
+- AIF-REQ-043 (F418) PARTIAL_FAIL → DONE 전환 (DoD를 "신규 inference 한정 정성 입증"으로 재정의)
+- AIF-REQ-035 Phase 3 진척도 갱신 (F436 8회 연속 spec-container 일반성 입증 누적)
+
+**메타 학습**: 분석 비용 ≪ 측정 비용. 기존 데이터 cross-analysis가 신규 측정보다 ROI 高. 메커니즘 분리 측정/평가가 효과 attribution 명확화. 측정 직후 회고 표준화 후보.
+
+---
+
 ### 세션 283 (2026-05-08) — Plan 정확도 회고 rules/ 승격 + 보안 후속 3건 점검
 
 **핵심 결과**: (1) `feedback_sprint_pre_registration_audit.md` lifecycle 조건 A(2회 관찰 S280+S282)/B(원칙)/C(사용자 명시) 모두 충족 → `~/.claude/rules/development-workflow.md`로 승격, (2) 보안 후속 3건 정합성 점검 + MEMORY/SPEC §8 TD-48 outdated 보정 + 사용자 가이드 작성.

@@ -1,3 +1,14 @@
+---
+code: AIF-DSGN-skill-framework-design
+title: "Skill Framework Design Document"
+version: 1.0
+status: active
+category: design
+created: 2026-03-20
+updated: 2026-03-20
+author: Sinclair Seo
+---
+
 # Skill Framework Design Document
 
 > **Summary**: Claude Code 스킬 210+ 자산의 분류·관리·공유 프레임워크 기술 설계

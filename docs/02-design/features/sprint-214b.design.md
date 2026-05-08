@@ -1,3 +1,14 @@
+---
+code: AIF-DSGN-S214
+title: "Sprint 214b Design — lpon-payment + lpon-refund Spec Containers"
+version: 1.0
+status: active
+category: design
+created: 2026-04-20
+updated: 2026-04-20
+author: 서민원(Sinclair)
+---
+
 # Sprint 214b Design — lpon-payment + lpon-refund Spec Containers
 
 **Sprint**: 214b

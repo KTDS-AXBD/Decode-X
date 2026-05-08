@@ -1,3 +1,14 @@
+---
+code: AIF-POC-S2
+title: "Sprint 2 — T2 Shadow Mode 설계 (1 라인)"
+version: 1.0
+status: active
+category: poc
+created: 2026-04-19
+updated: 2026-04-19
+author: AX BD팀
+---
+
 # Sprint 2 — T2 Shadow Mode 설계 (1 라인)
 
 **Sprint**: 2

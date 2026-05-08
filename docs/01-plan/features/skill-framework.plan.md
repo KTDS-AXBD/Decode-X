@@ -1,3 +1,14 @@
+---
+code: AIF-PLAN-skill-framework-plan
+title: "Skill Framework Planning Document"
+version: 1.0
+status: active
+category: plan
+created: 2026-03-20
+updated: 2026-03-20
+author: Sinclair Seo
+---
+
 # Skill Framework Planning Document
 
 > **Summary**: Claude Code 스킬 210+ 자산을 체계적으로 분류·관리·공유하는 프레임워크 구축

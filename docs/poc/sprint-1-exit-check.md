@@ -1,3 +1,14 @@
+---
+code: AIF-POC-S1
+title: "Sprint 1 Exit Check — T1 Plumb E2E + Tier-A(충전) Empty Slot 발굴"
+version: 1.0
+status: active
+category: poc
+created: 2026-04-19
+updated: 2026-04-19
+author: Sinclair Seo
+---
+
 # Sprint 1 Exit Check — T1 Plumb E2E + Tier-A(충전) Empty Slot 발굴
 
 **문서 유형**: Sprint Exit Check (Sprint 1 출구 점검 결과)

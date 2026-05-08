@@ -1,3 +1,14 @@
+---
+code: AIF-REQI-prd-final
+title: "Decode-X v1.3 Phase 2 PRD"
+version: 1.0
+status: active
+category: req-interview
+created: 2026-04-19
+updated: 2026-04-19
+author: Sinclair Seo
+---
+
 # Decode-X v1.3 Phase 2 PRD
 
 **버전:** v2

@@ -1,3 +1,14 @@
+---
+code: AIF-RPRT-skill-framework-1b-report
+title: "Skill Framework Phase 1b — Completion Report"
+version: 1.0
+status: active
+category: report
+created: 2026-03-20
+updated: 2026-03-20
+author: Sinclair Seo
+---
+
 # Skill Framework Phase 1b — Completion Report
 
 > **Project**: AI Foundry

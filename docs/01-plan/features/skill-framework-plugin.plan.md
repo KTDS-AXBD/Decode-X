@@ -1,3 +1,14 @@
+---
+code: AIF-PLAN-skill-framework-plugin-plan
+title: "Skill Framework Plugin — Planning Document"
+version: 1.0
+status: active
+category: plan
+created: 2026-03-20
+updated: 2026-03-20
+author: Sinclair Seo
+---
+
 # Skill Framework Plugin — Planning Document
 
 > **Summary**: 기존 skill-framework/ 디렉토리를 독립 Claude Code 플러그인으로 패키징하여, `claude plugin add` 1줄로 어떤 프로젝트에서든 설치·동기화 가능하도록 변환

@@ -1,3 +1,14 @@
+---
+code: AIF-DSGN-S216
+title: "Sprint 216 Design — Working Prototype 데이터 동작 검증 하네스"
+version: 1.0
+status: active
+category: design
+created: 2026-04-20
+updated: 2026-04-20
+author: AX BD팀
+---
+
 # Sprint 216 Design — Working Prototype 데이터 동작 검증 하네스
 
 **Sprint**: 216

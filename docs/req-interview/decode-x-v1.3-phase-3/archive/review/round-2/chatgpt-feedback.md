@@ -1,3 +1,14 @@
+---
+code: AIF-REQI-chatgpt-feedback
+title: "chatgpt feedback"
+version: 1.0
+status: active
+category: req-interview
+created: 2026-04-21
+updated: 2026-04-21
+author: Sinclair Seo
+---
+
 ## ChatGPT 검토의견
 **모델:** openai/gpt-4.1-2025-04-14
 **역할:** 논리적 완결성, 실행 가능성

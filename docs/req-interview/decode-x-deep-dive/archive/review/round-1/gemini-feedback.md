@@ -1,3 +1,14 @@
+---
+code: AIF-REQI-gemini-feedback
+title: "gemini feedback"
+version: 1.0
+status: active
+category: req-interview
+created: 2026-04-16
+updated: 2026-04-16
+author: Sinclair Seo
+---
+
 ## Gemini 검토의견
 **모델:** google/gemini-2.5-flash
 **역할:** 시장/트렌드 관점, 유사 사례

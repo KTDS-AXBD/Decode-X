@@ -1,3 +1,14 @@
+---
+code: AIF-RPRT-012
+title: "Miraeasset 분석 보고서 (v0.6.0)"
+version: 1.0
+status: active
+category: report
+created: 2026-03-08
+updated: 2026-03-18
+author: Sinclair Seo
+---
+
 # Miraeasset 분석 보고서 (v0.6.0)
 > 생성일: 2026-03-08
 

@@ -1,3 +1,14 @@
+---
+code: AIF-DOC-changelog
+title: "CHANGELOG"
+version: 1.0
+status: active
+category: general
+created: 2026-02-26
+updated: 2026-05-08
+author: Sinclair Seo
+---
+
 # CHANGELOG
 
 > 세션 히스토리 아카이브 (최신이 상단)

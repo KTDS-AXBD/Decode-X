@@ -1,3 +1,14 @@
+---
+code: AIF-REQI-interview-log
+title: "Interview Log — decode-x-v1.2"
+version: 1.0
+status: active
+category: req-interview
+created: 2026-04-18
+updated: 2026-04-18
+author: Sinclair Seo
+---
+
 # Interview Log — decode-x-v1.2
 
 **모드**: 기존 PRD 이어받기 (Phase 2부터 진입)

@@ -1,3 +1,14 @@
+---
+code: AIF-PLAN-S227
+title: "Sprint 227 Plan — F401 + F384 + F383"
+version: 1.0
+status: active
+category: plan
+created: 2026-04-22
+updated: 2026-04-22
+author: AX BD팀
+---
+
 # Sprint 227 Plan — F401 + F384 + F383
 
 > **Sprint**: 227 | **Milestone**: M-UX-4 Should + TD-41 완전 해소

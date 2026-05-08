@@ -1,3 +1,14 @@
+---
+code: AIF-ANLS-skill-framework-3-analysis
+title: "Skill Framework Phase 3 — Gap Analysis Report"
+version: 1.0
+status: active
+category: analysis
+created: 2026-03-20
+updated: 2026-03-20
+author: Sinclair Seo
+---
+
 # Skill Framework Phase 3 — Gap Analysis Report
 
 > **Analysis Type**: Design vs Implementation Gap Analysis

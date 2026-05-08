@@ -1,3 +1,14 @@
+---
+code: AIF-POC-S2
+title: "Sprint 2 Exit Check — R2 LLM 예산 + T2 Shadow Mode + Empty Slot Fill 첫 3건"
+version: 1.0
+status: active
+category: poc
+created: 2026-04-19
+updated: 2026-04-19
+author: AX BD팀
+---
+
 # Sprint 2 Exit Check — R2 LLM 예산 + T2 Shadow Mode + Empty Slot Fill 첫 3건
 
 **문서 유형**: Sprint Exit Check (Sprint 2 출구 점검 결과)

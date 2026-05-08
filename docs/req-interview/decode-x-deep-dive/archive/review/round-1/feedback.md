@@ -1,3 +1,14 @@
+---
+code: AIF-REQI-feedback
+title: "검토 피드백 — Round 1"
+version: 1.0
+status: active
+category: req-interview
+created: 2026-04-16
+updated: 2026-04-16
+author: Sinclair Seo
+---
+
 # 검토 피드백 — Round 1
 
 **날짜:** 2026-04-15

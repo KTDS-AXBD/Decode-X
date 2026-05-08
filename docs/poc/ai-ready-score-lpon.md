@@ -1,3 +1,14 @@
+---
+code: AIF-POC-ai-ready-score-lpon
+title: "AI-Ready 6기준 채점 리포트 — LPON 온누리상품권"
+version: 1.0
+status: active
+category: poc
+created: 2026-04-16
+updated: 2026-04-16
+author: Sinclair Seo
+---
+
 # AI-Ready 6기준 채점 리포트 — LPON 온누리상품권
 
 **작성일**: 2026-04-16

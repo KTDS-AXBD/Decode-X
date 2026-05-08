@@ -1,3 +1,14 @@
+---
+code: AIF-POC-ai-ready-criteria-design
+title: "AI-Ready 6기준 채점기 설계"
+version: 1.0
+status: active
+category: poc
+created: 2026-04-16
+updated: 2026-04-16
+author: Sinclair Seo
+---
+
 # AI-Ready 6기준 채점기 설계
 
 > **관련**: AIF-REQ-034 Decode-X Deep Dive PoC (2026-04-17 보고용)

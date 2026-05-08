@@ -1,3 +1,14 @@
+---
+code: AIF-DOC-faq
+title: "FAQ — Decode-X v1.3 Phase 3 UX"
+version: 1.0
+status: active
+category: general
+created: 2026-04-21
+updated: 2026-04-21
+author: AX BD팀
+---
+
 # FAQ — Decode-X v1.3 Phase 3 UX
 
 ---

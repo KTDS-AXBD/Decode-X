@@ -1,3 +1,14 @@
+---
+code: AIF-POC-S4
+title: "Sprint 4 Exit Check — B/T/Q Spec Schema 완결성"
+version: 1.0
+status: active
+category: poc
+created: 2026-04-19
+updated: 2026-04-19
+author: AX BD팀
+---
+
 # Sprint 4 Exit Check — B/T/Q Spec Schema 완결성
 
 **문서 유형**: Sprint Exit Check (Sprint 4 출구 점검 결과)

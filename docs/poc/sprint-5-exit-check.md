@@ -1,3 +1,14 @@
+---
+code: AIF-POC-S5
+title: "Sprint 5 출구 점검 — Tacit Interview Agent MVP + Foundry-X Handoff 1건"
+version: 1.0
+status: active
+category: poc
+created: 2026-04-19
+updated: 2026-04-19
+author: AX BD팀
+---
+
 # Sprint 5 출구 점검 — Tacit Interview Agent MVP + Foundry-X Handoff 1건
 
 **Sprint**: 5 / Phase 1 PoC (AIF-REQ-035)

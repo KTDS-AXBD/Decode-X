@@ -1,3 +1,14 @@
+---
+code: AIF-PLAN-skill-framework-3-plan
+title: "Skill Framework Phase 3 — Planning Document"
+version: 1.0
+status: active
+category: plan
+created: 2026-03-20
+updated: 2026-03-20
+author: Sinclair Seo
+---
+
 # Skill Framework Phase 3 — Planning Document
 
 > **Summary**: Phase 1~2 인프라(6 CLI + 훅 + 자동분류 95% + 43 테스트) 위에 기존 스킬 일괄 리팩토링 + 의존성 그래프 시각화 + 10개 미분류 잔여 해소 + scan threshold 기본값 수정을 추가하여 프레임워크 v1.0 완성

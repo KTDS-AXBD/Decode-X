@@ -1,3 +1,14 @@
+---
+code: AIF-ANLS-report-ux-improvement-analysis
+title: "AIF-REQ-018 Report UX Improvement — Gap Analysis"
+version: 1.0
+status: active
+category: analysis
+created: 2026-03-19
+updated: 2026-03-19
+author: Sinclair Seo
+---
+
 # AIF-REQ-018 Report UX Improvement — Gap Analysis
 
 > **Feature**: report-ux-improvement

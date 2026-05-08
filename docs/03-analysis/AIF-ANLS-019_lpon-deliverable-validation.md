@@ -1,3 +1,14 @@
+---
+code: AIF-ANLS-019
+title: "AIF-REQ-017 Gap Analysis: Design vs Implementation"
+version: 1.0
+status: active
+category: analysis
+created: 2026-03-09
+updated: 2026-03-18
+author: Sinclair Seo
+---
+
 # AIF-REQ-017 Gap Analysis: Design vs Implementation
 
 > **Feature**: 온누리상품권 분석 산출물 검증 및 문서화

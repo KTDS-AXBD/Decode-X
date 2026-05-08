@@ -1,3 +1,14 @@
+---
+code: AIF-DSGN-S231
+title: "Sprint 231 Design — F384 Guest/Demo 모드"
+version: 1.0
+status: active
+category: design
+created: 2026-04-22
+updated: 2026-04-22
+author: AX BD팀
+---
+
 # Sprint 231 Design — F384 Guest/Demo 모드
 
 > **Sprint**: 231 | **F-item**: F384 | **Milestone**: M-UX-4 Should — Guest/Demo 읽기 전용 모드

@@ -13,6 +13,44 @@ author: Sinclair Seo
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 285 (2026-05-08) — Sprint 276 F442 F358 Phase 4 1 container PoC + svc-llm-router 후속 cleanup ✅ DONE
+
+**핵심 결과**: F358 Phase 3b (Sprint 267 F434, TD-28 RESOLVED) 종결 후 잔여 Phase 4 종단 검증. 원안 "LPON 35 R2 전수 재패키징"은 Java source 미보유로 deferred (AIF-PLAN-056 §Background) — 본 PoC는 합성 source(`반제품-스펙/.../charging.ts` 174 lines) 1 container 단위로 종단 메커니즘 입증. ✅ MERGED PR #60 `91655130` autopilot Sonnet 4.6 Match 95%.
+
+**E2E 종단 (52초)**:
+| 단계 | 결과 | 소요 |
+|------|------|------|
+| 1. lpon-charge-ingest (svc-policy `/policies/infer` Opus 1회) | ✅ 7 candidates | 29.5s |
+| 2. force-approve (CF REST D1 UPDATE candidate→approved) | ✅ 7 approved | <1s |
+| 3. rebundle-production (haiku batch 7 + sonnet 2 calls) | ✅ 2 bundles 분류 자율 분할 | 21.6s |
+| 4. R2 검증 (`bundle-8a532f89...` charging 6 + `bundle-001a1065...` notification 1) | ✅ JSON valid | - |
+| 5. D1 검증 (skills 2 rows status='bundled') | ✅ | - |
+
+**산출물**:
+- Plan: `docs/01-plan/features/F442-phase-4-poc.plan.md` (AIF-PLAN-074)
+- Design: `docs/02-design/features/F442-phase-4-poc.design.md` (AIF-DSGN-074, autopilot 추가, 210 lines)
+- Analysis: `docs/03-analysis/features/sprint-276-F442.analysis.md` (AIF-ANLS-074, 96 lines)
+- Report: `docs/04-report/features/sprint-276-F442.report.md` (AIF-RPRT-074, 96 lines)
+- Reports 실파일: `reports/sprint-276-phase-4-poc-2026-05-08.{json 81 lines, md 50 lines}`
+- 신규 PoC scripts: `scripts/poc/lpon-charge-ingest.ts` (169 lines) + `scripts/poc/force-approve-policies.ts` (128 lines)
+- Cleanup: `scripts/rebundle-production.ts` (+25 -17, svc-llm-router stale endpoint 제거 + cwd path fix)
+
+**TD-44 후속 cleanup 완결**: 세션 238에서 TD-44 본체 ✅ RESOLVED (svc-llm-router decommission + llm-client.ts OpenRouter direct). 그러나 `scripts/rebundle-production.ts:14`에 stale `LLM_API` 변수 잔존 + cwd path `res-ai-foundry` 잔존 — 본 Sprint에서 후속 cleanup 완결 (callLlm() OpenRouter direct via CF AI Gateway + cwd 3곳 `Decode-X` fix).
+
+**DoD 12/12 PASS**: rebundle cleanup + ingest script + force-approve script + candidate ≥ 5 (실 7) + approved ≥ 5 (실 7) + R2 bundle JSON valid + skills D1 row status='bundled' + reports 실파일 + analysis + report + Match ≥ 90% + typecheck/lint/test PASS. LLM 실 cost ~$0.06~0.11 (DoD ≤ $0.15).
+
+**메타 학습**:
+- **1 container PoC 패턴** — 전수 작업 차단 시 단위 종단 검증으로 메커니즘 입증 (Sprint 254 Phase 1 5 sample / Sprint 256 F424 PoC 동계열, 본 Sprint 276 Phase 4 1 container 동계열). Java source 확보 + Tree-sitter 재파싱 + LPON_DOMAINS 확장 + F356-A 6기준 재평가는 후속 별도 Sprint 분리.
+- **autopilot reports evidence 첨부 패턴 정착** — R2 key + skillId UUID + extraction_id + ORG_ID timestamp 모두 첨부됨 → autopilot Production Smoke 14회 변종(reports hallucination) 회피 성공. autopilot 신뢰도 정착 사례.
+- **autopilot fs 실측 정확 4회 누적** (S280+S282+S284+S285) — bundle 분할 자율 보정 (예상 1건 → 실 2건 분류 결과는 charging 6 + notification 1로 자율 정확 분류).
+
+**차기 후보**:
+1. Phase 4 후속 (전수 7 도메인 + Java source 확보 + Tree-sitter 재파싱) — 별도 Sprint
+2. 11번째 도메인 PoC (Credit Card / Delivery 산업 다양성)
+3. 보안 후속 2건 (1Password CLI signin + Master Password)
+
+---
+
 ### 세션 284 후속 4 (2026-05-08) — Sprint 275 F441 Loyalty Points 10번째 도메인 PoC ✅ DONE
 
 **핵심 결과**: Loyalty Points 10번째 도메인 추가. **신규 detector 0개** (withRuleId 재사용 8 Sprint 연속 정점). detector coverage 72.1% → **74.6%** (+2.5%pp). DoD 12/12 PASS. Match 95%. Master inline ~1.3h.

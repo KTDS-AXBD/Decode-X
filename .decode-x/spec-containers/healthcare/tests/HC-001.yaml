@@ -1,0 +1,78 @@
+# Test Scenarios — HC-001 ~ HC-006 (대표)
+ruleId: HC-001
+domain: healthcare
+function: registerPatient
+detector: ThresholdCheck (F445 Path A)
+
+scenarios:
+  - id: TC-HC-001-01
+    name: 정상 등록 (35세, 보험 있음)
+    given: { userId: u-1, patientAge: 35, insuranceId: ins-1 }
+    when: registerPatient
+    then: { status: active }
+
+  - id: TC-HC-001-02
+    name: 음수 연령 → E422-AGE-MIN
+    given: { patientAge: -1 }
+    when: registerPatient
+    then: { error: E422-AGE-MIN }
+
+  - id: TC-HC-001-03
+    name: 비현실적 연령 → E422-AGE-MAX
+    given: { patientAge: 150 }
+    when: registerPatient
+    then: { error: E422-AGE-MAX }
+
+  - id: TC-HC-002-01
+    name: dosage 충분 → canPrescribe
+    given: { patient: { status: active }, drug: { activeDosage: 1000 }, requested: 2000 }
+    when: checkDosageLimit
+    then: { canPrescribe: true, remainingDosageHeadroom: 2000 }
+
+  - id: TC-HC-002-02
+    name: dosage 한도 초과 → E422-LIMIT
+    given: { patient: { status: active }, drug: { activeDosage: 4000 }, requested: 2000 }
+    when: checkDosageLimit
+    then: { error: E422-LIMIT }
+
+  - id: TC-HC-003-01
+    name: 예약 atomic — appointment INSERT + slot reserved
+    given: { slot: { id: sl-1, status: available, scheduled_at: 2026-06-01T10:00:00Z } }
+    when: bookAppointment(patient, doctor, sl-1, fee=50000)
+    then:
+      appointmentId: <uuid>
+      appointments.status: booked
+      slots.status: reserved
+
+  - id: TC-HC-004-01
+    name: booked → checked_in (환자 도착)
+    given: { appointment: { status: booked } }
+    when: transitionAppointmentStatus(checked_in)
+    then: { previousStatus: booked, newStatus: checked_in }
+
+  - id: TC-HC-004-02
+    name: completed → cancelled 역전환 → E409-TR
+    given: { appointment: { status: completed } }
+    when: transitionAppointmentStatus(cancelled)
+    then: { error: E409-TR }
+
+  - id: TC-HC-005-01
+    name: expires_at 도달 → expired 마킹
+    given: { prescription: { status: active, expires_at: 1day_ago } }
+    when: markExpiredPrescriptions
+    then: { markedCount: 1, status: expired }
+
+  - id: TC-HC-006-01
+    name: 24시간 이전 취소 → 100% 환불 atomic
+    given: { appointment: { status: booked, fee_krw: 50000, scheduled_at: 48h_after, slot_id: sl-1 } }
+    when: cancelAppointmentWithRefund(reason="schedule conflict")
+    then:
+      refundAmount: 50000
+      appointments.status: cancelled
+      slots.status: available
+
+  - id: TC-HC-006-02
+    name: 24시간 미만 취소 → 환불 0원
+    given: { appointment: { fee_krw: 50000, scheduled_at: 12h_after } }
+    when: cancelAppointmentWithRefund
+    then: { refundAmount: 0, appointments.status: cancelled }

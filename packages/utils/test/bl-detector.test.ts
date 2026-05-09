@@ -622,7 +622,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 135 detectors (Sprint 295 F461 — government GV-001~GV-006 added, 25번째 도메인 공공 산업, 14번째 신규)", () => {
+  it("exposes 141 detectors (Sprint 296 F462 — telecom TC-001~TC-006 added, 26번째 도메인 통신 산업, 15번째 신규)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "BB-001",
       "BB-002",
@@ -747,6 +747,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "SB-004",
       "SB-005",
       "SB-006",
+      "TC-001",
+      "TC-002",
+      "TC-003",
+      "TC-004",
+      "TC-005",
+      "TC-006",
       "TR-001",
       "TR-002",
       "TR-003",
@@ -1802,5 +1808,113 @@ function applyOverduePenalty(db, applicantId) {
     const markers = BL_DETECTOR_REGISTRY["GV-006"]!(src, "government.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["GV-006"]!(src, "government.ts")).toHaveLength(0);
+  });
+});
+
+// F462 (Sprint 296) — telecom domain TC-001~006 PRESENCE (idempotent 2-step)
+describe("telecom domain — TC-001~006 via withRuleId (Sprint 296 F462)", () => {
+  it("TC-001 PRESENCE — activeLines >= MAX_ACTIVE_LINES threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "telecom.ts",
+      `const MAX_ACTIVE_LINES = 5;
+function activateSubscription(db, customerId, lineNumber, planId, carrier) {
+  const existing = db.prepare("SELECT COUNT(*) as cnt FROM subscriptions WHERE customer_id = ? AND status = 'active'").get(customerId);
+  const activeLines = existing.cnt;
+  if (activeLines >= MAX_ACTIVE_LINES) {
+    throw new TelecomError('E422-LINE-LIMIT', \`Active line limit reached (\${activeLines} >= \${MAX_ACTIVE_LINES})\`, 422);
+  }
+  db.prepare("INSERT INTO subscriptions (id, customer_id, line_number, plan_id, status, carrier, activated_at) VALUES (?, ?, ?, ?, 'active', ?, ?)").run(subscriptionId, customerId, lineNumber, planId, carrier, activatedAt);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TC-001"]!(src, "telecom.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["TC-001"]!(src, "telecom.ts")).toHaveLength(0);
+  });
+
+  it("TC-002 PRESENCE — usageBytes > dataQuotaLimit (Path B, 'limit' keyword)", () => {
+    const src = parseTypeScriptSource(
+      "telecom.ts",
+      `function checkDataUsage(db, subscriptionId, additionalUsageBytes) {
+  const plan = db.prepare("SELECT data_quota_limit FROM data_plans WHERE id = ?").get(planId);
+  const usageBytes = currentUsage.total + additionalUsageBytes;
+  const dataQuotaLimit = plan.data_quota_limit;
+  if (usageBytes > dataQuotaLimit) {
+    throw new TelecomError('E429-DATA-QUOTA', \`Data quota exceeded (\${usageBytes} > \${dataQuotaLimit} bytes)\`, 429);
+  }
+  db.prepare("INSERT INTO data_usages (id, subscription_id, usage_bytes, recorded_at) VALUES (?, ?, ?, ?)").run(usageId, subscriptionId, additionalUsageBytes, recordedAt);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TC-002"]!(src, "telecom.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["TC-002"]!(src, "telecom.ts")).toHaveLength(0);
+  });
+
+  it("TC-003 PRESENCE — db.transaction() in upgradePlan (atomic plan+billing+renewal)", () => {
+    const src = parseTypeScriptSource(
+      "telecom.ts",
+      `function upgradePlan(db, subscriptionId, newPlanId) {
+  const tx = db.transaction(() => {
+    db.prepare("UPDATE subscriptions SET plan_id = ? WHERE id = ?").run(newPlanId, subscriptionId);
+    db.prepare("INSERT INTO billing_cycles (id, subscription_id, cycle_month, status, amount, billed_at) VALUES (?, ?, ?, 'billed', ?, ?)").run(cycleId, subscriptionId, month, fee, upgradedAt);
+    db.prepare("UPDATE subscriptions SET activated_at = ? WHERE id = ?").run(upgradedAt, subscriptionId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TC-003"]!(src, "telecom.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["TC-003"]!(src, "telecom.ts")).toHaveLength(0);
+  });
+
+  it("TC-004 PRESENCE — status comparison + 'active'/'suspended' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "telecom.ts",
+      `function transitionSubscriptionStatus(db, subscriptionId, newStatus) {
+  const subscription = db.prepare("SELECT status FROM subscriptions WHERE id = ?").get(subscriptionId);
+  if (subscription.status === 'pending') throw new TelecomError("E409-SUBSCRIPTION", "Invalid transition", 409);
+  db.prepare("UPDATE subscriptions SET status = 'active' WHERE id = ?").run(subscriptionId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TC-004"]!(src, "telecom.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["TC-004"]!(src, "telecom.ts")).toHaveLength(0);
+  });
+
+  it("TC-005 PRESENCE — batch status='billed' update in runBillingCycle (file context)", () => {
+    // detector는 파일 전체 스캔 — transitionSubscriptionStatus 함수의 status === 비교식이 foundComparison=true 확정
+    const src = parseTypeScriptSource(
+      "telecom.ts",
+      `function transitionSubscriptionStatus(db, subscriptionId, newStatus) {
+  const subscription = db.prepare("SELECT status FROM subscriptions WHERE id = ?").get(subscriptionId);
+  if (subscription.status === 'pending') throw new TelecomError("E409-SUBSCRIPTION", "Invalid", 409);
+  db.prepare("UPDATE subscriptions SET status = 'active' WHERE id = ?").run(subscriptionId);
+}
+function runBillingCycle(db, cycleMonth) {
+  const candidates = db.prepare("SELECT id, subscription_id, amount FROM billing_cycles WHERE status = 'pending' AND cycle_month = ?").all(cycleMonth);
+  for (const cycle of candidates) {
+    db.prepare("UPDATE billing_cycles SET status = 'billed', billed_at = ? WHERE id = ?").run(billedAt, cycle.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TC-005"]!(src, "telecom.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["TC-005"]!(src, "telecom.ts")).toHaveLength(0);
+  });
+
+  it("TC-006 PRESENCE — db.transaction() in processPortOut (atomic port-out+terminated)", () => {
+    const src = parseTypeScriptSource(
+      "telecom.ts",
+      `function processPortOut(db, subscriptionId, targetCarrier, settlementAmount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO port_out_requests (id, subscription_id, target_carrier, status, settlement_amount, requested_at, completed_at) VALUES (?, ?, ?, 'completed', ?, ?, ?)").run(portOutId, subscriptionId, targetCarrier, settlementAmount, completedAt, completedAt);
+    db.prepare("UPDATE subscriptions SET status = 'terminated' WHERE id = ?").run(subscriptionId);
+    db.prepare("UPDATE subscriptions SET terminated_at = ? WHERE id = ?").run(completedAt, subscriptionId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TC-006"]!(src, "telecom.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["TC-006"]!(src, "telecom.ts")).toHaveLength(0);
   });
 });

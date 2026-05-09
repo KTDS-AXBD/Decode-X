@@ -1,0 +1,40 @@
+---
+# Provenance — TELECOM-001
+# 26번째 도메인 — Telecom/통신 산업 합성 도메인 PoC (15번째 신규 산업)
+
+skillId: TELECOM-001
+extractedAt: "2026-05-10T00:00:00+09:00"
+extractedBy: "Decode-X Sprint 296 F462 — withRuleId 재사용 26번째 도메인 (Telecom 산업, 15번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/telecom/rules/telecom-rules.md"
+    section: "Telecom 합성 비즈니스 룰 — TC-001~TC-006"
+    businessRules: [TC-001, TC-002, TC-003, TC-004, TC-005, TC-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 통신(Telecom) 산업 일반화 PoC. 가입한도/데이터할당량/플랜업그레이드atomic/가입상태전환/청구주기배치/번호이동atomic 추상화. 26번째 도메인 + 15번째 신규 산업 (CC + DV + SB + IN + HC + ED + RE + LG + HO + TR + MF + RT + EN + GV + TC). detector 5 cascade + 14 산업 연속 입증 활용."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/telecom.ts"
+    functions: [activateSubscription, checkDataUsage, upgradePlan, transitionSubscriptionStatus, runBillingCycle, processPortOut]
+    test: "src/__tests__/telecom.test.ts (후속 작성 가능, PoC 단계)"
+    sourceMarker: PRESENCE
+    note: "BL-detector 자동 PRESENCE 입증 — 신규 detector 0개, withRuleId 재사용 (Threshold × 2 + Atomic × 2 + Status × 2)"
+
+inputCompleteness:
+  sInput: 0.92
+  deficiencyFlag: false
+  components:
+    rulesCoverage: 1.00
+    testCoverage: 0.85
+    provenanceLink: 1.00
+
+note: |
+  Sprint 296 F462: 통신(Telecom) 산업 도메인 신규 — 26번째 도메인 (15번째 신규 산업 시리즈).
+  TC-001 가입 회선 동시 한도 / TC-002 데이터 사용량 한도 비교 / TC-003 플랜 업그레이드 atomic /
+  TC-004 가입 상태 전환 / TC-005 청구 주기 일괄 배치 / TC-006 번호이동 atomic.
+  분포: Threshold × 2 + Atomic × 2 + Status × 2 (균형 분포 16번째 정착).
+  withRuleId 재사용 24 Sprint 연속 정점 (S264~S278+S283~S296). 신규 detector 0개.
+  15 산업 연속 0 ABSENCE 목표 (CC + DV + SB + IN + HC + ED + RE + LG + HO + TR + MF + RT + EN + GV + TC).
+---

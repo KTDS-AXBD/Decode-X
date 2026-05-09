@@ -1,0 +1,82 @@
+# Test Scenarios — TC-001 ~ TC-006 (대표)
+ruleId: TC-001
+domain: telecom
+function: activateSubscription
+detector: ThresholdCheck (F445 Path A)
+
+scenarios:
+  - id: TC-TC-001-01
+    name: 정상 가입 회선 활성화 (activeLines=2, under limit)
+    given: { customerId: cust-1, lineNumber: "010-1234-5678", planId: plan-basic, activeLines: 2 }
+    when: activateSubscription
+    then: { subscriptionId: [uuid], lineNumber: "010-1234-5678" }
+
+  - id: TC-TC-001-02
+    name: 동시 가입 회선 한도 초과 (activeLines=5) → E422-LINE-LIMIT
+    given: { customerId: cust-1, activeLines: 5 }
+    when: activateSubscription
+    then: { error: E422-LINE-LIMIT }
+
+  - id: TC-TC-002-01
+    name: 정상 데이터 사용량 기록 (usageBytes < dataQuotaLimit)
+    given: { subscriptionId: sub-1, additionalUsage: 1000000, dataQuotaLimit: 10000000000 }
+    when: checkDataUsage
+    then: { withinQuota: true, usageBytes: 1000000 }
+
+  - id: TC-TC-002-02
+    name: 데이터 할당량 초과 → E429-DATA-QUOTA
+    given: { subscriptionId: sub-1, additionalUsage: 11000000000, dataQuotaLimit: 10000000000 }
+    when: checkDataUsage
+    then: { error: E429-DATA-QUOTA }
+
+  - id: TC-TC-003-01
+    name: 정상 플랜 업그레이드 atomic — plan_id + billing_cycles + activated_at
+    given: { subscription: { status: active, plan_id: plan-basic }, newPlanId: plan-premium }
+    when: upgradePlan
+    then:
+      subscriptions.plan_id: plan-premium
+      billing_cycles: inserted (status=billed)
+
+  - id: TC-TC-003-02
+    name: 비활성 회선 플랜 변경 시도 → E409-SUBSCRIPTION
+    given: { subscription: { status: suspended } }
+    when: upgradePlan
+    then: { error: E409-SUBSCRIPTION }
+
+  - id: TC-TC-004-01
+    name: pending → active 전환
+    given: { subscription: { status: pending } }
+    when: transitionSubscriptionStatus(active)
+    then: { previousStatus: pending, newStatus: active }
+
+  - id: TC-TC-004-02
+    name: active → suspended 전환
+    given: { subscription: { status: active } }
+    when: transitionSubscriptionStatus(suspended)
+    then: { newStatus: suspended }
+
+  - id: TC-TC-004-03
+    name: pending → terminated 역전환 → E409-SUBSCRIPTION
+    given: { subscription: { status: pending } }
+    when: transitionSubscriptionStatus(terminated)
+    then: { error: E409-SUBSCRIPTION }
+
+  - id: TC-TC-005-01
+    name: 청구 주기 일괄 처리 — 2건 pending → billed
+    given: { cycleMonth: "2026-05", cycles: [{ status: pending, amount: 29000 }, { status: pending, amount: 55000 }] }
+    when: runBillingCycle("2026-05")
+    then: { billedCount: 2, billing_cycles.status: billed }
+
+  - id: TC-TC-006-01
+    name: 정상 번호이동 atomic — port_out_requests + subscriptions terminated
+    given: { subscription: { status: active }, targetCarrier: KT }
+    when: processPortOut
+    then:
+      port_out_requests: inserted (status=completed)
+      subscriptions.status: terminated
+
+  - id: TC-TC-006-02
+    name: 이미 해지된 회선 번호이동 시도 → E409-SUBSCRIPTION
+    given: { subscription: { status: terminated } }
+    when: processPortOut
+    then: { error: E409-SUBSCRIPTION }

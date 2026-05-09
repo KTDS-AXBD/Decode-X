@@ -435,6 +435,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "validateDocument",
     ],
   },
+  {
+    container: "telecom",
+    rulesPath: `${SPEC_CONTAINER_BASE}/telecom/rules/telecom-rules.md`,
+    // Sprint 296 (F462): Telecom 합성 도메인 — 26번째 도메인 (통신 산업, 15번째 신규 산업).
+    // TC-001~TC-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 24 Sprint 연속 정점 (S264~S278+S283~S296).
+    // 15번째 신규 산업 도메인 (CC + DV + SB + IN + HC + ED + RE + LG + HO + TR + MF + RT + EN + GV + TC).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/telecom.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/telecom/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "activateSubscription",
+      "checkDataUsage",
+      "upgradePlan",
+      "transitionSubscriptionStatus",
+      "runBillingCycle",
+      "processPortOut",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

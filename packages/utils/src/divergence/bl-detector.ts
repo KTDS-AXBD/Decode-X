@@ -797,4 +797,12 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "GV-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "GV-004"),
   "GV-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "GV-005"),
   "GV-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "GV-006"),
+
+  // Sprint 296 (F462) — telecom domain (threshold × 2, atomic × 2, status × 2 — 26번째 도메인, 통신 산업, 15번째 신규)
+  "TC-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "TC-001"),
+  "TC-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "TC-002"),
+  "TC-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "TC-003"),
+  "TC-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "TC-004"),
+  "TC-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "TC-005"),
+  "TC-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "TC-006"),
 };

@@ -1,0 +1,82 @@
+# Test Scenarios — HO-001 ~ HO-006 (대표)
+ruleId: HO-001
+domain: hospitality
+function: bookRoom
+detector: ThresholdCheck (F445 Path A)
+
+scenarios:
+  - id: TC-HO-001-01
+    name: 정상 예약 (3실)
+    given: { guestId: g-1, checkIn: "2026-06-01", checkOut: "2026-06-03", requestedRooms: 3, availableRooms: 10 }
+    when: bookRoom
+    then: { status: pending }
+
+  - id: TC-HO-001-02
+    name: 최대 객실 초과 (12실) → E422-RM-MAX
+    given: { requestedRooms: 12, availableRooms: 20 }
+    when: bookRoom
+    then: { error: E422-RM-MAX }
+
+  - id: TC-HO-001-03
+    name: 가용 객실 부족 (5실 요청, 3실만 가용) → E422-RM-AVAIL
+    given: { requestedRooms: 5, availableRooms: 3 }
+    when: bookRoom
+    then: { error: E422-RM-AVAIL }
+
+  - id: TC-HO-002-01
+    name: 체크인 48시간 전 취소 (환불 허용)
+    given: { booking: { status: confirmed }, hoursUntilCheckIn: 48 }
+    when: applyCancellationPolicy
+    then: { refundAmount: full }
+
+  - id: TC-HO-002-02
+    name: 체크인 12시간 전 취소 (환불 불가) → E422-CANCEL-EXP
+    given: { booking: { status: confirmed }, hoursUntilCheckIn: 12 }
+    when: applyCancellationPolicy
+    then: { error: E422-CANCEL-EXP }
+
+  - id: TC-HO-003-01
+    name: 체크인 atomic — bookings checked_in + rooms occupied
+    given: { booking: { status: confirmed }, roomId: r-101 }
+    when: processCheckIn
+    then:
+      bookings.status: checked_in
+      rooms.status: occupied
+
+  - id: TC-HO-004-01
+    name: pending → confirmed 전환
+    given: { booking: { status: pending } }
+    when: transitionBookingStatus(confirmed)
+    then: { previousStatus: pending, newStatus: confirmed }
+
+  - id: TC-HO-004-02
+    name: confirmed → checked_in 전환
+    given: { booking: { status: confirmed } }
+    when: transitionBookingStatus(checked_in)
+    then: { newStatus: checked_in }
+
+  - id: TC-HO-004-03
+    name: checked_out → pending 역전환 → E409-TR
+    given: { booking: { status: checked_out } }
+    when: transitionBookingStatus(pending)
+    then: { error: E409-TR }
+
+  - id: TC-HO-005-01
+    name: 더티 객실 일괄 클린 처리
+    given: { rooms: [{ housekeeping_status: dirty }, { housekeeping_status: dirty }] }
+    when: markHousekeepingComplete
+    then: { markedCount: 2, housekeeping_status: clean }
+
+  - id: TC-HO-006-01
+    name: 오버부킹 보상 atomic — log INSERT + booking cancelled
+    given: { booking: { status: pending }, availableRooms: 0 }
+    when: handleOverbookingCompensation
+    then:
+      overbooking_log: inserted
+      bookings.status: cancelled
+
+  - id: TC-HO-006-02
+    name: 이미 취소된 예약 오버부킹 처리 → E409-OB
+    given: { booking: { status: cancelled } }
+    when: handleOverbookingCompensation
+    then: { error: E409-OB }

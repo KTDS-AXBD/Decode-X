@@ -321,6 +321,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processReturnRma",
     ],
   },
+  {
+    container: "hospitality",
+    rulesPath: `${SPEC_CONTAINER_BASE}/hospitality/rules/hospitality-rules.md`,
+    // Sprint 290 (F456): Hospitality 합성 도메인 — 20번째 도메인 (숙박 산업, 9번째 신규 산업).
+    // HO-001~HO-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 18 Sprint 연속 정점 (S264~S278+S283~S290).
+    // 9번째 신규 산업 도메인 (CC + DV + SB + IN + HC + ED + RE + LG + HO).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/hospitality.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/hospitality/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "bookRoom",
+      "applyCancellationPolicy",
+      "processCheckIn",
+      "transitionBookingStatus",
+      "markHousekeepingComplete",
+      "handleOverbookingCompensation",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

@@ -622,7 +622,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 99 detectors (Sprint 289 F455 — logistics LG-001~LG-006 added, 19번째 도메인 물류 산업, 8번째 신규)", () => {
+  it("exposes 105 detectors (Sprint 290 F456 — hospitality HO-001~HO-006 added, 20번째 도메인 숙박 산업, 9번째 신규)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "BB-001",
       "BB-002",
@@ -680,6 +680,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "HC-004",
       "HC-005",
       "HC-006",
+      "HO-001",
+      "HO-002",
+      "HO-003",
+      "HO-004",
+      "HO-005",
+      "HO-006",
       "IN-001",
       "IN-002",
       "IN-003",
@@ -1119,6 +1125,103 @@ function markStaleInventory(db, cutoffDate) {
     const markers = BL_DETECTOR_REGISTRY["LG-006"]!(src, "logistics.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["LG-006"]!(src, "logistics.ts")).toHaveLength(0);
+  });
+});
+
+// F456 (Sprint 290) — hospitality domain HO-001~006 PRESENCE (idempotent 2-step)
+describe("hospitality domain — HO-001~006 via withRuleId (Sprint 290 F456)", () => {
+  it("HO-001 PRESENCE — requestedRooms > MAX_ROOMS_PER_BOOKING threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "hospitality.ts",
+      `const MAX_ROOMS_PER_BOOKING = 10;
+function bookRoom(db, guestId, checkIn, checkOut, requestedRooms, availableRooms) {
+  if (requestedRooms > MAX_ROOMS_PER_BOOKING) throw new Error('E422-RM-MAX');
+  if (requestedRooms > availableRooms) throw new Error('E422-RM-AVAIL');
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["HO-001"]!(src, "hospitality.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["HO-001"]!(src, "hospitality.ts")).toHaveLength(0);
+  });
+
+  it("HO-002 PRESENCE — hoursUntilCheckIn <= cancellationLimitHours (Path B, 'limit' keyword)", () => {
+    const src = parseTypeScriptSource(
+      "hospitality.ts",
+      `function applyCancellationPolicy(db, bookingId, hoursUntilCheckIn) {
+  const cancellationLimitHours = 24;
+  if (hoursUntilCheckIn <= cancellationLimitHours) throw new Error('E422-CANCEL-EXP');
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["HO-002"]!(src, "hospitality.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["HO-002"]!(src, "hospitality.ts")).toHaveLength(0);
+  });
+
+  it("HO-003 PRESENCE — db.transaction() in processCheckIn (atomic check-in)", () => {
+    const src = parseTypeScriptSource(
+      "hospitality.ts",
+      `function processCheckIn(db, bookingId, roomId) {
+  const tx = db.transaction(() => {
+    db.prepare("UPDATE bookings SET status = 'checked_in' WHERE id = ?").run(bookingId);
+    db.prepare("UPDATE rooms SET status = 'occupied' WHERE id = ?").run(roomId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["HO-003"]!(src, "hospitality.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["HO-003"]!(src, "hospitality.ts")).toHaveLength(0);
+  });
+
+  it("HO-004 PRESENCE — status comparison + 'confirmed'/'checked_in' assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "hospitality.ts",
+      `function transitionBookingStatus(db, bookingId, newStatus) {
+  const booking = db.prepare("SELECT status FROM bookings WHERE id = ?").get(bookingId);
+  if (booking.status === 'pending') throw new Error("E409-TR");
+  db.prepare("UPDATE bookings SET status = 'confirmed' WHERE id = ?").run(bookingId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["HO-004"]!(src, "hospitality.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["HO-004"]!(src, "hospitality.ts")).toHaveLength(0);
+  });
+
+  it("HO-005 PRESENCE — batch status='clean' update in markHousekeepingComplete (file context)", () => {
+    // detector는 파일 전체 스캔 — transitionBookingStatus 함수의 status === 비교식이 foundComparison=true 확정
+    const src = parseTypeScriptSource(
+      "hospitality.ts",
+      `function transitionBookingStatus(db, bookingId, newStatus) {
+  const booking = db.prepare("SELECT status FROM bookings WHERE id = ?").get(bookingId);
+  if (booking.status === 'confirmed') throw new Error("E409-TR");
+  db.prepare("UPDATE bookings SET status = 'checked_in' WHERE id = ?").run(bookingId);
+}
+function markHousekeepingComplete(db) {
+  const candidates = db.prepare("SELECT id FROM rooms WHERE housekeeping_status = 'dirty'").all();
+  for (const room of candidates) {
+    db.prepare("UPDATE rooms SET housekeeping_status = 'clean' WHERE id = ?").run(room.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["HO-005"]!(src, "hospitality.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["HO-005"]!(src, "hospitality.ts")).toHaveLength(0);
+  });
+
+  it("HO-006 PRESENCE — db.transaction() in handleOverbookingCompensation (atomic overbooking)", () => {
+    const src = parseTypeScriptSource(
+      "hospitality.ts",
+      `function handleOverbookingCompensation(db, bookingId, reason) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO overbooking_log (id, booking_id, reason, compensated_at) VALUES (?, ?, ?, ?)").run();
+    db.prepare("UPDATE bookings SET status = 'cancelled' WHERE id = ?").run(bookingId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["HO-006"]!(src, "hospitality.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["HO-006"]!(src, "hospitality.ts")).toHaveLength(0);
   });
 });
 

@@ -622,7 +622,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 111 detectors (Sprint 291 F457 — travel TR-001~TR-006 added, 21번째 도메인 여행 산업, 10번째 신규)", () => {
+  it("exposes 117 detectors (Sprint 292 F458 — manufacturing MF-001~MF-006 added, 22번째 도메인 제조 산업, 11번째 신규)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "BB-001",
       "BB-002",
@@ -704,6 +704,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "LP-004",
       "LP-005",
       "LP-006",
+      "MF-001",
+      "MF-002",
+      "MF-003",
+      "MF-004",
+      "MF-005",
+      "MF-006",
       "P-001",
       "P-002",
       "P-003",
@@ -1369,5 +1375,100 @@ describe("F446 — DETECTOR_SUPPORTED_RULES auto-sync (Sprint 280)", () => {
     expect(recs[0]?.ruleId).toBe("CC-001");
     expect(recs[0]?.detectorSupported).toBe(true);  // F446 fix — 이전엔 false였음
     expect(recs[0]?.recommendedStatus).toBe("RESOLVED");
+  });
+});
+
+// F458 (Sprint 292) — manufacturing domain MF-001~006 PRESENCE (idempotent 2-step)
+describe("manufacturing domain — MF-001~006 via withRuleId (Sprint 292 F458)", () => {
+  it("MF-001 PRESENCE — components.length > BOM_MAX_COMPONENTS threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "manufacturing.ts",
+      `const BOM_MAX_COMPONENTS = 500;
+function explodeBom(db, productId, components) {
+  if (components.length > BOM_MAX_COMPONENTS) throw new Error('E422-BOM-MAX');
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MF-001"]!(src, "manufacturing.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["MF-001"]!(src, "manufacturing.ts")).toHaveLength(0);
+  });
+
+  it("MF-002 PRESENCE — requiredCapacity > capacityLimit (Path B, 'limit' keyword)", () => {
+    const src = parseTypeScriptSource(
+      "manufacturing.ts",
+      `function placeProductionOrder(db, productId, requiredCapacity, availableCapacity) {
+  const capacityLimit = availableCapacity;
+  if (requiredCapacity > capacityLimit) throw new Error('E422-CAP-MAX');
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MF-002"]!(src, "manufacturing.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["MF-002"]!(src, "manufacturing.ts")).toHaveLength(0);
+  });
+
+  it("MF-003 PRESENCE — db.transaction() in confirmProductionOrder (atomic order confirm)", () => {
+    const src = parseTypeScriptSource(
+      "manufacturing.ts",
+      `function confirmProductionOrder(db, orderId) {
+  const tx = db.transaction(() => {
+    db.prepare("UPDATE production_orders SET status = 'confirmed' WHERE id = ?").run(orderId);
+    db.prepare("INSERT INTO production_lots (id, order_id, status, scheduled_at) VALUES (?, ?, 'planned', ?)").run(lotId, orderId, confirmedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MF-003"]!(src, "manufacturing.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["MF-003"]!(src, "manufacturing.ts")).toHaveLength(0);
+  });
+
+  it("MF-004 PRESENCE — status comparison + 'in_progress'/'qc' assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "manufacturing.ts",
+      `function transitionProductionStatus(db, lotId, newStatus) {
+  const lot = db.prepare("SELECT status FROM production_lots WHERE id = ?").get(lotId);
+  if (lot.status === 'planned') throw new Error("E409-LOT");
+  db.prepare("UPDATE production_lots SET status = 'in_progress' WHERE id = ?").run(lotId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MF-004"]!(src, "manufacturing.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["MF-004"]!(src, "manufacturing.ts")).toHaveLength(0);
+  });
+
+  it("MF-005 PRESENCE — batch status='quarantined' update in quarantineDefectiveLots (file context)", () => {
+    const src = parseTypeScriptSource(
+      "manufacturing.ts",
+      `function transitionProductionStatus(db, lotId, newStatus) {
+  const lot = db.prepare("SELECT status FROM production_lots WHERE id = ?").get(lotId);
+  if (lot.status === 'in_progress') throw new Error("E409-LOT");
+  db.prepare("UPDATE production_lots SET status = 'qc' WHERE id = ?").run(lotId);
+}
+function quarantineDefectiveLots(db, orderId, reason) {
+  const candidates = db.prepare("SELECT id FROM production_lots WHERE status IN ('in_progress', 'qc') AND order_id = ?").all(orderId);
+  for (const lot of candidates) {
+    db.prepare("UPDATE production_lots SET status = 'quarantined' WHERE id = ?").run(lot.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MF-005"]!(src, "manufacturing.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["MF-005"]!(src, "manufacturing.ts")).toHaveLength(0);
+  });
+
+  it("MF-006 PRESENCE — db.transaction() in releaseForShipment (atomic release+shipment)", () => {
+    const src = parseTypeScriptSource(
+      "manufacturing.ts",
+      `function releaseForShipment(db, lotId) {
+  const tx = db.transaction(() => {
+    db.prepare("UPDATE production_lots SET status = 'released' WHERE id = ?").run(lotId);
+    db.prepare("INSERT INTO shipment_log (id, order_id, released_at) VALUES (?, ?, ?)").run(shipmentLogId, orderId, releasedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MF-006"]!(src, "manufacturing.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["MF-006"]!(src, "manufacturing.ts")).toHaveLength(0);
   });
 });

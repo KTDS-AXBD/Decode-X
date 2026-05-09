@@ -1,0 +1,40 @@
+---
+# Provenance — ENERGY-001
+# 24번째 도메인 — Energy/Utility 산업 합성 도메인 PoC (13번째 신규 산업)
+
+skillId: ENERGY-001
+extractedAt: "2026-05-10T00:00:00+09:00"
+extractedBy: "Decode-X Sprint 294 F460 — withRuleId 재사용 24번째 도메인 (Energy 산업, 13번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/energy/rules/energy-rules.md"
+    section: "Energy 합성 비즈니스 룰 — EN-001~EN-006"
+    businessRules: [EN-001, EN-002, EN-003, EN-004, EN-005, EN-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 에너지/유틸리티(Energy) 산업 일반화 PoC. 계량기검침/누진요금/사용량경보/계량기상태전환/정전통보배치/연체정지 추상화. 24번째 도메인 + 13번째 신규 산업 (CC + DV + SB + IN + HC + ED + RE + LG + HO + TR + MF + RT + EN). detector 5 cascade + 12 산업 연속 입증 활용."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/energy.ts"
+    functions: [recordMeterReading, computeBillingTier, triggerUsageAlert, transitionMeterStatus, markOutageNotified, processOverdueSuspension]
+    test: "src/__tests__/energy.test.ts (후속 작성 가능, PoC 단계)"
+    sourceMarker: PRESENCE
+    note: "BL-detector 자동 PRESENCE 입증 — 신규 detector 0개, withRuleId 재사용 (Threshold × 2 + Atomic × 2 + Status × 2)"
+
+inputCompleteness:
+  sInput: 0.92
+  deficiencyFlag: false
+  components:
+    rulesCoverage: 1.00
+    testCoverage: 0.85
+    provenanceLink: 1.00
+
+note: |
+  Sprint 294 F460: 에너지/유틸리티 산업 도메인 신규 — 24번째 도메인 (13번째 신규 산업 시리즈).
+  EN-001 계량기 검침 한도 / EN-002 누진 요금 구간 한도 / EN-003 사용량 경보 atomic /
+  EN-004 계량기 상태 전환 / EN-005 정전 일괄 통보 배치 / EN-006 연체 정지 atomic.
+  분포: Threshold × 2 + Atomic × 2 + Status × 2 (균형 분포 14번째 정착).
+  withRuleId 재사용 22 Sprint 연속 정점 (S264~S278+S283~S294). 신규 detector 0개.
+  13 산업 연속 0 ABSENCE 목표 (CC + DV + SB + IN + HC + ED + RE + LG + HO + TR + MF + RT + EN).
+---

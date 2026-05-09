@@ -622,7 +622,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 129 detectors (Sprint 294 F460 — energy EN-001~EN-006 added, 24번째 도메인 에너지 산업, 13번째 신규)", () => {
+  it("exposes 135 detectors (Sprint 295 F461 — government GV-001~GV-006 added, 25번째 도메인 공공 산업, 14번째 신규)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "BB-001",
       "BB-002",
@@ -680,6 +680,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "EN-004",
       "EN-005",
       "EN-006",
+      "GV-001",
+      "GV-002",
+      "GV-003",
+      "GV-004",
+      "GV-005",
+      "GV-006",
       "HC-001",
       "HC-002",
       "HC-003",
@@ -1688,5 +1694,113 @@ function markOutageNotified(db, accountId) {
     const markers = BL_DETECTOR_REGISTRY["EN-006"]!(src, "energy.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["EN-006"]!(src, "energy.ts")).toHaveLength(0);
+  });
+});
+
+// F461 (Sprint 295) — government domain GV-001~006 PRESENCE (idempotent 2-step)
+describe("government domain — GV-001~006 via withRuleId (Sprint 295 F461)", () => {
+  it("GV-001 PRESENCE — currentCount >= MAX_ANNUAL_PERMIT_COUNT threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "government.ts",
+      `const MAX_ANNUAL_PERMIT_COUNT = 10;
+function submitPermitApplication(db, applicantId, permitType, fiscalYear) {
+  const existing = db.prepare("SELECT COUNT(*) as cnt FROM permit_applications WHERE applicant_id = ? AND fiscal_year = ?").get(applicantId, fiscalYear);
+  if (existing.cnt >= MAX_ANNUAL_PERMIT_COUNT) {
+    throw new GovernmentError("E422-PERMIT-LIMIT", "Annual permit limit reached", 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GV-001"]!(src, "government.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["GV-001"]!(src, "government.ts")).toHaveLength(0);
+  });
+
+  it("GV-002 PRESENCE — feeAmount <= feeTierLimit (Path B, 'limit' keyword)", () => {
+    const src = parseTypeScriptSource(
+      "government.ts",
+      `function computeFeeTier(db, permitId, feeAmount) {
+  const tiers = db.prepare("SELECT * FROM fee_tiers ORDER BY tier_level ASC").all();
+  let selectedTier = tiers[tiers.length - 1];
+  for (const tier of tiers) {
+    const feeTierLimit = tier.fee_tier_limit;
+    if (feeAmount <= feeTierLimit) {
+      selectedTier = tier;
+      break;
+    }
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GV-002"]!(src, "government.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["GV-002"]!(src, "government.ts")).toHaveLength(0);
+  });
+
+  it("GV-003 PRESENCE — db.transaction() in processApproval (atomic approval+issue)", () => {
+    const src = parseTypeScriptSource(
+      "government.ts",
+      `function processApproval(db, permitId) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO approval_workflows (id, permit_id, status, approved_at, issued_at) VALUES (?, ?, 'approved', ?, ?)").run(workflowId, permitId, approvedAt, issuedAt);
+    db.prepare("UPDATE permit_applications SET status = 'approved' WHERE id = ?").run(permitId);
+    db.prepare("UPDATE permit_applications SET status = 'issued' WHERE id = ?").run(permitId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GV-003"]!(src, "government.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["GV-003"]!(src, "government.ts")).toHaveLength(0);
+  });
+
+  it("GV-004 PRESENCE — status comparison + 'reviewing'/'approved' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "government.ts",
+      `function transitionApplicationStatus(db, applicationId, newStatus) {
+  const application = db.prepare("SELECT status FROM permit_applications WHERE id = ?").get(applicationId);
+  if (application.status === 'submitted') throw new GovernmentError("E409-APPLICATION", "Invalid transition", 409);
+  db.prepare("UPDATE permit_applications SET status = 'reviewing' WHERE id = ?").run(applicationId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GV-004"]!(src, "government.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["GV-004"]!(src, "government.ts")).toHaveLength(0);
+  });
+
+  it("GV-005 PRESENCE — batch status='penalized' update in applyOverduePenalty (file context)", () => {
+    // detector는 파일 전체 스캔 — transitionApplicationStatus 함수의 status === 비교식이 foundComparison=true 확정
+    const src = parseTypeScriptSource(
+      "government.ts",
+      `function transitionApplicationStatus(db, applicationId, newStatus) {
+  const application = db.prepare("SELECT status FROM permit_applications WHERE id = ?").get(applicationId);
+  if (application.status === 'submitted') throw new GovernmentError("E409-APPLICATION", "Invalid", 409);
+  db.prepare("UPDATE permit_applications SET status = 'reviewing' WHERE id = ?").run(applicationId);
+}
+function applyOverduePenalty(db, applicantId) {
+  const candidates = db.prepare("SELECT id, overdue_amount FROM overdue_penalties WHERE status = 'pending' AND applicant_id = ?").all(applicantId);
+  for (const penalty of candidates) {
+    db.prepare("UPDATE overdue_penalties SET status = 'penalized', penalty_applied_at = ?, overdue_amount = overdue_amount + ? WHERE id = ?").run(penaltyAppliedAt, penaltyAmount, penalty.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GV-005"]!(src, "government.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["GV-005"]!(src, "government.ts")).toHaveLength(0);
+  });
+
+  it("GV-006 PRESENCE — db.transaction() in validateDocument (atomic validated+certified+issued)", () => {
+    const src = parseTypeScriptSource(
+      "government.ts",
+      `function validateDocument(db, documentId) {
+  const tx = db.transaction(() => {
+    db.prepare("UPDATE documents SET status = 'validated', validated_at = ? WHERE id = ?").run(validatedAt, documentId);
+    db.prepare("UPDATE documents SET status = 'certified', certified_at = ? WHERE id = ?").run(certifiedAt, documentId);
+    db.prepare("UPDATE documents SET status = 'issued', issued_at = ? WHERE id = ?").run(issuedAt, documentId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GV-006"]!(src, "government.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["GV-006"]!(src, "government.ts")).toHaveLength(0);
   });
 });

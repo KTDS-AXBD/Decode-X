@@ -5,13 +5,37 @@ version: 1.0
 status: active
 category: general
 created: 2026-02-26
-updated: 2026-05-08
+updated: 2026-05-09
 author: Sinclair Seo
 ---
 
 # CHANGELOG
 
 > 세션 히스토리 아카이브 (최신이 상단)
+
+### 세션 286 (2026-05-09) — ax 인프라 점검 + selfcheck 9/9 PASS 정착 ✅ DONE
+
+**작업 요약**: daily-check + infra-selfcheck 점검 → standards/SKILL grep 정합화로 9/9 PASS 정착 (Decode-X 코드 변경 0).
+
+**점검 결과**:
+- `/ax:daily-check`: Runtime/tmux 3.6a/Git/Worktree/TypeScript 14/14/Hooks 4개/D1 29 migrations/Plugin drift 0 모두 OK
+  - **Dependencies STALE 자동 보정**: `pnpm install --frozen-lockfile` 실행 → `node_modules/.pnpm/lock.yaml` May 9 09:21 갱신
+- `/ax:infra-selfcheck` 1차: 8/9 PASS, **C8 WARN (sprint-*.{analysis,report}.md 42건)**
+
+**보정 3종** (Decode-X 외부 repos):
+1. **임시 파일 2건 삭제** — `/tmp/claude-session-*-pane47` (~21h)
+2. **ax-config (`~/.claude/standards/doc-governance.md`) commit `1edd4ff`**:
+   - §2 파일명: PDCA feature 폴더 변형 패턴 3종 등록 (`sprint-{N}.{type}.md`, `sprint-{N}-{N2}-pipeline.{type}.md`, `sprint-{N}-{slug}.{type}.md`)
+   - §8 폴더 규칙 #2: `features/` 서브디렉토리 허용 명시
+3. **ax-plugin (`infra-selfcheck/SKILL.md`) commit `ce8835b`**:
+   - C8 grep 패턴 `-not -path '*/features/*'` 추가 → features/ 외부에서만 deviation 카운트
+   - source ↔ cache 동기화(cp) drift=0 확인
+
+**최종 selfcheck 재실행**: **9/9 PASS** (C8 features/ 외부 deviation 0건, features/ 내부 42건은 doc-governance.md §2 등록된 의도적 예외).
+
+**메타 학습**:
+- standards-skill 양쪽 정합화 패턴 정착 — standards에 예외 등록 + skill grep 룰도 동시 보정해야 진짜 PASS
+- ax 인프라 변경은 항상 source + cache + git push 3-step (development-workflow.md "ax plugin 동기화" 절차 준수)
 
 ### 세션 285 통합 (2026-05-08~09) — 13 Sprint 누적 (Sprint 276~288) ✅ DONE
 

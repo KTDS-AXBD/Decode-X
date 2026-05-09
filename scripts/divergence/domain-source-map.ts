@@ -416,6 +416,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processOverdueSuspension",
     ],
   },
+  {
+    container: "government",
+    rulesPath: `${SPEC_CONTAINER_BASE}/government/rules/government-rules.md`,
+    // Sprint 295 (F461): Government 합성 도메인 — 25번째 도메인 (공공 산업, 14번째 신규 산업).
+    // GV-001~GV-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 23 Sprint 연속 정점 (S264~S278+S283~S295).
+    // 14번째 신규 산업 도메인 (CC + DV + SB + IN + HC + ED + RE + LG + HO + TR + MF + RT + EN + GV).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/government.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/government/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "submitPermitApplication",
+      "computeFeeTier",
+      "processApproval",
+      "transitionApplicationStatus",
+      "applyOverduePenalty",
+      "validateDocument",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

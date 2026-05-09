@@ -789,4 +789,12 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "EN-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "EN-004"),
   "EN-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "EN-005"),
   "EN-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "EN-006"),
+
+  // Sprint 295 (F461) — government domain (threshold × 2, atomic × 2, status × 2 — 25번째 도메인, 공공 산업, 14번째 신규)
+  "GV-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "GV-001"),
+  "GV-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "GV-002"),
+  "GV-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "GV-003"),
+  "GV-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "GV-004"),
+  "GV-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "GV-005"),
+  "GV-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "GV-006"),
 };

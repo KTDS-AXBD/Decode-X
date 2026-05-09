@@ -1,0 +1,84 @@
+# Test Scenarios — GV-001 ~ GV-006 (대표)
+ruleId: GV-001
+domain: government
+function: submitPermitApplication
+detector: ThresholdCheck (F445 Path A)
+
+scenarios:
+  - id: TC-GV-001-01
+    name: 정상 허가 신청 (count=5, under limit)
+    given: { applicantId: app-1, fiscalYear: 2026, existingCount: 5 }
+    when: submitPermitApplication
+    then: { applicationId: [uuid], permitType: construction }
+
+  - id: TC-GV-001-02
+    name: 연간 한도 초과 (count=10) → E422-PERMIT-LIMIT
+    given: { existingCount: 10 }
+    when: submitPermitApplication
+    then: { error: E422-PERMIT-LIMIT }
+
+  - id: TC-GV-002-01
+    name: 정상 수수료 구간 계산 (1구간, feeAmount=500)
+    given: { permitId: permit-1, feeAmount: 500, tiers: [{ fee_tier_limit: 1000, rate: 0.01 }] }
+    when: computeFeeTier
+    then: { tierLevel: 1, computedFee: 5 }
+
+  - id: TC-GV-002-02
+    name: 최고 구간 적용 (feeAmount > 모든 구간)
+    given: { feeAmount: 50000, tiers: [{ limit: 1000 }, { limit: 10000 }] }
+    when: computeFeeTier
+    then: { tierLevel: 2 }
+
+  - id: TC-GV-003-01
+    name: 정상 결재 승인 atomic — approval_workflows + permit_applications issued
+    given: { permit: { status: reviewing } }
+    when: processApproval
+    then:
+      approval_workflows: inserted (status=approved)
+      permit_applications.status: issued
+
+  - id: TC-GV-003-02
+    name: reviewing 외 상태 결재 시도 → E409-PERMIT
+    given: { permit: { status: submitted } }
+    when: processApproval
+    then: { error: E409-PERMIT }
+
+  - id: TC-GV-004-01
+    name: submitted → reviewing 전환
+    given: { application: { status: submitted } }
+    when: transitionApplicationStatus(reviewing)
+    then: { previousStatus: submitted, newStatus: reviewing }
+
+  - id: TC-GV-004-02
+    name: reviewing → approved 전환
+    given: { application: { status: reviewing } }
+    when: transitionApplicationStatus(approved)
+    then: { newStatus: approved }
+
+  - id: TC-GV-004-03
+    name: submitted → issued 역전환 → E409-APPLICATION
+    given: { application: { status: submitted } }
+    when: transitionApplicationStatus(issued)
+    then: { error: E409-APPLICATION }
+
+  - id: TC-GV-005-01
+    name: 연체 가산금 일괄 처리 — 2건 pending → penalized
+    given: { applicantId: app-1, penalties: [{ status: pending, overdue_amount: 1000 }, { status: pending, overdue_amount: 2000 }] }
+    when: applyOverduePenalty(app-1)
+    then: { penalizedCount: 2, overdue_penalties.status: penalized }
+
+  - id: TC-GV-006-01
+    name: 정상 문서 검증 atomic — validated → certified → issued
+    given: { document: { status: pending } }
+    when: validateDocument
+    then:
+      documents.status: issued
+      validated_at: set
+      certified_at: set
+      issued_at: set
+
+  - id: TC-GV-006-02
+    name: pending 외 상태 검증 시도 → E409-DOCUMENT
+    given: { document: { status: validated } }
+    when: validateDocument
+    then: { error: E409-DOCUMENT }

@@ -1,0 +1,82 @@
+# Test Scenarios — MF-001 ~ MF-006 (대표)
+ruleId: MF-001
+domain: manufacturing
+function: explodeBom
+detector: ThresholdCheck (F445 Path A)
+
+scenarios:
+  - id: TC-MF-001-01
+    name: 정상 BOM 등록 (50 구성품)
+    given: { productId: prod-1, components: [50 items] }
+    when: explodeBom
+    then: { status: active, componentCount: 50 }
+
+  - id: TC-MF-001-02
+    name: 최대 구성품 초과 (501개) → E422-BOM-MAX
+    given: { components: [501 items] }
+    when: explodeBom
+    then: { error: E422-BOM-MAX }
+
+  - id: TC-MF-001-03
+    name: 빈 구성품 목록 → E422-BOM-EMPTY
+    given: { components: [] }
+    when: explodeBom
+    then: { error: E422-BOM-EMPTY }
+
+  - id: TC-MF-002-01
+    name: 정상 생산 주문 (용량 충분)
+    given: { requiredCapacity: 500, availableCapacity: 5000 }
+    when: placeProductionOrder
+    then: { status: pending }
+
+  - id: TC-MF-002-02
+    name: 용량 초과 → E422-CAP-MAX
+    given: { requiredCapacity: 15000, availableCapacity: 5000 }
+    when: placeProductionOrder
+    then: { error: E422-CAP-MAX }
+
+  - id: TC-MF-003-01
+    name: 생산 주문 확정 atomic — orders confirmed + lots planned
+    given: { order: { status: pending } }
+    when: confirmProductionOrder
+    then:
+      production_orders.status: confirmed
+      production_lots.status: planned
+
+  - id: TC-MF-004-01
+    name: planned → in_progress 전환
+    given: { lot: { status: planned } }
+    when: transitionProductionStatus(in_progress)
+    then: { previousStatus: planned, newStatus: in_progress }
+
+  - id: TC-MF-004-02
+    name: in_progress → qc 전환
+    given: { lot: { status: in_progress } }
+    when: transitionProductionStatus(qc)
+    then: { newStatus: qc }
+
+  - id: TC-MF-004-03
+    name: planned → released 역전환 → E409-LOT
+    given: { lot: { status: planned } }
+    when: transitionProductionStatus(released)
+    then: { error: E409-LOT }
+
+  - id: TC-MF-005-01
+    name: 불량 격리 배치 — 2건 in_progress/qc lots 격리
+    given: { order: { id: ord-1 }, lots: [{ status: in_progress }, { status: qc }] }
+    when: quarantineDefectiveLots(ord-1)
+    then: { quarantinedCount: 2, lots.status: quarantined }
+
+  - id: TC-MF-006-01
+    name: 출하 해제 atomic — lots released + shipment_log INSERT
+    given: { lot: { status: qc } }
+    when: releaseForShipment
+    then:
+      production_lots.status: released
+      shipment_log: inserted
+
+  - id: TC-MF-006-02
+    name: qc 아닌 lot 출하 시도 → E409-LOT
+    given: { lot: { status: in_progress } }
+    when: releaseForShipment
+    then: { error: E409-LOT }

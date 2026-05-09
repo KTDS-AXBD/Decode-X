@@ -1,0 +1,39 @@
+---
+# Provenance — HOSPITALITY-001
+# 20번째 도메인 — Hospitality 산업 합성 도메인 PoC (9번째 신규 산업)
+
+skillId: HOSPITALITY-001
+extractedAt: "2026-05-09T21:30:00+09:00"
+extractedBy: "Decode-X Sprint 290 F456 — withRuleId 재사용 20번째 도메인 (Hospitality 산업, 9번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/hospitality/rules/hospitality-rules.md"
+    section: "Hospitality 합성 비즈니스 룰 — HO-001~HO-006"
+    businessRules: [HO-001, HO-002, HO-003, HO-004, HO-005, HO-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 숙박(Hospitality) 산업 일반화 PoC. 객실예약/취소환불/체크인/상태전환/하우스키핑/오버부킹 추상화. 20번째 도메인 + 9번째 신규 산업 (CC + DV + SB + IN + HC + ED + RE + LG + HO). detector 5 cascade + 8 산업 연속 입증 활용."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/hospitality.ts"
+    functions: [bookRoom, applyCancellationPolicy, processCheckIn, transitionBookingStatus, markHousekeepingComplete, handleOverbookingCompensation]
+    test: "src/__tests__/hospitality.test.ts (후속 작성 가능, PoC 단계)"
+    sourceMarker: PRESENCE
+    note: "BL-detector 자동 PRESENCE 입증 — 신규 detector 0개, withRuleId 재사용 (Threshold × 2 + Atomic × 2 + Status × 2)"
+
+inputCompleteness:
+  sInput: 0.92
+  deficiencyFlag: false
+  components:
+    rulesCoverage: 1.00
+    testCoverage: 0.85
+    provenanceLink: 1.00
+
+note: |
+  Sprint 290 F456: 숙박 산업 도메인 신규 — 20번째 도메인 (9번째 신규 산업 시리즈).
+  HO-001 객실 예약 한도 / HO-002 취소 환불 cutoff / HO-003 체크인 atomic /
+  HO-004 예약 상태 전환 / HO-005 하우스키핑 batch / HO-006 오버부킹 보상 atomic.
+  분포: Threshold × 2 + Atomic × 2 + Status × 2 (균형 분포 10번째 정착).
+  withRuleId 재사용 18 Sprint 연속 정점 (S264~S278+S283~S290). 신규 detector 0개.
+  9 산업 연속 0 ABSENCE 목표 (CC + DV + SB + IN + HC + ED + RE + LG + HO).

@@ -622,13 +622,19 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 141 detectors (Sprint 296 F462 — telecom TC-001~TC-006 added, 26번째 도메인 통신 산업, 15번째 신규)", () => {
+  it("exposes 147 detectors (Sprint 297 F463 — banking BK-001~BK-006 added, 27번째 도메인 은행 산업, 16번째 신규)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "BB-001",
       "BB-002",
       "BB-003",
       "BB-004",
       "BB-005",
+      "BK-001",
+      "BK-002",
+      "BK-003",
+      "BK-004",
+      "BK-005",
+      "BK-006",
       "BL-005",
       "BL-006",
       "BL-007",
@@ -1916,5 +1922,113 @@ function runBillingCycle(db, cycleMonth) {
     const markers = BL_DETECTOR_REGISTRY["TC-006"]!(src, "telecom.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["TC-006"]!(src, "telecom.ts")).toHaveLength(0);
+  });
+});
+
+// F463 (Sprint 297) — banking domain BK-001~006 PRESENCE (idempotent 2-step)
+describe("banking domain — BK-001~006 via withRuleId (Sprint 297 F463)", () => {
+  it("BK-001 PRESENCE — amount >= MAX_WITHDRAWAL_AMOUNT threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "banking.ts",
+      `const MAX_WITHDRAWAL_AMOUNT = 10000000;
+function processWithdrawal(db, accountId, amount) {
+  const account = db.prepare("SELECT id, status, balance FROM accounts WHERE id = ?").get(accountId);
+  if (amount >= MAX_WITHDRAWAL_AMOUNT) {
+    throw new BankingError('E422-WITHDRAWAL-LIMIT', \`Withdrawal amount exceeds limit (\${amount} >= \${MAX_WITHDRAWAL_AMOUNT})\`, 422);
+  }
+  db.prepare("UPDATE accounts SET balance = balance - ? WHERE id = ?").run(amount, accountId);
+  db.prepare("INSERT INTO transactions (id, from_account_id, amount, transaction_type, status, fee, created_at, completed_at) VALUES (?, ?, ?, 'withdrawal', 'completed', 0, ?, ?)").run(transactionId, accountId, amount, completedAt, completedAt);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["BK-001"]!(src, "banking.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["BK-001"]!(src, "banking.ts")).toHaveLength(0);
+  });
+
+  it("BK-002 PRESENCE — feeAmount > transferFeeLimit (Path B, 'limit' keyword)", () => {
+    const src = parseTypeScriptSource(
+      "banking.ts",
+      `function computeTransferFee(db, fromAccountId, transferAmount) {
+  const account = db.prepare("SELECT id, account_type FROM accounts WHERE id = ?").get(fromAccountId);
+  const feeAmount = Math.floor(transferAmount * feeRate);
+  const transferFeeLimit = 50000;
+  if (feeAmount > transferFeeLimit) {
+    throw new BankingError('E422-TRANSFER-FEE', \`Transfer fee exceeds limit (\${feeAmount} > \${transferFeeLimit})\`, 422);
+  }
+  return { feeAmount, transferFeeLimit, withinLimit: true };
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["BK-002"]!(src, "banking.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["BK-002"]!(src, "banking.ts")).toHaveLength(0);
+  });
+
+  it("BK-003 PRESENCE — db.transaction() in processAccountTransfer (atomic debit+credit+log)", () => {
+    const src = parseTypeScriptSource(
+      "banking.ts",
+      `function processAccountTransfer(db, fromAccountId, toAccountId, amount, fee) {
+  const tx = db.transaction(() => {
+    db.prepare("UPDATE accounts SET balance = balance - ? WHERE id = ?").run(amount + fee, fromAccountId);
+    db.prepare("UPDATE accounts SET balance = balance + ? WHERE id = ?").run(amount, toAccountId);
+    db.prepare("INSERT INTO transactions (id, from_account_id, to_account_id, amount, transaction_type, status, fee, created_at, completed_at) VALUES (?, ?, ?, ?, 'transfer', 'completed', ?, ?, ?)").run(transactionId, fromAccountId, toAccountId, amount, fee, completedAt, completedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["BK-003"]!(src, "banking.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["BK-003"]!(src, "banking.ts")).toHaveLength(0);
+  });
+
+  it("BK-004 PRESENCE — status comparison + 'active'/'frozen' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "banking.ts",
+      `function transitionAccountStatus(db, accountId, newStatus) {
+  const account = db.prepare("SELECT status FROM accounts WHERE id = ?").get(accountId);
+  if (account.status === 'pending_kyc') throw new BankingError("E409-ACCOUNT", "Invalid transition", 409);
+  db.prepare("UPDATE accounts SET status = 'active' WHERE id = ?").run(accountId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["BK-004"]!(src, "banking.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["BK-004"]!(src, "banking.ts")).toHaveLength(0);
+  });
+
+  it("BK-005 PRESENCE — batch status='dormant' update in markDormantAccounts (file context)", () => {
+    // detector는 파일 전체 스캔 — transitionAccountStatus 함수의 status === 비교식이 foundComparison=true 확정
+    const src = parseTypeScriptSource(
+      "banking.ts",
+      `function transitionAccountStatus(db, accountId, newStatus) {
+  const account = db.prepare("SELECT status FROM accounts WHERE id = ?").get(accountId);
+  if (account.status === 'pending_kyc') throw new BankingError("E409-ACCOUNT", "Invalid", 409);
+  db.prepare("UPDATE accounts SET status = 'active' WHERE id = ?").run(accountId);
+}
+function markDormantAccounts(db, inactiveCutoffDate) {
+  const candidates = db.prepare("SELECT id FROM accounts WHERE status = 'active' AND last_tx_date < ?").all(inactiveCutoffDate);
+  for (const account of candidates) {
+    db.prepare("UPDATE accounts SET status = 'dormant', dormant_at = ? WHERE id = ?").run(dormantAt, account.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["BK-005"]!(src, "banking.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["BK-005"]!(src, "banking.ts")).toHaveLength(0);
+  });
+
+  it("BK-006 PRESENCE — db.transaction() in verifyKyc (atomic kyc+aml+activation)", () => {
+    const src = parseTypeScriptSource(
+      "banking.ts",
+      `function verifyKyc(db, accountId, documentType) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO kyc_records (id, account_id, verification_status, verified_at, document_type) VALUES (?, ?, 'verified', ?, ?)").run(kycId, accountId, activatedAt, documentType);
+    db.prepare("INSERT INTO aml_checks (id, account_id, check_status, checked_at, risk_score) VALUES (?, ?, 'cleared', ?, 0)").run(amlId, accountId, activatedAt);
+    db.prepare("UPDATE accounts SET status = 'active' WHERE id = ?").run(accountId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["BK-006"]!(src, "banking.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["BK-006"]!(src, "banking.ts")).toHaveLength(0);
   });
 });

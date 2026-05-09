@@ -1,0 +1,84 @@
+# Test Scenarios — BK-001 ~ BK-006 (대표)
+ruleId: BK-001
+domain: banking
+function: processWithdrawal
+detector: ThresholdCheck (F445 Path A)
+
+scenarios:
+  - id: BK-BK-001-01
+    name: 정상 출금 (amount=500000, under limit)
+    given: { accountId: acc-1, amount: 500000, balance: 5000000, status: active }
+    when: processWithdrawal
+    then: { transactionId: [uuid], amount: 500000 }
+
+  - id: BK-BK-001-02
+    name: 출금 한도 초과 (amount=10000000) → E422-WITHDRAWAL-LIMIT
+    given: { accountId: acc-1, amount: 10000000, status: active }
+    when: processWithdrawal
+    then: { error: E422-WITHDRAWAL-LIMIT }
+
+  - id: BK-BK-002-01
+    name: 정상 수수료 계산 (feeAmount < transferFeeLimit)
+    given: { fromAccountId: acc-1, transferAmount: 1000000, accountType: checking }
+    when: computeTransferFee
+    then: { feeAmount: 1000, transferFeeLimit: 50000, withinLimit: true }
+
+  - id: BK-BK-002-02
+    name: 수수료 한도 초과 → E422-TRANSFER-FEE
+    given: { fromAccountId: acc-1, transferAmount: 100000000, accountType: business }
+    when: computeTransferFee
+    then: { error: E422-TRANSFER-FEE }
+
+  - id: BK-BK-003-01
+    name: 정상 계좌 이체 atomic — balance 차감+증가 + transactions INSERT
+    given: { fromAccount: { status: active, balance: 1000000 }, toAccount: { status: active }, amount: 500000, fee: 500 }
+    when: processAccountTransfer
+    then:
+      from_account.balance: 499500
+      to_account.balance: +500000
+      transactions: inserted (status=completed)
+
+  - id: BK-BK-003-02
+    name: 비활성 출금 계좌 이체 시도 → E409-ACCOUNT
+    given: { fromAccount: { status: frozen } }
+    when: processAccountTransfer
+    then: { error: E409-ACCOUNT }
+
+  - id: BK-BK-004-01
+    name: pending_kyc → active 전환
+    given: { account: { status: pending_kyc } }
+    when: transitionAccountStatus(active)
+    then: { previousStatus: pending_kyc, newStatus: active }
+
+  - id: BK-BK-004-02
+    name: active → frozen 전환
+    given: { account: { status: active } }
+    when: transitionAccountStatus(frozen)
+    then: { newStatus: frozen }
+
+  - id: BK-BK-004-03
+    name: pending_kyc → dormant 역전환 → E409-ACCOUNT
+    given: { account: { status: pending_kyc } }
+    when: transitionAccountStatus(dormant)
+    then: { error: E409-ACCOUNT }
+
+  - id: BK-BK-005-01
+    name: 휴면 계좌 일괄 처리 — 2건 active → dormant
+    given: { inactiveCutoffDate: "2025-11-10", candidates: [{ status: active }, { status: active }] }
+    when: markDormantAccounts("2025-11-10")
+    then: { markedCount: 2, accounts.status: dormant }
+
+  - id: BK-BK-006-01
+    name: 정상 KYC atomic — kyc_records + aml_checks + status=active
+    given: { account: { status: pending_kyc }, documentType: passport }
+    when: verifyKyc
+    then:
+      kyc_records: inserted (verification_status=verified)
+      aml_checks: inserted (check_status=cleared)
+      accounts.status: active
+
+  - id: BK-BK-006-02
+    name: 이미 활성화된 계좌 KYC 시도 → E409-ACCOUNT
+    given: { account: { status: active } }
+    when: verifyKyc
+    then: { error: E409-ACCOUNT }

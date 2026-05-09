@@ -454,6 +454,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processPortOut",
     ],
   },
+  {
+    container: "banking",
+    rulesPath: `${SPEC_CONTAINER_BASE}/banking/rules/banking-rules.md`,
+    // Sprint 297 (F463): Banking 합성 도메인 — 27번째 도메인 (은행 산업, 16번째 신규 산업).
+    // BK-001~BK-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 25 Sprint 연속 정점 (S264~S278+S283~S297).
+    // 16번째 신규 산업 도메인 (CC + DV + SB + IN + HC + ED + RE + LG + HO + TR + MF + RT + EN + GV + TC + BK).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/banking.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/banking/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "processWithdrawal",
+      "computeTransferFee",
+      "processAccountTransfer",
+      "transitionAccountStatus",
+      "markDormantAccounts",
+      "verifyKyc",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

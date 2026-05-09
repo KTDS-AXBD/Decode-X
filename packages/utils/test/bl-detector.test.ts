@@ -622,7 +622,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 105 detectors (Sprint 290 F456 — hospitality HO-001~HO-006 added, 20번째 도메인 숙박 산업, 9번째 신규)", () => {
+  it("exposes 111 detectors (Sprint 291 F457 — travel TR-001~TR-006 added, 21번째 도메인 여행 산업, 10번째 신규)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "BB-001",
       "BB-002",
@@ -723,6 +723,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "SB-004",
       "SB-005",
       "SB-006",
+      "TR-001",
+      "TR-002",
+      "TR-003",
+      "TR-004",
+      "TR-005",
+      "TR-006",
       "V-001",
       "V-002",
       "V-003",
@@ -1222,6 +1228,103 @@ function markHousekeepingComplete(db) {
     const markers = BL_DETECTOR_REGISTRY["HO-006"]!(src, "hospitality.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["HO-006"]!(src, "hospitality.ts")).toHaveLength(0);
+  });
+});
+
+// F457 (Sprint 291) — travel domain TR-001~006 PRESENCE (idempotent 2-step)
+describe("travel domain — TR-001~006 via withRuleId (Sprint 291 F457)", () => {
+  it("TR-001 PRESENCE — seatsRequested > MAX_SEATS_PER_BOOKING threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "travel.ts",
+      `const MAX_SEATS_PER_BOOKING = 9;
+function bookFlight(db, passengerId, flightId, fareClass, seatsRequested, availableSeats) {
+  if (seatsRequested > MAX_SEATS_PER_BOOKING) throw new Error('E422-ST-MAX');
+  if (seatsRequested > availableSeats) throw new Error('E422-ST-AVAIL');
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TR-001"]!(src, "travel.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["TR-001"]!(src, "travel.ts")).toHaveLength(0);
+  });
+
+  it("TR-002 PRESENCE — availableMiles < requiredMilesLimit (Path B, 'limit' keyword)", () => {
+    const src = parseTypeScriptSource(
+      "travel.ts",
+      `function upgradeFareClass(db, itineraryId, targetFare, availableMiles) {
+  const requiredMilesLimit = 30000;
+  if (availableMiles < requiredMilesLimit) throw new Error('E422-MILES');
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TR-002"]!(src, "travel.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["TR-002"]!(src, "travel.ts")).toHaveLength(0);
+  });
+
+  it("TR-003 PRESENCE — db.transaction() in confirmItinerary (atomic itinerary confirm)", () => {
+    const src = parseTypeScriptSource(
+      "travel.ts",
+      `function confirmItinerary(db, itineraryId, paymentAmount) {
+  const tx = db.transaction(() => {
+    db.prepare("UPDATE itineraries SET status = 'confirmed', pnr = ? WHERE id = ?").run(pnr, itineraryId);
+    db.prepare("INSERT INTO trips (id, itinerary_id, passenger_id, status) VALUES (?, ?, ?, 'pending')").run(tripId, itineraryId, passengerId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TR-003"]!(src, "travel.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["TR-003"]!(src, "travel.ts")).toHaveLength(0);
+  });
+
+  it("TR-004 PRESENCE — status comparison + 'confirmed'/'checked_in' assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "travel.ts",
+      `function transitionTripStatus(db, tripId, newStatus) {
+  const trip = db.prepare("SELECT status FROM trips WHERE id = ?").get(tripId);
+  if (trip.status === 'pending') throw new Error("E409-TR");
+  db.prepare("UPDATE trips SET status = 'confirmed' WHERE id = ?").run(tripId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TR-004"]!(src, "travel.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["TR-004"]!(src, "travel.ts")).toHaveLength(0);
+  });
+
+  it("TR-005 PRESENCE — batch status='cancelled' update in markDisruptedTrips (file context)", () => {
+    // detector는 파일 전체 스캔 — transitionTripStatus 함수의 status === 비교식이 foundComparison=true 확정
+    const src = parseTypeScriptSource(
+      "travel.ts",
+      `function transitionTripStatus(db, tripId, newStatus) {
+  const trip = db.prepare("SELECT status FROM trips WHERE id = ?").get(tripId);
+  if (trip.status === 'confirmed') throw new Error("E409-TR");
+  db.prepare("UPDATE trips SET status = 'checked_in' WHERE id = ?").run(tripId);
+}
+function markDisruptedTrips(db, flightId, reason) {
+  const candidates = db.prepare("SELECT id FROM trips WHERE status IN ('pending', 'confirmed')").all();
+  for (const trip of candidates) {
+    db.prepare("UPDATE trips SET status = 'cancelled' WHERE id = ?").run(trip.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TR-005"]!(src, "travel.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["TR-005"]!(src, "travel.ts")).toHaveLength(0);
+  });
+
+  it("TR-006 PRESENCE — db.transaction() in processCancellationRefund (atomic cancel+refund)", () => {
+    const src = parseTypeScriptSource(
+      "travel.ts",
+      `function processCancellationRefund(db, itineraryId) {
+  const tx = db.transaction(() => {
+    db.prepare("UPDATE itineraries SET status = 'cancelled' WHERE id = ?").run(itineraryId);
+    db.prepare("INSERT INTO refund_log (id, itinerary_id, refund_amount, miles_restored, refunded_at) VALUES (?, ?, ?, ?, ?)").run();
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TR-006"]!(src, "travel.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["TR-006"]!(src, "travel.ts")).toHaveLength(0);
   });
 });
 

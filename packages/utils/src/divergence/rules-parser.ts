@@ -28,7 +28,8 @@ import type { BLRule } from "@ai-foundry/types";
 // F454 (Sprint 288): RE prefix 추가 (realestate 합성 도메인, 18번째 — 부동산 산업). 2글자 alternation 동일 우선순위
 // F455 (Sprint 289): LG prefix 추가 (logistics 합성 도메인, 19번째 — 물류 산업). 2글자 alternation 동일 우선순위
 // F456 (Sprint 290): HO prefix 추가 (hospitality 합성 도메인, 20번째 — 숙박 산업). 2글자 alternation 동일 우선순위
-const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|LP|CC|DV|SB|IN|HC|ED|RE|LG|HO|P|V)-[A-Z]?\d{1,3}$/;
+// F457 (Sprint 291): TR prefix 추가 (travel 합성 도메인, 21번째 — 여행 산업). 2글자 alternation 동일 우선순위
+const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|LP|CC|DV|SB|IN|HC|ED|RE|LG|HO|TR|P|V)-[A-Z]?\d{1,3}$/;
 const HEADER_PATTERN =
   /\|\s*ID\s*\|\s*condition[^|]*\|\s*criteria[^|]*\|\s*outcome[^|]*\|\s*exception[^|]*\|/i;
 const SEPARATOR_PATTERN = /^\s*\|[\s:|-]+\|\s*$/;

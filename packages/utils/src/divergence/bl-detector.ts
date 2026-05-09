@@ -746,4 +746,11 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "RE-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "RE-004"),
   "RE-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "RE-005"),
   "RE-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "RE-006"),
+  // Sprint 289 (F455) — logistics domain (threshold × 2, atomic × 2, status × 2 — 19번째 도메인, 물류 산업, 8번째 신규)
+  "LG-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "LG-001"),
+  "LG-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "LG-002"),
+  "LG-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "LG-003"),
+  "LG-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "LG-004"),
+  "LG-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "LG-005"),
+  "LG-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "LG-006"),
 };

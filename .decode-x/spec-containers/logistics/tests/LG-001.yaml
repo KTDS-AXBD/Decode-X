@@ -1,0 +1,82 @@
+# Test Scenarios — LG-001 ~ LG-006 (대표)
+ruleId: LG-001
+domain: logistics
+function: checkShipmentLimits
+detector: ThresholdCheck (F445 Path A)
+
+scenarios:
+  - id: TC-LG-001-01
+    name: 정상 발송 (1000kg, 5m³)
+    given: { shipperId: s-1, origin: Seoul, destination: Busan, weightKg: 1000, volumeM3: 5 }
+    when: checkShipmentLimits
+    then: { status: pending }
+
+  - id: TC-LG-001-02
+    name: 무게 초과 (35,000kg) → E422-WT-MAX
+    given: { weightKg: 35000, volumeM3: 5 }
+    when: checkShipmentLimits
+    then: { error: E422-WT-MAX }
+
+  - id: TC-LG-001-03
+    name: 부피 초과 (120m³) → E422-VL-MAX
+    given: { weightKg: 100, volumeM3: 120 }
+    when: checkShipmentLimits
+    then: { error: E422-VL-MAX }
+
+  - id: TC-LG-002-01
+    name: 경로 거리 적정 (5000km)
+    given: { shipment: { status: pending }, routeDistanceKm: 5000 }
+    when: optimizeRoute
+    then: { withinLimit: true, routeDistanceKm: 5000 }
+
+  - id: TC-LG-002-02
+    name: 경로 거리 초과 (25,000km) → E422-LIMIT
+    given: { routeDistanceKm: 25000 }
+    when: optimizeRoute
+    then: { error: E422-LIMIT }
+
+  - id: TC-LG-003-01
+    name: 세관 통관 atomic — customs INSERT + shipment in_transit
+    given: { shipment: { status: pending }, declaredValueUsd: 50000 }
+    when: clearCustoms
+    then:
+      customs_records.status: cleared
+      shipments.status: in_transit
+
+  - id: TC-LG-004-01
+    name: pending → in_transit 전환
+    given: { shipment: { status: pending } }
+    when: transitionDeliveryStatus(in_transit)
+    then: { previousStatus: pending, newStatus: in_transit }
+
+  - id: TC-LG-004-02
+    name: in_transit → delivered 전환
+    given: { shipment: { status: in_transit } }
+    when: transitionDeliveryStatus(delivered)
+    then: { newStatus: delivered }
+
+  - id: TC-LG-004-03
+    name: delivered → pending 역전환 → E409-TR
+    given: { shipment: { status: delivered } }
+    when: transitionDeliveryStatus(pending)
+    then: { error: E409-TR }
+
+  - id: TC-LG-005-01
+    name: 오래된 재고 stale 마킹
+    given: { inventory: { status: active, last_updated: 30days_ago } }
+    when: markStaleInventory
+    then: { markedCount: 1, status: stale }
+
+  - id: TC-LG-006-01
+    name: 정상 반품 RMA (발송 7일 후)
+    given: { shipment: { status: delivered, dispatched_at: 7days_ago } }
+    when: processReturnRma(reason="damaged")
+    then:
+      rma_records.status: initiated
+      shipments.status: returned
+
+  - id: TC-LG-006-02
+    name: 반품 기간 초과 (발송 35일 후) → E422-RMA-EXP
+    given: { shipment: { status: delivered, dispatched_at: 35days_ago } }
+    when: processReturnRma
+    then: { error: E422-RMA-EXP }

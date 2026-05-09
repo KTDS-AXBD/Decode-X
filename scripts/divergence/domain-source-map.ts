@@ -302,6 +302,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "cancelLeaseWithRefund",
     ],
   },
+  {
+    container: "logistics",
+    rulesPath: `${SPEC_CONTAINER_BASE}/logistics/rules/logistics-rules.md`,
+    // Sprint 289 (F455): Logistics 합성 도메인 — 19번째 도메인 (물류 산업, 8번째 신규 산업).
+    // LG-001~LG-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 17 Sprint 연속 정점 (S264~S278+S283~S289).
+    // 8번째 신규 산업 도메인 (CC + DV + SB + IN + HC + ED + RE + LG).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/logistics.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/logistics/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "checkShipmentLimits",
+      "optimizeRoute",
+      "clearCustoms",
+      "transitionDeliveryStatus",
+      "markStaleInventory",
+      "processReturnRma",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

@@ -622,7 +622,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 93 detectors (Sprint 288 F454 — realestate RE-001~RE-006 added, 18번째 도메인 부동산 산업, 7번째 신규)", () => {
+  it("exposes 99 detectors (Sprint 289 F455 — logistics LG-001~LG-006 added, 19번째 도메인 물류 산업, 8번째 신규)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "BB-001",
       "BB-002",
@@ -686,6 +686,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "IN-004",
       "IN-005",
       "IN-006",
+      "LG-001",
+      "LG-002",
+      "LG-003",
+      "LG-004",
+      "LG-005",
+      "LG-006",
       "LP-001",
       "LP-002",
       "LP-003",
@@ -1010,6 +1016,109 @@ describe("pension domain — P-001~P-007 via withRuleId (Sprint 269 F436)", () =
     const markers = BL_DETECTOR_REGISTRY["P-007"]!(sf, "pension.ts");
     expect(markers).toHaveLength(1);
     expect(markers[0]?.ruleId).toBe("P-007");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// F455 (Sprint 289) — logistics domain LG-001~006 PRESENCE (idempotent 2-step)
+// ---------------------------------------------------------------------------
+describe("logistics domain — LG-001~006 via withRuleId (Sprint 289 F455)", () => {
+  it("LG-001 PRESENCE — weightKg > MAX_WEIGHT_KG threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "logistics.ts",
+      `const MAX_WEIGHT_KG = 30_000;
+function checkShipmentLimits(db, shipperId, origin, destination, weightKg, volumeM3) {
+  if (weightKg > MAX_WEIGHT_KG) {
+    throw new LogisticsError("E422-WT-MAX", "Weight exceeds limit", 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["LG-001"]!(src, "logistics.ts");
+    expect(markers).toHaveLength(0);
+    // idempotent: 두 번째 호출도 동일
+    expect(BL_DETECTOR_REGISTRY["LG-001"]!(src, "logistics.ts")).toHaveLength(0);
+  });
+
+  it("LG-002 PRESENCE — routeDistanceKm > maxRouteLimit (Path B, 'limit' keyword)", () => {
+    const src = parseTypeScriptSource(
+      "logistics.ts",
+      `function optimizeRoute(db, shipmentId, routeDistanceKm) {
+  const maxRouteLimit = 20_000;
+  if (routeDistanceKm > maxRouteLimit) {
+    throw new LogisticsError("E422-LIMIT", "Route exceeds limit", 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["LG-002"]!(src, "logistics.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["LG-002"]!(src, "logistics.ts")).toHaveLength(0);
+  });
+
+  it("LG-003 PRESENCE — db.transaction() in clearCustoms (atomic)", () => {
+    const src = parseTypeScriptSource(
+      "logistics.ts",
+      `function clearCustoms(db, shipmentId, declaredValueUsd) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO customs_records ...").run();
+    db.prepare("UPDATE shipments SET status = 'in_transit' WHERE id = ?").run(shipmentId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["LG-003"]!(src, "logistics.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["LG-003"]!(src, "logistics.ts")).toHaveLength(0);
+  });
+
+  it("LG-004 PRESENCE — status comparison + 'in_transit'/'delivered' assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "logistics.ts",
+      `function transitionDeliveryStatus(db, shipmentId, newStatus) {
+  const shipment = db.prepare("SELECT status FROM shipments WHERE id = ?").get(shipmentId);
+  if (shipment.status === 'delivered') throw new LogisticsError("E409-TR", "Invalid transition", 409);
+  db.prepare("UPDATE shipments SET status = 'in_transit' WHERE id = ?").run(shipmentId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["LG-004"]!(src, "logistics.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["LG-004"]!(src, "logistics.ts")).toHaveLength(0);
+  });
+
+  it("LG-005 PRESENCE — batch status='stale' update in markStaleInventory (file context)", () => {
+    // detector는 파일 전체 스캔 — LG-004 함수의 TypeScript status === 비교식이 foundComparison=true 확정
+    const src = parseTypeScriptSource(
+      "logistics.ts",
+      `function transitionDeliveryStatus(db, shipmentId, newStatus) {
+  const shipment = db.prepare("SELECT status FROM shipments WHERE id = ?").get(shipmentId);
+  if (shipment.status === 'delivered') throw new Error("E409-TR");
+  db.prepare("UPDATE shipments SET status = 'in_transit' WHERE id = ?").run(shipmentId);
+}
+function markStaleInventory(db, cutoffDate) {
+  const candidates = db.prepare("SELECT id FROM warehouse_inventory WHERE status = 'active' AND last_updated < ?").all(cutoffDate);
+  for (const item of candidates) {
+    db.prepare("UPDATE warehouse_inventory SET status = 'stale' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["LG-005"]!(src, "logistics.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["LG-005"]!(src, "logistics.ts")).toHaveLength(0);
+  });
+
+  it("LG-006 PRESENCE — db.transaction() in processReturnRma (atomic RMA)", () => {
+    const src = parseTypeScriptSource(
+      "logistics.ts",
+      `function processReturnRma(db, shipmentId, reason) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO rma_records ...").run();
+    db.prepare("UPDATE shipments SET status = 'returned' WHERE id = ?").run(shipmentId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["LG-006"]!(src, "logistics.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["LG-006"]!(src, "logistics.ts")).toHaveLength(0);
   });
 });
 

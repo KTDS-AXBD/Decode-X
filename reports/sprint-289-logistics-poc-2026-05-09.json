@@ -1,0 +1,99 @@
+{
+  "sprint": 289,
+  "feature": "F455",
+  "title": "Logistics 19번째 도메인 신규 (물류 산업, 8번째 신규 산업)",
+  "plan_id": "AIF-PLAN-087",
+  "report_id": "AIF-RPRT-087",
+  "created": "2026-05-09T21:07:00+09:00",
+  "match_rate": 100,
+  "dod_pass": 12,
+  "dod_total": 12,
+
+  "domain": {
+    "name": "logistics",
+    "container": "logistics",
+    "index": 19,
+    "industry": "Logistics (물류)",
+    "industry_index": 8,
+    "industries": ["CC", "DV", "SB", "IN", "HC", "ED", "RE", "LG"]
+  },
+
+  "metrics": {
+    "detector_coverage_before": 84.5,
+    "detector_coverage_after": 85.3,
+    "detector_coverage_delta": 0.8,
+    "total_bls_before": 110,
+    "total_bls_after": 116,
+    "total_bls_delta": 6,
+    "registry_before": 93,
+    "registry_after": 99,
+    "registry_delta": 6,
+    "domains_before": 18,
+    "domains_after": 19,
+    "utils_tests_before": 188,
+    "utils_tests_after": 194,
+    "new_detectors": 0,
+    "withRuleId_sprint_streak": 17
+  },
+
+  "bls": [
+    { "id": "LG-001", "function": "checkShipmentLimits", "detector": "ThresholdCheck", "pattern": "Path A", "presence": true },
+    { "id": "LG-002", "function": "optimizeRoute", "detector": "ThresholdCheck", "pattern": "Path B (limit keyword)", "presence": true },
+    { "id": "LG-003", "function": "clearCustoms", "detector": "AtomicTransaction", "pattern": "db.transaction()", "presence": true },
+    { "id": "LG-004", "function": "transitionDeliveryStatus", "detector": "StatusTransition", "pattern": "pending→in_transit→delivered", "presence": true },
+    { "id": "LG-005", "function": "markStaleInventory", "detector": "StatusTransition", "pattern": "batch stale (CC-005 8번째)", "presence": true },
+    { "id": "LG-006", "function": "processReturnRma", "detector": "AtomicTransaction", "pattern": "db.transaction()", "presence": true }
+  ],
+
+  "detect_bl": {
+    "total_containers": 19,
+    "logistics_bls": 6,
+    "logistics_absence": 0,
+    "total_bls": 116,
+    "detector_applications": 99,
+    "coverage_pct": 85.3
+  },
+
+  "write_provenance": {
+    "containers": 19,
+    "changes": 0,
+    "files_written": 0
+  },
+
+  "typecheck": "PASS",
+  "vitest": {
+    "total": 194,
+    "pass": 194,
+    "fail": 0
+  },
+
+  "files_created": [
+    "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/logistics.ts",
+    ".decode-x/spec-containers/logistics/provenance.yaml",
+    ".decode-x/spec-containers/logistics/rules/logistics-rules.md",
+    ".decode-x/spec-containers/logistics/rules/LG-001.md",
+    ".decode-x/spec-containers/logistics/rules/LG-002.md",
+    ".decode-x/spec-containers/logistics/rules/LG-003.md",
+    ".decode-x/spec-containers/logistics/rules/LG-004.md",
+    ".decode-x/spec-containers/logistics/rules/LG-005.md",
+    ".decode-x/spec-containers/logistics/rules/LG-006.md",
+    ".decode-x/spec-containers/logistics/runbooks/LG-001.md",
+    ".decode-x/spec-containers/logistics/runbooks/LG-002.md",
+    ".decode-x/spec-containers/logistics/runbooks/LG-003.md",
+    ".decode-x/spec-containers/logistics/runbooks/LG-004.md",
+    ".decode-x/spec-containers/logistics/runbooks/LG-005.md",
+    ".decode-x/spec-containers/logistics/runbooks/LG-006.md",
+    ".decode-x/spec-containers/logistics/tests/LG-001.yaml",
+    "reports/sprint-289-logistics-poc-2026-05-09.json",
+    "reports/sprint-289-logistics-poc-2026-05-09.md",
+    "docs/01-plan/features/F455-logistics-poc.plan.md",
+    "docs/02-design/features/sprint-289-logistics-poc.design.md"
+  ],
+
+  "files_modified": [
+    "scripts/divergence/domain-source-map.ts",
+    "packages/utils/src/divergence/rules-parser.ts",
+    "packages/utils/src/divergence/bl-detector.ts",
+    "packages/utils/test/bl-detector.test.ts"
+  ]
+}

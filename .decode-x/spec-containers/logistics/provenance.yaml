@@ -1,0 +1,39 @@
+---
+# Provenance — LOGISTICS-001
+# 19번째 도메인 — Logistics 산업 합성 도메인 PoC (8번째 신규 산업)
+
+skillId: LOGISTICS-001
+extractedAt: "2026-05-09T20:55:00+09:00"
+extractedBy: "Decode-X Sprint 289 F455 — withRuleId 재사용 19번째 도메인 (Logistics 산업, 8번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/logistics/rules/logistics-rules.md"
+    section: "Logistics 합성 비즈니스 룰 — LG-001~LG-006"
+    businessRules: [LG-001, LG-002, LG-003, LG-004, LG-005, LG-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 물류(Logistics) 산업 일반화 PoC. 화물검증/경로한도/세관/배송상태/재고/반품RMA 추상화. 19번째 도메인 + 8번째 신규 산업 (CC + DV + SB + IN + HC + ED + RE + LG). detector 5 cascade + 7 산업 연속 입증 활용."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/logistics.ts"
+    functions: [checkShipmentLimits, optimizeRoute, clearCustoms, transitionDeliveryStatus, markStaleInventory, processReturnRma]
+    test: "src/__tests__/logistics.test.ts (후속 작성 가능, PoC 단계)"
+    sourceMarker: PRESENCE
+    note: "BL-detector 자동 PRESENCE 입증 — 신규 detector 0개, withRuleId 재사용 (Threshold × 2 + Atomic × 2 + Status × 2)"
+
+inputCompleteness:
+  sInput: 0.92
+  deficiencyFlag: false
+  components:
+    rulesCoverage: 1.00
+    testCoverage: 0.85
+    provenanceLink: 1.00
+
+note: |
+  Sprint 289 F455: 물류 산업 도메인 신규 — 19번째 도메인 (8번째 신규 산업 시리즈).
+  LG-001 화물 발송 한도 / LG-002 경로 거리 한도 / LG-003 세관 통관 atomic /
+  LG-004 배송 상태 전환 / LG-005 재고 stale 자동 처리 / LG-006 반품 RMA atomic.
+  분포: Threshold × 2 + Atomic × 2 + Status × 2 (균형 분포 9번째 정착).
+  withRuleId 재사용 17 Sprint 연속 정점 (S264~S278+S283~S289). 신규 detector 0개.
+  8 산업 연속 0 ABSENCE 목표 (CC + DV + SB + IN + HC + ED + RE + LG).

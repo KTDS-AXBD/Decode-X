@@ -33,7 +33,8 @@ import type { BLRule } from "@ai-foundry/types";
 // F459 (Sprint 293): RT prefix 추가 (retail 합성 도메인, 23번째 — 소매 산업). 2글자 alternation 동일 우선순위
 // F460 (Sprint 294): EN prefix 추가 (energy 합성 도메인, 24번째 — 에너지 산업). 2글자 alternation 동일 우선순위
 // F461 (Sprint 295): GV prefix 추가 (government 합성 도메인, 25번째 — 공공 산업). 2글자 alternation 동일 우선순위
-const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|LP|CC|DV|SB|IN|HC|ED|RE|LG|HO|TR|MF|RT|EN|GV|P|V)-[A-Z]?\d{1,3}$/;
+// F462 (Sprint 296): TC prefix 추가 (telecom 합성 도메인, 26번째 — 통신 산업). 2글자 alternation 동일 우선순위
+const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|LP|CC|DV|SB|IN|HC|ED|RE|LG|HO|TR|MF|RT|EN|GV|TC|P|V)-[A-Z]?\d{1,3}$/;
 const HEADER_PATTERN =
   /\|\s*ID\s*\|\s*condition[^|]*\|\s*criteria[^|]*\|\s*outcome[^|]*\|\s*exception[^|]*\|/i;
 const SEPARATOR_PATTERN = /^\s*\|[\s:|-]+\|\s*$/;

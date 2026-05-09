@@ -1,0 +1,39 @@
+---
+# Provenance — TRAVEL-001
+# 21번째 도메인 — Travel 산업 합성 도메인 PoC (10번째 신규 산업)
+
+skillId: TRAVEL-001
+extractedAt: "2026-05-09T21:45:00+09:00"
+extractedBy: "Decode-X Sprint 291 F457 — withRuleId 재사용 21번째 도메인 (Travel 산업, 10번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/travel/rules/travel-rules.md"
+    section: "Travel 합성 비즈니스 룰 — TR-001~TR-006"
+    businessRules: [TR-001, TR-002, TR-003, TR-004, TR-005, TR-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 여행(Travel) 산업 일반화 PoC. 항공예약/업그레이드/여정확정/상태전환/결항배치/취소환불 추상화. 21번째 도메인 + 10번째 신규 산업 (CC + DV + SB + IN + HC + ED + RE + LG + HO + TR). detector 5 cascade + 9 산업 연속 입증 활용."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/travel.ts"
+    functions: [bookFlight, upgradeFareClass, confirmItinerary, transitionTripStatus, markDisruptedTrips, processCancellationRefund]
+    test: "src/__tests__/travel.test.ts (후속 작성 가능, PoC 단계)"
+    sourceMarker: PRESENCE
+    note: "BL-detector 자동 PRESENCE 입증 — 신규 detector 0개, withRuleId 재사용 (Threshold × 2 + Atomic × 2 + Status × 2)"
+
+inputCompleteness:
+  sInput: 0.92
+  deficiencyFlag: false
+  components:
+    rulesCoverage: 1.00
+    testCoverage: 0.85
+    provenanceLink: 1.00
+
+note: |
+  Sprint 291 F457: 여행 산업 도메인 신규 — 21번째 도메인 (10번째 신규 산업 시리즈).
+  TR-001 항공 예약 좌석 한도 / TR-002 운임 업그레이드 마일리지 한도 / TR-003 여정 확정 atomic /
+  TR-004 여행 상태 전환 / TR-005 결항 일괄 배치 / TR-006 취소 환불 atomic.
+  분포: Threshold × 2 + Atomic × 2 + Status × 2 (균형 분포 11번째 정착).
+  withRuleId 재사용 19 Sprint 연속 정점 (S264~S278+S283~S291). 신규 detector 0개.
+  10 산업 연속 0 ABSENCE 목표 (CC + DV + SB + IN + HC + ED + RE + LG + HO + TR).

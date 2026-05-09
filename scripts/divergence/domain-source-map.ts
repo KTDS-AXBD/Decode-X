@@ -340,6 +340,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "handleOverbookingCompensation",
     ],
   },
+  {
+    container: "travel",
+    rulesPath: `${SPEC_CONTAINER_BASE}/travel/rules/travel-rules.md`,
+    // Sprint 291 (F457): Travel 합성 도메인 — 21번째 도메인 (여행 산업, 10번째 신규 산업).
+    // TR-001~TR-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 19 Sprint 연속 정점 (S264~S278+S283~S291).
+    // 10번째 신규 산업 도메인 (CC + DV + SB + IN + HC + ED + RE + LG + HO + TR).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/travel.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/travel/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "bookFlight",
+      "upgradeFareClass",
+      "confirmItinerary",
+      "transitionTripStatus",
+      "markDisruptedTrips",
+      "processCancellationRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

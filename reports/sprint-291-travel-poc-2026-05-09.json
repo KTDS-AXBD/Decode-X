@@ -1,0 +1,70 @@
+{
+  "sprint": 291,
+  "feature": "F457",
+  "title": "Travel 21번째 도메인 신규 (여행 산업, 10번째 신규 산업)",
+  "plan_id": "AIF-PLAN-089",
+  "report_id": "AIF-RPRT-089",
+  "created": "2026-05-09T21:55:00+09:00",
+  "match_rate": 100,
+  "dod_pass": 12,
+  "dod_total": 12,
+
+  "domain": {
+    "name": "travel",
+    "container": "travel",
+    "index": 21,
+    "industry": "Travel (여행)",
+    "industry_index": 10,
+    "industries": ["CC", "DV", "SB", "IN", "HC", "ED", "RE", "LG", "HO", "TR"]
+  },
+
+  "metrics": {
+    "detector_coverage_before": 86.1,
+    "detector_coverage_after": 86.7,
+    "detector_coverage_delta": 0.6,
+    "total_bls_before": 122,
+    "total_bls_after": 128,
+    "total_bls_delta": 6,
+    "registry_before": 105,
+    "registry_after": 111,
+    "registry_delta": 6,
+    "new_detectors": 0,
+    "with_rule_id_sprint_streak": 19,
+    "zero_absence_industry_streak": 10,
+    "utils_tests_before": 200,
+    "utils_tests_after": 206,
+    "utils_tests_delta": 6
+  },
+
+  "bl_distribution": {
+    "threshold": 2,
+    "atomic": 2,
+    "status_transition": 2,
+    "total": 6,
+    "balance_pattern_count": 11
+  },
+
+  "detect_bl_results": {
+    "containers": 21,
+    "total_bls": 128,
+    "detector_applications": 111,
+    "absence_travel": 0,
+    "absence_total_non_lpon_refund": 0,
+    "note": "lpon-refund BL-026 OPEN 1건 (기존, 신규 ABSENCE 0)"
+  },
+
+  "dod_checklist": [
+    { "id": 1, "item": "travel.ts source", "pass": true, "note": "~280 lines, 6 함수 + TravelError" },
+    { "id": 2, "item": "spec-container/travel 15 sub-files", "pass": true, "note": "provenance + travel-rules + TR-001~006 (12) + test (1)" },
+    { "id": 3, "item": "DOMAIN_MAP 21번째 entry", "pass": true, "note": "container='travel'" },
+    { "id": 4, "item": "parser regex TR prefix", "pass": true, "note": "BL_ID_PATTERN에 TR 추가" },
+    { "id": 5, "item": "REGISTRY TR-001~TR-006", "pass": true, "note": "withRuleId 19 Sprint 연속 정점" },
+    { "id": 6, "item": "utils unit test count 105→111", "pass": true, "note": "expected list +TR × 6" },
+    { "id": 7, "item": "utils 206 PASS (회귀 0)", "pass": true, "note": "vitest 200+6=206" },
+    { "id": 8, "item": "typecheck PASS", "pass": true, "note": "turbo --force 우회" },
+    { "id": 9, "item": "detect-bl 21 containers", "pass": true, "note": "travel 6 BLs, 0 ABSENCE. coverage 86.7% ≥ 86.5%" },
+    { "id": 10, "item": "write-provenance --apply", "pass": true, "note": "0/21 changes (PRESENCE 자동 입증)" },
+    { "id": 11, "item": "10 산업 연속 0 ABSENCE", "pass": true, "note": "CC+DV+SB+IN+HC+ED+RE+LG+HO+TR" },
+    { "id": 12, "item": "Plan + Report + SPEC", "pass": true, "note": "AIF-PLAN-089 + AIF-RPRT-089 + §6 Sprint 291" }
+  ]
+}

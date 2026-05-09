@@ -622,7 +622,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 123 detectors (Sprint 293 F459 — retail RT-001~RT-006 added, 23번째 도메인 소매 산업, 12번째 신규)", () => {
+  it("exposes 129 detectors (Sprint 294 F460 — energy EN-001~EN-006 added, 24번째 도메인 에너지 산업, 13번째 신규)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "BB-001",
       "BB-002",
@@ -674,6 +674,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "ED-004",
       "ED-005",
       "ED-006",
+      "EN-001",
+      "EN-002",
+      "EN-003",
+      "EN-004",
+      "EN-005",
+      "EN-006",
       "HC-001",
       "HC-002",
       "HC-003",
@@ -1578,5 +1584,109 @@ function markInventorySync(db, productId) {
     const markers = BL_DETECTOR_REGISTRY["RT-006"]!(src, "retail.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["RT-006"]!(src, "retail.ts")).toHaveLength(0);
+  });
+});
+
+// F460 (Sprint 294) — energy domain EN-001~006 PRESENCE (idempotent 2-step)
+describe("energy domain — EN-001~006 via withRuleId (Sprint 294 F460)", () => {
+  it("EN-001 PRESENCE — usageKwh > MAX_METER_USAGE_KWH threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "energy.ts",
+      `const MAX_METER_USAGE_KWH = 50_000;
+function recordMeterReading(db, meterId, usageKwh) {
+  if (usageKwh > MAX_METER_USAGE_KWH) {
+    throw new EnergyError("E422-USAGE-MAX", "Usage exceeds peak limit", 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["EN-001"]!(src, "energy.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["EN-001"]!(src, "energy.ts")).toHaveLength(0);
+  });
+
+  it("EN-002 PRESENCE — currentUsage <= tierUsageLimit (Path B, 'limit' keyword)", () => {
+    const src = parseTypeScriptSource(
+      "energy.ts",
+      `function computeBillingTier(db, meterId, currentUsage) {
+  for (const tier of tiers) {
+    const tierUsageLimit = tier.tier_usage_limit;
+    if (currentUsage <= tierUsageLimit) {
+      selectedTier = tier;
+      break;
+    }
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["EN-002"]!(src, "energy.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["EN-002"]!(src, "energy.ts")).toHaveLength(0);
+  });
+
+  it("EN-003 PRESENCE — db.transaction() in triggerUsageAlert (atomic alert)", () => {
+    const src = parseTypeScriptSource(
+      "energy.ts",
+      `function triggerUsageAlert(db, meterId, currentUsage, alertThresholdKwh) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO meter_readings (id, meter_id, usage_kwh, recorded_at) VALUES (?, ?, ?, ?)").run(randomUUID(), meterId, currentUsage, triggeredAt);
+    db.prepare("INSERT INTO outage_records (id, account_id, outage_type, status, occurred_at) SELECT ?, account_id, 'electricity', 'pending', ? FROM meters WHERE id = ?").run(alertId, triggeredAt, meterId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["EN-003"]!(src, "energy.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["EN-003"]!(src, "energy.ts")).toHaveLength(0);
+  });
+
+  it("EN-004 PRESENCE — status comparison + 'reading_due'/'billed' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "energy.ts",
+      `function transitionMeterStatus(db, meterId, newStatus) {
+  const meter = db.prepare("SELECT status FROM meters WHERE id = ?").get(meterId);
+  if (meter.status === 'active') throw new EnergyError("E409-METER", "Invalid transition", 409);
+  db.prepare("UPDATE meters SET status = 'reading_due' WHERE id = ?").run(meterId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["EN-004"]!(src, "energy.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["EN-004"]!(src, "energy.ts")).toHaveLength(0);
+  });
+
+  it("EN-005 PRESENCE — batch status='notified' update in markOutageNotified (file context)", () => {
+    // detector는 파일 전체 스캔 — transitionMeterStatus 함수의 status === 비교식이 foundComparison=true 확정
+    const src = parseTypeScriptSource(
+      "energy.ts",
+      `function transitionMeterStatus(db, meterId, newStatus) {
+  const meter = db.prepare("SELECT status FROM meters WHERE id = ?").get(meterId);
+  if (meter.status === 'active') throw new EnergyError("E409-METER", "Invalid", 409);
+  db.prepare("UPDATE meters SET status = 'reading_due' WHERE id = ?").run(meterId);
+}
+function markOutageNotified(db, accountId) {
+  const candidates = db.prepare("SELECT id FROM outage_records WHERE status = 'pending' AND account_id = ?").all(accountId);
+  for (const record of candidates) {
+    db.prepare("UPDATE outage_records SET status = 'notified', notified_at = ? WHERE id = ?").run(notifiedAt, record.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["EN-005"]!(src, "energy.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["EN-005"]!(src, "energy.ts")).toHaveLength(0);
+  });
+
+  it("EN-006 PRESENCE — db.transaction() in processOverdueSuspension (atomic suspend+lock)", () => {
+    const src = parseTypeScriptSource(
+      "energy.ts",
+      `function processOverdueSuspension(db, accountId) {
+  const tx = db.transaction(() => {
+    db.prepare("UPDATE overdue_accounts SET suspended_at = ? WHERE id = ?").run(suspendedAt, overdue.id);
+    db.prepare("UPDATE meters SET status = 'suspended' WHERE account_id = ? AND status = 'active'").run(accountId);
+    db.prepare("UPDATE meters SET status = 'locked' WHERE account_id = ? AND status = 'suspended'").run(accountId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["EN-006"]!(src, "energy.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["EN-006"]!(src, "energy.ts")).toHaveLength(0);
   });
 });

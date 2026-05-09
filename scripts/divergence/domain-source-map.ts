@@ -397,6 +397,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processReturnRefund",
     ],
   },
+  {
+    container: "energy",
+    rulesPath: `${SPEC_CONTAINER_BASE}/energy/rules/energy-rules.md`,
+    // Sprint 294 (F460): Energy 합성 도메인 — 24번째 도메인 (에너지 산업, 13번째 신규 산업).
+    // EN-001~EN-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 22 Sprint 연속 정점 (S264~S278+S283~S294).
+    // 13번째 신규 산업 도메인 (CC + DV + SB + IN + HC + ED + RE + LG + HO + TR + MF + RT + EN).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/energy.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/energy/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "recordMeterReading",
+      "computeBillingTier",
+      "triggerUsageAlert",
+      "transitionMeterStatus",
+      "markOutageNotified",
+      "processOverdueSuspension",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

@@ -1,0 +1,88 @@
+# Test Scenarios — EN-001 ~ EN-006 (대표)
+ruleId: EN-001
+domain: energy
+function: recordMeterReading
+detector: ThresholdCheck (F445 Path A)
+
+scenarios:
+  - id: TC-EN-001-01
+    name: 정상 검침 기록 (usageKwh=1000)
+    given: { meterId: meter-1, usageKwh: 1000, meter: { status: active } }
+    when: recordMeterReading
+    then: { readingId: [uuid], usageKwh: 1000 }
+
+  - id: TC-EN-001-02
+    name: 최대 사용량 초과 (usageKwh=50001) → E422-USAGE-MAX
+    given: { usageKwh: 50001 }
+    when: recordMeterReading
+    then: { error: E422-USAGE-MAX }
+
+  - id: TC-EN-001-03
+    name: 음수 사용량 → E422-USAGE-NEG
+    given: { usageKwh: -1 }
+    when: recordMeterReading
+    then: { error: E422-USAGE-NEG }
+
+  - id: TC-EN-002-01
+    name: 정상 누진 구간 계산 (1구간, usage=200)
+    given: { meterId: meter-1, currentUsage: 200, tiers: [{ tier_usage_limit: 300, rate: 100 }] }
+    when: computeBillingTier
+    then: { tierLevel: 1, billingAmount: 20000 }
+
+  - id: TC-EN-002-02
+    name: 최고 구간 적용 (usage > 모든 구간)
+    given: { currentUsage: 5000, tiers: [{ limit: 300 }, { limit: 1000 }] }
+    when: computeBillingTier
+    then: { tierLevel: 2 }
+
+  - id: TC-EN-003-01
+    name: 정상 경보 트리거 atomic — readings + outage_records
+    given: { meterId: meter-1, currentUsage: 5000, alertThresholdKwh: 4000 }
+    when: triggerUsageAlert
+    then:
+      meter_readings: inserted
+      outage_records: inserted (status=pending)
+
+  - id: TC-EN-003-02
+    name: 사용량 임계값 이하 → E422-ALERT-THRESHOLD
+    given: { currentUsage: 3000, alertThresholdKwh: 4000 }
+    when: triggerUsageAlert
+    then: { error: E422-ALERT-THRESHOLD }
+
+  - id: TC-EN-004-01
+    name: active → reading_due 전환
+    given: { meter: { status: active } }
+    when: transitionMeterStatus(reading_due)
+    then: { previousStatus: active, newStatus: reading_due }
+
+  - id: TC-EN-004-02
+    name: reading_due → billed 전환
+    given: { meter: { status: reading_due } }
+    when: transitionMeterStatus(billed)
+    then: { newStatus: billed }
+
+  - id: TC-EN-004-03
+    name: active → paid 역전환 → E409-METER
+    given: { meter: { status: active } }
+    when: transitionMeterStatus(paid)
+    then: { error: E409-METER }
+
+  - id: TC-EN-005-01
+    name: 정전 일괄 통보 — 2건 pending → notified
+    given: { accountId: acc-1, outages: [{ status: pending }, { status: pending }] }
+    when: markOutageNotified(acc-1)
+    then: { notifiedCount: 2, outage_records.status: notified }
+
+  - id: TC-EN-006-01
+    name: 정상 연체 정지 atomic — overdue + meters suspended/locked
+    given: { account: { overdue_days: 100, suspended_at: null }, meter: { status: active } }
+    when: processOverdueSuspension
+    then:
+      overdue_accounts.suspended_at: set
+      meters.status: locked
+
+  - id: TC-EN-006-02
+    name: 유예 기간 이내 (overdue_days=30) → E422-OVERDUE
+    given: { overdue_days: 30, suspended_at: null }
+    when: processOverdueSuspension
+    then: { error: E422-OVERDUE }

@@ -378,6 +378,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "releaseForShipment",
     ],
   },
+  {
+    container: "retail",
+    rulesPath: `${SPEC_CONTAINER_BASE}/retail/rules/retail-rules.md`,
+    // Sprint 293 (F459): Retail 합성 도메인 — 23번째 도메인 (소매 산업, 12번째 신규 산업).
+    // RT-001~RT-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 21 Sprint 연속 정점 (S264~S278+S283~S293).
+    // 12번째 신규 산업 도메인 (CC + DV + SB + IN + HC + ED + RE + LG + HO + TR + MF + RT).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/retail.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/retail/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "listSku",
+      "applyPromotion",
+      "processCheckout",
+      "transitionOrderStatus",
+      "markInventorySync",
+      "processReturnRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

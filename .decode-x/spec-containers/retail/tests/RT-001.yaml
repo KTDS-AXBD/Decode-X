@@ -1,0 +1,88 @@
+# Test Scenarios — RT-001 ~ RT-006 (대표)
+ruleId: RT-001
+domain: retail
+function: listSku
+detector: ThresholdCheck (F445 Path A)
+
+scenarios:
+  - id: TC-RT-001-01
+    name: 정상 SKU 조회 (tier=5)
+    given: { productId: prod-1, requestedTier: 5 }
+    when: listSku
+    then: { tier: 5, skus: [array] }
+
+  - id: TC-RT-001-02
+    name: 최대 티어 초과 (tier=11) → E422-TIER-MAX
+    given: { requestedTier: 11 }
+    when: listSku
+    then: { error: E422-TIER-MAX }
+
+  - id: TC-RT-001-03
+    name: 0 이하 티어 → E422-TIER-MIN
+    given: { requestedTier: 0 }
+    when: listSku
+    then: { error: E422-TIER-MIN }
+
+  - id: TC-RT-002-01
+    name: 정상 프로모션 적용 (cartTotal 충족)
+    given: { promotionId: promo-1, cartTotal: 50000, promotion: { min_order_amount: 30000, status: active } }
+    when: applyPromotion
+    then: { discountAmount: 5000, eligibleAmount: 45000 }
+
+  - id: TC-RT-002-02
+    name: 최소 주문액 미달 → E422-PROMO-MIN
+    given: { cartTotal: 5000, promotion: { min_order_amount: 30000, status: active } }
+    when: applyPromotion
+    then: { error: E422-PROMO-MIN }
+
+  - id: TC-RT-003-01
+    name: 정상 체크아웃 atomic — orders placed + inventory_sync_log
+    given: { customerId: cust-1, cartItems: [sku-1, sku-2], totalAmount: 50000 }
+    when: processCheckout
+    then:
+      orders.status: placed
+      inventory_sync_log: inserted
+
+  - id: TC-RT-003-02
+    name: 빈 장바구니 → E422-CART-EMPTY
+    given: { cartItems: [], totalAmount: 0 }
+    when: processCheckout
+    then: { error: E422-CART-EMPTY }
+
+  - id: TC-RT-004-01
+    name: placed → confirmed 전환
+    given: { order: { status: placed } }
+    when: transitionOrderStatus(confirmed)
+    then: { previousStatus: placed, newStatus: confirmed }
+
+  - id: TC-RT-004-02
+    name: confirmed → shipped 전환
+    given: { order: { status: confirmed } }
+    when: transitionOrderStatus(shipped)
+    then: { newStatus: shipped }
+
+  - id: TC-RT-004-03
+    name: placed → delivered 역전환 → E409-ORD
+    given: { order: { status: placed } }
+    when: transitionOrderStatus(delivered)
+    then: { error: E409-ORD }
+
+  - id: TC-RT-005-01
+    name: 재고 일괄 동기화 — 2건 available SKU 동기화
+    given: { productId: prod-1, skus: [{ stock_status: available }, { stock_status: available }] }
+    when: markInventorySync(prod-1)
+    then: { syncedCount: 2, skus.stock_status: synced }
+
+  - id: TC-RT-006-01
+    name: 반품+환불 atomic — orders returned + return_log INSERT
+    given: { order: { status: delivered, total_amount: 50000 } }
+    when: processReturnRefund
+    then:
+      orders.status: returned
+      return_log: inserted (refund_amount=50000)
+
+  - id: TC-RT-006-02
+    name: confirmed 상태 반품 시도 → E409-ORD
+    given: { order: { status: confirmed } }
+    when: processReturnRefund
+    then: { error: E409-ORD }

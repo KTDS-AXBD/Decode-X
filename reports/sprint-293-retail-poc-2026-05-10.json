@@ -1,0 +1,70 @@
+{
+  "sprint": 293,
+  "feature": "F459",
+  "title": "Retail 23번째 도메인 신규 (소매 산업, 12번째 신규 산업)",
+  "plan_id": "AIF-PLAN-091",
+  "report_id": "AIF-RPRT-091",
+  "created": "2026-05-10T00:12:00+09:00",
+  "match_rate": 87.9,
+  "dod_pass": 12,
+  "dod_total": 12,
+
+  "domain": {
+    "name": "retail",
+    "container": "retail",
+    "index": 23,
+    "industry": "Retail (소매)",
+    "industry_index": 12,
+    "industries": ["CC", "DV", "SB", "IN", "HC", "ED", "RE", "LG", "HO", "TR", "MF", "RT"]
+  },
+
+  "metrics": {
+    "detector_coverage_before": 87.3,
+    "detector_coverage_after": 87.9,
+    "detector_coverage_delta": 0.6,
+    "total_bls_before": 134,
+    "total_bls_after": 140,
+    "total_bls_delta": 6,
+    "registry_before": 117,
+    "registry_after": 123,
+    "registry_delta": 6,
+    "new_detectors": 0,
+    "with_rule_id_sprint_streak": 22,
+    "zero_absence_industry_streak": 12,
+    "utils_tests_before": 212,
+    "utils_tests_after": 218,
+    "utils_tests_delta": 6
+  },
+
+  "bl_distribution": {
+    "threshold": 2,
+    "atomic": 2,
+    "status_transition": 2,
+    "total": 6,
+    "balance_pattern_count": 13
+  },
+
+  "detect_bl_results": {
+    "containers": 23,
+    "total_bls": 140,
+    "detector_applications": 123,
+    "absence_retail": 0,
+    "absence_total_non_lpon_refund": 0,
+    "note": "lpon-refund BL-026 OPEN 1건 (기존, 신규 ABSENCE 0). coverage 123/140 = 87.9%"
+  },
+
+  "dod_checklist": [
+    { "id": 1, "item": "retail.ts source", "pass": true, "note": "~280 lines, 6 함수 + RetailError (listSku/applyPromotion/processCheckout/transitionOrderStatus/markInventorySync/processReturnRefund)" },
+    { "id": 2, "item": "spec-container/retail 15 sub-files", "pass": true, "note": "provenance + retail-rules + RT-001~006 (12) + test (1)" },
+    { "id": 3, "item": "DOMAIN_MAP 23번째 entry", "pass": true, "note": "container='retail', sourceCodeStatus='present'" },
+    { "id": 4, "item": "parser regex RT prefix", "pass": true, "note": "BL_ID_PATTERN에 RT 추가 (Sprint 293 F459 주석 포함)" },
+    { "id": 5, "item": "REGISTRY RT-001~RT-006", "pass": true, "note": "withRuleId 22 Sprint 연속 정점 — 신규 detector 0개" },
+    { "id": 6, "item": "utils unit test count 117→123", "pass": true, "note": "expected list +RT-001~RT-006 × 6, RT RT-001~RT-006 describe 블록 추가" },
+    { "id": 7, "item": "utils 218 PASS (회귀 0)", "pass": true, "note": "vitest 212+6=218 PASS (cd packages/utils && pnpm test)" },
+    { "id": 8, "item": "typecheck 14/14 PASS", "pass": true, "note": "pnpm typecheck from worktree root (after pnpm install)" },
+    { "id": 9, "item": "detect-bl 23 containers", "pass": true, "note": "retail 6 BLs, 6 detectors, 0 ABSENCE. coverage 87.9% ≥ 87.5% DoD 달성" },
+    { "id": 10, "item": "write-provenance --apply", "pass": true, "note": "0/23 changes (PRESENCE 자동 입증, 신규 산업 첫 적용)" },
+    { "id": 11, "item": "12 산업 연속 0 ABSENCE", "pass": true, "note": "CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT 🏆" },
+    { "id": 12, "item": "Plan + Report + SPEC", "pass": true, "note": "AIF-PLAN-091 + AIF-RPRT-091 + §6 Sprint 293 DONE" }
+  ]
+}

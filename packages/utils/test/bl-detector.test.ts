@@ -622,7 +622,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 117 detectors (Sprint 292 F458 — manufacturing MF-001~MF-006 added, 22번째 도메인 제조 산업, 11번째 신규)", () => {
+  it("exposes 123 detectors (Sprint 293 F459 — retail RT-001~RT-006 added, 23번째 도메인 소매 산업, 12번째 신규)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "BB-001",
       "BB-002",
@@ -723,6 +723,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "RE-004",
       "RE-005",
       "RE-006",
+      "RT-001",
+      "RT-002",
+      "RT-003",
+      "RT-004",
+      "RT-005",
+      "RT-006",
       "SB-001",
       "SB-002",
       "SB-003",
@@ -1470,5 +1476,107 @@ function quarantineDefectiveLots(db, orderId, reason) {
     const markers = BL_DETECTOR_REGISTRY["MF-006"]!(src, "manufacturing.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["MF-006"]!(src, "manufacturing.ts")).toHaveLength(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// F459 (Sprint 293) — retail domain RT-001~006 PRESENCE (idempotent 2-step)
+// ---------------------------------------------------------------------------
+describe("retail domain — RT-001~006 via withRuleId (Sprint 293 F459)", () => {
+  it("RT-001 PRESENCE — requestedTier > MAX_SKU_PRICE_TIER threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "retail.ts",
+      `const MAX_SKU_PRICE_TIER = 10;
+function listSku(db, productId, requestedTier) {
+  if (requestedTier > MAX_SKU_PRICE_TIER) {
+    throw new RetailError("E422-TIER-MAX", "Price tier exceeds limit", 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["RT-001"]!(src, "retail.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["RT-001"]!(src, "retail.ts")).toHaveLength(0);
+  });
+
+  it("RT-002 PRESENCE — cartTotal < minOrderLimit (Path B, 'limit' keyword)", () => {
+    const src = parseTypeScriptSource(
+      "retail.ts",
+      `function applyPromotion(db, promotionId, cartTotal) {
+  const minOrderLimit = 30000;
+  if (cartTotal < minOrderLimit) {
+    throw new RetailError("E422-PROMO-MIN", "Cart total below minimum order limit", 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["RT-002"]!(src, "retail.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["RT-002"]!(src, "retail.ts")).toHaveLength(0);
+  });
+
+  it("RT-003 PRESENCE — db.transaction() in processCheckout (atomic checkout)", () => {
+    const src = parseTypeScriptSource(
+      "retail.ts",
+      `function processCheckout(db, customerId, cartItems, totalAmount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO orders (id, customer_id, status) VALUES (?, ?, 'placed')").run(orderId, customerId);
+    db.prepare("INSERT INTO inventory_sync_log (id, sku_id, synced_at) VALUES (?, ?, ?)").run(logId, cartItems[0], placedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["RT-003"]!(src, "retail.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["RT-003"]!(src, "retail.ts")).toHaveLength(0);
+  });
+
+  it("RT-004 PRESENCE — status comparison + 'confirmed'/'shipped' assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "retail.ts",
+      `function transitionOrderStatus(db, orderId, newStatus) {
+  const order = db.prepare("SELECT status FROM orders WHERE id = ?").get(orderId);
+  if (order.status === 'placed') throw new RetailError("E409-ORD", "Invalid transition", 409);
+  db.prepare("UPDATE orders SET status = 'confirmed' WHERE id = ?").run(orderId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["RT-004"]!(src, "retail.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["RT-004"]!(src, "retail.ts")).toHaveLength(0);
+  });
+
+  it("RT-005 PRESENCE — batch status='synced' update in markInventorySync (file context)", () => {
+    // detector는 파일 전체 스캔 — transitionOrderStatus 함수의 status === 비교식이 foundComparison=true 확정
+    const src = parseTypeScriptSource(
+      "retail.ts",
+      `function transitionOrderStatus(db, orderId, newStatus) {
+  const order = db.prepare("SELECT status FROM orders WHERE id = ?").get(orderId);
+  if (order.status === 'confirmed') throw new RetailError("E409-ORD", "Invalid", 409);
+  db.prepare("UPDATE orders SET status = 'shipped' WHERE id = ?").run(orderId);
+}
+function markInventorySync(db, productId) {
+  const candidates = db.prepare("SELECT id FROM sku_catalog WHERE stock_status = 'available' AND product_id = ?").all(productId);
+  for (const sku of candidates) {
+    db.prepare("UPDATE sku_catalog SET stock_status = 'synced' WHERE id = ?").run(sku.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["RT-005"]!(src, "retail.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["RT-005"]!(src, "retail.ts")).toHaveLength(0);
+  });
+
+  it("RT-006 PRESENCE — db.transaction() in processReturnRefund (atomic return+refund)", () => {
+    const src = parseTypeScriptSource(
+      "retail.ts",
+      `function processReturnRefund(db, orderId, reason) {
+  const tx = db.transaction(() => {
+    db.prepare("UPDATE orders SET status = 'returned' WHERE id = ?").run(orderId);
+    db.prepare("INSERT INTO return_log (id, order_id, reason, refund_amount, returned_at) VALUES (?, ?, ?, ?, ?)").run(returnLogId, orderId, reason, refundAmount, returnedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["RT-006"]!(src, "retail.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["RT-006"]!(src, "retail.ts")).toHaveLength(0);
   });
 });

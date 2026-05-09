@@ -30,7 +30,8 @@ import type { BLRule } from "@ai-foundry/types";
 // F456 (Sprint 290): HO prefix 추가 (hospitality 합성 도메인, 20번째 — 숙박 산업). 2글자 alternation 동일 우선순위
 // F457 (Sprint 291): TR prefix 추가 (travel 합성 도메인, 21번째 — 여행 산업). 2글자 alternation 동일 우선순위
 // F458 (Sprint 292): MF prefix 추가 (manufacturing 합성 도메인, 22번째 — 제조 산업). 2글자 alternation 동일 우선순위
-const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|LP|CC|DV|SB|IN|HC|ED|RE|LG|HO|TR|MF|P|V)-[A-Z]?\d{1,3}$/;
+// F459 (Sprint 293): RT prefix 추가 (retail 합성 도메인, 23번째 — 소매 산업). 2글자 alternation 동일 우선순위
+const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|LP|CC|DV|SB|IN|HC|ED|RE|LG|HO|TR|MF|RT|P|V)-[A-Z]?\d{1,3}$/;
 const HEADER_PATTERN =
   /\|\s*ID\s*\|\s*condition[^|]*\|\s*criteria[^|]*\|\s*outcome[^|]*\|\s*exception[^|]*\|/i;
 const SEPARATOR_PATTERN = /^\s*\|[\s:|-]+\|\s*$/;

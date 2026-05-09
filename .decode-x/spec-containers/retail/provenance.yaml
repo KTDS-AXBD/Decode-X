@@ -1,0 +1,40 @@
+---
+# Provenance — RETAIL-001
+# 23번째 도메인 — Retail 산업 합성 도메인 PoC (12번째 신규 산업)
+
+skillId: RETAIL-001
+extractedAt: "2026-05-10T00:00:00+09:00"
+extractedBy: "Decode-X Sprint 293 F459 — withRuleId 재사용 23번째 도메인 (Retail 산업, 12번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/retail/rules/retail-rules.md"
+    section: "Retail 합성 비즈니스 룰 — RT-001~RT-006"
+    businessRules: [RT-001, RT-002, RT-003, RT-004, RT-005, RT-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 소매(Retail) 산업 일반화 PoC. SKU가격티어검증/프로모션자격/주문체크아웃/상태전환/재고동기화배치/반품환불 추상화. 23번째 도메인 + 12번째 신규 산업 (CC + DV + SB + IN + HC + ED + RE + LG + HO + TR + MF + RT). detector 5 cascade + 11 산업 연속 입증 활용."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/retail.ts"
+    functions: [listSku, applyPromotion, processCheckout, transitionOrderStatus, markInventorySync, processReturnRefund]
+    test: "src/__tests__/retail.test.ts (후속 작성 가능, PoC 단계)"
+    sourceMarker: PRESENCE
+    note: "BL-detector 자동 PRESENCE 입증 — 신규 detector 0개, withRuleId 재사용 (Threshold × 2 + Atomic × 2 + Status × 2)"
+
+inputCompleteness:
+  sInput: 0.92
+  deficiencyFlag: false
+  components:
+    rulesCoverage: 1.00
+    testCoverage: 0.85
+    provenanceLink: 1.00
+
+note: |
+  Sprint 293 F459: 소매 산업 도메인 신규 — 23번째 도메인 (12번째 신규 산업 시리즈).
+  RT-001 SKU 가격 티어 한도 / RT-002 프로모션 최소 주문액 한도 / RT-003 주문 체크아웃 atomic /
+  RT-004 주문 상태 전환 / RT-005 재고 동기화 일괄 배치 / RT-006 반품+환불 atomic.
+  분포: Threshold × 2 + Atomic × 2 + Status × 2 (균형 분포 13번째 정착).
+  withRuleId 재사용 21 Sprint 연속 정점 (S264~S278+S283~S293). 신규 detector 0개.
+  12 산업 연속 0 ABSENCE 목표 (CC + DV + SB + IN + HC + ED + RE + LG + HO + TR + MF + RT).
+---

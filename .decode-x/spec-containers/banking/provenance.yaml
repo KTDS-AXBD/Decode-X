@@ -1,0 +1,40 @@
+---
+# Provenance — BANKING-001
+# 27번째 도메인 — Banking/은행 산업 합성 도메인 PoC (16번째 신규 산업)
+
+skillId: BANKING-001
+extractedAt: "2026-05-10T00:00:00+09:00"
+extractedBy: "Decode-X Sprint 297 F463 — withRuleId 재사용 27번째 도메인 (Banking 산업, 16번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/banking/rules/banking-rules.md"
+    section: "Banking 합성 비즈니스 룰 — BK-001~BK-006"
+    businessRules: [BK-001, BK-002, BK-003, BK-004, BK-005, BK-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 은행(Banking) 산업 일반화 PoC. 출금한도/송금수수료/계좌이체atomic/계좌상태전환/휴면계좌배치/KYC atomic 추상화. 27번째 도메인 + 16번째 신규 산업 (CC + DV + SB + IN + HC + ED + RE + LG + HO + TR + MF + RT + EN + GV + TC + BK). detector 5 cascade + 15 산업 연속 입증 활용."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/banking.ts"
+    functions: [processWithdrawal, computeTransferFee, processAccountTransfer, transitionAccountStatus, markDormantAccounts, verifyKyc]
+    test: "src/__tests__/banking.test.ts (후속 작성 가능, PoC 단계)"
+    sourceMarker: PRESENCE
+    note: "BL-detector 자동 PRESENCE 입증 — 신규 detector 0개, withRuleId 재사용 (Threshold × 2 + Atomic × 2 + Status × 2)"
+
+inputCompleteness:
+  sInput: 0.92
+  deficiencyFlag: false
+  components:
+    rulesCoverage: 1.00
+    testCoverage: 0.85
+    provenanceLink: 1.00
+
+note: |
+  Sprint 297 F463: 은행(Banking) 산업 도메인 신규 — 27번째 도메인 (16번째 신규 산업 시리즈).
+  BK-001 출금 한도 검증 / BK-002 송금 수수료 한도 비교 / BK-003 계좌 이체 atomic /
+  BK-004 계좌 상태 전환 / BK-005 휴면 계좌 일괄 동결 / BK-006 KYC 본인확인 atomic.
+  분포: Threshold × 2 + Atomic × 2 + Status × 2 (균형 분포 17번째 정착).
+  withRuleId 재사용 25 Sprint 연속 정점 (S264~S278+S283~S297). 신규 detector 0개.
+  16 산업 연속 0 ABSENCE 목표 (CC + DV + SB + IN + HC + ED + RE + LG + HO + TR + MF + RT + EN + GV + TC + BK).
+---

@@ -513,6 +513,26 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "checkDrugInteraction",
     ],
   },
+  {
+    container: "agriculture",
+    rulesPath: `${SPEC_CONTAINER_BASE}/agriculture/rules/agriculture-rules.md`,
+    // Sprint 300 (F466): Agriculture 합성 도메인 — 30번째 도메인 (농업 산업, 19번째 신규 산업).
+    // AG-001~AG-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 28 Sprint 연속 정점 (S264~S278+S283~S300).
+    // 19번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG).
+    // 🏆 Sprint 300 마일스톤: 30번째 도메인 + 30 Sprint 연속 동시 도달.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/agriculture.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/agriculture/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "recordCropYield",
+      "applyPesticide",
+      "processHarvest",
+      "transitionCropStatus",
+      "markBatchGrading",
+      "issueCertification",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

@@ -1,0 +1,88 @@
+# Test Scenarios — AG-001 ~ AG-006 (대표)
+ruleId: AG-001
+domain: agriculture
+function: recordCropYield
+detector: ThresholdCheck (F445 Path A)
+
+scenarios:
+  - id: AG-AG-001-01
+    name: 정상 수확량 (yieldKg=5000, field area=1ha → 5000 kg/ha, under 10000 limit)
+    given: { cropId: crop-1, yieldKg: 5000, field.area_hectares: 1, status: mature }
+    when: recordCropYield
+    then: { cropId: crop-1, yieldKg: 5000 }
+
+  - id: AG-AG-001-02
+    name: 수확량 초과 (yieldKg=10000, field area=1ha → 10000 kg/ha) → E422-YIELD-EXCEEDED
+    given: { cropId: crop-1, yieldKg: 10000, field.area_hectares: 1, status: mature }
+    when: recordCropYield
+    then: { error: E422-YIELD-EXCEEDED }
+
+  - id: AG-AG-002-01
+    name: 정상 살포 (pesticideApplied=60, medium field → pesticideQuotaLimit=80)
+    given: { fieldId: field-1, pesticideApplied: 60, area_hectares: 2, status: active }
+    when: applyPesticide
+    then: { pesticideApplied: 60, pesticideQuotaLimit: 80, approved: true }
+
+  - id: AG-AG-002-02
+    name: 살포 한도 초과 (pesticideApplied=90, medium field limit=80) → E422-PESTICIDE-QUOTA
+    given: { fieldId: field-1, pesticideApplied: 90, area_hectares: 2, status: active }
+    when: applyPesticide
+    then: { error: E422-PESTICIDE-QUOTA }
+
+  - id: AG-AG-003-01
+    name: 정상 수확 atomic — harvests + gradings INSERT + crops.status='harvested'
+    given: { cropId: crop-1, inspectorId: insp-1, crop.status: mature, field.status: active, yield_kg: 5000 }
+    when: processHarvest
+    then:
+      harvestId: [uuid]
+      gradingId: [uuid]
+      grade: A
+      crops.status: harvested
+      harvests: inserted
+      gradings: inserted
+
+  - id: AG-AG-003-02
+    name: 제한 구역 필드 수확 시도 → E422-FIELD-RESTRICTED
+    given: { cropId: crop-1, field.status: restricted }
+    when: processHarvest
+    then: { error: E422-FIELD-RESTRICTED }
+
+  - id: AG-AG-004-01
+    name: planted → growing 전환
+    given: { crop: { status: planted } }
+    when: transitionCropStatus(growing)
+    then: { previousStatus: planted, newStatus: growing }
+
+  - id: AG-AG-004-02
+    name: growing → mature 전환
+    given: { crop: { status: growing } }
+    when: transitionCropStatus(mature)
+    then: { newStatus: mature }
+
+  - id: AG-AG-004-03
+    name: planted → sold 역전환 → E409-CROP
+    given: { crop: { status: planted } }
+    when: transitionCropStatus(sold)
+    then: { error: E409-CROP }
+
+  - id: AG-AG-005-01
+    name: 등급 배치 처리 — 2건 graded=0 → graded=1
+    given: { gradingCutoffDate: "2026-05-10", candidates: [{ graded: 0, harvested_at: "2026-05-09" }, { graded: 0, harvested_at: "2026-05-10" }] }
+    when: markBatchGrading("2026-05-10")
+    then: { markedCount: 2, harvests.status: graded }
+
+  - id: AG-AG-006-01
+    name: 정상 인증 atomic — certifications + certification_labels INSERT + crops.certified=1
+    given: { cropId: crop-1, certType: organic, issuedBy: cert-1, crop.status: harvested, grade: A }
+    when: issueCertification
+    then:
+      certId: [uuid]
+      certifications: inserted
+      certification_labels: inserted
+      crops.certified: 1
+
+  - id: AG-AG-006-02
+    name: 등급 rejected 작물 인증 시도 → E422-CROP-REJECTED
+    given: { cropId: crop-1, certType: organic, crop.status: harvested, grade: rejected }
+    when: issueCertification
+    then: { error: E422-CROP-REJECTED }

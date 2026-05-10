@@ -829,4 +829,12 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "PH-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PH-004"),
   "PH-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PH-005"),
   "PH-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "PH-006"),
+
+  // F466 (Sprint 300) — Agriculture 합성 도메인 (30번째 도메인, 농업 산업, 19번째 신규 산업) 🏆 Sprint 300 마일스톤
+  "AG-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "AG-001"),
+  "AG-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "AG-002"),
+  "AG-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "AG-003"),
+  "AG-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "AG-004"),
+  "AG-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "AG-005"),
+  "AG-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "AG-006"),
 };

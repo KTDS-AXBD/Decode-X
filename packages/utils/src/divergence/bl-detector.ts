@@ -893,4 +893,12 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "SP-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "SP-004"),
   "SP-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "SP-005"),
   "SP-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "SP-006"),
+
+  // F474 (Sprint 308) — Charity 합성 도메인 (38번째 도메인, 비영리 산업, 27번째 신규 산업)
+  "CH-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "CH-001"),
+  "CH-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "CH-002"),
+  "CH-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "CH-003"),
+  "CH-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "CH-004"),
+  "CH-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "CH-005"),
+  "CH-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "CH-006"),
 };

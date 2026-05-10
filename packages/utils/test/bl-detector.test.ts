@@ -622,7 +622,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 207 detectors (Sprint 307 F473 — sports SP-001~SP-006 added, 37번째 도메인 스포츠 산업, 26번째 신규)", () => {
+  it("exposes 213 detectors (Sprint 308 F474 — charity CH-001~CH-006 added, 38번째 도메인 비영리 산업, 27번째 신규)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AG-001",
       "AG-002",
@@ -680,6 +680,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "CC-004",
       "CC-005",
       "CC-006",
+      "CH-001",
+      "CH-002",
+      "CH-003",
+      "CH-004",
+      "CH-005",
+      "CH-006",
       "CN-001",
       "CN-002",
       "CN-003",
@@ -859,6 +865,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["SP-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["SP-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["SP-006"]).toBeDefined();
+  });
+
+  it("CH-001~CH-006 registered (Sprint 308 F474 — charity 38번째 도메인)", () => {
+    expect(BL_DETECTOR_REGISTRY["CH-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["CH-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["CH-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["CH-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["CH-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["CH-006"]).toBeDefined();
   });
 
   it("each detector returns BLDivergenceMarker[]", () => {
@@ -3144,5 +3159,108 @@ function markMerchandiseSync(db, syncedBefore) {
     const markers = BL_DETECTOR_REGISTRY["SP-006"]!(src, "sports.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["SP-006"]!(src, "sports.ts")).toHaveLength(0);
+  });
+});
+
+// F474 (Sprint 308) — charity domain CH-001~006 via withRuleId (36 Sprint 연속 정점)
+describe("charity domain — CH-001~006 via withRuleId (Sprint 308 F474)", () => {
+  it("CH-001 PRESENCE — amount >= MAX_RECEIPT_AMOUNT threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "charity.ts",
+      `const MAX_RECEIPT_AMOUNT = 10_000_000;
+function recordDonation(db, donorId, campaignId, amount, paymentMethod) {
+  if (amount >= MAX_RECEIPT_AMOUNT) {
+    throw new CharityError('E422-RECEIPT-LIMIT-EXCEEDED', 'Donation amount exceeds receipt issuance limit', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["CH-001"]!(src, "charity.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["CH-001"]!(src, "charity.ts")).toHaveLength(0);
+  });
+
+  it("CH-002 PRESENCE — requestedAmount > grantTierLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "charity.ts",
+      `function applyGrant(db, granteeId, tierCode, requestedAmount) {
+  const grantTierLimit = tier.grantTierLimit;
+  if (requestedAmount > grantTierLimit) {
+    throw new CharityError('E422-GRANT-TIER-EXCEEDED', 'Grant request exceeded tier limit', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["CH-002"]!(src, "charity.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["CH-002"]!(src, "charity.ts")).toHaveLength(0);
+  });
+
+  it("CH-003 PRESENCE — db.transaction() in disburseFund (atomic fund_disbursements+grants+disbursement_receipts INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "charity.ts",
+      `function disburseFund(db, grantId, granteeId, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO fund_disbursements (id, grant_id, grantee_id, amount, status, disbursed_at) VALUES (?, ?, ?, ?, 'initiated', ?)").run(disbursementId, grantId, granteeId, amount, disbursedAt);
+    db.prepare("UPDATE grants SET status = 'disbursed' WHERE id = ?").run(grantId);
+    db.prepare("INSERT INTO disbursement_receipts (id, disbursement_id, grantee_id, amount, issued_at) VALUES (?, ?, ?, ?, ?)").run(receiptId, disbursementId, granteeId, amount, disbursedAt);
+    db.prepare("UPDATE fund_disbursements SET status = 'disbursed' WHERE id = ?").run(disbursementId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["CH-003"]!(src, "charity.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["CH-003"]!(src, "charity.ts")).toHaveLength(0);
+  });
+
+  it("CH-004 PRESENCE — status comparison + 'active'/'closed'/'reported' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "charity.ts",
+      `function transitionCampaignStatus(db, campaignId, newStatus) {
+  const campaign = db.prepare("SELECT status FROM campaigns WHERE id = ?").get(campaignId);
+  if (campaign.status === 'draft') throw new CharityError("E409-CAMPAIGN", "Invalid transition", 409);
+  db.prepare("UPDATE campaigns SET status = 'active' WHERE id = ?").run(campaignId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["CH-004"]!(src, "charity.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["CH-004"]!(src, "charity.ts")).toHaveLength(0);
+  });
+
+  it("CH-005 PRESENCE — batch assigned update in markVolunteerSchedule (file context)", () => {
+    const src = parseTypeScriptSource(
+      "charity.ts",
+      `function transitionCampaignStatus(db, campaignId, newStatus) {
+  const campaign = db.prepare("SELECT status FROM campaigns WHERE id = ?").get(campaignId);
+  if (campaign.status === 'draft') throw new CharityError("E409-CAMPAIGN", "Invalid", 409);
+  db.prepare("UPDATE campaigns SET status = 'active' WHERE id = ?").run(campaignId);
+}
+function markVolunteerSchedule(db, scheduledBefore) {
+  const candidates = db.prepare("SELECT id FROM volunteer_schedules WHERE scheduled_date <= ? AND status = 'pending'").all(scheduledBefore);
+  for (const schedule of candidates) {
+    db.prepare("UPDATE volunteer_schedules SET status = 'assigned', synced_at = ? WHERE id = ?").run(new Date().toISOString(), schedule.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["CH-005"]!(src, "charity.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["CH-005"]!(src, "charity.ts")).toHaveLength(0);
+  });
+
+  it("CH-006 PRESENCE — db.transaction() in issueTaxCertificate (atomic tax_certificates+donations+tax_reports INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "charity.ts",
+      `function issueTaxCertificate(db, donorId, donationId) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO tax_certificates (id, donor_id, donation_id, certificate_number, issued_at, reported_at) VALUES (?, ?, ?, ?, ?, NULL)").run(certificateId, donorId, donationId, certificateNumber, issuedAt);
+    db.prepare("UPDATE donations SET status = 'confirmed' WHERE id = ?").run(donationId);
+    db.prepare("INSERT INTO tax_reports (id, certificate_id, donor_id, reported_at) VALUES (?, ?, ?, ?)").run(reportId, certificateId, donorId, issuedAt);
+    db.prepare("UPDATE tax_certificates SET reported_at = ? WHERE id = ?").run(issuedAt, certificateId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["CH-006"]!(src, "charity.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["CH-006"]!(src, "charity.ts")).toHaveLength(0);
   });
 });

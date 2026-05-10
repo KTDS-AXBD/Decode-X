@@ -622,7 +622,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 219 detectors (Sprint 309 F475 — wellness WL-001~WL-006 added, 39번째 도메인 웰니스 산업, 28번째 신규)", () => {
+  it("exposes 225 detectors (Sprint 310 F476 — pet PT-001~PT-006 added, 40번째 도메인 반려동물 산업, 29번째 신규)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AG-001",
       "AG-002",
@@ -789,6 +789,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "PH-004",
       "PH-005",
       "PH-006",
+      "PT-001",
+      "PT-002",
+      "PT-003",
+      "PT-004",
+      "PT-005",
+      "PT-006",
       "RE-001",
       "RE-002",
       "RE-003",
@@ -889,6 +895,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["WL-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["WL-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["WL-006"]).toBeDefined();
+  });
+
+  it("PT-001~PT-006 registered (Sprint 310 F476 — pet 40번째 도메인)", () => {
+    expect(BL_DETECTOR_REGISTRY["PT-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PT-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PT-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PT-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PT-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PT-006"]).toBeDefined();
   });
 
   it("each detector returns BLDivergenceMarker[]", () => {
@@ -3381,5 +3396,109 @@ function markNoShowSessions(db, scheduledBefore) {
     const markers = BL_DETECTOR_REGISTRY["WL-006"]!(src, "wellness.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["WL-006"]!(src, "wellness.ts")).toHaveLength(0);
+  });
+});
+
+// F476 (Sprint 310) — pet domain PT-001~006 via withRuleId (38 Sprint 연속 정점)
+describe("pet domain — PT-001~006 via withRuleId (Sprint 310 F476)", () => {
+  it("PT-001 PRESENCE — facility.booked_count >= MAX_BOARDING_CAPACITY threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "pet.ts",
+      `const MAX_BOARDING_CAPACITY = 30;
+function bookBoarding(db, facilityId, petId, ownerId) {
+  const limit = facility.capacity ?? MAX_BOARDING_CAPACITY;
+  if (facility.booked_count >= limit) {
+    throw new PetError('E422-BOARDING-CAPACITY-EXCEEDED', 'Boarding fully booked', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PT-001"]!(src, "pet.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["PT-001"]!(src, "pet.ts")).toHaveLength(0);
+  });
+
+  it("PT-002 PRESENCE — vaccine.administered_count >= vaccinationLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "pet.ts",
+      `function applyVaccination(db, petId, vaccineId) {
+  const vaccinationLimit = vaccine.vaccinationLimit;
+  if (vaccine.administered_count >= vaccinationLimit) {
+    throw new PetError('E422-VACCINATION-QUOTA-EXCEEDED', 'Vaccination quota reached', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PT-002"]!(src, "pet.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["PT-002"]!(src, "pet.ts")).toHaveLength(0);
+  });
+
+  it("PT-003 PRESENCE — db.transaction() in processGrooming (atomic groomings+grooming_payments+grooming_owner_matches+groomers INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "pet.ts",
+      `function processGrooming(db, groomingId, ownerId, groomerId, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("UPDATE groomings SET status = 'confirmed', confirmed_at = ? WHERE id = ?").run(confirmedAt, groomingId);
+    db.prepare("INSERT INTO grooming_payments (id, grooming_id, owner_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(paymentId, groomingId, ownerId, amount, confirmedAt);
+    db.prepare("INSERT INTO grooming_owner_matches (id, grooming_id, owner_id, groomer_id, matched_at) VALUES (?, ?, ?, ?, ?)").run(ownerMatchId, groomingId, ownerId, groomerId, confirmedAt);
+    db.prepare("UPDATE groomers SET status = 'booked' WHERE id = ?").run(groomerId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PT-003"]!(src, "pet.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["PT-003"]!(src, "pet.ts")).toHaveLength(0);
+  });
+
+  it("PT-004 PRESENCE — status comparison + 'checked_in'/'in_care'/'checked_out' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "pet.ts",
+      `function transitionCareStatus(db, careRecordId, newStatus) {
+  const record = db.prepare("SELECT status FROM care_records WHERE id = ?").get(careRecordId);
+  if (record.status === 'booked') throw new PetError("E409-CARE-RECORD", "Invalid transition", 409);
+  db.prepare("UPDATE care_records SET status = 'checked_in' WHERE id = ?").run(careRecordId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PT-004"]!(src, "pet.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["PT-004"]!(src, "pet.ts")).toHaveLength(0);
+  });
+
+  it("PT-005 PRESENCE — batch processed update in markHealthRecordBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "pet.ts",
+      `function transitionCareStatus(db, careRecordId, newStatus) {
+  const record = db.prepare("SELECT status FROM care_records WHERE id = ?").get(careRecordId);
+  if (record.status === 'booked') throw new PetError("E409-CARE-RECORD", "Invalid", 409);
+  db.prepare("UPDATE care_records SET status = 'checked_in' WHERE id = ?").run(careRecordId);
+}
+function markHealthRecordBatch(db, visitBefore) {
+  const candidates = db.prepare("SELECT hr.id FROM health_records hr JOIN boarding_facilities bf ON hr.facility_id = bf.id WHERE hr.visit_date <= ? AND hr.status = 'pending'").all(visitBefore);
+  for (const record of candidates) {
+    db.prepare("UPDATE health_records SET status = 'processed' WHERE id = ?").run(record.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PT-005"]!(src, "pet.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["PT-005"]!(src, "pet.ts")).toHaveLength(0);
+  });
+
+  it("PT-006 PRESENCE — db.transaction() in processEmergency (atomic emergencies+emergency_treatments+owner_notifications+pets INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "pet.ts",
+      `function processEmergency(db, petId, ownerId, facilityId, severity, treatmentNote) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO emergencies (id, pet_id, owner_id, facility_id, severity, status, reported_at) VALUES (?, ?, ?, ?, ?, 'treating', ?)").run(emergencyId, petId, ownerId, facilityId, severity, treatedAt);
+    db.prepare("INSERT INTO emergency_treatments (id, emergency_id, facility_id, treatment_note, treated_at) VALUES (?, ?, ?, ?, ?)").run(treatmentId, emergencyId, facilityId, treatmentNote, treatedAt);
+    db.prepare("INSERT INTO owner_notifications (id, owner_id, emergency_id, message, sent_at) VALUES (?, ?, ?, ?, ?)").run(notificationId, ownerId, emergencyId, message, treatedAt);
+    db.prepare("UPDATE pets SET last_emergency_at = ? WHERE id = ?").run(treatedAt, petId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PT-006"]!(src, "pet.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["PT-006"]!(src, "pet.ts")).toHaveLength(0);
   });
 });

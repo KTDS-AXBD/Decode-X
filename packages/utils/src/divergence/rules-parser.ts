@@ -47,7 +47,8 @@ import type { BLRule } from "@ai-foundry/types";
 // F473 (Sprint 307): SP prefix 추가 (sports 합성 도메인, 37번째 — 스포츠 산업). longer match first 누적 입증
 // F474 (Sprint 308): CH prefix 추가 (charity 합성 도메인, 38번째 — 비영리 산업). longer match first 누적 입증
 // F475 (Sprint 309): WL prefix 추가 (wellness 합성 도메인, 39번째 — 웰니스 산업). Hospitality 클러스터 (HO+WL)
-const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|LP|CC|CH|DV|SB|SP|IN|HC|ED|RE|LG|HO|TR|MF|RT|EN|GV|TC|BK|MD|PH|AG|CN|MR|TS|AV|MN|DF|WL|P|V)-[A-Z]?\d{1,3}$/;
+// F476 (Sprint 310): PT prefix 추가 (pet services 합성 도메인, 40번째 — 반려동물 산업). longer match first (PT 앞 P)
+const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|LP|CC|CH|DV|SB|SP|IN|HC|ED|RE|LG|HO|TR|MF|RT|EN|GV|TC|BK|MD|PH|AG|CN|MR|TS|AV|MN|DF|WL|PT|P|V)-[A-Z]?\d{1,3}$/;
 const HEADER_PATTERN =
   /\|\s*ID\s*\|\s*condition[^|]*\|\s*criteria[^|]*\|\s*outcome[^|]*\|\s*exception[^|]*\|/i;
 const SEPARATOR_PATTERN = /^\s*\|[\s:|-]+\|\s*$/;

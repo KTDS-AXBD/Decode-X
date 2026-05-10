@@ -711,6 +711,26 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processCancellationFee",
     ],
   },
+  {
+    container: "pet",
+    rulesPath: `${SPEC_CONTAINER_BASE}/pet/rules/pet-rules.md`,
+    // Sprint 310 (F476): Pet Services 합성 도메인 — 40번째 도메인 (반려동물 산업, 29번째 신규 산업).
+    // PT-001~PT-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 38 Sprint 연속 정점 (S264~S278+S283~S310).
+    // 29번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT).
+    // 🏆 29 산업 연속 0 ABSENCE 도전. 동물병원+미용 클러스터 (HC+WL+PT) 형성. 6 BLs 균형 패턴 30번째 정착 (round).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/pet.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/pet/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "bookBoarding",
+      "applyVaccination",
+      "processGrooming",
+      "transitionCareStatus",
+      "markHealthRecordBatch",
+      "processEmergency",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

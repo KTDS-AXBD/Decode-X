@@ -622,7 +622,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 225 detectors (Sprint 310 F476 — pet PT-001~PT-006 added, 40번째 도메인 반려동물 산업, 29번째 신규)", () => {
+  it("exposes 231 detectors (Sprint 311 F477 — property PR-001~PR-006 added, 41번째 도메인 임대관리 산업, 30번째 신규)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AG-001",
       "AG-002",
@@ -789,6 +789,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "PH-004",
       "PH-005",
       "PH-006",
+      "PR-001",
+      "PR-002",
+      "PR-003",
+      "PR-004",
+      "PR-005",
+      "PR-006",
       "PT-001",
       "PT-002",
       "PT-003",
@@ -904,6 +910,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["PT-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["PT-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["PT-006"]).toBeDefined();
+  });
+
+  it("PR-001~PR-006 registered (Sprint 311 F477 — property 41번째 도메인, 🏆 30 산업 연속 0 ABSENCE)", () => {
+    expect(BL_DETECTOR_REGISTRY["PR-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PR-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PR-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PR-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PR-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PR-006"]).toBeDefined();
   });
 
   it("each detector returns BLDivergenceMarker[]", () => {
@@ -3500,5 +3515,110 @@ function markHealthRecordBatch(db, visitBefore) {
     const markers = BL_DETECTOR_REGISTRY["PT-006"]!(src, "pet.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["PT-006"]!(src, "pet.ts")).toHaveLength(0);
+  });
+});
+
+// F477 (Sprint 311) — property domain PR-001~006 via withRuleId (39 Sprint 연속 정점)
+// 🏆 30 산업 연속 0 ABSENCE round number 마일스톤
+describe("property domain — PR-001~006 via withRuleId (Sprint 311 F477)", () => {
+  it("PR-001 PRESENCE — totalAmount >= MAX_UTILITY_BILL_AMOUNT threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "property.ts",
+      `const MAX_UTILITY_BILL_AMOUNT = 500000;
+function computeUtilityBill(db, propertyId, tenantId, billingMonth, totalAmount) {
+  const limit = MAX_UTILITY_BILL_AMOUNT;
+  if (totalAmount >= limit) {
+    throw new PropertyError('E422-UTILITY-BILL-EXCEEDED', 'Utility bill exceeds limit', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PR-001"]!(src, "property.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["PR-001"]!(src, "property.ts")).toHaveLength(0);
+  });
+
+  it("PR-002 PRESENCE — requestedAmount > maintenanceBudgetLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "property.ts",
+      `function approveMaintenance(db, requestId, propertyId) {
+  const maintenanceBudgetLimit = request.maintenanceBudgetLimit;
+  if (request.requested_amount > maintenanceBudgetLimit) {
+    throw new PropertyError('E422-MAINTENANCE-BUDGET-EXCEEDED', 'Maintenance exceeds budget', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PR-002"]!(src, "property.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["PR-002"]!(src, "property.ts")).toHaveLength(0);
+  });
+
+  it("PR-003 PRESENCE — db.transaction() in renewLease (atomic leases+lease_renewals+deposits INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "property.ts",
+      `function renewLease(db, leaseId, newEndDate, newMonthlyRent, depositAdjustment) {
+  const tx = db.transaction(() => {
+    db.prepare("UPDATE leases SET status = 'renewed', end_date = ?, monthly_rent = ?, updated_at = ? WHERE id = ?").run(newEndDate, newMonthlyRent, renewedAt, leaseId);
+    db.prepare("INSERT INTO lease_renewals (id, lease_id, previous_end_date, new_end_date, monthly_rent, renewed_at) VALUES (?, ?, ?, ?, ?, ?)").run(renewalId, leaseId, prevEnd, newEndDate, newMonthlyRent, renewedAt);
+    db.prepare("INSERT INTO deposits (id, lease_id, tenant_id, amount, status, created_at) VALUES (?, ?, ?, ?, 'held', ?)").run(depositId, leaseId, tenantId, depositAdjustment, renewedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PR-003"]!(src, "property.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["PR-003"]!(src, "property.ts")).toHaveLength(0);
+  });
+
+  it("PR-004 PRESENCE — status comparison + 'active'/'renewed'/'terminated' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "property.ts",
+      `function transitionLeaseStatus(db, leaseId, newStatus) {
+  const lease = db.prepare("SELECT status FROM leases WHERE id = ?").get(leaseId);
+  if (lease.status === 'pending') throw new PropertyError("E409-LEASE-STATUS", "Invalid transition", 409);
+  db.prepare("UPDATE leases SET status = 'active' WHERE id = ?").run(leaseId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PR-004"]!(src, "property.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["PR-004"]!(src, "property.ts")).toHaveLength(0);
+  });
+
+  it("PR-005 PRESENCE — batch inspected update in markInspectionBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "property.ts",
+      `function transitionLeaseStatus(db, leaseId, newStatus) {
+  const lease = db.prepare("SELECT status FROM leases WHERE id = ?").get(leaseId);
+  if (lease.status === 'pending') throw new PropertyError("E409-LEASE-STATUS", "Invalid", 409);
+  db.prepare("UPDATE leases SET status = 'active' WHERE id = ?").run(leaseId);
+}
+function markInspectionBatch(db, scheduledBefore) {
+  const candidates = db.prepare("SELECT pi.id FROM property_inspections pi JOIN properties p ON pi.property_id = p.id WHERE pi.scheduled_date <= ? AND pi.status = 'scheduled'").all(scheduledBefore);
+  for (const inspection of candidates) {
+    db.prepare("UPDATE property_inspections SET status = 'inspected' WHERE id = ?").run(inspection.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PR-005"]!(src, "property.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["PR-005"]!(src, "property.ts")).toHaveLength(0);
+  });
+
+  it("PR-006 PRESENCE — db.transaction() in processEviction (atomic evictions+legal_proceedings+eviction_notifications+lease_closures+leases INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "property.ts",
+      `function processEviction(db, leaseId, tenantId, propertyId, reason, noticeMessage) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO evictions (id, lease_id, tenant_id, property_id, reason, status, initiated_at) VALUES (?, ?, ?, ?, ?, 'initiated', ?)").run(evictionId, leaseId, tenantId, propertyId, reason, initiatedAt);
+    db.prepare("INSERT INTO legal_proceedings (id, eviction_id, proceeding_type, status, started_at) VALUES (?, ?, 'eviction_notice', 'pending', ?)").run(legalId, evictionId, initiatedAt);
+    db.prepare("INSERT INTO eviction_notifications (id, eviction_id, tenant_id, message, sent_at) VALUES (?, ?, ?, ?, ?)").run(notificationId, evictionId, tenantId, noticeMessage, initiatedAt);
+    db.prepare("INSERT INTO lease_closures (id, lease_id, eviction_id, closed_at) VALUES (?, ?, ?, ?)").run(closureId, leaseId, evictionId, initiatedAt);
+    db.prepare("UPDATE leases SET status = 'terminated', updated_at = ? WHERE id = ?").run(initiatedAt, leaseId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PR-006"]!(src, "property.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["PR-006"]!(src, "property.ts")).toHaveLength(0);
   });
 });

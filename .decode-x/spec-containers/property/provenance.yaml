@@ -1,0 +1,50 @@
+container: property
+domain: Property Mgmt
+industry: 임대관리 산업
+sprint: 311
+feature: F477
+created: 2026-05-10
+
+source:
+  type: synthetic
+  path: 반제품-스펙/pilot-lpon-cancel/working-version/src/domain/property.ts
+  status: present
+
+bl_results:
+  - id: PR-001
+    status: PRESENCE
+    detector: ThresholdCheck
+    function: computeUtilityBill
+    evidence: MAX_UTILITY_BILL_AMOUNT constant + threshold comparison
+  - id: PR-002
+    status: PRESENCE
+    detector: ThresholdCheck
+    function: approveMaintenance
+    evidence: maintenanceBudgetLimit keyword + var-vs-var comparison
+  - id: PR-003
+    status: PRESENCE
+    detector: AtomicTransaction
+    function: renewLease
+    evidence: db.transaction + 3 operations (leases + lease_renewals + deposits)
+  - id: PR-004
+    status: PRESENCE
+    detector: StatusTransition
+    function: transitionLeaseStatus
+    evidence: status allowed matrix + UPDATE statement
+  - id: PR-005
+    status: PRESENCE
+    detector: StatusTransition
+    function: markInspectionBatch
+    evidence: batch for-loop + UPDATE status='inspected'
+  - id: PR-006
+    status: PRESENCE
+    detector: AtomicTransaction
+    function: processEviction
+    evidence: db.transaction + 5 operations (evictions + legal_proceedings + notifications + closures + lease UPDATE)
+
+summary:
+  total: 6
+  presence: 6
+  absence: 0
+  coverage: 100%
+  milestone: "30 산업 연속 0 ABSENCE 🏆"

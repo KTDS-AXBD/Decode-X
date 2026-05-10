@@ -473,6 +473,26 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "verifyKyc",
     ],
   },
+  {
+    container: "media",
+    rulesPath: `${SPEC_CONTAINER_BASE}/media/rules/media-rules.md`,
+    // Sprint 298 (F464): Media 합성 도메인 — 28번째 도메인 (미디어 산업, 17번째 신규 산업).
+    // MD-001~MD-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 26 Sprint 연속 정점 (S264~S278+S283~S298).
+    // 17번째 신규 산업 도메인 (CC + DV + SB + IN + HC + ED + RE + LG + HO + TR + MF + RT + EN + GV + TC + BK + MD).
+    // 🎯 90% coverage 마일스톤 돌파 예상.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/media.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/media/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "activateMediaSubscription",
+      "checkViewQuota",
+      "processLicensing",
+      "transitionContentStatus",
+      "markExpiringContent",
+      "processTakedown",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

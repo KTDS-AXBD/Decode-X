@@ -622,7 +622,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 147 detectors (Sprint 297 F463 — banking BK-001~BK-006 added, 27번째 도메인 은행 산업, 16번째 신규)", () => {
+  it("exposes 153 detectors (Sprint 298 F464 — media MD-001~MD-006 added, 28번째 도메인 미디어 산업, 17번째 신규, 90% coverage 돌파)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "BB-001",
       "BB-002",
@@ -722,6 +722,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "LP-004",
       "LP-005",
       "LP-006",
+      "MD-001",
+      "MD-002",
+      "MD-003",
+      "MD-004",
+      "MD-005",
+      "MD-006",
       "MF-001",
       "MF-002",
       "MF-003",
@@ -2030,5 +2036,107 @@ function markDormantAccounts(db, inactiveCutoffDate) {
     const markers = BL_DETECTOR_REGISTRY["BK-006"]!(src, "banking.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["BK-006"]!(src, "banking.ts")).toHaveLength(0);
+  });
+});
+
+// F464 (Sprint 298) — media domain MD-001~006 PRESENCE (idempotent 2-step)
+describe("media domain — MD-001~006 via withRuleId (Sprint 298 F464)", () => {
+  it("MD-001 PRESENCE — concurrentStreamCount >= MAX_CONCURRENT_STREAMS threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "media.ts",
+      `const MAX_CONCURRENT_STREAMS = 4;
+function activateMediaSubscription(db, subscriptionId, concurrentStreamCount) {
+  if (concurrentStreamCount >= MAX_CONCURRENT_STREAMS) {
+    throw new MediaError('E422-STREAM-LIMIT', 'Concurrent stream limit reached', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MD-001"]!(src, "media.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["MD-001"]!(src, "media.ts")).toHaveLength(0);
+  });
+
+  it("MD-002 PRESENCE — viewedCount > viewQuotaLimit (Path B, 'limit' keyword)", () => {
+    const src = parseTypeScriptSource(
+      "media.ts",
+      `function checkViewQuota(db, userId, viewedCount) {
+  const viewQuotaLimit = 10;
+  if (viewedCount > viewQuotaLimit) {
+    throw new MediaError('E422-VIEW-QUOTA', 'View quota exceeded', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MD-002"]!(src, "media.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["MD-002"]!(src, "media.ts")).toHaveLength(0);
+  });
+
+  it("MD-003 PRESENCE — db.transaction() in processLicensing (atomic license_count decrement+insert)", () => {
+    const src = parseTypeScriptSource(
+      "media.ts",
+      `function processLicensing(db, contentId, userId, licenseType) {
+  const tx = db.transaction(() => {
+    db.prepare("UPDATE contents SET license_count = license_count - 1 WHERE id = ?").run(contentId);
+    db.prepare("INSERT INTO licenses (id, content_id, user_id, license_type, status, granted_at) VALUES (?, ?, ?, ?, 'active', ?)").run(licenseId, contentId, userId, licenseType, grantedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MD-003"]!(src, "media.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["MD-003"]!(src, "media.ts")).toHaveLength(0);
+  });
+
+  it("MD-004 PRESENCE — status comparison + 'published'/'archived' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "media.ts",
+      `function transitionContentStatus(db, contentId, newStatus) {
+  const content = db.prepare("SELECT status FROM contents WHERE id = ?").get(contentId);
+  if (content.status === 'draft') throw new MediaError("E409-CONTENT", "Invalid transition", 409);
+  db.prepare("UPDATE contents SET status = 'published' WHERE id = ?").run(contentId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MD-004"]!(src, "media.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["MD-004"]!(src, "media.ts")).toHaveLength(0);
+  });
+
+  it("MD-005 PRESENCE — batch status='expired' update in markExpiringContent (file context)", () => {
+    // detector는 파일 전체 스캔 — transitionContentStatus 함수의 status === 비교식이 foundComparison=true 확정
+    const src = parseTypeScriptSource(
+      "media.ts",
+      `function transitionContentStatus(db, contentId, newStatus) {
+  const content = db.prepare("SELECT status FROM contents WHERE id = ?").get(contentId);
+  if (content.status === 'draft') throw new MediaError("E409-CONTENT", "Invalid", 409);
+  db.prepare("UPDATE contents SET status = 'published' WHERE id = ?").run(contentId);
+}
+function markExpiringContent(db, expirationCutoffDate) {
+  const candidates = db.prepare("SELECT id FROM contents WHERE status = 'published' AND expires_at <= ?").all(expirationCutoffDate);
+  for (const content of candidates) {
+    db.prepare("UPDATE contents SET status = 'expired' WHERE id = ?").run(content.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MD-005"]!(src, "media.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["MD-005"]!(src, "media.ts")).toHaveLength(0);
+  });
+
+  it("MD-006 PRESENCE — db.transaction() in processTakedown (atomic archived+resolved+revoked+refunds)", () => {
+    const src = parseTypeScriptSource(
+      "media.ts",
+      `function processTakedown(db, contentId, reportId, reason) {
+  const tx = db.transaction(() => {
+    db.prepare("UPDATE contents SET status = 'archived', archived_at = ? WHERE id = ?").run(takenDownAt, contentId);
+    db.prepare("UPDATE reports SET status = 'resolved', resolved_at = ? WHERE id = ?").run(takenDownAt, reportId);
+    db.prepare("UPDATE licenses SET status = 'revoked' WHERE id = ?").run(license.id);
+    db.prepare("INSERT INTO refunds (id, license_id, user_id, reason, created_at) VALUES (?, ?, ?, ?, ?)").run(randomUUID(), license.id, license.user_id, reason, takenDownAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MD-006"]!(src, "media.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["MD-006"]!(src, "media.ts")).toHaveLength(0);
   });
 });

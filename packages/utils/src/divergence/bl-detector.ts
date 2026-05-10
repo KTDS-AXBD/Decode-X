@@ -813,4 +813,12 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "BK-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BK-004"),
   "BK-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BK-005"),
   "BK-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BK-006"),
+
+  // F464 (Sprint 298) — Media 합성 도메인 (28번째 도메인, 미디어 산업, 17번째 신규 산업)
+  "MD-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "MD-001"),
+  "MD-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "MD-002"),
+  "MD-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "MD-003"),
+  "MD-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "MD-004"),
+  "MD-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "MD-005"),
+  "MD-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "MD-006"),
 };

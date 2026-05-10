@@ -885,4 +885,12 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "DF-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "DF-004"),
   "DF-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "DF-005"),
   "DF-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "DF-006"),
+
+  // F473 (Sprint 307) — Sports 합성 도메인 (37번째 도메인, 스포츠 산업, 26번째 신규 산업)
+  "SP-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "SP-001"),
+  "SP-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "SP-002"),
+  "SP-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "SP-003"),
+  "SP-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "SP-004"),
+  "SP-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "SP-005"),
+  "SP-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "SP-006"),
 };

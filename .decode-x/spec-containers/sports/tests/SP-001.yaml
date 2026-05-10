@@ -1,0 +1,61 @@
+---
+# Test scenarios — Sports domain SP-001~SP-006
+# Sprint 307 F473 — Sports 합성 도메인
+
+scenarios:
+  - id: SP-001-PASS
+    rule: SP-001
+    description: "한도 내 좌석 예약 — 성공"
+    input: { totalBooked: 30000, MAX_VENUE_CAPACITY: 50000 }
+    expected: PASS
+
+  - id: SP-001-FAIL
+    rule: SP-001
+    description: "경기장 좌석 한도 초과 — E422-VENUE-CAPACITY-EXCEEDED"
+    input: { totalBooked: 50000, MAX_VENUE_CAPACITY: 50000 }
+    expected: FAIL
+    error: E422-VENUE-CAPACITY-EXCEEDED
+
+  - id: SP-002-PASS
+    rule: SP-002
+    description: "시즌권 한도 내 — 성공"
+    input: { requestedQuantity: 2, seasonTicketLimit: 5 }
+    expected: PASS
+
+  - id: SP-002-FAIL
+    rule: SP-002
+    description: "시즌권 한도 초과 — E422-SEASON-TICKET-EXCEEDED"
+    input: { requestedQuantity: 10, seasonTicketLimit: 5 }
+    expected: FAIL
+    error: E422-SEASON-TICKET-EXCEEDED
+
+  - id: SP-003-PASS
+    rule: SP-003
+    description: "held 상태에서 티켓 판매 — 성공"
+    input: { seatStatus: "held" }
+    expected: PASS
+
+  - id: SP-004-PASS
+    rule: SP-004
+    description: "scheduled → ticketing 전환 — 성공"
+    input: { from: "scheduled", to: "ticketing" }
+    expected: PASS
+
+  - id: SP-004-FAIL
+    rule: SP-004
+    description: "scheduled → completed 직접 전환 불가 — E409-EVENT"
+    input: { from: "scheduled", to: "completed" }
+    expected: FAIL
+    error: E409-EVENT
+
+  - id: SP-005-PASS
+    rule: SP-005
+    description: "동기화 기준일 이전 merchandise_batch 일괄 처리 — 성공"
+    input: { syncedBefore: "2026-05-10", status: "pending" }
+    expected: PASS
+
+  - id: SP-006-PASS
+    rule: SP-006
+    description: "환불 + 좌석 반납 + 재예약 atomic — 성공"
+    input: { originalSaleExists: true }
+    expected: PASS

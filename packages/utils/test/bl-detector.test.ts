@@ -622,7 +622,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 201 detectors (Sprint 306 F472 — defense DF-001~DF-006 added, 36번째 도메인 국방 산업, 25번째 신규)", () => {
+  it("exposes 207 detectors (Sprint 307 F473 — sports SP-001~SP-006 added, 37번째 도메인 스포츠 산업, 26번째 신규)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AG-001",
       "AG-002",
@@ -801,6 +801,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "SB-004",
       "SB-005",
       "SB-006",
+      "SP-001",
+      "SP-002",
+      "SP-003",
+      "SP-004",
+      "SP-005",
+      "SP-006",
       "TC-001",
       "TC-002",
       "TC-003",
@@ -844,6 +850,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["DF-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["DF-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["DF-006"]).toBeDefined();
+  });
+
+  it("SP-001~SP-006 registered (Sprint 307 F473 — sports 37번째 도메인)", () => {
+    expect(BL_DETECTOR_REGISTRY["SP-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["SP-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["SP-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["SP-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["SP-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["SP-006"]).toBeDefined();
   });
 
   it("each detector returns BLDivergenceMarker[]", () => {
@@ -3024,5 +3039,110 @@ function markTrainingRotation(db, scheduledBefore) {
     const markers = BL_DETECTOR_REGISTRY["DF-006"]!(src, "defense.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["DF-006"]!(src, "defense.ts")).toHaveLength(0);
+  });
+});
+
+// F473 (Sprint 307) — sports domain SP-001~006 via withRuleId (35 Sprint 연속 정점)
+describe("sports domain — SP-001~006 via withRuleId (Sprint 307 F473)", () => {
+  it("SP-001 PRESENCE — totalBooked >= MAX_VENUE_CAPACITY threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "sports.ts",
+      `const MAX_VENUE_CAPACITY = 50000;
+function bookVenueSeat(db, venueId, eventId, section, seatNumber, memberId) {
+  if (totalBooked >= MAX_VENUE_CAPACITY) {
+    throw new SportsError('E422-VENUE-CAPACITY-EXCEEDED', 'Venue capacity exceeded maximum limit', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SP-001"]!(src, "sports.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["SP-001"]!(src, "sports.ts")).toHaveLength(0);
+  });
+
+  it("SP-002 PRESENCE — requestedQuantity > seasonTicketLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "sports.ts",
+      `function applySeasonTicketTier(db, memberId, tierCode, requestedQuantity) {
+  const seasonTicketLimit = tier.seasonTicketLimit;
+  if (requestedQuantity > seasonTicketLimit) {
+    throw new SportsError('E422-SEASON-TICKET-EXCEEDED', 'Season ticket request exceeded tier limit', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SP-002"]!(src, "sports.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["SP-002"]!(src, "sports.ts")).toHaveLength(0);
+  });
+
+  it("SP-003 PRESENCE — db.transaction() in processTicketSale (atomic ticket_sales+venue_seats+issued_tickets INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "sports.ts",
+      `function processTicketSale(db, eventId, memberId, seatId, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO ticket_sales (id, event_id, member_id, seat_id, amount, status, sold_at) VALUES (?, ?, ?, ?, ?, 'payment_confirmed', ?)").run(saleId, eventId, memberId, seatId, amount, soldAt);
+    db.prepare("UPDATE venue_seats SET status = 'sold' WHERE id = ?").run(seatId);
+    db.prepare("INSERT INTO issued_tickets (id, sale_id, event_id, member_id, seat_id, issued_at) VALUES (?, ?, ?, ?, ?, ?)").run(ticketId, saleId, eventId, memberId, seatId, soldAt);
+    db.prepare("UPDATE ticket_sales SET status = 'issued' WHERE id = ?").run(saleId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SP-003"]!(src, "sports.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["SP-003"]!(src, "sports.ts")).toHaveLength(0);
+  });
+
+  it("SP-004 PRESENCE — status comparison + 'ticketing'/'live'/'completed' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "sports.ts",
+      `function transitionEventStatus(db, eventId, newStatus) {
+  const event = db.prepare("SELECT status FROM events WHERE id = ?").get(eventId);
+  if (event.status === 'scheduled') throw new SportsError("E409-EVENT", "Invalid transition", 409);
+  db.prepare("UPDATE events SET status = 'ticketing' WHERE id = ?").run(eventId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SP-004"]!(src, "sports.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["SP-004"]!(src, "sports.ts")).toHaveLength(0);
+  });
+
+  it("SP-005 PRESENCE — batch synced update in markMerchandiseSync (file context)", () => {
+    const src = parseTypeScriptSource(
+      "sports.ts",
+      `function transitionEventStatus(db, eventId, newStatus) {
+  const event = db.prepare("SELECT status FROM events WHERE id = ?").get(eventId);
+  if (event.status === 'scheduled') throw new SportsError("E409-EVENT", "Invalid", 409);
+  db.prepare("UPDATE events SET status = 'ticketing' WHERE id = ?").run(eventId);
+}
+function markMerchandiseSync(db, syncedBefore) {
+  const candidates = db.prepare("SELECT id FROM merchandise_batches WHERE created_at <= ? AND status = 'pending'").all(syncedBefore);
+  for (const batch of candidates) {
+    db.prepare("UPDATE merchandise_batches SET status = 'synced', synced_at = ? WHERE id = ?").run(new Date().toISOString(), batch.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SP-005"]!(src, "sports.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["SP-005"]!(src, "sports.ts")).toHaveLength(0);
+  });
+
+  it("SP-006 PRESENCE — db.transaction() in processRefundRebook (atomic refund_records+ticket_sales+venue_seats+cancellation_logs)", () => {
+    const src = parseTypeScriptSource(
+      "sports.ts",
+      `function processRefundRebook(db, originalSaleId, newEventId, newSeatId, memberId) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO refund_records (id, sale_id, member_id, refund_amount, status, refunded_at) SELECT ?, id, ?, amount, 'completed', ? FROM ticket_sales WHERE id = ?").run(refundId, memberId, processedAt, originalSaleId);
+    db.prepare("UPDATE ticket_sales SET status = 'cancelled' WHERE id = ?").run(originalSaleId);
+    db.prepare("UPDATE venue_seats SET status = 'available' WHERE id = (SELECT seat_id FROM ticket_sales WHERE id = ?)").run(originalSaleId);
+    db.prepare("INSERT INTO ticket_sales (id, event_id, member_id, seat_id, amount, status, sold_at) SELECT ?, ?, ?, ?, amount, 'issued', ? FROM ticket_sales WHERE id = ?").run(rebookSaleId, newEventId, memberId, newSeatId, processedAt, originalSaleId);
+    db.prepare("INSERT INTO cancellation_logs (id, sale_id, member_id, reason, cancelled_at) VALUES (?, ?, ?, 'rebook', ?)").run(cancelId, originalSaleId, memberId, processedAt);
+    db.prepare("UPDATE venue_seats SET status = 'sold' WHERE id = ?").run(newSeatId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SP-006"]!(src, "sports.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["SP-006"]!(src, "sports.ts")).toHaveLength(0);
   });
 });

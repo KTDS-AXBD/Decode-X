@@ -701,6 +701,129 @@ export function detectGiftImplementation(
 }
 
 /**
+ * 일반화 ABSENCE detector — sourceFile에 targetNames 함수 모두 부재 시 1 ABSENCE marker 반환.
+ *
+ * Sprint 317 (F483) 도입: lpon-payment 5 ABSENCE detector 공통 helper.
+ * `detectGiftImplementation` 패턴 일반화 — 함수명 그룹 부재 검사 + ruleId/detail/confidence 외부 주입.
+ *
+ * 신뢰도 90% — 함수명 기반 정확 매칭.
+ */
+function detectAbsentFunctions(
+  sourceFile: ts.SourceFile,
+  fileName: string,
+  ruleId: string,
+  targetNames: string[],
+  detail: string,
+): BLDivergenceMarker[] {
+  let foundImpl = false;
+  const nameSet = new Set(targetNames);
+
+  function visit(node: ts.Node): void {
+    if (foundImpl) return;
+    if (
+      (ts.isFunctionDeclaration(node) || ts.isMethodDeclaration(node)) &&
+      node.name &&
+      ts.isIdentifier(node.name) &&
+      nameSet.has(node.name.text)
+    ) {
+      foundImpl = true;
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(sourceFile);
+
+  if (!foundImpl) {
+    return [
+      {
+        ruleId,
+        severity: "HIGH",
+        pattern: "under_implementation",
+        sourceFile: fileName,
+        sourceLine: 0,
+        detail,
+        confidence: 0.9,
+        autoDetected: true,
+      },
+    ];
+  }
+  return [];
+}
+
+/**
+ * Sprint 317 (F483) — lpon-payment 5 ABSENCE marker detector.
+ *
+ * payment.ts (169 lines, 1 함수 `processPayment`)에 cancel/refund 분기 자체 부재.
+ * 5 BL 모두 cancel 흐름 부재 명시 — LPON pilot 5 컨테이너 100% 마일스톤.
+ *
+ * Detector 패턴: `detectAbsentFunctions` helper 5회 호출.
+ * 신뢰도 90% — 함수명 기반 정확 매칭.
+ */
+export function detectCompanyRefund(
+  sourceFile: ts.SourceFile,
+  fileName: string,
+): BLDivergenceMarker[] {
+  return detectAbsentFunctions(
+    sourceFile,
+    fileName,
+    "BL-013",
+    ["refundByCompany", "cancelChargeRefund"],
+    "BL-013: No refundByCompany or cancelChargeRefund function found. Company-initiated charge refund is not implemented in payment domain (handled in refund domain).",
+  );
+}
+
+export function detectPaymentCancellation(
+  sourceFile: ts.SourceFile,
+  fileName: string,
+): BLDivergenceMarker[] {
+  return detectAbsentFunctions(
+    sourceFile,
+    fileName,
+    "BL-016",
+    ["cancelPayment", "refundPayment"],
+    "BL-016: No cancelPayment or refundPayment function found. Payment cancellation request flow (card authorization reversal + transaction history update) is not implemented.",
+  );
+}
+
+export function detectMerchantMpmCancel(
+  sourceFile: ts.SourceFile,
+  fileName: string,
+): BLDivergenceMarker[] {
+  return detectAbsentFunctions(
+    sourceFile,
+    fileName,
+    "BL-017",
+    ["cancelByMerchant", "mpmCancel", "sendMpmCancelMessage"],
+    "BL-017: No cancelByMerchant, mpmCancel, or sendMpmCancelMessage function found. Merchant-initiated cancellation via BC card MPM message transmission is not implemented.",
+  );
+}
+
+export function detectQrMerchantApproval(
+  sourceFile: ts.SourceFile,
+  fileName: string,
+): BLDivergenceMarker[] {
+  return detectAbsentFunctions(
+    sourceFile,
+    fileName,
+    "BL-018",
+    ["approveQrCancel", "merchantApproveCancel", "qrMerchantApprove"],
+    "BL-018: No approveQrCancel, merchantApproveCancel, or qrMerchantApprove function found. QR cancellation request awaiting merchant approval flow is not implemented.",
+  );
+}
+
+export function detectWithdrawnUserCancel(
+  sourceFile: ts.SourceFile,
+  fileName: string,
+): BLDivergenceMarker[] {
+  return detectAbsentFunctions(
+    sourceFile,
+    fileName,
+    "BL-019",
+    ["cancelByWithdrawnUser", "ap06Cancel", "withdrawnUserRefund"],
+    "BL-019: No cancelByWithdrawnUser, ap06Cancel, or withdrawnUserRefund function found. Withdrawn user payment/purchase cancellation via external AP06 API is not implemented.",
+  );
+}
+
+/**
  * Detector function 시그니처 (BL_DETECTOR_REGISTRY 등록용).
  */
 export type DetectorFn = (
@@ -1069,4 +1192,13 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "BL-031": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BL-031"),
   "BL-032": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BL-032"),
   "BL-G001": (sf, fn) => withRuleId(detectGiftImplementation(sf, fn), "BL-G001"),
+  // Sprint 317 (F483) — lpon-payment 5 ABSENCE marker (100% coverage 마일스톤)
+  // payment.ts (169 lines, 1 함수 processPayment) cancel 분기 자체 부재.
+  // BL-013/016/017/018/019 모두 cancel/refund 흐름 부재 — 5 ABSENCE markers.
+  // detect-bl coverage: 255/260 → 260/260 = 100% 🏆 LPON pilot 100% 종결.
+  "BL-013": detectCompanyRefund,
+  "BL-016": detectPaymentCancellation,
+  "BL-017": detectMerchantMpmCancel,
+  "BL-018": detectQrMerchantApproval,
+  "BL-019": detectWithdrawnUserCancel,
 };

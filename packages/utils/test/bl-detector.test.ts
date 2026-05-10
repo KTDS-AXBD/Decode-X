@@ -677,7 +677,7 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 255 detectors (Sprint 315 F481 + Sprint 316 F482 통합 — lpon-refund BL-020/021/023/025/030 + lpon-settlement BL-031/032 + lpon-gift BL-G001, 98.1% coverage 도달)", () => {
+  it("exposes 260 detectors (Sprint 317 F483 — lpon-payment BL-013/016/017/018/019 ABSENCE markers, 100% coverage 마일스톤)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AG-001",
       "AG-002",
@@ -710,8 +710,13 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "BL-006",
       "BL-007",
       "BL-008",
+      "BL-013",
       "BL-014",
       "BL-015",
+      "BL-016",
+      "BL-017",
+      "BL-018",
+      "BL-019",
       "BL-020",
       "BL-021",
       "BL-022",
@@ -4041,5 +4046,87 @@ describe("BL-031/032 + BL-G001 — lpon-settlement/gift gap fill (Sprint 316 F48
     const markers = fn!(sf, "gift.ts");
     expect(markers).toHaveLength(1);
     expect(markers[0]?.ruleId).toBe("BL-G001");
+  });
+});
+
+describe("BL-013/016/017/018/019 — lpon-payment 5 ABSENCE markers (Sprint 317 F483, 100% coverage 마일스톤)", () => {
+  // payment.ts (현실): 1 함수 processPayment 만 존재 — cancel/refund 분기 자체 부재.
+  // 5 ABSENCE markers (BL-013/016/017/018/019) — LPON pilot 5 컨테이너 100% 종결.
+  const paymentNoImplSrc = `
+    function processPayment(db, input) {
+      const voucher = db.prepare("SELECT * FROM vouchers WHERE id = ?").get(input.voucherId);
+      if (!voucher) throw new Error("E404");
+      if (voucher.status !== 'ACTIVE') throw new Error("E409");
+      const tx = db.transaction(() => {
+        db.prepare("INSERT INTO payments (id, status) VALUES (?, 'PAID')").run(input.id);
+        db.prepare("UPDATE vouchers SET balance = balance - ? WHERE id = ?").run(input.amount, input.voucherId);
+      });
+      tx();
+      if (input.amount >= 50000) {
+        // SMS 발송
+      }
+      return { paymentId: input.id };
+    }
+  `;
+
+  it("BL-013 ABSENCE — no refundByCompany in payment.ts → 1 marker with ruleId BL-013", () => {
+    const sf = parseTypeScriptSource("payment.ts", paymentNoImplSrc);
+    const fn = BL_DETECTOR_REGISTRY["BL-013"];
+    expect(fn).toBeDefined();
+    const markers = fn!(sf, "payment.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BL-013");
+    expect(markers[0]?.severity).toBe("HIGH");
+  });
+
+  it("BL-016 ABSENCE — no cancelPayment in payment.ts → 1 marker with ruleId BL-016", () => {
+    const sf = parseTypeScriptSource("payment.ts", paymentNoImplSrc);
+    const fn = BL_DETECTOR_REGISTRY["BL-016"];
+    expect(fn).toBeDefined();
+    const markers = fn!(sf, "payment.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BL-016");
+  });
+
+  it("BL-017 ABSENCE — no cancelByMerchant/mpmCancel in payment.ts → 1 marker with ruleId BL-017", () => {
+    const sf = parseTypeScriptSource("payment.ts", paymentNoImplSrc);
+    const fn = BL_DETECTOR_REGISTRY["BL-017"];
+    expect(fn).toBeDefined();
+    const markers = fn!(sf, "payment.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BL-017");
+  });
+
+  it("BL-018 ABSENCE — no approveQrCancel/merchantApproveCancel in payment.ts → 1 marker with ruleId BL-018", () => {
+    const sf = parseTypeScriptSource("payment.ts", paymentNoImplSrc);
+    const fn = BL_DETECTOR_REGISTRY["BL-018"];
+    expect(fn).toBeDefined();
+    const markers = fn!(sf, "payment.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BL-018");
+  });
+
+  it("BL-019 ABSENCE — no cancelByWithdrawnUser/ap06Cancel in payment.ts → 1 marker with ruleId BL-019", () => {
+    const sf = parseTypeScriptSource("payment.ts", paymentNoImplSrc);
+    const fn = BL_DETECTOR_REGISTRY["BL-019"];
+    expect(fn).toBeDefined();
+    const markers = fn!(sf, "payment.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BL-019");
+  });
+
+  it("BL-016 PRESENCE counter — cancelPayment function exists → 0 markers (false positive 방지)", () => {
+    const paymentWithCancelSrc = paymentNoImplSrc + `
+      function cancelPayment(db, paymentId) {
+        const tx = db.transaction(() => {
+          db.prepare("UPDATE payments SET status = 'CANCELED' WHERE id = ?").run(paymentId);
+        });
+        tx();
+      }
+    `;
+    const sf = parseTypeScriptSource("payment.ts", paymentWithCancelSrc);
+    const fn = BL_DETECTOR_REGISTRY["BL-016"];
+    expect(fn).toBeDefined();
+    expect(fn!(sf, "payment.ts")).toEqual([]);
   });
 });

@@ -1,0 +1,61 @@
+---
+# Test scenarios — Fitness domain FT-001~FT-006
+# Sprint 312 F478 — Fitness 합성 도메인
+
+scenarios:
+  - id: FT-001-PASS
+    rule: FT-001
+    description: "정원 내 클래스 예약 — 성공"
+    input: { booked_count: 15, capacity: 25 }
+    expected: PASS
+
+  - id: FT-001-FAIL
+    rule: FT-001
+    description: "클래스 정원 초과 — E422-CLASS-CAPACITY-EXCEEDED"
+    input: { booked_count: 25, capacity: 25 }
+    expected: FAIL
+    error: E422-CLASS-CAPACITY-EXCEEDED
+
+  - id: FT-002-PASS
+    rule: FT-002
+    description: "PT 세션 한도 내 사용 — 성공"
+    input: { pt_sessions_used: 4, ptSessionLimit: 8 }
+    expected: PASS
+
+  - id: FT-002-FAIL
+    rule: FT-002
+    description: "PT 세션 한도 초과 — E422-PT-SESSION-LIMIT-EXCEEDED"
+    input: { pt_sessions_used: 8, ptSessionLimit: 8 }
+    expected: FAIL
+    error: E422-PT-SESSION-LIMIT-EXCEEDED
+
+  - id: FT-003-PASS
+    rule: FT-003
+    description: "가용 슬롯 PT 예약 atomic — 성공"
+    input: { slotStatus: "available" }
+    expected: PASS
+
+  - id: FT-004-PASS
+    rule: FT-004
+    description: "initial → in_progress 전환 — 성공"
+    input: { from: "initial", to: "in_progress" }
+    expected: PASS
+
+  - id: FT-004-FAIL
+    rule: FT-004
+    description: "initial → completed 직접 전환 불가 — E409-PROGRESS"
+    input: { from: "initial", to: "completed" }
+    expected: FAIL
+    error: E409-PROGRESS
+
+  - id: FT-005-PASS
+    rule: FT-005
+    description: "기준일 이전 booked 예약 노쇼 일괄 처리 — 성공"
+    input: { scheduledBefore: "2026-05-10", status: "booked" }
+    expected: PASS
+
+  - id: FT-006-PASS
+    rule: FT-006
+    description: "가용 기구 예약 + hold + 통계 atomic — 성공"
+    input: { equipmentStatus: "available" }
+    expected: PASS

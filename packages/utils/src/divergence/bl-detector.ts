@@ -926,4 +926,13 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "PR-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PR-004"),
   "PR-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PR-005"),
   "PR-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "PR-006"),
+
+  // F478 (Sprint 312) — Fitness 합성 도메인 (42번째 도메인, 피트니스 산업, 31번째 신규 산업)
+  // 🏆 40 Sprint 연속 정점 (round number 마일스톤). WL+SP+FT 클러스터 형성.
+  "FT-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "FT-001"),
+  "FT-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "FT-002"),
+  "FT-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "FT-003"),
+  "FT-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "FT-004"),
+  "FT-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "FT-005"),
+  "FT-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "FT-006"),
 };

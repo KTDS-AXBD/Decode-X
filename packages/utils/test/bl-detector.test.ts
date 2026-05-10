@@ -622,7 +622,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 231 detectors (Sprint 311 F477 — property PR-001~PR-006 added, 41번째 도메인 임대관리 산업, 30번째 신규)", () => {
+  it("exposes 237 detectors (Sprint 312 F478 — fitness FT-001~FT-006 added, 42번째 도메인 피트니스 산업, 31번째 신규)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AG-001",
       "AG-002",
@@ -716,6 +716,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "EN-004",
       "EN-005",
       "EN-006",
+      "FT-001",
+      "FT-002",
+      "FT-003",
+      "FT-004",
+      "FT-005",
+      "FT-006",
       "GV-001",
       "GV-002",
       "GV-003",
@@ -919,6 +925,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["PR-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["PR-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["PR-006"]).toBeDefined();
+  });
+
+  it("FT-001~FT-006 registered (Sprint 312 F478 — fitness 42번째 도메인, 🏆 40 Sprint 연속 정점)", () => {
+    expect(BL_DETECTOR_REGISTRY["FT-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["FT-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["FT-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["FT-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["FT-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["FT-006"]).toBeDefined();
   });
 
   it("each detector returns BLDivergenceMarker[]", () => {
@@ -3620,5 +3635,109 @@ function markInspectionBatch(db, scheduledBefore) {
     const markers = BL_DETECTOR_REGISTRY["PR-006"]!(src, "property.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["PR-006"]!(src, "property.ts")).toHaveLength(0);
+  });
+});
+
+// F478 (Sprint 312) — fitness domain FT-001~006 via withRuleId (40 Sprint 연속 정점)
+describe("fitness domain — FT-001~006 via withRuleId (Sprint 312 F478)", () => {
+  it("FT-001 PRESENCE — booked_count >= MAX_CLASS_CAPACITY threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "fitness.ts",
+      `const MAX_CLASS_CAPACITY = 25;
+function bookClassSlot(db, classId, memberId) {
+  const cls = db.prepare("SELECT booked_count, capacity FROM fitness_classes WHERE id = ?").get(classId);
+  const limit = cls.capacity ?? MAX_CLASS_CAPACITY;
+  if (cls.booked_count >= limit) {
+    throw new FitnessError('E422-CLASS-CAPACITY-EXCEEDED', 'Class is fully booked', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["FT-001"]!(src, "fitness.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["FT-001"]!(src, "fitness.ts")).toHaveLength(0);
+  });
+
+  it("FT-002 PRESENCE — pt_sessions_used >= ptSessionLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "fitness.ts",
+      `function usePtSession(db, memberId, membershipId) {
+  const membership = db.prepare("SELECT pt_sessions_used, pt_session_limit FROM memberships WHERE id = ? AND member_id = ? LIMIT 1").get(membershipId, memberId);
+  const ptSessionLimit = membership.pt_session_limit;
+  if (membership.pt_sessions_used >= ptSessionLimit) {
+    throw new FitnessError('E422-PT-SESSION-LIMIT-EXCEEDED', 'PT sessions exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["FT-002"]!(src, "fitness.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["FT-002"]!(src, "fitness.ts")).toHaveLength(0);
+  });
+
+  it("FT-003 PRESENCE — db.transaction() in bookPersonalTraining (atomic pt_bookings+trainer_slots+pt_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "fitness.ts",
+      `function bookPersonalTraining(db, memberId, trainerId, slotId, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO pt_bookings (id, member_id, trainer_id, slot_id, payment_id, status, reserved_at) VALUES (?, ?, ?, ?, ?, 'reserved', ?)").run(ptBookingId, memberId, trainerId, slotId, paymentId, reservedAt);
+    db.prepare("UPDATE trainer_slots SET status = 'booked', booked_member_id = ? WHERE id = ?").run(memberId, slotId);
+    db.prepare("INSERT INTO pt_payments (id, pt_booking_id, member_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(paymentId, ptBookingId, memberId, amount, reservedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["FT-003"]!(src, "fitness.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["FT-003"]!(src, "fitness.ts")).toHaveLength(0);
+  });
+
+  it("FT-004 PRESENCE — status comparison + 'in_progress'/'assessment'/'completed' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "fitness.ts",
+      `function transitionProgressStatus(db, progressId, newStatus) {
+  const progress = db.prepare("SELECT status FROM member_progress WHERE id = ?").get(progressId);
+  if (progress.status === 'assessment') throw new FitnessError("E409-PROGRESS", "Invalid transition", 409);
+  db.prepare("UPDATE member_progress SET status = 'in_progress' WHERE id = ?").run(progressId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["FT-004"]!(src, "fitness.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["FT-004"]!(src, "fitness.ts")).toHaveLength(0);
+  });
+
+  it("FT-005 PRESENCE — batch no_show update in markNoShowBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "fitness.ts",
+      `function transitionProgressStatus(db, progressId, newStatus) {
+  const progress = db.prepare("SELECT status FROM member_progress WHERE id = ?").get(progressId);
+  if (progress.status === 'assessment') throw new FitnessError("E409-PROGRESS", "Invalid", 409);
+  db.prepare("UPDATE member_progress SET status = 'in_progress' WHERE id = ?").run(progressId);
+}
+function markNoShowBatch(db, scheduledBefore) {
+  const candidates = db.prepare("SELECT cb.id FROM class_bookings cb JOIN fitness_classes fc ON cb.class_id = fc.id WHERE fc.scheduled_at <= ? AND cb.status = 'booked'").all(scheduledBefore);
+  for (const booking of candidates) {
+    db.prepare("UPDATE class_bookings SET status = 'no_show' WHERE id = ?").run(booking.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["FT-005"]!(src, "fitness.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["FT-005"]!(src, "fitness.ts")).toHaveLength(0);
+  });
+
+  it("FT-006 PRESENCE — db.transaction() in reserveEquipment (atomic equipment_reservations+equipment_holds+equipment INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "fitness.ts",
+      `function reserveEquipment(db, memberId, equipmentId, durationMinutes) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO equipment_reservations (id, member_id, equipment_id, duration_minutes, status, reserved_at) VALUES (?, ?, ?, ?, 'active', ?)").run(reservationId, memberId, equipmentId, durationMinutes, reservedAt);
+    db.prepare("INSERT INTO equipment_holds (id, reservation_id, equipment_id, held_at, released_at) VALUES (?, ?, ?, ?, NULL)").run(holdId, reservationId, equipmentId, reservedAt);
+    db.prepare("UPDATE equipment SET status = 'reserved', daily_usage_count = daily_usage_count + 1 WHERE id = ?").run(equipmentId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["FT-006"]!(src, "fitness.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["FT-006"]!(src, "fitness.ts")).toHaveLength(0);
   });
 });

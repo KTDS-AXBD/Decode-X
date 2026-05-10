@@ -1,0 +1,52 @@
+---
+# Provenance — FITNESS-001
+# 42번째 도메인 — Fitness 합성 도메인 PoC (31번째 신규 산업)
+
+skillId: FITNESS-001
+extractedAt: "2026-05-10T00:00:00+09:00"
+extractedBy: "Decode-X Sprint 312 F478 — withRuleId 재사용 42번째 도메인 (Fitness 산업, 31번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/fitness/rules/fitness-rules.md"
+    section: "Fitness 합성 비즈니스 룰 — FT-001~FT-006"
+    businessRules: [FT-001, FT-002, FT-003, FT-004, FT-005, FT-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 피트니스(Fitness) 산업 일반화 PoC. 정원한도/PT세션한도/PT예약atomic/진행상태전환/노쇼배치/기구예약atomic 추상화. 42번째 도메인 + 31번째 신규 산업 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT). detector 신뢰도 누적 활용. 🏆 40 Sprint 연속 정점 (round number 마일스톤). WL+SP+FT 클러스터 (서비스+이벤트+운동) 형성."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/fitness.ts"
+    functions: [bookClassSlot, usePtSession, bookPersonalTraining, transitionProgressStatus, markNoShowBatch, reserveEquipment]
+
+detection:
+  - ruleId: FT-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "cls.booked_count >= limit (UPPERCASE fallback MAX_CLASS_CAPACITY, Path A)"
+  - ruleId: FT-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "membership.pt_sessions_used >= ptSessionLimit (Path B, limit keyword)"
+  - ruleId: FT-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "db.transaction() — pt_bookings INSERT + trainer_slots UPDATE + pt_payments INSERT"
+  - ruleId: FT-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "initial → in_progress → assessment → completed"
+  - ruleId: FT-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "batch: no_show 갱신 (CC-005 31번째 재사용)"
+  - ruleId: FT-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "db.transaction() — equipment_reservations INSERT + equipment_holds INSERT + equipment UPDATE"

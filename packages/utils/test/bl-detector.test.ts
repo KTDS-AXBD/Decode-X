@@ -939,6 +939,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "V-004",
       "V-005",
       "V-006",
+      "VT-001",
+      "VT-002",
+      "VT-003",
+      "VT-004",
+      "VT-005",
+      "VT-006",
       "WL-001",
       "WL-002",
       "WL-003",
@@ -1027,6 +1033,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["TM-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["TM-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["TM-006"]).toBeDefined();
+  });
+
+  it("VT-001~VT-006 registered (Sprint 319 F485 — veterinary 45번째 도메인, PT+VT 동물 케어 2-클러스터)", () => {
+    expect(BL_DETECTOR_REGISTRY["VT-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["VT-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["VT-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["VT-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["VT-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["VT-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -4064,6 +4079,110 @@ function markPrescriptionExpiryBatch(db, expiredBefore) {
     const markers = BL_DETECTOR_REGISTRY["TM-006"]!(src, "telemedicine.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["TM-006"]!(src, "telemedicine.ts")).toHaveLength(0);
+  });
+});
+
+// F485 (Sprint 319) — veterinary domain VT-001~006 via withRuleId (46 Sprint 연속 정점 도전)
+describe("veterinary domain — VT-001~006 via withRuleId (Sprint 319 F485)", () => {
+  it("VT-001 PRESENCE — booked_count >= MAX_APPOINTMENT_CAPACITY threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "veterinary.ts",
+      `const MAX_APPOINTMENT_CAPACITY = 20;
+function bookAppointmentSlot(db, slotId, petId) {
+  const slot = db.prepare("SELECT booked_count, capacity FROM appointment_slots WHERE id = ?").get(slotId);
+  const limit = slot.capacity ?? MAX_APPOINTMENT_CAPACITY;
+  if (slot.booked_count >= limit) {
+    throw new VeterinaryError('E422-SLOT-CAPACITY-EXCEEDED', 'Slot is fully booked', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["VT-001"]!(src, "veterinary.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["VT-001"]!(src, "veterinary.ts")).toHaveLength(0);
+  });
+
+  it("VT-002 PRESENCE — vaccine_usage >= vaccineLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "veterinary.ts",
+      `function applyVaccineLimit(db, petId, subscriptionId) {
+  const subscription = db.prepare("SELECT vaccine_usage, vaccine_limit FROM pet_subscriptions WHERE id = ? AND pet_id = ? LIMIT 1").get(subscriptionId, petId);
+  const vaccineLimit = subscription.vaccine_limit;
+  if (subscription.vaccine_usage >= vaccineLimit) {
+    throw new VeterinaryError('E422-VACCINE-LIMIT-EXCEEDED', 'Vaccine quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["VT-002"]!(src, "veterinary.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["VT-002"]!(src, "veterinary.ts")).toHaveLength(0);
+  });
+
+  it("VT-003 PRESENCE — db.transaction() in confirmAppointment (atomic appointments+veterinarians+appointment_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "veterinary.ts",
+      `function confirmAppointment(db, petId, veterinarianId, serviceType, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO appointments (id, pet_id, veterinarian_id, service_type, payment_id, status, booked_at) VALUES (?, ?, ?, ?, ?, 'scheduled', ?)").run(appointmentId, petId, veterinarianId, serviceType, paymentId, bookedAt);
+    db.prepare("UPDATE veterinarians SET status = 'busy', booked_pet_id = ? WHERE id = ?").run(petId, veterinarianId);
+    db.prepare("INSERT INTO appointment_payments (id, appointment_id, pet_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(paymentId, appointmentId, petId, amount, bookedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["VT-003"]!(src, "veterinary.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["VT-003"]!(src, "veterinary.ts")).toHaveLength(0);
+  });
+
+  it("VT-004 PRESENCE — status comparison + 'in_progress'/'completed'/'billed'/'reviewed' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "veterinary.ts",
+      `function transitionAppointmentStatus(db, appointmentId, newStatus) {
+  const appointment = db.prepare("SELECT status FROM appointments WHERE id = ?").get(appointmentId);
+  if (appointment.status === 'in_progress') throw new VeterinaryError("E409-APPOINTMENT", "Invalid transition", 409);
+  db.prepare("UPDATE appointments SET status = 'in_progress' WHERE id = ?").run(appointmentId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["VT-004"]!(src, "veterinary.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["VT-004"]!(src, "veterinary.ts")).toHaveLength(0);
+  });
+
+  it("VT-005 PRESENCE — batch archived update in markMedicalRecordArchiveBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "veterinary.ts",
+      `function transitionAppointmentStatus(db, appointmentId, newStatus) {
+  const appointment = db.prepare("SELECT status FROM appointments WHERE id = ?").get(appointmentId);
+  if (appointment.status === 'in_progress') throw new VeterinaryError("E409-APPOINTMENT", "Invalid", 409);
+  db.prepare("UPDATE appointments SET status = 'in_progress' WHERE id = ?").run(appointmentId);
+}
+function markMedicalRecordArchiveBatch(db, expiredBefore) {
+  const candidates = db.prepare("SELECT id FROM medical_records WHERE status = 'active' AND archive_eligible_at <= ?").all(expiredBefore);
+  for (const item of candidates) {
+    db.prepare("UPDATE medical_records SET status = 'archived' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["VT-005"]!(src, "veterinary.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["VT-005"]!(src, "veterinary.ts")).toHaveLength(0);
+  });
+
+  it("VT-006 PRESENCE — db.transaction() in processVeterinaryBilling (atomic vet_billing_records+vet_payouts INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "veterinary.ts",
+      `function processVeterinaryBilling(db, veterinarianId, appointmentId, revenue, billingRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO vet_billing_records (id, veterinarian_id, appointment_id, revenue, billing_rate, billing_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(billingId, veterinarianId, appointmentId, revenue, billingRate, billingAmount);
+    db.prepare("INSERT INTO vet_payouts (id, billing_id, veterinarian_id, amount, status, settled_at) VALUES (?, ?, ?, ?, 'settled', ?)").run(payoutId, billingId, veterinarianId, billingAmount, settledAt);
+    db.prepare("UPDATE vet_billing_records SET status = 'settled' WHERE id = ?").run(billingId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["VT-006"]!(src, "veterinary.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["VT-006"]!(src, "veterinary.ts")).toHaveLength(0);
   });
 });
 

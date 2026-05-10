@@ -1,0 +1,97 @@
+# Test scenarios — Veterinary domain VT-001~VT-006
+# Sprint 319 F485 — Veterinary 합성 도메인
+
+scenarios:
+  - id: VT-001-PASS
+    rule: VT-001
+    description: "정원 내 진료 슬롯 예약 — 성공"
+    input: { booked_count: 10, capacity: 20 }
+    expected: PASS
+
+  - id: VT-001-FAIL
+    rule: VT-001
+    description: "진료 슬롯 정원 초과 — E422-SLOT-CAPACITY-EXCEEDED"
+    input: { booked_count: 20, capacity: 20 }
+    expected: FAIL
+    error: E422-SLOT-CAPACITY-EXCEEDED
+
+  - id: VT-002-PASS
+    rule: VT-002
+    description: "백신 한도 내 백신 적용 — 성공"
+    input: { vaccine_usage: 3, vaccineLimit: 8 }
+    expected: PASS
+
+  - id: VT-002-FAIL
+    rule: VT-002
+    description: "백신 한도 초과 — E422-VACCINE-LIMIT-EXCEEDED"
+    input: { vaccine_usage: 8, vaccineLimit: 8 }
+    expected: FAIL
+    error: E422-VACCINE-LIMIT-EXCEEDED
+
+  - id: VT-003-PASS
+    rule: VT-003
+    description: "available 수의사 진료 예약 atomic — 성공"
+    input: { veterinarian_status: available }
+    expected: PASS
+    side_effects:
+      - appointments INSERT (status='scheduled')
+      - veterinarians UPDATE (status='busy')
+      - appointment_payments INSERT (status='paid')
+
+  - id: VT-003-FAIL
+    rule: VT-003
+    description: "busy 수의사 진료 예약 — E404-VETERINARIAN"
+    input: { veterinarian_status: busy }
+    expected: FAIL
+    error: E404-VETERINARIAN
+
+  - id: VT-004-PASS
+    rule: VT-004
+    description: "정상 진료 상태 전환 (scheduled → in_progress)"
+    input: { current_status: scheduled, new_status: in_progress }
+    expected: PASS
+
+  - id: VT-004-FAIL
+    rule: VT-004
+    description: "비정상 진료 상태 전환 (scheduled → completed)"
+    input: { current_status: scheduled, new_status: completed }
+    expected: FAIL
+    error: E409-APPOINTMENT
+
+  - id: VT-005-PASS
+    rule: VT-005
+    description: "active 의무기록 일괄 archive 마킹"
+    input:
+      medical_records:
+        - { id: mr-1, status: active, archive_eligible_at: "2026-05-10T00:00:00Z" }
+        - { id: mr-2, status: active, archive_eligible_at: "2026-05-09T00:00:00Z" }
+      expiredBefore: "2026-05-11T00:00:00Z"
+    expected: PASS
+    output: { markedCount: 2, markedIds: [mr-1, mr-2] }
+
+  - id: VT-005-EMPTY
+    rule: VT-005
+    description: "archive 대상 없음 — markedCount=0"
+    input:
+      medical_records: []
+      expiredBefore: "2026-05-11T00:00:00Z"
+    expected: PASS
+    output: { markedCount: 0, markedIds: [] }
+
+  - id: VT-006-PASS
+    rule: VT-006
+    description: "completed 진료 정산 atomic — 성공"
+    input: { appointment_status: completed, revenue: 150000, billing_rate: 0.65 }
+    expected: PASS
+    side_effects:
+      - vet_billing_records INSERT (status='calculated')
+      - vet_payouts INSERT (status='settled')
+      - vet_billing_records UPDATE (status='settled')
+    output: { billingAmount: 97500.0 }
+
+  - id: VT-006-FAIL
+    rule: VT-006
+    description: "non-completed 진료 정산 시도 — E404-COMPLETED-APPOINTMENT"
+    input: { appointment_status: in_progress, revenue: 150000, billing_rate: 0.65 }
+    expected: FAIL
+    error: E404-COMPLETED-APPOINTMENT

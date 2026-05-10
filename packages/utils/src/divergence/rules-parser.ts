@@ -52,7 +52,8 @@ import type { BLRule } from "@ai-foundry/types";
 // F478 (Sprint 312): FT prefix 추가 (fitness 합성 도메인, 42번째 — 피트니스 산업). 🏆 40 Sprint 연속 정점 round number. WL+SP+FT 클러스터
 // F479 (Sprint 313): BT prefix 추가 (beauty salon 합성 도메인, 43번째 — 미용실 산업). WL+SP+FT+BT 서비스 4-클러스터 완성
 // F484 (Sprint 318): TM prefix 추가 (telemedicine 합성 도메인, 44번째 — 원격진료 산업, 33번째 신규). HC+PH+TM 의료 3-클러스터 형성
-const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|BK|BT|LP|CC|CH|DV|SB|SP|IN|HC|ED|RE|LG|HO|TM|TR|MF|RT|EN|GV|TC|MD|PH|AG|CN|MR|TS|AV|MN|DF|FT|WL|PT|PR|P|V)-[A-Z]?\d{1,3}$/;
+// F485 (Sprint 319): VT prefix 추가 (veterinary 합성 도메인, 45번째 — 동물병원 진료 산업, 34번째 신규). PT+VT 동물 케어 2-클러스터 형성. longer match first (VT 앞 V)
+const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|BK|BT|LP|CC|CH|DV|SB|SP|IN|HC|ED|RE|LG|HO|TM|TR|MF|RT|EN|GV|TC|MD|PH|AG|CN|MR|TS|AV|MN|DF|FT|WL|PT|PR|VT|P|V)-[A-Z]?\d{1,3}$/;
 const HEADER_PATTERN =
   /\|\s*ID\s*\|\s*condition[^|]*\|\s*criteria[^|]*\|\s*outcome[^|]*\|\s*exception[^|]*\|/i;
 const SEPARATOR_PATTERN = /^\s*\|[\s:|-]+\|\s*$/;

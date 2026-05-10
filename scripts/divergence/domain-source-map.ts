@@ -811,6 +811,26 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processBilling",
     ],
   },
+  {
+    container: "veterinary",
+    rulesPath: `${SPEC_CONTAINER_BASE}/veterinary/rules/veterinary-rules.md`,
+    // Sprint 319 (F485): Veterinary 합성 도메인 — 45번째 도메인 (동물병원 진료 산업, 34번째 신규 산업).
+    // VT-001~VT-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 46 Sprint 연속 정점 도전 (S264~S278+S283~S319).
+    // 34번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT+TM+VT).
+    // 🏆 34 산업 연속 0 ABSENCE 도전. PT+VT 동물 케어 2-클러스터 형성. 6 BLs 균형 패턴 35번째 정착.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/veterinary.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/veterinary/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "bookAppointmentSlot",
+      "applyVaccineLimit",
+      "confirmAppointment",
+      "transitionAppointmentStatus",
+      "markMedicalRecordArchiveBatch",
+      "processVeterinaryBilling",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

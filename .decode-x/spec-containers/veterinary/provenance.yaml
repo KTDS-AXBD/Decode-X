@@ -1,0 +1,52 @@
+---
+# Provenance — VETERINARY-001
+# 45번째 도메인 — Veterinary 합성 도메인 PoC (34번째 신규 산업)
+
+skillId: VETERINARY-001
+extractedAt: "2026-05-11T00:00:00+09:00"
+extractedBy: "Decode-X Sprint 319 F485 — withRuleId 재사용 45번째 도메인 (Veterinary 산업, 34번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/veterinary/rules/veterinary-rules.md"
+    section: "Veterinary 합성 비즈니스 룰 — VT-001~VT-006"
+    businessRules: [VT-001, VT-002, VT-003, VT-004, VT-005, VT-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 동물병원 진료(Veterinary) 산업 일반화 PoC. 슬롯정원/백신한도/진료atomic/상태전환/의무기록만료배치/정산atomic 추상화. 45번째 도메인 + 34번째 신규 산업 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT+TM+VT). detector 신뢰도 누적 활용. 🏆 46 Sprint 연속 정점 도전. PT+VT 동물 케어 2-클러스터 형성."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/veterinary.ts"
+    functions: [bookAppointmentSlot, applyVaccineLimit, confirmAppointment, transitionAppointmentStatus, markMedicalRecordArchiveBatch, processVeterinaryBilling]
+
+detection:
+  - ruleId: VT-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-11T00:00:00+09:00"
+    notes: "slot.booked_count >= limit (UPPERCASE fallback MAX_APPOINTMENT_CAPACITY, Path A)"
+  - ruleId: VT-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-11T00:00:00+09:00"
+    notes: "subscription.vaccine_usage >= vaccineLimit (Path B, limit keyword)"
+  - ruleId: VT-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-11T00:00:00+09:00"
+    notes: "db.transaction() — appointments INSERT + veterinarians UPDATE + appointment_payments INSERT"
+  - ruleId: VT-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-11T00:00:00+09:00"
+    notes: "scheduled → in_progress → completed → billed → reviewed"
+  - ruleId: VT-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-11T00:00:00+09:00"
+    notes: "batch: archived 갱신 (BT-005/TM-005 34번째 재사용)"
+  - ruleId: VT-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-11T00:00:00+09:00"
+    notes: "db.transaction() — vet_billing_records INSERT + vet_payouts INSERT + vet_billing_records UPDATE"

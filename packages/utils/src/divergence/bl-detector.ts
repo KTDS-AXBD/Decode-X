@@ -1183,6 +1183,15 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "TM-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "TM-004"),
   "TM-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "TM-005"),
   "TM-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "TM-006"),
+
+  // F485 (Sprint 319) — Veterinary 합성 도메인 (45번째 도메인, 동물병원 진료 산업, 34번째 신규 산업)
+  // PT+VT 동물 케어 2-클러스터 형성. 46 Sprint 연속 정점 도전 (S264~S278+S283~S319).
+  "VT-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "VT-001"),
+  "VT-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "VT-002"),
+  "VT-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "VT-003"),
+  "VT-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "VT-004"),
+  "VT-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "VT-005"),
+  "VT-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "VT-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

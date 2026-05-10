@@ -133,6 +133,16 @@ describe("rules-parser — parseRulesMarkdown", () => {
     expect(rules.map((r) => r.id)).toEqual(["TM-001", "TM-006"]);
   });
 
+  it("matches veterinary VT-NNN prefix (Sprint 319 F485, 34번째 신규 산업)", () => {
+    const md = `| ID | condition | criteria | outcome | exception |
+|----|-----------|----------|---------|-----------|
+| VT-001 | a | b | c | d |
+| VT-006 | a | b | c | d |
+`;
+    const rules = parseRulesMarkdown(md);
+    expect(rules.map((r) => r.id)).toEqual(["VT-001", "VT-006"]);
+  });
+
   it("rejects invalid prefix patterns (BL- without digits, BL-A only)", () => {
     const md = `| ID | condition | criteria | outcome | exception |
 |----|-----------|----------|---------|-----------|

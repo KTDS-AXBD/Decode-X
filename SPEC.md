@@ -1069,6 +1069,28 @@
 > **Plan**: `docs/01-plan/features/F475-wellness-poc.plan.md` (AIF-PLAN-107).
 - [x] F475 ✅ **DONE** (Wellness 39번째 도메인 신규 — 28번째 신규 산업, **P2**, Sprint 309, ✅ DONE 세션 309 2026-05-10 Sprint autopilot WT Match 92.8%): wellness.ts 310 lines + spec-container 15 files + DOMAIN_MAP 39번째 + parser regex WL prefix + REGISTRY 213→219 + utils test 319 PASS. **detector coverage 92.6% → 92.8%** (+0.2%pp). WL-001~006 모두 PRESENCE 자동 입증, **0 ABSENCE**, withRuleId **37 Sprint 연속 정점**.
 
+**Sprint Pipeline 310~313 (사용자 결정 — 남은 4 도메인 일괄 등록, sprint-pipeline 순차 진행):**
+
+**Sprint 310 (F476 — Pet Services 40번째 도메인 신규 PoC, 🔧 IN_PROGRESS 세션 289 2026-05-10 Sprint autopilot WT):**
+> **목표**: 40번째 도메인 반려동물(Pet Services) 신규 — **29번째 신규 산업** (..+PT). 38 Sprint 연속 정점 + 29 산업 연속 0 ABSENCE 도전. 동물병원+미용 (HC + WL 인접). pet.ts ~280 lines + spec-container 15 + DOMAIN_MAP 40번째 + parser regex PT + REGISTRY 219→225 + utils test 325 PASS. **목표 coverage ≥ 93%**. **6 BLs 균형 패턴 30번째 정착 (round)** + **40번째 도메인 마일스톤**.
+> **Plan**: `docs/01-plan/features/F476-pet-poc.plan.md` (AIF-PLAN-108).
+- [ ] F476 🔧 **IN_PROGRESS** (Pet Services 40번째 도메인 신규 — 29번째 신규 산업, **P2**, Sprint 310, 🔧 IN_PROGRESS 세션 289 2026-05-10 Sprint Pipeline). PT-001~006 0 ABSENCE.
+
+**Sprint 311 (F477 — Property Mgmt 41번째 도메인 신규 PoC, 🔧 PLANNED 세션 289 2026-05-10 Sprint Pipeline):**
+> **목표**: 41번째 도메인 임대관리(Property Mgmt) 신규 — **30번째 신규 산업 round number 마일스톤**. 39 Sprint 연속 정점. RE+PR 부동산 클러스터. property.ts ~280 lines + spec-container 15 + DOMAIN_MAP 41번째 + parser regex PR + REGISTRY 225→231 + utils test 331 PASS. **목표 coverage ≥ 93.2%**. **🏆 30 산업 round number** + **6 BLs 31번째**.
+> **Plan**: `docs/01-plan/features/F477-property-poc.plan.md` (AIF-PLAN-109).
+- [ ] F477 🔧 **PLANNED** (Property Mgmt 41번째 도메인 — 30번째 신규 산업 round 마일스톤, **P2**, Sprint 311, Sprint Pipeline batch 2). PR-001~006 0 ABSENCE.
+
+**Sprint 312 (F478 — Fitness 42번째 도메인 신규 PoC, 🔧 PLANNED 세션 289 2026-05-10 Sprint Pipeline):**
+> **목표**: 42번째 도메인 피트니스(Fitness) 신규 — **31번째 신규 산업**. 40 Sprint 연속 정점 (round number). 운동 서비스 클러스터 (WL + SP + FT). fitness.ts ~280 lines + spec-container 15 + DOMAIN_MAP 42번째 + parser regex FT + REGISTRY 231→237 + utils test 337 PASS. **목표 coverage ≥ 93.4%**. **누적 50 Sprint 마일스톤**.
+> **Plan**: `docs/01-plan/features/F478-fitness-poc.plan.md` (AIF-PLAN-110).
+- [ ] F478 🔧 **PLANNED** (Fitness 42번째 도메인 — 31번째 신규 산업, **P2**, Sprint 312, Sprint Pipeline batch 3). FT-001~006 0 ABSENCE.
+
+**Sprint 313 (F479 — Beauty Salon 43번째 도메인 신규 PoC, 🔧 PLANNED 세션 289 2026-05-10 Sprint Pipeline):**
+> **목표**: 43번째 도메인 미용실(Beauty Salon) 신규 — **32번째 신규 산업**. 41 Sprint 연속 정점. 서비스 4-클러스터 완성 (WL+SP+FT+BT). 분야 다양성 정점 (9 대분류 모두 커버). beauty.ts ~280 lines + spec-container 15 + DOMAIN_MAP 43번째 + parser regex BT + REGISTRY 237→243 + utils test 343 PASS. **목표 coverage ≥ 93.6%**.
+> **Plan**: `docs/01-plan/features/F479-beauty-poc.plan.md` (AIF-PLAN-111).
+- [ ] F479 🔧 **PLANNED** (Beauty Salon 43번째 도메인 — 32번째 신규 산업, **P2**, Sprint 313, Sprint Pipeline batch 4). BT-001~006 0 ABSENCE.
+
 **Sprint 274 (F440 — Generic Voucher 9번째 도메인 PoC, ✅ DONE 세션 284 후속 3 2026-05-08 Master inline ~1.5h Match 95%):**
 > **결과**: ✅ DONE — Master inline ~1.5h. **9번째 도메인 generic-voucher 신규** — voucher.ts 220 lines (6 함수 + VoucherError) + voucher.test.ts 230 lines (19 cases PASS) + spec-container 16 sub-files (provenance + voucher-rules + V-001~V-006 rules/runbooks/tests + contract) + DOMAIN_MAP entry + REGISTRY 6 entries (Threshold × 3 + Atomic × 1 + Status × 2) + parser regex `V` prefix 확장. **신규 detector 0개** (withRuleId 재사용 9번째 도메인 정점). detect-bl --all-domains: 9 containers, **44/61 = 72.1% coverage** (+3.0%pp vs Sprint 269 69.1%). 6 BL V-001~V-006 모두 PRESENCE 자동 입증 (0 ABSENCE). write-provenance --apply 0 changes. utils 170/170 PASS (회귀 0). **DoD 14/14 PASS**. 산출물: AIF-PLAN-072 + AIF-RPRT-072 + reports/sprint-274-generic-voucher-poc-2026-05-08.{md,json}. **메타 학습**: (a) **withRuleId 재사용 9번째 도메인 정점** (Sprint 264~269+274 7 Sprint 연속), (b) **합성 도메인 PoC의 가치** — LPON 외 일반화 입증 + 신규 도메인 부트스트래핑 template, (c) **VoucherError code-in-message 패턴** — `super(\`[${code}] ${message}\`)` 차기 도메인 표준 권장. **Master inline 14회 연속 회피 패턴 유지** (S253~284).
 - [x] F440 ✅ **DONE** (Generic Voucher 9번째 도메인 — withRuleId 재사용 정점, **P2**, Sprint 274, ✅ DONE 세션 284 후속 3 2026-05-08 Master inline Match 95%): voucher.ts + tests 19 cases + spec-container 16 files + DOMAIN_MAP + REGISTRY 6 + parser regex V. **detector coverage 69.1% → 72.1%**.

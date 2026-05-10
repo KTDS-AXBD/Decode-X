@@ -677,7 +677,7 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 250 detectors (Sprint 316 F482 — lpon-settlement BL-031/032 + lpon-gift BL-G001 added, 98.1% coverage 도달)", () => {
+  it("exposes 255 detectors (Sprint 315 F481 + Sprint 316 F482 통합 — lpon-refund BL-020/021/023/025/030 + lpon-settlement BL-031/032 + lpon-gift BL-G001, 98.1% coverage 도달)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AG-001",
       "AG-002",
@@ -712,12 +712,17 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "BL-008",
       "BL-014",
       "BL-015",
+      "BL-020",
+      "BL-021",
       "BL-022",
+      "BL-023",
       "BL-024",
+      "BL-025",
       "BL-026",
       "BL-027",
       "BL-028",
       "BL-029",
+      "BL-030",
       "BL-031",
       "BL-032",
       "BL-033",
@@ -1018,6 +1023,14 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["BL-002"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["BL-003"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["BL-004"]).toBeDefined();
+  });
+
+  it("BL-020/021/023/025/030 registered (Sprint 315 F481 — lpon-refund gap fill, 96.9% coverage)", () => {
+    expect(BL_DETECTOR_REGISTRY["BL-020"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BL-021"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BL-023"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BL-025"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BL-030"]).toBeDefined();
   });
 
   it("each detector returns BLDivergenceMarker[]", () => {
@@ -3927,6 +3940,65 @@ function markInventoryRestockBatch(db, restockedBefore) {
     const markers = BL_DETECTOR_REGISTRY["BT-006"]!(src, "beauty.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["BT-006"]!(src, "beauty.ts")).toHaveLength(0);
+  });
+});
+
+describe("BL-020~025/030 — lpon-refund gap fill (Sprint 315 F481)", () => {
+  // refund.ts processRefundRequest + approveRefund 패턴 — status transition + atomic tx + threshold.
+  // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
+  // BL-023 (입금 실패 catch → status='FAILED') / BL-025 (60% 이상 사용 threshold) /
+  // BL-030 (유효기간 연장 거부 ABSENCE — 기능 자체 미구현)
+
+  const refundSrc = `
+    function processRefundRequest(db, input) {
+      const payment = db.prepare("SELECT status FROM payments WHERE id = ?").get(input.paymentId);
+      if (payment.status !== 'CANCELED') throw new Error('E409-ST');
+      const voucher = db.prepare("SELECT face_amount, balance FROM vouchers WHERE id = ?").get(input.voucherId);
+      const usedAmount = voucher.face_amount - voucher.balance;
+      const usageRate = voucher.face_amount > 0 ? usedAmount / voucher.face_amount : 0;
+      if (usageRate < 0.6) throw new Error('INSUFFICIENT_USAGE');
+      db.prepare("INSERT INTO refund_transactions (id, status, rfnd_psblty_yn) VALUES (?, 'REQUESTED', 'Y')").run(input.refundId);
+    }
+    async function approveRefund(db, refundId, depositApi) {
+      try {
+        const result = await depositApi.requestDeposit(accountId, amount);
+        const tx = db.transaction(() => {
+          db.prepare("INSERT INTO deposit_transactions (id, status) VALUES (?, 'COMPLETED')").run(depositId);
+          db.prepare("UPDATE refund_transactions SET status = 'COMPLETED' WHERE id = ?").run(refundId);
+        });
+        tx();
+      } catch (err) {
+        db.prepare("UPDATE refund_transactions SET status = 'FAILED' WHERE id = ?").run(refundId);
+        throw new Error('E500');
+      }
+    }
+  `;
+
+  it("BL-020 (rfndPsbltyYn='Y' status transition) — PRESENCE → 0 markers", () => {
+    const sf = parseTypeScriptSource("refund.ts", refundSrc);
+    expect(BL_DETECTOR_REGISTRY["BL-020"]!(sf, "refund.ts")).toEqual([]);
+  });
+
+  it("BL-021 (입금 처리 atomic tx) — PRESENCE → 0 markers", () => {
+    const sf = parseTypeScriptSource("refund.ts", refundSrc);
+    expect(BL_DETECTOR_REGISTRY["BL-021"]!(sf, "refund.ts")).toEqual([]);
+  });
+
+  it("BL-023 (입금 실패 catch → status='FAILED') — PRESENCE → 0 markers", () => {
+    const sf = parseTypeScriptSource("refund.ts", refundSrc);
+    expect(BL_DETECTOR_REGISTRY["BL-023"]!(sf, "refund.ts")).toEqual([]);
+  });
+
+  it("BL-025 (60% 이상 사용 threshold: usageRate < 0.6) — PRESENCE → 0 markers", () => {
+    const sf = parseTypeScriptSource("refund.ts", refundSrc);
+    expect(BL_DETECTOR_REGISTRY["BL-025"]!(sf, "refund.ts")).toEqual([]);
+  });
+
+  it("BL-030 (유효기간 연장 거부 미구현 ABSENCE) — refund.ts에 extend 패턴 없음 → 1 marker with ruleId BL-030", () => {
+    const sf = parseTypeScriptSource("refund.ts", refundSrc);
+    const markers = BL_DETECTOR_REGISTRY["BL-030"]!(sf, "refund.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BL-030");
   });
 });
 

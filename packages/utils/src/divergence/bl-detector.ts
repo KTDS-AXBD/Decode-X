@@ -845,4 +845,12 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "CN-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "CN-004"),
   "CN-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "CN-005"),
   "CN-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "CN-006"),
+
+  // F468 (Sprint 302) — Maritime 합성 도메인 (32번째 도메인, 해운 산업, 21번째 신규 산업) 🎯 AIF-PLAN-100
+  "MR-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "MR-001"),
+  "MR-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "MR-002"),
+  "MR-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "MR-003"),
+  "MR-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "MR-004"),
+  "MR-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "MR-005"),
+  "MR-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "MR-006"),
 };

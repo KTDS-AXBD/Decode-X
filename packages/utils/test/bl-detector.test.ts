@@ -915,6 +915,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "TC-004",
       "TC-005",
       "TC-006",
+      "TM-001",
+      "TM-002",
+      "TM-003",
+      "TM-004",
+      "TM-005",
+      "TM-006",
       "TR-001",
       "TR-002",
       "TR-003",
@@ -1012,6 +1018,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["FT-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["FT-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["FT-006"]).toBeDefined();
+  });
+
+  it("TM-001~TM-006 registered (Sprint 318 F484 — telemedicine 44번째 도메인, HC+PH+TM 의료 3-클러스터)", () => {
+    expect(BL_DETECTOR_REGISTRY["TM-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["TM-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["TM-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["TM-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["TM-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["TM-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -3945,6 +3960,110 @@ function markInventoryRestockBatch(db, restockedBefore) {
     const markers = BL_DETECTOR_REGISTRY["BT-006"]!(src, "beauty.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["BT-006"]!(src, "beauty.ts")).toHaveLength(0);
+  });
+});
+
+// F484 (Sprint 318) — telemedicine domain TM-001~006 via withRuleId (45 Sprint 연속 정점)
+describe("telemedicine domain — TM-001~006 via withRuleId (Sprint 318 F484)", () => {
+  it("TM-001 PRESENCE — booked_count >= MAX_SLOT_CAPACITY threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "telemedicine.ts",
+      `const MAX_SLOT_CAPACITY = 30;
+function bookConsultationSlot(db, slotId, patientId) {
+  const slot = db.prepare("SELECT booked_count, capacity FROM consultation_slots WHERE id = ?").get(slotId);
+  const limit = slot.capacity ?? MAX_SLOT_CAPACITY;
+  if (slot.booked_count >= limit) {
+    throw new TelemedicineError('E422-SLOT-CAPACITY-EXCEEDED', 'Slot is fully booked', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TM-001"]!(src, "telemedicine.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["TM-001"]!(src, "telemedicine.ts")).toHaveLength(0);
+  });
+
+  it("TM-002 PRESENCE — prescription_usage >= prescriptionLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "telemedicine.ts",
+      `function applyPrescriptionLimit(db, patientId, subscriptionId) {
+  const subscription = db.prepare("SELECT prescription_usage, prescription_limit FROM patient_subscriptions WHERE id = ? AND patient_id = ? LIMIT 1").get(subscriptionId, patientId);
+  const prescriptionLimit = subscription.prescription_limit;
+  if (subscription.prescription_usage >= prescriptionLimit) {
+    throw new TelemedicineError('E422-PRESCRIPTION-LIMIT-EXCEEDED', 'Prescription quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TM-002"]!(src, "telemedicine.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["TM-002"]!(src, "telemedicine.ts")).toHaveLength(0);
+  });
+
+  it("TM-003 PRESENCE — db.transaction() in confirmConsultation (atomic consultations+doctors+consultation_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "telemedicine.ts",
+      `function confirmConsultation(db, patientId, doctorId, serviceType, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO consultations (id, patient_id, doctor_id, service_type, payment_id, status, booked_at) VALUES (?, ?, ?, ?, ?, 'booked', ?)").run(consultationId, patientId, doctorId, serviceType, paymentId, bookedAt);
+    db.prepare("UPDATE doctors SET status = 'busy', booked_patient_id = ? WHERE id = ?").run(patientId, doctorId);
+    db.prepare("INSERT INTO consultation_payments (id, consultation_id, patient_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(paymentId, consultationId, patientId, amount, bookedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TM-003"]!(src, "telemedicine.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["TM-003"]!(src, "telemedicine.ts")).toHaveLength(0);
+  });
+
+  it("TM-004 PRESENCE — status comparison + 'in_progress'/'completed'/'prescribed'/'reviewed' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "telemedicine.ts",
+      `function transitionConsultationStatus(db, consultationId, newStatus) {
+  const consultation = db.prepare("SELECT status FROM consultations WHERE id = ?").get(consultationId);
+  if (consultation.status === 'in_progress') throw new TelemedicineError("E409-CONSULTATION", "Invalid transition", 409);
+  db.prepare("UPDATE consultations SET status = 'in_progress' WHERE id = ?").run(consultationId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TM-004"]!(src, "telemedicine.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["TM-004"]!(src, "telemedicine.ts")).toHaveLength(0);
+  });
+
+  it("TM-005 PRESENCE — batch expired update in markPrescriptionExpiryBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "telemedicine.ts",
+      `function transitionConsultationStatus(db, consultationId, newStatus) {
+  const consultation = db.prepare("SELECT status FROM consultations WHERE id = ?").get(consultationId);
+  if (consultation.status === 'in_progress') throw new TelemedicineError("E409-CONSULTATION", "Invalid", 409);
+  db.prepare("UPDATE consultations SET status = 'in_progress' WHERE id = ?").run(consultationId);
+}
+function markPrescriptionExpiryBatch(db, expiredBefore) {
+  const candidates = db.prepare("SELECT id FROM prescriptions WHERE status = 'active' AND valid_until <= ?").all(expiredBefore);
+  for (const item of candidates) {
+    db.prepare("UPDATE prescriptions SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TM-005"]!(src, "telemedicine.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["TM-005"]!(src, "telemedicine.ts")).toHaveLength(0);
+  });
+
+  it("TM-006 PRESENCE — db.transaction() in processBilling (atomic billing_records+payouts INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "telemedicine.ts",
+      `function processBilling(db, doctorId, consultationId, revenue, billingRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO billing_records (id, doctor_id, consultation_id, revenue, billing_rate, billing_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(billingId, doctorId, consultationId, revenue, billingRate, billingAmount);
+    db.prepare("INSERT INTO payouts (id, billing_id, doctor_id, amount, status, settled_at) VALUES (?, ?, ?, ?, 'settled', ?)").run(payoutId, billingId, doctorId, billingAmount, settledAt);
+    db.prepare("UPDATE billing_records SET status = 'settled' WHERE id = ?").run(billingId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TM-006"]!(src, "telemedicine.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["TM-006"]!(src, "telemedicine.ts")).toHaveLength(0);
   });
 });
 

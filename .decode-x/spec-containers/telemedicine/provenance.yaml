@@ -1,0 +1,52 @@
+---
+# Provenance — TELEMEDICINE-001
+# 44번째 도메인 — Telemedicine 합성 도메인 PoC (33번째 신규 산업)
+
+skillId: TELEMEDICINE-001
+extractedAt: "2026-05-10T00:00:00+09:00"
+extractedBy: "Decode-X Sprint 318 F484 — withRuleId 재사용 44번째 도메인 (Telemedicine 산업, 33번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/telemedicine/rules/telemedicine-rules.md"
+    section: "Telemedicine 합성 비즈니스 룰 — TM-001~TM-006"
+    businessRules: [TM-001, TM-002, TM-003, TM-004, TM-005, TM-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 원격진료(Telemedicine) 산업 일반화 PoC. 슬롯정원/처방한도/진료atomic/상태전환/처방만료배치/정산atomic 추상화. 44번째 도메인 + 33번째 신규 산업 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT+TM). detector 신뢰도 누적 활용. 🏆 45 Sprint 연속 정점. HC+PH+TM 의료 3-클러스터 형성."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/telemedicine.ts"
+    functions: [bookConsultationSlot, applyPrescriptionLimit, confirmConsultation, transitionConsultationStatus, markPrescriptionExpiryBatch, processBilling]
+
+detection:
+  - ruleId: TM-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "slot.booked_count >= limit (UPPERCASE fallback MAX_SLOT_CAPACITY, Path A)"
+  - ruleId: TM-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "subscription.prescription_usage >= prescriptionLimit (Path B, limit keyword)"
+  - ruleId: TM-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "db.transaction() — consultations INSERT + doctors UPDATE + consultation_payments INSERT"
+  - ruleId: TM-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "booked → in_progress → completed → prescribed → reviewed"
+  - ruleId: TM-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "batch: expired 갱신 (BT-005 33번째 재사용)"
+  - ruleId: TM-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "db.transaction() — billing_records INSERT + payouts INSERT + billing_records UPDATE"

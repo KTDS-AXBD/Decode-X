@@ -1,0 +1,97 @@
+# Test scenarios — Telemedicine domain TM-001~TM-006
+# Sprint 318 F484 — Telemedicine 합성 도메인
+
+scenarios:
+  - id: TM-001-PASS
+    rule: TM-001
+    description: "정원 내 진료 슬롯 예약 — 성공"
+    input: { booked_count: 15, capacity: 30 }
+    expected: PASS
+
+  - id: TM-001-FAIL
+    rule: TM-001
+    description: "진료 슬롯 정원 초과 — E422-SLOT-CAPACITY-EXCEEDED"
+    input: { booked_count: 30, capacity: 30 }
+    expected: FAIL
+    error: E422-SLOT-CAPACITY-EXCEEDED
+
+  - id: TM-002-PASS
+    rule: TM-002
+    description: "처방 한도 내 처방 적용 — 성공"
+    input: { prescription_usage: 4, prescriptionLimit: 10 }
+    expected: PASS
+
+  - id: TM-002-FAIL
+    rule: TM-002
+    description: "처방 한도 초과 — E422-PRESCRIPTION-LIMIT-EXCEEDED"
+    input: { prescription_usage: 10, prescriptionLimit: 10 }
+    expected: FAIL
+    error: E422-PRESCRIPTION-LIMIT-EXCEEDED
+
+  - id: TM-003-PASS
+    rule: TM-003
+    description: "available 의사 진료 예약 atomic — 성공"
+    input: { doctor_status: available }
+    expected: PASS
+    side_effects:
+      - consultations INSERT (status='booked')
+      - doctors UPDATE (status='busy')
+      - consultation_payments INSERT (status='paid')
+
+  - id: TM-003-FAIL
+    rule: TM-003
+    description: "busy 의사 진료 예약 — E404-DOCTOR"
+    input: { doctor_status: busy }
+    expected: FAIL
+    error: E404-DOCTOR
+
+  - id: TM-004-PASS
+    rule: TM-004
+    description: "정상 진료 상태 전환 (booked → in_progress)"
+    input: { current_status: booked, new_status: in_progress }
+    expected: PASS
+
+  - id: TM-004-FAIL
+    rule: TM-004
+    description: "비정상 진료 상태 전환 (booked → completed)"
+    input: { current_status: booked, new_status: completed }
+    expected: FAIL
+    error: E409-CONSULTATION
+
+  - id: TM-005-PASS
+    rule: TM-005
+    description: "active 처방전 일괄 만료 마킹"
+    input:
+      prescriptions:
+        - { id: rx-1, status: active, valid_until: "2026-05-09T00:00:00Z" }
+        - { id: rx-2, status: active, valid_until: "2026-05-08T00:00:00Z" }
+      expiredBefore: "2026-05-10T00:00:00Z"
+    expected: PASS
+    output: { markedCount: 2, markedIds: [rx-1, rx-2] }
+
+  - id: TM-005-EMPTY
+    rule: TM-005
+    description: "만료 대상 없음 — markedCount=0"
+    input:
+      prescriptions: []
+      expiredBefore: "2026-05-10T00:00:00Z"
+    expected: PASS
+    output: { markedCount: 0, markedIds: [] }
+
+  - id: TM-006-PASS
+    rule: TM-006
+    description: "completed 진료 정산 atomic — 성공"
+    input: { consultation_status: completed, revenue: 100000, billing_rate: 0.7 }
+    expected: PASS
+    side_effects:
+      - billing_records INSERT (status='calculated')
+      - payouts INSERT (status='settled')
+      - billing_records UPDATE (status='settled')
+    output: { billingAmount: 70000.0 }
+
+  - id: TM-006-FAIL
+    rule: TM-006
+    description: "non-completed 진료 정산 시도 — E404-COMPLETED-CONSULTATION"
+    input: { consultation_status: in_progress, revenue: 100000, billing_rate: 0.7 }
+    expected: FAIL
+    error: E404-COMPLETED-CONSULTATION

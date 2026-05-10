@@ -771,6 +771,26 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "reserveEquipment",
     ],
   },
+  {
+    container: "beauty",
+    rulesPath: `${SPEC_CONTAINER_BASE}/beauty/rules/beauty-rules.md`,
+    // Sprint 313 (F479): Beauty Salon 합성 도메인 — 43번째 도메인 (미용실 산업, 32번째 신규 산업).
+    // BT-001~BT-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 41 Sprint 연속 정점 (S264~S278+S283~S313).
+    // 32번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT).
+    // 🏆 32 산업 연속 0 ABSENCE 도전. WL+SP+FT+BT 서비스 4-클러스터 완성. 6 BLs 균형 패턴 33번째 정착.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/beauty.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/beauty/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "bookSeat",
+      "applyLoyaltyDiscount",
+      "confirmAppointment",
+      "transitionAppointmentStatus",
+      "markInventoryRestockBatch",
+      "processCommission",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

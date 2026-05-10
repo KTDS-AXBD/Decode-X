@@ -622,7 +622,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 237 detectors (Sprint 312 F478 — fitness FT-001~FT-006 added, 42번째 도메인 피트니스 산업, 31번째 신규)", () => {
+  it("exposes 243 detectors (Sprint 313 F479 — beauty BT-001~BT-006 added, 43번째 도메인 미용실 산업, 32번째 신규)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AG-001",
       "AG-002",
@@ -674,6 +674,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "BP-003",
       "BP-004",
       "BP-005",
+      "BT-001",
+      "BT-002",
+      "BT-003",
+      "BT-004",
+      "BT-005",
+      "BT-006",
       "CC-001",
       "CC-002",
       "CC-003",
@@ -934,6 +940,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["FT-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["FT-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["FT-006"]).toBeDefined();
+  });
+
+  it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
+    expect(BL_DETECTOR_REGISTRY["BT-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BT-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BT-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BT-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BT-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BT-006"]).toBeDefined();
   });
 
   it("each detector returns BLDivergenceMarker[]", () => {
@@ -3739,5 +3754,109 @@ function markNoShowBatch(db, scheduledBefore) {
     const markers = BL_DETECTOR_REGISTRY["FT-006"]!(src, "fitness.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["FT-006"]!(src, "fitness.ts")).toHaveLength(0);
+  });
+});
+
+// F479 (Sprint 313) — beauty domain BT-001~006 via withRuleId (41 Sprint 연속 정점)
+describe("beauty domain — BT-001~006 via withRuleId (Sprint 313 F479)", () => {
+  it("BT-001 PRESENCE — booked_count >= MAX_SEAT_CAPACITY threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "beauty.ts",
+      `const MAX_SEAT_CAPACITY = 20;
+function bookSeat(db, seatId, customerId) {
+  const seat = db.prepare("SELECT booked_count, capacity FROM beauty_seats WHERE id = ?").get(seatId);
+  const limit = seat.capacity ?? MAX_SEAT_CAPACITY;
+  if (seat.booked_count >= limit) {
+    throw new BeautyError('E422-SEAT-CAPACITY-EXCEEDED', 'Seat is fully booked', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["BT-001"]!(src, "beauty.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["BT-001"]!(src, "beauty.ts")).toHaveLength(0);
+  });
+
+  it("BT-002 PRESENCE — loyalty_usage >= loyaltyTierLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "beauty.ts",
+      `function applyLoyaltyDiscount(db, customerId, membershipId) {
+  const membership = db.prepare("SELECT loyalty_usage, loyalty_tier_limit FROM loyalty_memberships WHERE id = ? AND customer_id = ? LIMIT 1").get(membershipId, customerId);
+  const loyaltyTierLimit = membership.loyalty_tier_limit;
+  if (membership.loyalty_usage >= loyaltyTierLimit) {
+    throw new BeautyError('E422-LOYALTY-TIER-LIMIT-EXCEEDED', 'Loyalty limit exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["BT-002"]!(src, "beauty.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["BT-002"]!(src, "beauty.ts")).toHaveLength(0);
+  });
+
+  it("BT-003 PRESENCE — db.transaction() in confirmAppointment (atomic appointments+stylists+appointment_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "beauty.ts",
+      `function confirmAppointment(db, customerId, stylistId, serviceType, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO appointments (id, customer_id, stylist_id, service_type, payment_id, status, booked_at) VALUES (?, ?, ?, ?, ?, 'booked', ?)").run(appointmentId, customerId, stylistId, serviceType, paymentId, bookedAt);
+    db.prepare("UPDATE stylists SET status = 'booked', booked_customer_id = ? WHERE id = ?").run(customerId, stylistId);
+    db.prepare("INSERT INTO appointment_payments (id, appointment_id, customer_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(paymentId, appointmentId, customerId, amount, bookedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["BT-003"]!(src, "beauty.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["BT-003"]!(src, "beauty.ts")).toHaveLength(0);
+  });
+
+  it("BT-004 PRESENCE — status comparison + 'confirmed'/'in_service'/'completed'/'reviewed' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "beauty.ts",
+      `function transitionAppointmentStatus(db, appointmentId, newStatus) {
+  const appointment = db.prepare("SELECT status FROM appointments WHERE id = ?").get(appointmentId);
+  if (appointment.status === 'in_service') throw new BeautyError("E409-APPOINTMENT", "Invalid transition", 409);
+  db.prepare("UPDATE appointments SET status = 'confirmed' WHERE id = ?").run(appointmentId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["BT-004"]!(src, "beauty.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["BT-004"]!(src, "beauty.ts")).toHaveLength(0);
+  });
+
+  it("BT-005 PRESENCE — batch restocked update in markInventoryRestockBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "beauty.ts",
+      `function transitionAppointmentStatus(db, appointmentId, newStatus) {
+  const appointment = db.prepare("SELECT status FROM appointments WHERE id = ?").get(appointmentId);
+  if (appointment.status === 'in_service') throw new BeautyError("E409-APPOINTMENT", "Invalid", 409);
+  db.prepare("UPDATE appointments SET status = 'confirmed' WHERE id = ?").run(appointmentId);
+}
+function markInventoryRestockBatch(db, restockedBefore) {
+  const candidates = db.prepare("SELECT id FROM inventory_items WHERE status = 'depleted' AND restocked_at <= ?").all(restockedBefore);
+  for (const item of candidates) {
+    db.prepare("UPDATE inventory_items SET status = 'restocked' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["BT-005"]!(src, "beauty.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["BT-005"]!(src, "beauty.ts")).toHaveLength(0);
+  });
+
+  it("BT-006 PRESENCE — db.transaction() in processCommission (atomic commission_records+settlements INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "beauty.ts",
+      `function processCommission(db, stylistId, appointmentId, revenue, commissionRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO commission_records (id, stylist_id, appointment_id, revenue, commission_rate, commission_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(commissionId, stylistId, appointmentId, revenue, commissionRate, commissionAmount);
+    db.prepare("INSERT INTO settlements (id, commission_id, stylist_id, amount, status, settled_at) VALUES (?, ?, ?, ?, 'settled', ?)").run(settlementId, commissionId, stylistId, commissionAmount, settledAt);
+    db.prepare("UPDATE commission_records SET status = 'settled' WHERE id = ?").run(commissionId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["BT-006"]!(src, "beauty.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["BT-006"]!(src, "beauty.ts")).toHaveLength(0);
   });
 });

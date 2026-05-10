@@ -935,4 +935,13 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "FT-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "FT-004"),
   "FT-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "FT-005"),
   "FT-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "FT-006"),
+
+  // F479 (Sprint 313) — Beauty Salon 합성 도메인 (43번째 도메인, 미용실 산업, 32번째 신규 산업)
+  // WL+SP+FT+BT 서비스 4-클러스터 완성. 41 Sprint 연속 정점.
+  "BT-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "BT-001"),
+  "BT-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "BT-002"),
+  "BT-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BT-003"),
+  "BT-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BT-004"),
+  "BT-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BT-005"),
+  "BT-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BT-006"),
 };

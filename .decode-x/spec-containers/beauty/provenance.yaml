@@ -1,0 +1,52 @@
+---
+# Provenance — BEAUTY-001
+# 43번째 도메인 — Beauty Salon 합성 도메인 PoC (32번째 신규 산업)
+
+skillId: BEAUTY-001
+extractedAt: "2026-05-10T00:00:00+09:00"
+extractedBy: "Decode-X Sprint 313 F479 — withRuleId 재사용 43번째 도메인 (Beauty Salon 산업, 32번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/beauty/rules/beauty-rules.md"
+    section: "Beauty Salon 합성 비즈니스 룰 — BT-001~BT-006"
+    businessRules: [BT-001, BT-002, BT-003, BT-004, BT-005, BT-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 미용실(Beauty Salon) 산업 일반화 PoC. 좌석정원/로열티한도/예약atomic/상태전환/재고배치/수수료atomic 추상화. 43번째 도메인 + 32번째 신규 산업 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT). detector 신뢰도 누적 활용. 🏆 41 Sprint 연속 정점. WL+SP+FT+BT 서비스 4-클러스터 완성."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/beauty.ts"
+    functions: [bookSeat, applyLoyaltyDiscount, confirmAppointment, transitionAppointmentStatus, markInventoryRestockBatch, processCommission]
+
+detection:
+  - ruleId: BT-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "seat.booked_count >= limit (UPPERCASE fallback MAX_SEAT_CAPACITY, Path A)"
+  - ruleId: BT-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "membership.loyalty_usage >= loyaltyTierLimit (Path B, limit keyword)"
+  - ruleId: BT-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "db.transaction() — appointments INSERT + stylists UPDATE + appointment_payments INSERT"
+  - ruleId: BT-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "booked → confirmed → in_service → completed → reviewed"
+  - ruleId: BT-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "batch: restocked 갱신 (CC-005 32번째 재사용)"
+  - ruleId: BT-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "db.transaction() — commission_records INSERT + settlements INSERT + commission_records UPDATE"

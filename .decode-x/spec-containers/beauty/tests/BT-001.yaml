@@ -1,0 +1,61 @@
+---
+# Test scenarios — Beauty Salon domain BT-001~BT-006
+# Sprint 313 F479 — Beauty Salon 합성 도메인
+
+scenarios:
+  - id: BT-001-PASS
+    rule: BT-001
+    description: "정원 내 좌석 예약 — 성공"
+    input: { booked_count: 10, capacity: 20 }
+    expected: PASS
+
+  - id: BT-001-FAIL
+    rule: BT-001
+    description: "좌석 정원 초과 — E422-SEAT-CAPACITY-EXCEEDED"
+    input: { booked_count: 20, capacity: 20 }
+    expected: FAIL
+    error: E422-SEAT-CAPACITY-EXCEEDED
+
+  - id: BT-002-PASS
+    rule: BT-002
+    description: "로열티 한도 내 할인 적용 — 성공"
+    input: { loyalty_usage: 3, loyaltyTierLimit: 5 }
+    expected: PASS
+
+  - id: BT-002-FAIL
+    rule: BT-002
+    description: "로열티 한도 초과 — E422-LOYALTY-TIER-LIMIT-EXCEEDED"
+    input: { loyalty_usage: 5, loyaltyTierLimit: 5 }
+    expected: FAIL
+    error: E422-LOYALTY-TIER-LIMIT-EXCEEDED
+
+  - id: BT-003-PASS
+    rule: BT-003
+    description: "가용 스타일리스트 예약 atomic — 성공"
+    input: { stylistStatus: "available" }
+    expected: PASS
+
+  - id: BT-004-PASS
+    rule: BT-004
+    description: "booked → confirmed 전환 — 성공"
+    input: { from: "booked", to: "confirmed" }
+    expected: PASS
+
+  - id: BT-004-FAIL
+    rule: BT-004
+    description: "booked → completed 직접 전환 불가 — E409-APPOINTMENT"
+    input: { from: "booked", to: "completed" }
+    expected: FAIL
+    error: E409-APPOINTMENT
+
+  - id: BT-005-PASS
+    rule: BT-005
+    description: "기준일 이전 depleted 재고 재입고 일괄 처리 — 성공"
+    input: { restockedBefore: "2026-05-10", status: "depleted" }
+    expected: PASS
+
+  - id: BT-006-PASS
+    rule: BT-006
+    description: "완료 예약 수수료 + 정산 atomic — 성공"
+    input: { appointmentStatus: "completed" }
+    expected: PASS

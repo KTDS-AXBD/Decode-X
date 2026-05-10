@@ -38,7 +38,8 @@ import type { BLRule } from "@ai-foundry/types";
 // F464 (Sprint 298): MD prefix 추가 (media 합성 도메인, 28번째 — 미디어 산업). 2글자 alternation 동일 우선순위
 // F465 (Sprint 299): PH prefix 추가 (pharmacy 합성 도메인, 29번째 — 제약/약국 산업). longer match first 누적 입증
 // F466 (Sprint 300): AG prefix 추가 (agriculture 합성 도메인, 30번째 — 농업 산업). 🏆 Sprint 300 마일스톤
-const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|LP|CC|DV|SB|IN|HC|ED|RE|LG|HO|TR|MF|RT|EN|GV|TC|BK|MD|PH|AG|P|V)-[A-Z]?\d{1,3}$/;
+// F467 (Sprint 301): CN prefix 추가 (construction 합성 도메인, 31번째 — 건설 산업). 🏆 20 산업 round number
+const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|LP|CC|DV|SB|IN|HC|ED|RE|LG|HO|TR|MF|RT|EN|GV|TC|BK|MD|PH|AG|CN|P|V)-[A-Z]?\d{1,3}$/;
 const HEADER_PATTERN =
   /\|\s*ID\s*\|\s*condition[^|]*\|\s*criteria[^|]*\|\s*outcome[^|]*\|\s*exception[^|]*\|/i;
 const SEPARATOR_PATTERN = /^\s*\|[\s:|-]+\|\s*$/;

@@ -1,0 +1,90 @@
+# Test Scenarios — CN-001 ~ CN-006 (대표)
+ruleId: CN-001
+domain: construction
+function: submitBid
+detector: ThresholdCheck (F445 Path A)
+
+scenarios:
+  - id: CN-CN-001-01
+    name: 정상 입찰 (bidAmount=500,000,000 < MAX_BID_AMOUNT_LIMIT=1,000,000,000)
+    given: { projectId: proj-1, contractorId: cont-1, bidAmount: 500000000, status: bidding }
+    when: submitBid
+    then: { bidId: [uuid], bidAmount: 500000000 }
+
+  - id: CN-CN-001-02
+    name: 입찰 한도 초과 (bidAmount=1,000,000,000) → E422-BID-LIMIT
+    given: { projectId: proj-1, contractorId: cont-1, bidAmount: 1000000000, status: bidding }
+    when: submitBid
+    then: { error: E422-BID-LIMIT }
+
+  - id: CN-CN-002-01
+    name: 정상 보유금 (retentionRate=0.05, medium project → retentionRateLimit=0.07)
+    given: { projectId: proj-1, paymentAmount: 10000000, retentionRate: 0.05, contract_value: 500000000, status: in_progress }
+    when: computePaymentRetention
+    then: { retentionRate: 0.05, retentionRateLimit: 0.07, approved: true }
+
+  - id: CN-CN-002-02
+    name: 보유금 한도 초과 (retentionRate=0.08, medium limit=0.07) → E422-RETENTION-EXCEEDED
+    given: { projectId: proj-1, paymentAmount: 10000000, retentionRate: 0.08, contract_value: 500000000, status: in_progress }
+    when: computePaymentRetention
+    then: { error: E422-RETENTION-EXCEEDED }
+
+  - id: CN-CN-003-01
+    name: 정상 변경 청구 atomic — change_orders + contract_value 갱신 + approvals INSERT
+    given: { projectId: proj-1, description: scope-change, unitPriceAdjustment: 5000000, approverId: mgr-1, status: in_progress }
+    when: processChangeOrder
+    then:
+      changeOrderId: [uuid]
+      change_orders: inserted
+      change_order_approvals: inserted
+      projects.contract_value: updated
+
+  - id: CN-CN-003-02
+    name: 비정상 상태 변경 청구 시도 → E409-PROJECT
+    given: { projectId: proj-1, status: bidding }
+    when: processChangeOrder
+    then: { error: E409-PROJECT }
+
+  - id: CN-CN-004-01
+    name: bidding → awarded 전환
+    given: { project: { status: bidding } }
+    when: transitionProjectStatus(awarded)
+    then: { previousStatus: bidding, newStatus: awarded }
+
+  - id: CN-CN-004-02
+    name: awarded → in_progress 전환
+    given: { project: { status: awarded } }
+    when: transitionProjectStatus(in_progress)
+    then: { newStatus: in_progress }
+
+  - id: CN-CN-004-03
+    name: bidding → closed 역전환 → E409-PROJECT
+    given: { project: { status: bidding } }
+    when: transitionProjectStatus(closed)
+    then: { error: E409-PROJECT }
+
+  - id: CN-CN-005-01
+    name: 마일스톤 배치 처리 — 2건 completed=0 → completed=1
+    given: { dueDateCutoff: "2026-05-10", candidates: [{ completed: 0, due_date: "2026-05-09" }, { completed: 0, due_date: "2026-05-10" }] }
+    when: markMilestoneCompletion("2026-05-10")
+    then: { markedCount: 2, milestones.status: completed }
+
+  - id: CN-CN-006-01
+    name: 정상 안전 검사 통과 atomic — inspections INSERT + projects.last_inspection_* UPDATE
+    given: { projectId: proj-1, inspectorId: insp-1, passed: true, correctionNotes: "", status: in_progress }
+    when: processSafetyInspection
+    then:
+      inspectionId: [uuid]
+      correctionOrderId: null
+      result: passed
+      safety_inspections: inserted
+      projects.last_inspection_result: passed
+
+  - id: CN-CN-006-02
+    name: 안전 검사 실패 atomic — inspections + correction_orders INSERT
+    given: { projectId: proj-1, inspectorId: insp-1, passed: false, correctionNotes: "화재 안전 미흡", status: in_progress }
+    when: processSafetyInspection
+    then:
+      result: failed
+      correctionOrderId: [uuid]
+      correction_orders: inserted

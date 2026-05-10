@@ -533,6 +533,26 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "issueCertification",
     ],
   },
+  {
+    container: "construction",
+    rulesPath: `${SPEC_CONTAINER_BASE}/construction/rules/construction-rules.md`,
+    // Sprint 301 (F467): Construction 합성 도메인 — 31번째 도메인 (건설 산업, 20번째 신규 산업).
+    // CN-001~CN-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 29 Sprint 연속 정점 (S264~S278+S283~S301).
+    // 20번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN).
+    // 🏆 20 산업 round number 마일스톤.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/construction.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/construction/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "submitBid",
+      "computePaymentRetention",
+      "processChangeOrder",
+      "transitionProjectStatus",
+      "markMilestoneCompletion",
+      "processSafetyInspection",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

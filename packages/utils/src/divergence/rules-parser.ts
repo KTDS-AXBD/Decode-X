@@ -43,7 +43,8 @@ import type { BLRule } from "@ai-foundry/types";
 // F469 (Sprint 303): TS prefix 추가 (transit 합성 도메인, 33번째 — 대중교통 산업). longer match first 누적 입증
 // F470 (Sprint 304): AV prefix 추가 (aviation 합성 도메인, 34번째 — 항공 산업). longer match first 누적 입증
 // F471 (Sprint 305): MN prefix 추가 (mining 합성 도메인, 35번째 — 광업 산업). longer match first 누적 입증
-const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|LP|CC|DV|SB|IN|HC|ED|RE|LG|HO|TR|MF|RT|EN|GV|TC|BK|MD|PH|AG|CN|MR|TS|AV|MN|P|V)-[A-Z]?\d{1,3}$/;
+// F472 (Sprint 306): DF prefix 추가 (defense 합성 도메인, 36번째 — 국방 산업). 🏆 25 산업 round number
+const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|LP|CC|DV|SB|IN|HC|ED|RE|LG|HO|TR|MF|RT|EN|GV|TC|BK|MD|PH|AG|CN|MR|TS|AV|MN|DF|P|V)-[A-Z]?\d{1,3}$/;
 const HEADER_PATTERN =
   /\|\s*ID\s*\|\s*condition[^|]*\|\s*criteria[^|]*\|\s*outcome[^|]*\|\s*exception[^|]*\|/i;
 const SEPARATOR_PATTERN = /^\s*\|[\s:|-]+\|\s*$/;

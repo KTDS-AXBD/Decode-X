@@ -1,0 +1,61 @@
+---
+# Test scenarios — Defense domain DF-001~DF-006
+# Sprint 306 F472 — Defense 합성 도메인
+
+scenarios:
+  - id: DF-001-PASS
+    rule: DF-001
+    description: "한도 내 무기 보유 — 성공"
+    input: { totalQuantity: 300, MAX_WEAPON_INVENTORY_LIMIT: 500 }
+    expected: PASS
+
+  - id: DF-001-FAIL
+    rule: DF-001
+    description: "단위부대 무기 보유 한도 초과 — E422-INVENTORY-EXCEEDED"
+    input: { totalQuantity: 500, MAX_WEAPON_INVENTORY_LIMIT: 500 }
+    expected: FAIL
+    error: E422-INVENTORY-EXCEEDED
+
+  - id: DF-002-PASS
+    rule: DF-002
+    description: "보안 레벨 한도 내 — 성공"
+    input: { clearanceLevel: 5, clearanceLevelLimit: 10 }
+    expected: PASS
+
+  - id: DF-002-FAIL
+    rule: DF-002
+    description: "보안 레벨 한도 초과 — E422-CLEARANCE-EXCEEDED"
+    input: { clearanceLevel: 15, clearanceLevelLimit: 10 }
+    expected: FAIL
+    error: E422-CLEARANCE-EXCEEDED
+
+  - id: DF-003-PASS
+    rule: DF-003
+    description: "planned 상태에서 임무 파견 — 성공"
+    input: { missionStatus: "planned" }
+    expected: PASS
+
+  - id: DF-004-PASS
+    rule: DF-004
+    description: "planned → briefed 전환 — 성공"
+    input: { from: "planned", to: "briefed" }
+    expected: PASS
+
+  - id: DF-004-FAIL
+    rule: DF-004
+    description: "planned → completed 직접 전환 불가 — E409-MISSION"
+    input: { from: "planned", to: "completed" }
+    expected: FAIL
+    error: E409-MISSION
+
+  - id: DF-005-PASS
+    rule: DF-005
+    description: "훈련 예정일 이전 training 일괄 처리 — 성공"
+    input: { scheduledBefore: "2026-05-10", status: "scheduled" }
+    expected: PASS
+
+  - id: DF-006-PASS
+    rule: DF-006
+    description: "기밀 문서 분류 + 검증 + 발급 + 감사 atomic — 성공"
+    input: { classificationLevel: "secret" }
+    expected: PASS

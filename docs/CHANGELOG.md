@@ -13,6 +13,56 @@ author: Sinclair Seo
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 292 (2026-05-10) — Sprint 317 F483 ✅ DONE 🏆 **detect-bl 100% (260/260) 마일스톤 종결**
+
+**작업 요약**: Master inline ~15분, Match 100%. LPON pilot 도메인 잔여 5 BLs (BL-013/016/017/018/019) ABSENCE marker 일괄 등록으로 **detect-bl coverage 98.1% → 100.0%** (260/260) 도달. **🏆 LPON pilot 5 컨테이너 100% 마일스톤 종결** — 잔여 0건.
+
+**구현**:
+- `packages/utils/src/divergence/bl-detector.ts` (+132 lines):
+  - 신규 helper `detectAbsentFunctions` — `detectGiftImplementation` 양식 일반화 (targetNames Set 기반 함수명 부재 검사 + ruleId/detail 외부 주입)
+  - 신규 5 ABSENCE detector: `detectCompanyRefund` (BL-013) / `detectPaymentCancellation` (BL-016) / `detectMerchantMpmCancel` (BL-017) / `detectQrMerchantApproval` (BL-018) / `detectWithdrawnUserCancel` (BL-019)
+  - BL_DETECTOR_REGISTRY +5 entry (255 → 260)
+- `packages/utils/test/bl-detector.test.ts` (+89 lines): registered count 255→260 + sorted array에 5건 삽입 + 6 cases describe (5 ABSENCE positive + 1 PRESENCE counter for BL-016)
+- `docs/01-plan/features/F483-lpon-payment-100-coverage.plan.md` (AIF-PLAN-115) 신규
+- `docs/03-reports/features/AIF-RPRT-118_F483-lpon-payment-100-coverage-sprint-317.md` 신규
+- SPEC.md §6 Sprint 317 블록 + §5 Last Updated
+
+**검증 결과**:
+- ✅ utils tests 359 → **368 PASS** (+9, 회귀 0)
+- ✅ typecheck (직접 `pnpm exec tsc --noEmit` 우회, S337 turbo cache 함정 회피) 0 errors
+- ✅ detect-bl --all-domains: **260/260 = 100.0%** 🏆
+- ✅ lpon-payment: 7 BLs, 7 applicable detectors, 5 ABSENCE markers (정확 매칭)
+- ✅ LPON pilot 5 컨테이너 100% 활성화 (charge 8/8 + refund 11/11 + settlement 6/6 + gift 6/6 + payment 7/7)
+- ✅ main `9859695` push 완료
+
+**메타 학습 4건**:
+1. **ABSENCE marker helper 패턴 도입** (`detectAbsentFunctions`) — `detectGiftImplementation` 양식 일반화로 신규 ABSENCE detector 작성 비용 -66% (250 → 85 lines). 차기 ABSENCE detector 작성 비용 ~5분/건
+2. **withRuleId PRESENCE 정점 종결 + 신규 ABSENCE 카테고리 출범** — Sprint 264~316 (44 Sprint) PRESENCE detector 재사용 정점 종결, S315/S316/S317 누적 7 ABSENCE markers (BL-030 + BL-G001 + BL-013/016/017/018/019) 카테고리 형성
+3. **사전 fs 실측 절차 적중** (rules/development-workflow.md S283) — payment.ts cancel 분기 부재 사전 확정 → autopilot misdirection 0건 + Master 결정 정확 (5건 ABSENCE marker 합리)
+4. **Master inline 14회 연속 회피 패턴 유지** (S253~S317) — 0.3h 규모 작업에 autopilot overhead 회피, 일관성 + 속도 양립
+
+**누적 효과 (S262~S317, 56 Sprint)**:
+- coverage **13.2% → 100.0%** (7.6배+)
+- BL_DETECTOR_REGISTRY **5 → 260** (52배)
+- 도메인 (containers) **5 → 43** (8.6배)
+- BL 총 **38 → 260** (6.8배)
+- LPON pilot 100% 컨테이너 **0 → 5** (전수)
+- 신규 산업 **0 → 32** (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT)
+
+**산출물**:
+- AIF-PLAN-115 (`docs/01-plan/features/F483-lpon-payment-100-coverage.plan.md`)
+- AIF-RPRT-118 (`docs/03-reports/features/AIF-RPRT-118_F483-lpon-payment-100-coverage-sprint-317.md`)
+- main `47d2794` (사전 등록) + `9859695` (구현 완결)
+
+**Sprint 315/316 cleanup**: local stale ref 26개(sprint/290~313, 315, 316) 자동 prune, GitHub origin은 `delete_branch_on_merge=true`로 이미 자동 삭제됨.
+
+**차기 후보**:
+- **신규 산업 33번째 도메인** (44번째 도메인, withRuleId PRESENCE 정점 재개 — 산업 다양성 확장)
+- **F358 Phase 4** LPON 전수 production 재추출 (autopilot Production Smoke 16회차 변종 회피 절차 필수)
+- **보안 후속 2건** (1Password CLI signin `eval $(op signin)` + MP 변경 — 사용자 콘솔 주체)
+
+---
+
 ### 세션 291 (2026-05-10) — Sprint Pipeline 315+316 ✅ MERGED 🏆 **98.1% Coverage 도달 마일스톤**
 
 **작업 요약**: Sprint Pipeline 병렬 시동 + 양 sprint MERGED. detect-bl coverage 95.0% → **98.1%** (+3.1%pp 통합). LPON pilot 4 컨테이너 100% 활성화 (charge + refund + settlement + gift). 누적 55 Sprint (S262~S316): 13.2% → 98.1% (7.4배). withRuleId 44 Sprint 연속 정점.

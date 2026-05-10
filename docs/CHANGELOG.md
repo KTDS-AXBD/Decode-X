@@ -13,6 +13,50 @@ author: Sinclair Seo
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 291 (2026-05-10) — Sprint Pipeline 315+316 ✅ MERGED 🏆 **98.1% Coverage 도달 마일스톤**
+
+**작업 요약**: Sprint Pipeline 병렬 시동 + 양 sprint MERGED. detect-bl coverage 95.0% → **98.1%** (+3.1%pp 통합). LPON pilot 4 컨테이너 100% 활성화 (charge + refund + settlement + gift). 누적 55 Sprint (S262~S316): 13.2% → 98.1% (7.4배). withRuleId 44 Sprint 연속 정점.
+
+**구현**:
+- **Sprint 315 F481** PR #86 `ce4192d` (autopilot ~30분 + Master conflict 해소 5분):
+  - lpon-refund BL-020/021/023/025 4 entry (withRuleId × 4: status × 1 + atomic × 2 + threshold × 1)
+  - BL-030 ABSENCE marker (`detectExpiryExtension` 신규 detector — autopilot 자체 작성)
+  - lpon-refund 6/11 → **11/11 detector-supported**
+- **Sprint 316 F482** PR #85 `ecd864e` (autopilot ~15분 단독 완결):
+  - lpon-settlement BL-031/032 2 entry (atomic × 2)
+  - BL-G001 ABSENCE marker (`detectGiftImplementation` 신규 detector)
+  - lpon-settlement 4/6 → **6/6** + lpon-gift 5/6 → **6/6**
+- bl-detector.ts +90 lines / bl-detector.test.ts +47 lines / typecheck PASS
+
+**검증**:
+- ✅ detect-bl --all-domains 255/260 = **98.1%** (Plan target 정확 일치)
+- ✅ vitest bl-detector.test 242 PASS
+- ✅ typecheck (직접 tsc 우회, S337 함정 회피) 0 errors
+- ✅ PR #85 + #86 모두 squash merge 완료
+
+**메타 학습 5건 신 발견**:
+1. **autopilot Plan claim 무시 + 신규 detector 자체 작성 신 패턴 2회 누적** (Sprint 315/316 양쪽 — Plan에 "DETECTOR_SUPPORTED_RULES Set만 추가"로 명시했으나 autopilot이 별도 detector 함수 신규 작성. 결과는 양호하지만 Plan design intent 무시 — lifecycle 정착 후보)
+2. **S280 후행 conflict 11회차 + 영역 분리 가정 false positive** (양 sprint 모두 같은 bl-detector.ts/test.ts 영역 수정으로 squash merge 충돌 — 사전 영역 분리 판정에 함수 단위 격리 검증 추가 필요)
+3. **Master union merge 표준 5분 절차 정립** (git show 양쪽 추출 → conflict block 양쪽 보존 → typecheck + vitest + detect-bl 1회 측정)
+4. **autopilot ccs 미주입 신 패턴 1회차** (`bash -i -c "sprint N"` 후 pane cmd=bash idle, send-keys 수동 ccs+autopilot 2분 보정 — 향후 sprint 시동 직후 표준 점검)
+5. **stale F_ITEMS 11회차 재현** (rules/development-workflow.md S269 표준 보정 절차 5초 적용)
+
+**산출물**:
+- AIF-PLAN-113 (`docs/01-plan/features/F481-lpon-refund-gap-fill.plan.md`)
+- AIF-PLAN-114 (`docs/01-plan/features/F482-lpon-settle-gift-gap-fill.plan.md`)
+- AIF-RPRT-116 (Sprint 316 F482 — autopilot 작성)
+- AIF-RPRT-117 (Sprint 315 F481 — autopilot 작성)
+- AIF-DSGN-114 (Sprint 316 — autopilot 추가)
+- main `97367e4`
+
+**차기 후보**:
+- 잔여 5 BLs lpon-payment 사전 PoC (100% 도달 — payment.ts source 보강 1.5h 또는 ABSENCE marker 0.3h)
+- 신규 산업 33번째 (44번째 도메인)
+- F358 Phase 4 LPON 전수 production 재추출
+- 보안 후속 2건 (1Password CLI signin + MP 변경)
+
+---
+
 ### 세션 290 (2026-05-10) — Sprint 314 F480 lpon-charge gap fill 🏆 **95.0% Coverage 돌파**
 
 **작업 요약**: Master inline ~30분, Match 100%. LPON pilot 도메인 잔여 갭 17건 중 lpon-charge 4건 detector 매핑으로 **detect-bl coverage 93.5% → 95.0% 돌파 마일스톤** 달성. lpon-charge 컨테이너 4/8 → **8/8 PRESENCE 0 ABSENCE** (100% 활성화).

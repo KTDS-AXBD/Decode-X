@@ -751,6 +751,26 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processEviction",
     ],
   },
+  {
+    container: "fitness",
+    rulesPath: `${SPEC_CONTAINER_BASE}/fitness/rules/fitness-rules.md`,
+    // Sprint 312 (F478): Fitness 합성 도메인 — 42번째 도메인 (피트니스 산업, 31번째 신규 산업).
+    // FT-001~FT-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 40 Sprint 연속 정점 (S264~S278+S283~S312). 🏆 round number
+    // 31번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT).
+    // 🏆 31 산업 연속 0 ABSENCE 도전. WL+SP+FT 클러스터 (서비스+이벤트+운동) 형성. 6 BLs 균형 패턴 32번째 정착.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/fitness.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/fitness/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "bookClassSlot",
+      "usePtSession",
+      "bookPersonalTraining",
+      "transitionProgressStatus",
+      "markNoShowBatch",
+      "reserveEquipment",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

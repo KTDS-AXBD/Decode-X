@@ -573,6 +573,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processDamageClaim",
     ],
   },
+  {
+    container: "transit",
+    rulesPath: `${SPEC_CONTAINER_BASE}/transit/rules/transit-rules.md`,
+    // Sprint 303 (F469): Public Transport 합성 도메인 — 33번째 도메인 (대중교통 산업, 22번째 신규 산업).
+    // TS-001~TS-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 31 Sprint 연속 정점 (S264~S278+S283~S303).
+    // 22번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/transit.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/transit/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "checkRouteCapacity",
+      "computeFare",
+      "processTransfer",
+      "transitionTripStatus",
+      "markSeasonPassRenewal",
+      "processSuspensionRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

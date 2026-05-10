@@ -622,7 +622,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 177 detectors (Sprint 302 F468 — maritime MR-001~MR-006 added, 32번째 도메인 해운 산업, 21번째 신규, 🎯 AIF-PLAN-100)", () => {
+  it("exposes 183 detectors (Sprint 303 F469 — transit TS-001~TS-006 added, 33번째 도메인 대중교통 산업, 22번째 신규)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AG-001",
       "AG-002",
@@ -795,6 +795,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "TR-004",
       "TR-005",
       "TR-006",
+      "TS-001",
+      "TS-002",
+      "TS-003",
+      "TS-004",
+      "TS-005",
+      "TS-006",
       "V-001",
       "V-002",
       "V-003",
@@ -2571,5 +2577,106 @@ function markPortHandled(db, arrivalCutoff) {
     const markers = BL_DETECTOR_REGISTRY["MR-006"]!(src, "maritime.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["MR-006"]!(src, "maritime.ts")).toHaveLength(0);
+  });
+});
+
+// F469 (Sprint 303) — transit domain TS-001~006 via withRuleId (31 Sprint 연속 정점)
+describe("transit domain — TS-001~006 via withRuleId (Sprint 303 F469)", () => {
+  it("TS-001 PRESENCE — passengerCount >= MAX_ROUTE_CAPACITY threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "transit.ts",
+      `const MAX_ROUTE_CAPACITY = 1200;
+function checkRouteCapacity(db, routeId, passengerId, originStop, destStop, fareZone) {
+  if (passengerCount >= MAX_ROUTE_CAPACITY) {
+    throw new TransitError('E422-CAPACITY-LIMIT', 'Route capacity exceeded maximum limit', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TS-001"]!(src, "transit.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["TS-001"]!(src, "transit.ts")).toHaveLength(0);
+  });
+
+  it("TS-002 PRESENCE — zoneFare > fareZoneLimit (Path B, 'limit' keyword)", () => {
+    const src = parseTypeScriptSource(
+      "transit.ts",
+      `function computeFare(db, tripId, zoneFare) {
+  const fareZoneLimit = 1500;
+  if (zoneFare > fareZoneLimit) {
+    throw new TransitError('E422-FARE-EXCEEDED', 'Zone fare exceeded limit', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TS-002"]!(src, "transit.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["TS-002"]!(src, "transit.ts")).toHaveLength(0);
+  });
+
+  it("TS-003 PRESENCE — db.transaction() in processTransfer (atomic transfers+integrated_passes+trips UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "transit.ts",
+      `function processTransfer(db, tripId, passengerId, toRouteId, transferFare) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO transfers (id, from_trip_id, to_route_id, passenger_id, transfer_fare, status, transferred_at) VALUES (?, ?, ?, ?, ?, 'completed', ?)").run(transferId, tripId, toRouteId, passengerId, transferFare, processedAt);
+    db.prepare("INSERT INTO integrated_passes (id, transfer_id, passenger_id, issued_at, valid_minutes) VALUES (?, ?, ?, ?, 30)").run(integratedPassId, transferId, passengerId, processedAt);
+    db.prepare("UPDATE trips SET status = 'transferred', transferred_at = ? WHERE id = ?").run(processedAt, tripId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TS-003"]!(src, "transit.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["TS-003"]!(src, "transit.ts")).toHaveLength(0);
+  });
+
+  it("TS-004 PRESENCE — status comparison + 'in_transit'/'completed' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "transit.ts",
+      `function transitionTripStatus(db, tripId, newStatus) {
+  const trip = db.prepare("SELECT status FROM trips WHERE id = ?").get(tripId);
+  if (trip.status === 'boarded') throw new TransitError("E409-TRIP", "Invalid transition", 409);
+  db.prepare("UPDATE trips SET status = 'in_transit' WHERE id = ?").run(tripId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TS-004"]!(src, "transit.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["TS-004"]!(src, "transit.ts")).toHaveLength(0);
+  });
+
+  it("TS-005 PRESENCE — batch renewed=1 update in markSeasonPassRenewal (file context)", () => {
+    const src = parseTypeScriptSource(
+      "transit.ts",
+      `function transitionTripStatus(db, tripId, newStatus) {
+  const trip = db.prepare("SELECT status FROM trips WHERE id = ?").get(tripId);
+  if (trip.status === 'boarded') throw new TransitError("E409-TRIP", "Invalid", 409);
+  db.prepare("UPDATE trips SET status = 'in_transit' WHERE id = ?").run(tripId);
+}
+function markSeasonPassRenewal(db, expiryBefore) {
+  const candidates = db.prepare("SELECT id FROM season_passes WHERE valid_until <= ? AND renewed = 0 AND status = 'active'").all(expiryBefore);
+  for (const pass of candidates) {
+    db.prepare("UPDATE season_passes SET renewed = 1, renewed_at = ? WHERE id = ?").run(new Date().toISOString(), pass.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TS-005"]!(src, "transit.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["TS-005"]!(src, "transit.ts")).toHaveLength(0);
+  });
+
+  it("TS-006 PRESENCE — db.transaction() in processSuspensionRefund (atomic suspension_refunds+refund_records+suspension_refund_issued UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "transit.ts",
+      `function processSuspensionRefund(db, routeId, passengerId, refundAmount, compensationAmount, suspensionReason) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO suspension_refunds (id, route_id, passenger_id, refund_amount, compensation_amount, status, processed_at, suspension_reason) VALUES (?, ?, ?, ?, ?, 'processed', ?, ?)").run(suspensionId, routeId, passengerId, refundAmount, compensationAmount, processedAt, suspensionReason);
+    db.prepare("INSERT INTO refund_records (id, suspension_id, passenger_id, total_amount, processed_at, notes) VALUES (?, ?, ?, ?, ?, ?)").run(refundRecordId, suspensionId, passengerId, totalAmount, processedAt, 'Suspension refund + compensation processed');
+    db.prepare("UPDATE routes SET suspension_refund_issued = 1 WHERE id = ?").run(routeId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TS-006"]!(src, "transit.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["TS-006"]!(src, "transit.ts")).toHaveLength(0);
   });
 });

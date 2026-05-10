@@ -553,6 +553,26 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processSafetyInspection",
     ],
   },
+  {
+    container: "maritime",
+    rulesPath: `${SPEC_CONTAINER_BASE}/maritime/rules/maritime-rules.md`,
+    // Sprint 302 (F468): Maritime 합성 도메인 — 32번째 도메인 (해운 산업, 21번째 신규 산업).
+    // MR-001~MR-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 30 Sprint 연속 정점 (S264~S278+S283~S302).
+    // 21번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR).
+    // 🎯 AIF-PLAN-100 마일스톤 — Plan 100번째 산출물.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/maritime.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/maritime/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "loadCargo",
+      "computeFreightRate",
+      "processCustoms",
+      "transitionShipmentStatus",
+      "markPortHandled",
+      "processDamageClaim",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

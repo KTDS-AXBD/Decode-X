@@ -1,0 +1,90 @@
+# Test Scenarios — MR-001 ~ MR-006 (대표)
+ruleId: MR-001
+domain: maritime
+function: loadCargo
+detector: ThresholdCheck (F445 Path A)
+
+scenarios:
+  - id: MR-MR-001-01
+    name: 정상 화물 선적 (cargoTons=50,000 < MAX_CARGO_CAPACITY_TONS=200,000)
+    given: { vesselId: vessel-1, shipperId: shipper-1, cargoTons: 50000, status: available }
+    when: loadCargo
+    then: { shipmentId: [uuid], cargoTons: 50000 }
+
+  - id: MR-MR-001-02
+    name: 화물 한도 초과 (cargoTons=200,000) → E422-CARGO-LIMIT
+    given: { vesselId: vessel-1, shipperId: shipper-1, cargoTons: 200000, status: available }
+    when: loadCargo
+    then: { error: E422-CARGO-LIMIT }
+
+  - id: MR-MR-002-01
+    name: 정상 운임 (quotedRate=30, asia_europe → freightRateLimit=35)
+    given: { shipmentId: ship-1, quotedRate: 30, origin_port: KR_BUSAN, dest_port: DE_HAMBURG }
+    when: computeFreightRate
+    then: { quotedRate: 30, freightRateLimit: 35, approved: true }
+
+  - id: MR-MR-002-02
+    name: 운임 한도 초과 (quotedRate=50, transpacific limit=40) → E422-FREIGHT-RATE-EXCEEDED
+    given: { shipmentId: ship-1, quotedRate: 50, origin_port: KR_BUSAN, dest_port: US_LA }
+    when: computeFreightRate
+    then: { error: E422-FREIGHT-RATE-EXCEEDED }
+
+  - id: MR-MR-003-01
+    name: 정상 통관 atomic — customs_declarations + customs_approvals + shipments.customs_cleared
+    given: { shipmentId: ship-1, declaredValue: 1000000, tariffRate: 0.05, inspectorId: insp-1, status: arrived }
+    when: processCustoms
+    then:
+      declarationId: [uuid]
+      customsApprovalId: [uuid]
+      tariffAmount: 50000
+      customs_declarations: inserted
+      customs_approvals: inserted
+      shipments.customs_cleared: 1
+
+  - id: MR-MR-003-02
+    name: 비정상 상태 통관 시도 → E409-SHIPMENT
+    given: { shipmentId: ship-1, status: at_sea }
+    when: processCustoms
+    then: { error: E409-SHIPMENT }
+
+  - id: MR-MR-004-01
+    name: booked → loaded 전환
+    given: { shipment: { status: booked } }
+    when: transitionShipmentStatus(loaded)
+    then: { previousStatus: booked, newStatus: loaded }
+
+  - id: MR-MR-004-02
+    name: loaded → at_sea 전환
+    given: { shipment: { status: loaded } }
+    when: transitionShipmentStatus(at_sea)
+    then: { newStatus: at_sea }
+
+  - id: MR-MR-004-03
+    name: booked → delivered 역전환 → E409-SHIPMENT
+    given: { shipment: { status: booked } }
+    when: transitionShipmentStatus(delivered)
+    then: { error: E409-SHIPMENT }
+
+  - id: MR-MR-005-01
+    name: 항구 처리 배치 — 2건 port_handled=0 → port_handled=1
+    given: { arrivalCutoff: "2026-05-10", candidates: [{ status: arrived, port_handled: 0, arrived_at: "2026-05-09" }, { status: arrived, port_handled: 0, arrived_at: "2026-05-10" }] }
+    when: markPortHandled("2026-05-10")
+    then: { handledCount: 2, shipments.status: port_cleared }
+
+  - id: MR-MR-006-01
+    name: 정상 손상 신고 atomic — damage_claims + compensation_records + shipments.damage_claim_filed
+    given: { shipmentId: ship-1, claimantId: claimant-1, damageDescription: "화물 파손", compensationAmount: 500000, status: delivered }
+    when: processDamageClaim
+    then:
+      claimId: [uuid]
+      compensationRecordId: [uuid]
+      compensationAmount: 500000
+      damage_claims: inserted
+      compensation_records: inserted
+      shipments.damage_claim_filed: 1
+
+  - id: MR-MR-006-02
+    name: 비정상 상태 손상 신고 시도 → E409-SHIPMENT
+    given: { shipmentId: ship-1, status: at_sea }
+    when: processDamageClaim
+    then: { error: E409-SHIPMENT }

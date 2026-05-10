@@ -1,0 +1,43 @@
+---
+# Provenance — MARITIME-001
+# 32번째 도메인 — Maritime/해운 산업 합성 도메인 PoC (21번째 신규 산업)
+
+skillId: MARITIME-001
+extractedAt: "2026-05-10T00:00:00+09:00"
+extractedBy: "Decode-X Sprint 302 F468 — withRuleId 재사용 32번째 도메인 (Maritime 산업, 21번째 신규) 🎯 AIF-PLAN-100"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/maritime/rules/maritime-rules.md"
+    section: "Maritime 합성 비즈니스 룰 — MR-001~MR-006"
+    businessRules: [MR-001, MR-002, MR-003, MR-004, MR-005, MR-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 해운(Maritime) 산업 일반화 PoC. 화물한도/운임한도/통관atomic/선적상태전환/항구처리배치/손상신고atomic 추상화. 32번째 도메인 + 21번째 신규 산업 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR). detector 신뢰도 누적 활용. 국제물류 + customs clearance 특화 (Logistics와 보완). 🎯 AIF-PLAN-100 마일스톤."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/maritime.ts"
+    functions: [loadCargo, computeFreightRate, processCustoms, transitionShipmentStatus, markPortHandled, processDamageClaim]
+    test: "src/__tests__/maritime.test.ts (후속 작성 가능, PoC 단계)"
+    sourceMarker: PRESENCE
+    note: "BL-detector 자동 PRESENCE 입증 — 신규 detector 0개, withRuleId 재사용 (Threshold × 2 + Atomic × 2 + Status × 2)"
+
+inputCompleteness:
+  sInput: 0.92
+  deficiencyFlag: false
+  components:
+    rulesCoverage: 1.00
+    testCoverage: 0.85
+    provenanceLink: 1.00
+
+note: |
+  Sprint 302 F468: 해운(Maritime) 산업 도메인 신규 — 32번째 도메인 (21번째 신규 산업 시리즈).
+  MR-001 화물 적재 한도 검증 / MR-002 운임 한도 비교 / MR-003 통관 처리 atomic /
+  MR-004 선적 상태 전환 / MR-005 항구 처리 일괄 갱신 / MR-006 손상 신고 atomic.
+  분포: Threshold × 2 + Atomic × 2 + Status × 2 (균형 분포 22번째 정착).
+  withRuleId 재사용 30 Sprint 연속 정점 (S264~S278+S283~S302). 신규 detector 0개.
+  21 산업 연속 0 ABSENCE 목표 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR).
+  국제물류 클러스터: LG (Sprint 289) + MR (Sprint 302) — 물류 도메인 확장.
+  coverage ≥ 91.4% (90.3% + 0.4%pp 추정).
+  🎯 AIF-PLAN-100 마일스톤 — Plan 100번째 산출물.
+---

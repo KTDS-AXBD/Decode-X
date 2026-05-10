@@ -622,7 +622,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 171 detectors (Sprint 301 F467 — construction CN-001~CN-006 added, 31번째 도메인 건설 산업, 20번째 신규, 🏆 20 산업 round number)", () => {
+  it("exposes 177 detectors (Sprint 302 F468 — maritime MR-001~MR-006 added, 32번째 도메인 해운 산업, 21번째 신규, 🎯 AIF-PLAN-100)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AG-001",
       "AG-002",
@@ -746,6 +746,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "MF-004",
       "MF-005",
       "MF-006",
+      "MR-001",
+      "MR-002",
+      "MR-003",
+      "MR-004",
+      "MR-005",
+      "MR-006",
       "P-001",
       "P-002",
       "P-003",
@@ -2463,5 +2469,107 @@ function markMilestoneCompletion(db, dueDateCutoff) {
     const markers = BL_DETECTOR_REGISTRY["CN-006"]!(src, "construction.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["CN-006"]!(src, "construction.ts")).toHaveLength(0);
+  });
+});
+
+// F468 (Sprint 302) — maritime domain MR-001~006 via withRuleId (30 Sprint 연속 정점) 🎯 AIF-PLAN-100
+describe("maritime domain — MR-001~006 via withRuleId (Sprint 302 F468)", () => {
+  it("MR-001 PRESENCE — cargoTons >= MAX_CARGO_CAPACITY_TONS threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "maritime.ts",
+      `const MAX_CARGO_CAPACITY_TONS = 200000;
+function loadCargo(db, vesselId, shipperId, cargoTons) {
+  if (cargoTons >= MAX_CARGO_CAPACITY_TONS) {
+    throw new MaritimeError('E422-CARGO-LIMIT', 'Cargo tonnage exceeded maximum capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MR-001"]!(src, "maritime.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["MR-001"]!(src, "maritime.ts")).toHaveLength(0);
+  });
+
+  it("MR-002 PRESENCE — quotedRate > freightRateLimit (Path B, 'limit' keyword)", () => {
+    const src = parseTypeScriptSource(
+      "maritime.ts",
+      `function computeFreightRate(db, shipmentId, quotedRate) {
+  const freightRateLimit = 40;
+  if (quotedRate > freightRateLimit) {
+    throw new MaritimeError('E422-FREIGHT-RATE-EXCEEDED', 'Freight rate exceeded limit', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MR-002"]!(src, "maritime.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["MR-002"]!(src, "maritime.ts")).toHaveLength(0);
+  });
+
+  it("MR-003 PRESENCE — db.transaction() in processCustoms (atomic customs_declarations+approvals+customs_cleared UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "maritime.ts",
+      `function processCustoms(db, shipmentId, declaredValue, tariffRate, inspectorId) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO customs_declarations (id, shipment_id, declared_value, tariff_amount, status, declared_at, cleared_at) VALUES (?, ?, ?, ?, 'cleared', ?, ?)").run(declarationId, shipmentId, declaredValue, tariffAmount, clearedAt, clearedAt);
+    db.prepare("INSERT INTO customs_approvals (id, declaration_id, inspector_id, approved_at, notes) VALUES (?, ?, ?, ?, ?)").run(customsApprovalId, declarationId, inspectorId, clearedAt, 'Customs clearance approved');
+    db.prepare("UPDATE shipments SET customs_cleared = 1, customs_cleared_at = ? WHERE id = ?").run(clearedAt, shipmentId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MR-003"]!(src, "maritime.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["MR-003"]!(src, "maritime.ts")).toHaveLength(0);
+  });
+
+  it("MR-004 PRESENCE — status comparison + 'loaded'/'at_sea' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "maritime.ts",
+      `function transitionShipmentStatus(db, shipmentId, newStatus) {
+  const shipment = db.prepare("SELECT status FROM shipments WHERE id = ?").get(shipmentId);
+  if (shipment.status === 'booked') throw new MaritimeError("E409-SHIPMENT", "Invalid transition", 409);
+  db.prepare("UPDATE shipments SET status = 'loaded' WHERE id = ?").run(shipmentId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MR-004"]!(src, "maritime.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["MR-004"]!(src, "maritime.ts")).toHaveLength(0);
+  });
+
+  it("MR-005 PRESENCE — batch status='port_cleared' update in markPortHandled (file context)", () => {
+    // detector는 파일 전체 스캔 — transitionShipmentStatus 함수의 status === 비교식이 foundComparison=true 확정
+    const src = parseTypeScriptSource(
+      "maritime.ts",
+      `function transitionShipmentStatus(db, shipmentId, newStatus) {
+  const shipment = db.prepare("SELECT status FROM shipments WHERE id = ?").get(shipmentId);
+  if (shipment.status === 'booked') throw new MaritimeError("E409-SHIPMENT", "Invalid", 409);
+  db.prepare("UPDATE shipments SET status = 'loaded' WHERE id = ?").run(shipmentId);
+}
+function markPortHandled(db, arrivalCutoff) {
+  const candidates = db.prepare("SELECT id FROM shipments WHERE status = 'arrived' AND arrived_at <= ? AND port_handled = 0").all(arrivalCutoff);
+  for (const shipment of candidates) {
+    db.prepare("UPDATE shipments SET port_handled = 1, status = 'port_cleared' WHERE id = ?").run(shipment.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MR-005"]!(src, "maritime.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["MR-005"]!(src, "maritime.ts")).toHaveLength(0);
+  });
+
+  it("MR-006 PRESENCE — db.transaction() in processDamageClaim (atomic damage_claims+compensation_records+damage_claim_filed UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "maritime.ts",
+      `function processDamageClaim(db, shipmentId, claimantId, damageDescription, compensationAmount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO damage_claims (id, shipment_id, claimant_id, damage_description, compensation_amount, status, submitted_at) VALUES (?, ?, ?, ?, ?, 'compensated', ?)").run(claimId, shipmentId, claimantId, damageDescription, compensationAmount, processedAt);
+    db.prepare("INSERT INTO compensation_records (id, claim_id, shipment_id, amount, processed_at, processed_by) VALUES (?, ?, ?, ?, ?, ?)").run(compensationRecordId, claimId, shipmentId, compensationAmount, processedAt, claimantId);
+    db.prepare("UPDATE shipments SET damage_claim_filed = 1 WHERE id = ?").run(shipmentId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MR-006"]!(src, "maritime.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["MR-006"]!(src, "maritime.ts")).toHaveLength(0);
   });
 });

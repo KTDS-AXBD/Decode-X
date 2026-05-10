@@ -1,0 +1,61 @@
+---
+# Test scenarios — Wellness domain WL-001~WL-006
+# Sprint 309 F475 — Wellness 합성 도메인
+
+scenarios:
+  - id: WL-001-PASS
+    rule: WL-001
+    description: "정원 내 세션 예약 — 성공"
+    input: { booked_count: 10, capacity: 20 }
+    expected: PASS
+
+  - id: WL-001-FAIL
+    rule: WL-001
+    description: "세션 정원 초과 — E422-SESSION-CAPACITY-EXCEEDED"
+    input: { booked_count: 20, capacity: 20 }
+    expected: FAIL
+    error: E422-SESSION-CAPACITY-EXCEEDED
+
+  - id: WL-002-PASS
+    rule: WL-002
+    description: "패키지 한도 내 사용 — 성공"
+    input: { used_count: 5, packageUsageLimit: 10 }
+    expected: PASS
+
+  - id: WL-002-FAIL
+    rule: WL-002
+    description: "패키지 사용 한도 초과 — E422-PACKAGE-USAGE-EXCEEDED"
+    input: { used_count: 10, packageUsageLimit: 10 }
+    expected: FAIL
+    error: E422-PACKAGE-USAGE-EXCEEDED
+
+  - id: WL-003-PASS
+    rule: WL-003
+    description: "booked 예약 확정 atomic — 성공"
+    input: { appointmentStatus: "booked" }
+    expected: PASS
+
+  - id: WL-004-PASS
+    rule: WL-004
+    description: "booked → confirmed 전환 — 성공"
+    input: { from: "booked", to: "confirmed" }
+    expected: PASS
+
+  - id: WL-004-FAIL
+    rule: WL-004
+    description: "booked → completed 직접 전환 불가 — E409-APPOINTMENT"
+    input: { from: "booked", to: "completed" }
+    expected: FAIL
+    error: E409-APPOINTMENT
+
+  - id: WL-005-PASS
+    rule: WL-005
+    description: "기준일 이전 confirmed 예약 노쇼 일괄 처리 — 성공"
+    input: { scheduledBefore: "2026-05-10", status: "confirmed" }
+    expected: PASS
+
+  - id: WL-006-PASS
+    rule: WL-006
+    description: "예약 취소 + 패널티 + 환불 atomic — 성공"
+    input: { appointmentExists: true, status: "confirmed" }
+    expected: PASS

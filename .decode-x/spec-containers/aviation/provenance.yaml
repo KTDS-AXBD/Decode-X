@@ -1,0 +1,52 @@
+---
+# Provenance — AVIATION-001
+# 34번째 도메인 — Aviation/항공 산업 합성 도메인 PoC (23번째 신규 산업)
+
+skillId: AVIATION-001
+extractedAt: "2026-05-10T00:00:00+09:00"
+extractedBy: "Decode-X Sprint 304 F470 — withRuleId 재사용 34번째 도메인 (Aviation 산업, 23번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/aviation/rules/aviation-rules.md"
+    section: "Aviation 합성 비즈니스 룰 — AV-001~AV-006"
+    businessRules: [AV-001, AV-002, AV-003, AV-004, AV-005, AV-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 항공(Aviation) 산업 일반화 PoC. 탑승한도/연료한도/운항atomic/비행상태전환/승무원배치/수하물atomic 추상화. 34번째 도메인 + 23번째 신규 산업 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV). detector 신뢰도 누적 활용. 항공 운용 + transit 인프라 특화."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/aviation.ts"
+    functions: [boardPassenger, allocateFuel, dispatchFlight, transitionFlightStatus, rotateCrewSchedule, processBaggageClaim]
+
+detection:
+  - ruleId: AV-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "passengerCount >= MAX_PASSENGER_CAPACITY (UPPERCASE constant, Path A)"
+  - ruleId: AV-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "requiredFuel > fuelQuotaLimit (Path B, limit keyword)"
+  - ruleId: AV-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "db.transaction() — dispatch_records + flight_clearances + flights UPDATE + crew_schedules UPDATE"
+  - ruleId: AV-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "scheduled → boarding → departed → in_flight → landed → completed"
+  - ruleId: AV-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "batch: rotated=1 갱신 (CC-005 23번째 재사용)"
+  - ruleId: AV-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "db.transaction() — baggage_claims + damage_assessments + compensation_records + baggage_claim_filed UPDATE"

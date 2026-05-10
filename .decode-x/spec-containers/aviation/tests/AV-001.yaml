@@ -1,0 +1,61 @@
+---
+# Test scenarios — Aviation domain AV-001~AV-006
+# Sprint 304 F470 — Aviation 합성 도메인
+
+scenarios:
+  - id: AV-001-PASS
+    rule: AV-001
+    description: "한도 내 탑승 — 성공"
+    input: { passengerCount: 100, MAX_PASSENGER_CAPACITY: 400 }
+    expected: PASS
+
+  - id: AV-001-FAIL
+    rule: AV-001
+    description: "탑승 한도 초과 시도 — E422-CAPACITY-LIMIT"
+    input: { passengerCount: 400, MAX_PASSENGER_CAPACITY: 400 }
+    expected: FAIL
+    error: E422-CAPACITY-LIMIT
+
+  - id: AV-002-PASS
+    rule: AV-002
+    description: "narrow_body 연료 한도 내 — 성공"
+    input: { requiredFuel: 20000, fuelQuotaLimit: 25000 }
+    expected: PASS
+
+  - id: AV-002-FAIL
+    rule: AV-002
+    description: "연료 한도 초과 — E422-FUEL-EXCEEDED"
+    input: { requiredFuel: 30000, fuelQuotaLimit: 25000 }
+    expected: FAIL
+    error: E422-FUEL-EXCEEDED
+
+  - id: AV-003-PASS
+    rule: AV-003
+    description: "boarding 상태에서 dispatch — 성공"
+    input: { flightStatus: "boarding" }
+    expected: PASS
+
+  - id: AV-004-PASS
+    rule: AV-004
+    description: "scheduled → boarding 전환 — 성공"
+    input: { from: "scheduled", to: "boarding" }
+    expected: PASS
+
+  - id: AV-004-FAIL
+    rule: AV-004
+    description: "scheduled → in_flight 직접 전환 불가 — E409-FLIGHT"
+    input: { from: "scheduled", to: "in_flight" }
+    expected: FAIL
+    error: E409-FLIGHT
+
+  - id: AV-005-PASS
+    rule: AV-005
+    description: "교대 대상 승무원 일괄 갱신 — 성공"
+    input: { rotationBefore: "2026-05-01", status: "on_duty", rotation_due: 1 }
+    expected: PASS
+
+  - id: AV-006-PASS
+    rule: AV-006
+    description: "damaged 수하물 클레임+보상 처리 — 성공"
+    input: { damageStatus: "damaged", damageAmount: 150000 }
+    expected: PASS

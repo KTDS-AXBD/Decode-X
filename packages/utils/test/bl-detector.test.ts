@@ -622,7 +622,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 183 detectors (Sprint 303 F469 — transit TS-001~TS-006 added, 33번째 도메인 대중교통 산업, 22번째 신규)", () => {
+  it("exposes 189 detectors (Sprint 304 F470 — aviation AV-001~AV-006 added, 34번째 도메인 항공 산업, 23번째 신규)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AG-001",
       "AG-002",
@@ -630,6 +630,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "AG-004",
       "AG-005",
       "AG-006",
+      "AV-001",
+      "AV-002",
+      "AV-003",
+      "AV-004",
+      "AV-005",
+      "AV-006",
       "BB-001",
       "BB-002",
       "BB-003",
@@ -2678,5 +2684,108 @@ function markSeasonPassRenewal(db, expiryBefore) {
     const markers = BL_DETECTOR_REGISTRY["TS-006"]!(src, "transit.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["TS-006"]!(src, "transit.ts")).toHaveLength(0);
+  });
+});
+
+// F470 (Sprint 304) — aviation domain AV-001~006 via withRuleId (32 Sprint 연속 정점)
+describe("aviation domain — AV-001~006 via withRuleId (Sprint 304 F470)", () => {
+  it("AV-001 PRESENCE — passengerCount >= MAX_PASSENGER_CAPACITY threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "aviation.ts",
+      `const MAX_PASSENGER_CAPACITY = 400;
+function boardPassenger(db, flightId, passengerId, seatNumber, baggageWeight) {
+  if (passengerCount >= MAX_PASSENGER_CAPACITY) {
+    throw new AviationError('E422-CAPACITY-LIMIT', 'Passenger capacity exceeded maximum limit', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AV-001"]!(src, "aviation.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["AV-001"]!(src, "aviation.ts")).toHaveLength(0);
+  });
+
+  it("AV-002 PRESENCE — requiredFuel > fuelQuotaLimit (Path B, 'limit' keyword)", () => {
+    const src = parseTypeScriptSource(
+      "aviation.ts",
+      `function allocateFuel(db, flightId, requiredFuel) {
+  const fuelQuotaLimit = 25000;
+  if (requiredFuel > fuelQuotaLimit) {
+    throw new AviationError('E422-FUEL-EXCEEDED', 'Required fuel exceeded quota limit', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AV-002"]!(src, "aviation.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["AV-002"]!(src, "aviation.ts")).toHaveLength(0);
+  });
+
+  it("AV-003 PRESENCE — db.transaction() in dispatchFlight (atomic dispatch_records+flight_clearances+flights UPDATE+crew_schedules UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "aviation.ts",
+      `function dispatchFlight(db, flightId, captainId, fuelLoaded, clearanceCode) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO dispatch_records (id, flight_id, captain_id, fuel_loaded, dispatched_at) VALUES (?, ?, ?, ?, ?)").run(dispatchId, flightId, captainId, fuelLoaded, departedAt);
+    db.prepare("INSERT INTO flight_clearances (id, flight_id, clearance_code, issued_at, status) VALUES (?, ?, ?, ?, 'approved')").run(clearanceId, flightId, clearanceCode, departedAt);
+    db.prepare("UPDATE flights SET status = 'departed', departed_at = ? WHERE id = ?").run(departedAt, flightId);
+    db.prepare("UPDATE crew_schedules SET status = 'on_duty' WHERE flight_id = ?").run(flightId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AV-003"]!(src, "aviation.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["AV-003"]!(src, "aviation.ts")).toHaveLength(0);
+  });
+
+  it("AV-004 PRESENCE — status comparison + 'boarding'/'in_flight' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "aviation.ts",
+      `function transitionFlightStatus(db, flightId, newStatus) {
+  const flight = db.prepare("SELECT status FROM flights WHERE id = ?").get(flightId);
+  if (flight.status === 'scheduled') throw new AviationError("E409-FLIGHT", "Invalid transition", 409);
+  db.prepare("UPDATE flights SET status = 'boarding' WHERE id = ?").run(flightId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AV-004"]!(src, "aviation.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["AV-004"]!(src, "aviation.ts")).toHaveLength(0);
+  });
+
+  it("AV-005 PRESENCE — batch rotated=1 update in rotateCrewSchedule (file context)", () => {
+    const src = parseTypeScriptSource(
+      "aviation.ts",
+      `function transitionFlightStatus(db, flightId, newStatus) {
+  const flight = db.prepare("SELECT status FROM flights WHERE id = ?").get(flightId);
+  if (flight.status === 'scheduled') throw new AviationError("E409-FLIGHT", "Invalid", 409);
+  db.prepare("UPDATE flights SET status = 'boarding' WHERE id = ?").run(flightId);
+}
+function rotateCrewSchedule(db, rotationBefore) {
+  const candidates = db.prepare("SELECT id FROM crew_schedules WHERE assigned_at <= ? AND status = 'on_duty' AND rotation_due = 1").all(rotationBefore);
+  for (const schedule of candidates) {
+    db.prepare("UPDATE crew_schedules SET status = 'rotated', rotated_at = ? WHERE id = ?").run(new Date().toISOString(), schedule.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AV-005"]!(src, "aviation.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["AV-005"]!(src, "aviation.ts")).toHaveLength(0);
+  });
+
+  it("AV-006 PRESENCE — db.transaction() in processBaggageClaim (atomic baggage_claims+damage_assessments+compensation_records+baggage_claim_filed UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "aviation.ts",
+      `function processBaggageClaim(db, passengerId, flightId, baggageTag, damageAmount, damageDescription) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO baggage_claims (id, passenger_id, flight_id, baggage_tag, damage_status, claim_amount, status, processed_at) VALUES (?, ?, ?, ?, 'damaged', ?, 'compensated', ?)").run(claimId, passengerId, flightId, baggageTag, damageAmount, processedAt);
+    db.prepare("INSERT INTO damage_assessments (id, claim_id, description, assessed_amount, assessed_at) VALUES (?, ?, ?, ?, ?)").run(assessmentId, claimId, damageDescription, damageAmount, processedAt);
+    db.prepare("INSERT INTO compensation_records (id, claim_id, passenger_id, total_amount, processed_at, notes) VALUES (?, ?, ?, ?, ?, ?)").run(compensationId, claimId, passengerId, totalCompensation, processedAt, 'Baggage damage compensation processed');
+    db.prepare("UPDATE baggage_claims SET baggage_claim_filed = 1 WHERE id = ?").run(claimId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AV-006"]!(src, "aviation.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["AV-006"]!(src, "aviation.ts")).toHaveLength(0);
   });
 });

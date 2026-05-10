@@ -592,6 +592,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processSuspensionRefund",
     ],
   },
+  {
+    container: "aviation",
+    rulesPath: `${SPEC_CONTAINER_BASE}/aviation/rules/aviation-rules.md`,
+    // Sprint 304 (F470): Aviation 합성 도메인 — 34번째 도메인 (항공 산업, 23번째 신규 산업).
+    // AV-001~AV-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 32 Sprint 연속 정점 (S264~S278+S283~S304).
+    // 23번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/aviation.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/aviation/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "boardPassenger",
+      "allocateFuel",
+      "dispatchFlight",
+      "transitionFlightStatus",
+      "rotateCrewSchedule",
+      "processBaggageClaim",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

@@ -1,0 +1,61 @@
+---
+# Test scenarios — Mining domain MN-001~MN-006
+# Sprint 305 F471 — Mining 합성 도메인
+
+scenarios:
+  - id: MN-001-PASS
+    rule: MN-001
+    description: "한도 내 채광 — 성공"
+    input: { totalExtracted: 30000, MAX_EXTRACTION_QUOTA: 50000 }
+    expected: PASS
+
+  - id: MN-001-FAIL
+    rule: MN-001
+    description: "일일 채광 한도 초과 — E422-QUOTA-EXCEEDED"
+    input: { totalExtracted: 50000, MAX_EXTRACTION_QUOTA: 50000 }
+    expected: FAIL
+    error: E422-QUOTA-EXCEEDED
+
+  - id: MN-002-PASS
+    rule: MN-002
+    description: "tier1 로열티 한도 내 — 성공"
+    input: { royaltyAmount: 5000000, royaltyTierLimit: 10000000 }
+    expected: PASS
+
+  - id: MN-002-FAIL
+    rule: MN-002
+    description: "로열티 한도 초과 — E422-ROYALTY-EXCEEDED"
+    input: { royaltyAmount: 15000000, royaltyTierLimit: 10000000 }
+    expected: FAIL
+    error: E422-ROYALTY-EXCEEDED
+
+  - id: MN-003-PASS
+    rule: MN-003
+    description: "planned 상태에서 발파 실행 — 성공"
+    input: { blastStatus: "planned" }
+    expected: PASS
+
+  - id: MN-004-PASS
+    rule: MN-004
+    description: "extracted → graded 전환 — 성공"
+    input: { from: "extracted", to: "graded" }
+    expected: PASS
+
+  - id: MN-004-FAIL
+    rule: MN-004
+    description: "extracted → shipped 직접 전환 불가 — E409-BATCH"
+    input: { from: "extracted", to: "shipped" }
+    expected: FAIL
+    error: E409-BATCH
+
+  - id: MN-005-PASS
+    rule: MN-005
+    description: "점검 예정일 이전 compliance 일괄 처리 — 성공"
+    input: { scheduledBefore: "2026-05-10", status: "pending" }
+    expected: PASS
+
+  - id: MN-006-PASS
+    rule: MN-006
+    description: "safety incident + investigation + corrective action atomic — 성공"
+    input: { incidentType: "fall", severity: "moderate" }
+    expected: PASS

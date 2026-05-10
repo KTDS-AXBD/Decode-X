@@ -1,0 +1,52 @@
+---
+# Provenance — MINING-001
+# 35번째 도메인 — Mining/광업 산업 합성 도메인 PoC (24번째 신규 산업)
+
+skillId: MINING-001
+extractedAt: "2026-05-10T00:00:00+09:00"
+extractedBy: "Decode-X Sprint 305 F471 — withRuleId 재사용 35번째 도메인 (Mining 산업, 24번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/mining/rules/mining-rules.md"
+    section: "Mining 합성 비즈니스 룰 — MN-001~MN-006"
+    businessRules: [MN-001, MN-002, MN-003, MN-004, MN-005, MN-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 광업(Mining) 산업 일반화 PoC. 채광한도/로열티한도/발파atomic/광석상태전환/환경점검/사고atomic 추상화. 35번째 도메인 + 24번째 신규 산업 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN). detector 신뢰도 누적 활용. 1차 산업 클러스터 (AG + MN 형성)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/mining.ts"
+    functions: [recordExtraction, computeRoyalty, processBlastOperation, transitionOreStatus, runComplianceBatch, processSafetyIncident]
+
+detection:
+  - ruleId: MN-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "totalExtracted >= MAX_EXTRACTION_QUOTA (UPPERCASE constant, Path A)"
+  - ruleId: MN-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "royaltyAmount > royaltyTierLimit (Path B, limit keyword)"
+  - ruleId: MN-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "db.transaction() — blast_records + safety_clearances + blast_operations UPDATE + ore_batches UPDATE"
+  - ruleId: MN-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "extracted → graded → processed → shipped"
+  - ruleId: MN-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "batch: checked=1 갱신 (CC-005 24번째 재사용)"
+  - ruleId: MN-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "db.transaction() — safety_incidents + incident_investigations + corrective_actions + safety_incidents.filed UPDATE"

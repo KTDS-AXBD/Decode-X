@@ -42,7 +42,8 @@ import type { BLRule } from "@ai-foundry/types";
 // F468 (Sprint 302): MR prefix 추가 (maritime 합성 도메인, 32번째 — 해운 산업). 🎯 AIF-PLAN-100 마일스톤
 // F469 (Sprint 303): TS prefix 추가 (transit 합성 도메인, 33번째 — 대중교통 산업). longer match first 누적 입증
 // F470 (Sprint 304): AV prefix 추가 (aviation 합성 도메인, 34번째 — 항공 산업). longer match first 누적 입증
-const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|LP|CC|DV|SB|IN|HC|ED|RE|LG|HO|TR|MF|RT|EN|GV|TC|BK|MD|PH|AG|CN|MR|TS|AV|P|V)-[A-Z]?\d{1,3}$/;
+// F471 (Sprint 305): MN prefix 추가 (mining 합성 도메인, 35번째 — 광업 산업). longer match first 누적 입증
+const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|LP|CC|DV|SB|IN|HC|ED|RE|LG|HO|TR|MF|RT|EN|GV|TC|BK|MD|PH|AG|CN|MR|TS|AV|MN|P|V)-[A-Z]?\d{1,3}$/;
 const HEADER_PATTERN =
   /\|\s*ID\s*\|\s*condition[^|]*\|\s*criteria[^|]*\|\s*outcome[^|]*\|\s*exception[^|]*\|/i;
 const SEPARATOR_PATTERN = /^\s*\|[\s:|-]+\|\s*$/;

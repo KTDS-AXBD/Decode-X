@@ -622,7 +622,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 189 detectors (Sprint 304 F470 — aviation AV-001~AV-006 added, 34번째 도메인 항공 산업, 23번째 신규)", () => {
+  it("exposes 195 detectors (Sprint 305 F471 — mining MN-001~MN-006 added, 35번째 도메인 광업 산업, 24번째 신규)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AG-001",
       "AG-002",
@@ -752,6 +752,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "MF-004",
       "MF-005",
       "MF-006",
+      "MN-001",
+      "MN-002",
+      "MN-003",
+      "MN-004",
+      "MN-005",
+      "MN-006",
       "MR-001",
       "MR-002",
       "MR-003",
@@ -814,6 +820,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "V-005",
       "V-006",
     ]);
+  });
+
+  it("MN-001~MN-006 registered (Sprint 305 F471 — mining 35번째 도메인)", () => {
+    expect(BL_DETECTOR_REGISTRY["MN-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["MN-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["MN-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["MN-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["MN-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["MN-006"]).toBeDefined();
   });
 
   it("each detector returns BLDivergenceMarker[]", () => {
@@ -2787,5 +2802,108 @@ function rotateCrewSchedule(db, rotationBefore) {
     const markers = BL_DETECTOR_REGISTRY["AV-006"]!(src, "aviation.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["AV-006"]!(src, "aviation.ts")).toHaveLength(0);
+  });
+});
+
+// F471 (Sprint 305) — mining domain MN-001~006 via withRuleId (33 Sprint 연속 정점)
+describe("mining domain — MN-001~006 via withRuleId (Sprint 305 F471)", () => {
+  it("MN-001 PRESENCE — totalExtracted >= MAX_EXTRACTION_QUOTA threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "mining.ts",
+      `const MAX_EXTRACTION_QUOTA = 50000;
+function recordExtraction(db, siteId, oreType, extractedTons, operatorId, shift) {
+  if (totalExtracted >= MAX_EXTRACTION_QUOTA) {
+    throw new MiningError('E422-QUOTA-EXCEEDED', 'Extraction quota exceeded maximum limit', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MN-001"]!(src, "mining.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["MN-001"]!(src, "mining.ts")).toHaveLength(0);
+  });
+
+  it("MN-002 PRESENCE — royaltyAmount > royaltyTierLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "mining.ts",
+      `function computeRoyalty(db, siteId, oreType, extractionValue, tierCode) {
+  const royaltyTierLimit = tier.max_royalty_limit;
+  if (royaltyAmount > royaltyTierLimit) {
+    throw new MiningError('E422-ROYALTY-EXCEEDED', 'Royalty amount exceeded tier limit', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MN-002"]!(src, "mining.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["MN-002"]!(src, "mining.ts")).toHaveLength(0);
+  });
+
+  it("MN-003 PRESENCE — db.transaction() in processBlastOperation (atomic blast_records+safety_clearances+blast_operations UPDATE+ore_batches UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "mining.ts",
+      `function processBlastOperation(db, siteId, blastZone, operatorId, clearanceCode) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO blast_records (id, site_id, blast_zone, operator_id, executed_at, clearance_code) VALUES (?, ?, ?, ?, ?, ?)").run(blastId, siteId, blastZone, operatorId, executedAt, clearanceCode);
+    db.prepare("INSERT INTO safety_clearances (id, blast_id, clearance_code, issued_at, status) VALUES (?, ?, ?, ?, 'approved')").run(clearanceId, blastId, clearanceCode, executedAt);
+    db.prepare("UPDATE blast_operations SET status = 'executed', executed_at = ?, clearance_code = ? WHERE id = ?").run(executedAt, clearanceCode, pending.id);
+    db.prepare("UPDATE ore_batches SET status = 'extracted' WHERE extraction_id IN (SELECT id FROM extractions WHERE site_id = ? AND status = 'recorded')").run(siteId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MN-003"]!(src, "mining.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["MN-003"]!(src, "mining.ts")).toHaveLength(0);
+  });
+
+  it("MN-004 PRESENCE — status comparison + 'graded'/'processed'/'shipped' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "mining.ts",
+      `function transitionOreStatus(db, batchId, newStatus) {
+  const batch = db.prepare("SELECT status FROM ore_batches WHERE id = ?").get(batchId);
+  if (batch.status === 'extracted') throw new MiningError("E409-BATCH", "Invalid transition", 409);
+  db.prepare("UPDATE ore_batches SET status = 'graded' WHERE id = ?").run(batchId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MN-004"]!(src, "mining.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["MN-004"]!(src, "mining.ts")).toHaveLength(0);
+  });
+
+  it("MN-005 PRESENCE — batch checked update in runComplianceBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "mining.ts",
+      `function transitionOreStatus(db, batchId, newStatus) {
+  const batch = db.prepare("SELECT status FROM ore_batches WHERE id = ?").get(batchId);
+  if (batch.status === 'extracted') throw new MiningError("E409-BATCH", "Invalid", 409);
+  db.prepare("UPDATE ore_batches SET status = 'graded' WHERE id = ?").run(batchId);
+}
+function runComplianceBatch(db, scheduledBefore) {
+  const candidates = db.prepare("SELECT id FROM compliance_checks WHERE scheduled_at <= ? AND status = 'pending'").all(scheduledBefore);
+  for (const check of candidates) {
+    db.prepare("UPDATE compliance_checks SET status = 'checked', checked_at = ? WHERE id = ?").run(new Date().toISOString(), check.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MN-005"]!(src, "mining.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["MN-005"]!(src, "mining.ts")).toHaveLength(0);
+  });
+
+  it("MN-006 PRESENCE — db.transaction() in processSafetyIncident (atomic safety_incidents+incident_investigations+corrective_actions+safety_incidents.filed UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "mining.ts",
+      `function processSafetyIncident(db, siteId, incidentType, severity, description, correctiveAction) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO safety_incidents (id, site_id, incident_type, severity, occurred_at, status, reported_at, filed) VALUES (?, ?, ?, ?, ?, 'reported', ?, 0)").run(incidentId, siteId, incidentType, severity, reportedAt, reportedAt);
+    db.prepare("INSERT INTO incident_investigations (id, incident_id, description, investigated_at) VALUES (?, ?, ?, ?)").run(investigationId, incidentId, description, reportedAt);
+    db.prepare("INSERT INTO corrective_actions (id, incident_id, action_description, created_at) VALUES (?, ?, ?, ?)").run(correctiveId, incidentId, correctiveAction, reportedAt);
+    db.prepare("UPDATE safety_incidents SET filed = 1 WHERE id = ?").run(incidentId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MN-006"]!(src, "mining.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["MN-006"]!(src, "mining.ts")).toHaveLength(0);
   });
 });

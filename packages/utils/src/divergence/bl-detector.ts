@@ -837,4 +837,12 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "AG-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "AG-004"),
   "AG-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "AG-005"),
   "AG-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "AG-006"),
+
+  // F467 (Sprint 301) — Construction 합성 도메인 (31번째 도메인, 건설 산업, 20번째 신규 산업) 🏆 20 산업 round number
+  "CN-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "CN-001"),
+  "CN-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "CN-002"),
+  "CN-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "CN-003"),
+  "CN-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "CN-004"),
+  "CN-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "CN-005"),
+  "CN-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "CN-006"),
 };

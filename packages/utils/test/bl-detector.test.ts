@@ -622,7 +622,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 165 detectors (Sprint 300 F466 — agriculture AG-001~AG-006 added, 30번째 도메인 농업 산업, 19번째 신규, 🏆 Sprint 300 마일스톤)", () => {
+  it("exposes 171 detectors (Sprint 301 F467 — construction CN-001~CN-006 added, 31번째 도메인 건설 산업, 20번째 신규, 🏆 20 산업 round number)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AG-001",
       "AG-002",
@@ -674,6 +674,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "CC-004",
       "CC-005",
       "CC-006",
+      "CN-001",
+      "CN-002",
+      "CN-003",
+      "CN-004",
+      "CN-005",
+      "CN-006",
       "DV-001",
       "DV-002",
       "DV-003",
@@ -2355,5 +2361,107 @@ function markBatchGrading(db, gradingCutoffDate) {
     const markers = BL_DETECTOR_REGISTRY["AG-006"]!(src, "agriculture.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["AG-006"]!(src, "agriculture.ts")).toHaveLength(0);
+  });
+});
+
+// F467 (Sprint 301) — construction domain CN-001~006 PRESENCE (idempotent 2-step) 🏆 20 산업 round number
+describe("construction domain — CN-001~006 via withRuleId (Sprint 301 F467)", () => {
+  it("CN-001 PRESENCE — bidAmount >= MAX_BID_AMOUNT_LIMIT threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "construction.ts",
+      `const MAX_BID_AMOUNT_LIMIT = 1000000000;
+function submitBid(db, projectId, contractorId, bidAmount) {
+  if (bidAmount >= MAX_BID_AMOUNT_LIMIT) {
+    throw new ConstructionError('E422-BID-LIMIT', 'Bid amount exceeded maximum limit', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["CN-001"]!(src, "construction.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["CN-001"]!(src, "construction.ts")).toHaveLength(0);
+  });
+
+  it("CN-002 PRESENCE — retentionRate > retentionRateLimit (Path B, 'limit' keyword)", () => {
+    const src = parseTypeScriptSource(
+      "construction.ts",
+      `function computePaymentRetention(db, projectId, paymentAmount, retentionRate) {
+  const retentionRateLimit = 0.07;
+  if (retentionRate > retentionRateLimit) {
+    throw new ConstructionError('E422-RETENTION-EXCEEDED', 'Retention rate exceeded limit', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["CN-002"]!(src, "construction.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["CN-002"]!(src, "construction.ts")).toHaveLength(0);
+  });
+
+  it("CN-003 PRESENCE — db.transaction() in processChangeOrder (atomic change_orders+approvals+contract_value UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "construction.ts",
+      `function processChangeOrder(db, projectId, description, unitPriceAdjustment, approverId) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO change_orders (id, project_id, description, unit_price_adjustment, approved_at, status) VALUES (?, ?, ?, ?, ?, 'approved')").run(changeOrderId, projectId, description, unitPriceAdjustment, approvedAt);
+    db.prepare("UPDATE projects SET contract_value = ? WHERE id = ?").run(newContractValue, projectId);
+    db.prepare("INSERT INTO change_order_approvals (id, change_order_id, approver_id, approved_at) VALUES (?, ?, ?, ?)").run(randomUUID(), changeOrderId, approverId, approvedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["CN-003"]!(src, "construction.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["CN-003"]!(src, "construction.ts")).toHaveLength(0);
+  });
+
+  it("CN-004 PRESENCE — status comparison + 'awarded'/'in_progress' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "construction.ts",
+      `function transitionProjectStatus(db, projectId, newStatus) {
+  const project = db.prepare("SELECT status FROM projects WHERE id = ?").get(projectId);
+  if (project.status === 'bidding') throw new ConstructionError("E409-PROJECT", "Invalid transition", 409);
+  db.prepare("UPDATE projects SET status = 'awarded' WHERE id = ?").run(projectId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["CN-004"]!(src, "construction.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["CN-004"]!(src, "construction.ts")).toHaveLength(0);
+  });
+
+  it("CN-005 PRESENCE — batch status='completed' update in markMilestoneCompletion (file context)", () => {
+    // detector는 파일 전체 스캔 — transitionProjectStatus 함수의 status === 비교식이 foundComparison=true 확정
+    const src = parseTypeScriptSource(
+      "construction.ts",
+      `function transitionProjectStatus(db, projectId, newStatus) {
+  const project = db.prepare("SELECT status FROM projects WHERE id = ?").get(projectId);
+  if (project.status === 'bidding') throw new ConstructionError("E409-PROJECT", "Invalid", 409);
+  db.prepare("UPDATE projects SET status = 'awarded' WHERE id = ?").run(projectId);
+}
+function markMilestoneCompletion(db, dueDateCutoff) {
+  const candidates = db.prepare("SELECT id FROM milestones WHERE completed = 0 AND due_date <= ?").all(dueDateCutoff);
+  for (const milestone of candidates) {
+    db.prepare("UPDATE milestones SET completed = 1, status = 'completed' WHERE id = ?").run(milestone.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["CN-005"]!(src, "construction.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["CN-005"]!(src, "construction.ts")).toHaveLength(0);
+  });
+
+  it("CN-006 PRESENCE — db.transaction() in processSafetyInspection (atomic inspections+correction_orders+last_inspection UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "construction.ts",
+      `function processSafetyInspection(db, projectId, inspectorId, passed, correctionNotes) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO safety_inspections (id, project_id, inspector_id, inspected_at, result) VALUES (?, ?, ?, ?, ?)").run(inspectionId, projectId, inspectorId, inspectedAt, result);
+    db.prepare("INSERT INTO correction_orders (id, inspection_id, project_id, notes, issued_at) VALUES (?, ?, ?, ?, ?)").run(correctionOrderId, inspectionId, projectId, correctionNotes, inspectedAt);
+    db.prepare("UPDATE projects SET last_inspection_at = ?, last_inspection_result = ? WHERE id = ?").run(inspectedAt, result, projectId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["CN-006"]!(src, "construction.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["CN-006"]!(src, "construction.ts")).toHaveLength(0);
   });
 });

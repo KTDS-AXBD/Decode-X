@@ -631,6 +631,26 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processSafetyIncident",
     ],
   },
+  {
+    container: "defense",
+    rulesPath: `${SPEC_CONTAINER_BASE}/defense/rules/defense-rules.md`,
+    // Sprint 306 (F472): Defense 합성 도메인 — 36번째 도메인 (국방 산업, 25번째 신규 산업).
+    // DF-001~DF-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 34 Sprint 연속 정점 (S264~S278+S283~S306).
+    // 25번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF).
+    // 🏆 25 산업 연속 0 ABSENCE round number 마일스톤. 정부 클러스터 형성 (GV + DF). 6 BLs 균형 패턴 26번째 정착.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/defense.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/defense/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "recordWeaponInventory",
+      "checkClearanceLevel",
+      "dispatchMission",
+      "transitionMissionStatus",
+      "markTrainingRotation",
+      "processClassifiedDocument",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

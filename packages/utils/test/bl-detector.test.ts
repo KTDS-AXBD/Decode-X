@@ -622,7 +622,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 195 detectors (Sprint 305 F471 — mining MN-001~MN-006 added, 35번째 도메인 광업 산업, 24번째 신규)", () => {
+  it("exposes 201 detectors (Sprint 306 F472 — defense DF-001~DF-006 added, 36번째 도메인 국방 산업, 25번째 신규)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AG-001",
       "AG-002",
@@ -686,6 +686,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "CN-004",
       "CN-005",
       "CN-006",
+      "DF-001",
+      "DF-002",
+      "DF-003",
+      "DF-004",
+      "DF-005",
+      "DF-006",
       "DV-001",
       "DV-002",
       "DV-003",
@@ -829,6 +835,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["MN-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["MN-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["MN-006"]).toBeDefined();
+  });
+
+  it("DF-001~DF-006 registered (Sprint 306 F472 — defense 36번째 도메인)", () => {
+    expect(BL_DETECTOR_REGISTRY["DF-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["DF-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["DF-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["DF-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["DF-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["DF-006"]).toBeDefined();
   });
 
   it("each detector returns BLDivergenceMarker[]", () => {
@@ -2905,5 +2920,109 @@ function runComplianceBatch(db, scheduledBefore) {
     const markers = BL_DETECTOR_REGISTRY["MN-006"]!(src, "mining.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["MN-006"]!(src, "mining.ts")).toHaveLength(0);
+  });
+});
+
+// F472 (Sprint 306) — defense domain DF-001~006 via withRuleId (34 Sprint 연속 정점)
+describe("defense domain — DF-001~006 via withRuleId (Sprint 306 F472)", () => {
+  it("DF-001 PRESENCE — totalQuantity >= MAX_WEAPON_INVENTORY_LIMIT threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "defense.ts",
+      `const MAX_WEAPON_INVENTORY_LIMIT = 500;
+function recordWeaponInventory(db, unitId, weaponType, quantity, operatorId) {
+  if (totalQuantity >= MAX_WEAPON_INVENTORY_LIMIT) {
+    throw new DefenseError('E422-INVENTORY-EXCEEDED', 'Weapon inventory exceeded maximum limit', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["DF-001"]!(src, "defense.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["DF-001"]!(src, "defense.ts")).toHaveLength(0);
+  });
+
+  it("DF-002 PRESENCE — clearanceLevel > clearanceLevelLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "defense.ts",
+      `function checkClearanceLevel(db, personnelId, requiredLevel, tierCode) {
+  const clearanceLevelLimit = tier.clearance_level_limit;
+  if (clearanceLevel > clearanceLevelLimit) {
+    throw new DefenseError('E422-CLEARANCE-EXCEEDED', 'Clearance level exceeded tier limit', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["DF-002"]!(src, "defense.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["DF-002"]!(src, "defense.ts")).toHaveLength(0);
+  });
+
+  it("DF-003 PRESENCE — db.transaction() in dispatchMission (atomic missions+mission_assignments+mission_equipment+mission_communications INSERT)", () => {
+    const src = parseTypeScriptSource(
+      "defense.ts",
+      `function dispatchMission(db, unitId, missionCode, personnelIds, equipmentIds, communicationChannel) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO missions (id, unit_id, mission_code, status, planned_at, dispatched_at, completed_at) VALUES (?, ?, ?, 'executing', ?, ?, NULL)").run(missionId, unitId, missionCode, dispatchedAt, dispatchedAt);
+    db.prepare("INSERT INTO mission_assignments (id, mission_id, personnel_id, role, assigned_at) VALUES (?, ?, ?, 'operator', ?)").run(randomUUID(), missionId, personnelId, dispatchedAt);
+    db.prepare("INSERT INTO mission_equipment (id, mission_id, equipment_id, quantity, assigned_at) VALUES (?, ?, ?, 1, ?)").run(randomUUID(), missionId, equipmentId, dispatchedAt);
+    db.prepare("INSERT INTO mission_communications (id, mission_id, channel, protocol, activated_at) VALUES (?, ?, ?, 'encrypted', ?)").run(commId, missionId, communicationChannel, dispatchedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["DF-003"]!(src, "defense.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["DF-003"]!(src, "defense.ts")).toHaveLength(0);
+  });
+
+  it("DF-004 PRESENCE — status comparison + 'briefed'/'executing'/'completed' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "defense.ts",
+      `function transitionMissionStatus(db, missionId, newStatus) {
+  const mission = db.prepare("SELECT status FROM missions WHERE id = ?").get(missionId);
+  if (mission.status === 'planned') throw new DefenseError("E409-MISSION", "Invalid transition", 409);
+  db.prepare("UPDATE missions SET status = 'briefed' WHERE id = ?").run(missionId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["DF-004"]!(src, "defense.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["DF-004"]!(src, "defense.ts")).toHaveLength(0);
+  });
+
+  it("DF-005 PRESENCE — batch completed update in markTrainingRotation (file context)", () => {
+    const src = parseTypeScriptSource(
+      "defense.ts",
+      `function transitionMissionStatus(db, missionId, newStatus) {
+  const mission = db.prepare("SELECT status FROM missions WHERE id = ?").get(missionId);
+  if (mission.status === 'planned') throw new DefenseError("E409-MISSION", "Invalid", 409);
+  db.prepare("UPDATE missions SET status = 'briefed' WHERE id = ?").run(missionId);
+}
+function markTrainingRotation(db, scheduledBefore) {
+  const candidates = db.prepare("SELECT id FROM training_schedules WHERE scheduled_at <= ? AND status = 'scheduled'").all(scheduledBefore);
+  for (const schedule of candidates) {
+    db.prepare("UPDATE training_schedules SET status = 'completed', completed_at = ? WHERE id = ?").run(new Date().toISOString(), schedule.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["DF-005"]!(src, "defense.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["DF-005"]!(src, "defense.ts")).toHaveLength(0);
+  });
+
+  it("DF-006 PRESENCE — db.transaction() in processClassifiedDocument (atomic classified_documents+document_validations+document_issuances+document_audit_logs+classified_documents.status UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "defense.ts",
+      `function processClassifiedDocument(db, unitId, documentCode, classificationLevel, validatorId, recipientId) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO classified_documents (id, unit_id, document_code, classification_level, status, processed_at, issued_at) VALUES (?, ?, ?, ?, 'classified', ?, ?)").run(documentId, unitId, documentCode, classificationLevel, issuedAt, issuedAt);
+    db.prepare("INSERT INTO document_validations (id, document_id, validated_by, validated_at, result) VALUES (?, ?, ?, ?, 'approved')").run(validationId, documentId, validatorId, issuedAt);
+    db.prepare("INSERT INTO document_issuances (id, document_id, issued_to, issued_at, receipt_confirmed) VALUES (?, ?, ?, ?, 0)").run(issuanceId, documentId, recipientId, issuedAt);
+    db.prepare("INSERT INTO document_audit_logs (id, document_id, action, performed_by, performed_at) VALUES (?, ?, 'issued', ?, ?)").run(auditId, documentId, validatorId, issuedAt);
+    db.prepare("UPDATE classified_documents SET status = 'issued' WHERE id = ?").run(documentId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["DF-006"]!(src, "defense.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["DF-006"]!(src, "defense.ts")).toHaveLength(0);
   });
 });

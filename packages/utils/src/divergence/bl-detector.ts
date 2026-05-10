@@ -877,4 +877,12 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "MN-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "MN-004"),
   "MN-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "MN-005"),
   "MN-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "MN-006"),
+
+  // F472 (Sprint 306) — Defense 합성 도메인 (36번째 도메인, 국방 산업, 25번째 신규 산업)
+  "DF-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "DF-001"),
+  "DF-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "DF-002"),
+  "DF-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "DF-003"),
+  "DF-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "DF-004"),
+  "DF-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "DF-005"),
+  "DF-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "DF-006"),
 };

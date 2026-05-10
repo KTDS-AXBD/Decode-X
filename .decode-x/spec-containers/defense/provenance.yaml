@@ -1,0 +1,52 @@
+---
+# Provenance — DEFENSE-001
+# 36번째 도메인 — Defense/국방 산업 합성 도메인 PoC (25번째 신규 산업)
+
+skillId: DEFENSE-001
+extractedAt: "2026-05-10T00:00:00+09:00"
+extractedBy: "Decode-X Sprint 306 F472 — withRuleId 재사용 36번째 도메인 (Defense 산업, 25번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/defense/rules/defense-rules.md"
+    section: "Defense 합성 비즈니스 룰 — DF-001~DF-006"
+    businessRules: [DF-001, DF-002, DF-003, DF-004, DF-005, DF-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 국방(Defense) 산업 일반화 PoC. 무기고한도/보안등급한도/임무파견atomic/임무상태전환/훈련교체/기밀문서atomic 추상화. 36번째 도메인 + 25번째 신규 산업 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF). detector 신뢰도 누적 활용. 정부 클러스터 (GV + DF 형성). 🏆 25 산업 연속 0 ABSENCE round number 마일스톤."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/defense.ts"
+    functions: [recordWeaponInventory, checkClearanceLevel, dispatchMission, transitionMissionStatus, markTrainingRotation, processClassifiedDocument]
+
+detection:
+  - ruleId: DF-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "totalQuantity >= MAX_WEAPON_INVENTORY_LIMIT (UPPERCASE constant, Path A)"
+  - ruleId: DF-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "clearanceLevel > clearanceLevelLimit (Path B, limit keyword)"
+  - ruleId: DF-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "db.transaction() — missions INSERT + mission_assignments INSERT + mission_equipment INSERT + mission_communications INSERT"
+  - ruleId: DF-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "planned → briefed → executing → completed → debriefed"
+  - ruleId: DF-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "batch: completed=1 갱신 (CC-005 25번째 재사용)"
+  - ruleId: DF-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "db.transaction() — classified_documents INSERT + document_validations INSERT + document_issuances INSERT + document_audit_logs INSERT + classified_documents.status UPDATE"

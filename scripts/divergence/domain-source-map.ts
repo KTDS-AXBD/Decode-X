@@ -611,6 +611,26 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processBaggageClaim",
     ],
   },
+  {
+    container: "mining",
+    rulesPath: `${SPEC_CONTAINER_BASE}/mining/rules/mining-rules.md`,
+    // Sprint 305 (F471): Mining 합성 도메인 — 35번째 도메인 (광업 산업, 24번째 신규 산업).
+    // MN-001~MN-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 33 Sprint 연속 정점 (S264~S278+S283~S305).
+    // 24번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN).
+    // 🏆 1차 산업 클러스터 형성 (AG + MN). 6 BLs 균형 패턴 25번째 정착.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/mining.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/mining/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "recordExtraction",
+      "computeRoyalty",
+      "processBlastOperation",
+      "transitionOreStatus",
+      "runComplianceBatch",
+      "processSafetyIncident",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

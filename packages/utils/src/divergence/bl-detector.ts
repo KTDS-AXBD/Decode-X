@@ -869,4 +869,12 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "AV-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "AV-004"),
   "AV-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "AV-005"),
   "AV-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "AV-006"),
+
+  // F471 (Sprint 305) — Mining 합성 도메인 (35번째 도메인, 광업 산업, 24번째 신규 산업)
+  "MN-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "MN-001"),
+  "MN-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "MN-002"),
+  "MN-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "MN-003"),
+  "MN-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "MN-004"),
+  "MN-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "MN-005"),
+  "MN-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "MN-006"),
 };

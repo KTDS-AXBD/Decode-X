@@ -1,0 +1,52 @@
+---
+# Provenance — CHARITY-001
+# 38번째 도메인 — Charity/비영리 산업 합성 도메인 PoC (27번째 신규 산업)
+
+skillId: CHARITY-001
+extractedAt: "2026-05-10T00:00:00+09:00"
+extractedBy: "Decode-X Sprint 308 F474 — withRuleId 재사용 38번째 도메인 (Charity 산업, 27번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/charity/rules/charity-rules.md"
+    section: "Charity 합성 비즈니스 룰 — CH-001~CH-006"
+    businessRules: [CH-001, CH-002, CH-003, CH-004, CH-005, CH-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 비영리(Charity/NPO) 산업 일반화 PoC. 영수증한도/보조금한도/기금집행atomic/캠페인상태전환/자원봉사배치/세금증명atomic 추상화. 38번째 도메인 + 27번째 신규 산업 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH). detector 신뢰도 누적 활용. 🏆 27 산업 연속 0 ABSENCE 마일스톤."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/charity.ts"
+    functions: [recordDonation, applyGrant, disburseFund, transitionCampaignStatus, markVolunteerSchedule, issueTaxCertificate]
+
+detection:
+  - ruleId: CH-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "amount >= MAX_RECEIPT_AMOUNT (UPPERCASE constant, Path A)"
+  - ruleId: CH-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "requestedAmount > grantTierLimit (Path B, limit keyword)"
+  - ruleId: CH-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "db.transaction() — fund_disbursements INSERT + grants UPDATE + disbursement_receipts INSERT + fund_disbursements.status UPDATE"
+  - ruleId: CH-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "draft → active → closed → reported → audited"
+  - ruleId: CH-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "batch: assigned 갱신 (CC-005 27번째 재사용)"
+  - ruleId: CH-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "db.transaction() — tax_certificates INSERT + donations UPDATE + tax_reports INSERT + tax_certificates.reported_at UPDATE"

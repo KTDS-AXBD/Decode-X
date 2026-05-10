@@ -1,0 +1,61 @@
+---
+# Test scenarios — Charity domain CH-001~CH-006
+# Sprint 308 F474 — Charity 합성 도메인
+
+scenarios:
+  - id: CH-001-PASS
+    rule: CH-001
+    description: "한도 내 기부 영수증 발급 — 성공"
+    input: { amount: 5000000, MAX_RECEIPT_AMOUNT: 10000000 }
+    expected: PASS
+
+  - id: CH-001-FAIL
+    rule: CH-001
+    description: "기부 영수증 한도 초과 — E422-RECEIPT-LIMIT-EXCEEDED"
+    input: { amount: 10000000, MAX_RECEIPT_AMOUNT: 10000000 }
+    expected: FAIL
+    error: E422-RECEIPT-LIMIT-EXCEEDED
+
+  - id: CH-002-PASS
+    rule: CH-002
+    description: "보조금 한도 내 — 성공"
+    input: { requestedAmount: 1000000, grantTierLimit: 5000000 }
+    expected: PASS
+
+  - id: CH-002-FAIL
+    rule: CH-002
+    description: "보조금 한도 초과 — E422-GRANT-TIER-EXCEEDED"
+    input: { requestedAmount: 6000000, grantTierLimit: 5000000 }
+    expected: FAIL
+    error: E422-GRANT-TIER-EXCEEDED
+
+  - id: CH-003-PASS
+    rule: CH-003
+    description: "승인된 보조금 기금 집행 — 성공"
+    input: { grantStatus: "approved" }
+    expected: PASS
+
+  - id: CH-004-PASS
+    rule: CH-004
+    description: "draft → active 전환 — 성공"
+    input: { from: "draft", to: "active" }
+    expected: PASS
+
+  - id: CH-004-FAIL
+    rule: CH-004
+    description: "draft → audited 직접 전환 불가 — E409-CAMPAIGN"
+    input: { from: "draft", to: "audited" }
+    expected: FAIL
+    error: E409-CAMPAIGN
+
+  - id: CH-005-PASS
+    rule: CH-005
+    description: "기준일 이전 volunteer_schedule 일괄 배정 — 성공"
+    input: { scheduledBefore: "2026-05-10", status: "pending" }
+    expected: PASS
+
+  - id: CH-006-PASS
+    rule: CH-006
+    description: "세금증명 발급 + 신고 atomic — 성공"
+    input: { donationExists: true }
+    expected: PASS

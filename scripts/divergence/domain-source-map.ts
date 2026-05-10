@@ -671,6 +671,26 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processRefundRebook",
     ],
   },
+  {
+    container: "charity",
+    rulesPath: `${SPEC_CONTAINER_BASE}/charity/rules/charity-rules.md`,
+    // Sprint 308 (F474): Charity 합성 도메인 — 38번째 도메인 (비영리 산업, 27번째 신규 산업).
+    // CH-001~CH-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 36 Sprint 연속 정점 (S264~S278+S283~S308).
+    // 27번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH).
+    // 🏆 27 산업 연속 0 ABSENCE 마일스톤. nonprofit 추가. 6 BLs 균형 패턴 28번째 정착.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/charity.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/charity/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "recordDonation",
+      "applyGrant",
+      "disburseFund",
+      "transitionCampaignStatus",
+      "markVolunteerSchedule",
+      "issueTaxCertificate",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

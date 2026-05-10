@@ -630,6 +630,7 @@ function withRuleId(
  * Sprint 260 (F427): BL-024/026/029 (refund domain temporal/expiry/cashback).
  * Sprint 262 (F429): BL-005/006/007/008/014/015/022 (universal patterns via withRuleId).
  * Sprint 264 (F431): BL-G002/G003/G004/G005/G006 (gift domain via withRuleId).
+ * Sprint 314 (F480): BL-001/002/003/004 (lpon-charge gap fill — 95.0% coverage 돌파).
  *
  * 미등록 BL-ID는 detector scope 외 — provenance cross-check에서 UNKNOWN 분류.
  */
@@ -640,6 +641,15 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "BL-027": (sf, fn) => detectUnderImplementation(sf, fn),
   "BL-028": detectHardCodedExclusion,
   "BL-029": detectExpiryCheck,
+  // Sprint 314 (F480) — lpon-charge gap fill: 외부 출금 API try/catch + db.transaction
+  // BL-001 (외부 출금 API 호출) / BL-002 (출금 성공 → 충전 완료 단일 tx) /
+  // BL-003 (출금 실패 catch branch) / BL-004 (출금 응답 timeout — 동일 try/catch)
+  // 모두 charging.ts executeCharge 내 try/catch + db.transaction 패턴 — AtomicTransaction 매핑.
+  // detect-bl coverage: 243/260 → 247/260 = 95.0% 돌파.
+  "BL-001": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BL-001"),
+  "BL-002": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BL-002"),
+  "BL-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BL-003"),
+  "BL-004": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BL-004"),
   // Sprint 262 (F429) — universal threshold
   "BL-005": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "BL-005"),
   "BL-006": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "BL-006"),

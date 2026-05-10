@@ -621,8 +621,63 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
   });
 });
 
+describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
+  // charging.ts executeCharge 패턴 — 외부 출금 API try/catch + db.transaction.
+  // BL-001 (외부 호출) / BL-002 (단일 tx) / BL-003 (catch branch) / BL-004 (timeout 동일 catch)
+  // 모두 AtomicTransaction PRESENCE 입증.
+  const chargingSrc = `
+    async function executeCharge(db, input, api) {
+      let externalTxId;
+      try {
+        const result = await api.requestWithdrawal(input.accountId, input.amount);
+        externalTxId = result.externalTxId;
+      } catch {
+        throw new ChargeError('E500', 'Withdrawal failed', 500);
+      }
+      const tx = db.transaction(() => {
+        db.prepare("INSERT INTO charge_transactions (id, status) VALUES (?, 'CHARGED')").run(input.chargeId);
+        db.prepare("UPDATE vouchers SET balance = balance + ? WHERE id = ?").run(input.amount, input.voucherId);
+      });
+      tx();
+    }
+  `;
+
+  it("BL-001 (외부 출금 API try/catch) — PRESENCE → 0 markers", () => {
+    const sf = parseTypeScriptSource("charging.ts", chargingSrc);
+    expect(BL_DETECTOR_REGISTRY["BL-001"]!(sf, "charging.ts")).toEqual([]);
+  });
+
+  it("BL-002 (db.transaction 단일 tx) — PRESENCE → 0 markers", () => {
+    const sf = parseTypeScriptSource("charging.ts", chargingSrc);
+    expect(BL_DETECTOR_REGISTRY["BL-002"]!(sf, "charging.ts")).toEqual([]);
+  });
+
+  it("BL-003 (catch branch — 출금 실패 처리) — PRESENCE → 0 markers", () => {
+    const sf = parseTypeScriptSource("charging.ts", chargingSrc);
+    expect(BL_DETECTOR_REGISTRY["BL-003"]!(sf, "charging.ts")).toEqual([]);
+  });
+
+  it("BL-004 (timeout — 동일 try/catch 분기) — PRESENCE → 0 markers", () => {
+    const sf = parseTypeScriptSource("charging.ts", chargingSrc);
+    expect(BL_DETECTOR_REGISTRY["BL-004"]!(sf, "charging.ts")).toEqual([]);
+  });
+
+  it("BL-001 ABSENCE — sequential writes (no try/catch + no db.transaction) → 1 marker with ruleId BL-001", () => {
+    const partial = `
+      function nonAtomic(db) {
+        db.prepare("INSERT INTO charge_transactions (id) VALUES (?)").run("c1");
+        db.prepare("UPDATE vouchers SET balance = balance + 100").run();
+      }
+    `;
+    const sf = parseTypeScriptSource("charging.ts", partial);
+    const markers = BL_DETECTOR_REGISTRY["BL-001"]!(sf, "charging.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BL-001");
+  });
+});
+
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 243 detectors (Sprint 313 F479 — beauty BT-001~BT-006 added, 43번째 도메인 미용실 산업, 32번째 신규)", () => {
+  it("exposes 247 detectors (Sprint 314 F480 — lpon-charge BL-001~BL-004 added, 95.0% coverage 돌파)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AG-001",
       "AG-002",
@@ -647,6 +702,10 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "BK-004",
       "BK-005",
       "BK-006",
+      "BL-001",
+      "BL-002",
+      "BL-003",
+      "BL-004",
       "BL-005",
       "BL-006",
       "BL-007",
@@ -949,6 +1008,13 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["BT-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["BT-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["BT-006"]).toBeDefined();
+  });
+
+  it("BL-001~BL-004 registered (Sprint 314 F480 — lpon-charge gap fill, 95.0% coverage 돌파)", () => {
+    expect(BL_DETECTOR_REGISTRY["BL-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BL-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BL-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BL-004"]).toBeDefined();
   });
 
   it("each detector returns BLDivergenceMarker[]", () => {

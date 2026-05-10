@@ -622,8 +622,14 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 159 detectors (Sprint 299 F465 — pharmacy PH-001~PH-006 added, 29번째 도메인 제약/약국 산업, 18번째 신규, 90.4% coverage 안정화)", () => {
+  it("exposes 165 detectors (Sprint 300 F466 — agriculture AG-001~AG-006 added, 30번째 도메인 농업 산업, 19번째 신규, 🏆 Sprint 300 마일스톤)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
+      "AG-001",
+      "AG-002",
+      "AG-003",
+      "AG-004",
+      "AG-005",
+      "AG-006",
       "BB-001",
       "BB-002",
       "BB-003",
@@ -2246,5 +2252,108 @@ function markRecalledBatches(db, recallCutoffDate) {
     const markers = BL_DETECTOR_REGISTRY["PH-006"]!(src, "pharmacy.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["PH-006"]!(src, "pharmacy.ts")).toHaveLength(0);
+  });
+});
+
+// F466 (Sprint 300) — agriculture domain AG-001~006 PRESENCE (idempotent 2-step) 🏆 Sprint 300 마일스톤
+describe("agriculture domain — AG-001~006 via withRuleId (Sprint 300 F466)", () => {
+  it("AG-001 PRESENCE — yieldPerHectare >= MAX_YIELD_PER_HECTARE threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "agriculture.ts",
+      `const MAX_YIELD_PER_HECTARE = 10000;
+function recordCropYield(db, cropId, yieldKg) {
+  const yieldPerHectare = yieldKg / areaHectares;
+  if (yieldPerHectare >= MAX_YIELD_PER_HECTARE) {
+    throw new AgricultureError('E422-YIELD-EXCEEDED', 'Crop yield per hectare exceeded', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AG-001"]!(src, "agriculture.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["AG-001"]!(src, "agriculture.ts")).toHaveLength(0);
+  });
+
+  it("AG-002 PRESENCE — pesticideApplied > pesticideQuotaLimit (Path B, 'limit' keyword)", () => {
+    const src = parseTypeScriptSource(
+      "agriculture.ts",
+      `function applyPesticide(db, fieldId, pesticideApplied) {
+  const pesticideQuotaLimit = 80;
+  if (pesticideApplied > pesticideQuotaLimit) {
+    throw new AgricultureError('E422-PESTICIDE-QUOTA', 'Pesticide quota exceeded', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AG-002"]!(src, "agriculture.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["AG-002"]!(src, "agriculture.ts")).toHaveLength(0);
+  });
+
+  it("AG-003 PRESENCE — db.transaction() in processHarvest (atomic harvest+grading+status INSERT)", () => {
+    const src = parseTypeScriptSource(
+      "agriculture.ts",
+      `function processHarvest(db, cropId, inspectorId) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO harvests (id, crop_id, field_id, yield_kg, harvested_at, inspector_id) VALUES (?, ?, ?, ?, ?, ?)").run(harvestId, cropId, fieldId, yieldKg, harvestedAt, inspectorId);
+    db.prepare("INSERT INTO gradings (id, harvest_id, grade, graded_at, grader_id) VALUES (?, ?, ?, ?, ?)").run(gradingId, harvestId, grade, harvestedAt, inspectorId);
+    db.prepare("UPDATE crops SET status = 'harvested', harvested_at = ?, grade = ? WHERE id = ?").run(harvestedAt, grade, cropId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AG-003"]!(src, "agriculture.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["AG-003"]!(src, "agriculture.ts")).toHaveLength(0);
+  });
+
+  it("AG-004 PRESENCE — status comparison + 'harvested'/'sold' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "agriculture.ts",
+      `function transitionCropStatus(db, cropId, newStatus) {
+  const crop = db.prepare("SELECT status FROM crops WHERE id = ?").get(cropId);
+  if (crop.status === 'planted') throw new AgricultureError("E409-CROP", "Invalid transition", 409);
+  db.prepare("UPDATE crops SET status = 'harvested' WHERE id = ?").run(cropId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AG-004"]!(src, "agriculture.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["AG-004"]!(src, "agriculture.ts")).toHaveLength(0);
+  });
+
+  it("AG-005 PRESENCE — batch status='graded' update in markBatchGrading (file context)", () => {
+    // detector는 파일 전체 스캔 — transitionCropStatus 함수의 status === 비교식이 foundComparison=true 확정
+    const src = parseTypeScriptSource(
+      "agriculture.ts",
+      `function transitionCropStatus(db, cropId, newStatus) {
+  const crop = db.prepare("SELECT status FROM crops WHERE id = ?").get(cropId);
+  if (crop.status === 'planted') throw new AgricultureError("E409-CROP", "Invalid", 409);
+  db.prepare("UPDATE crops SET status = 'harvested' WHERE id = ?").run(cropId);
+}
+function markBatchGrading(db, gradingCutoffDate) {
+  const candidates = db.prepare("SELECT id FROM harvests WHERE graded = 0 AND harvested_at <= ?").all(gradingCutoffDate);
+  for (const harvest of candidates) {
+    db.prepare("UPDATE harvests SET graded = 1, status = 'graded' WHERE id = ?").run(harvest.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AG-005"]!(src, "agriculture.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["AG-005"]!(src, "agriculture.ts")).toHaveLength(0);
+  });
+
+  it("AG-006 PRESENCE — db.transaction() in issueCertification (atomic certifications+labels+certified)", () => {
+    const src = parseTypeScriptSource(
+      "agriculture.ts",
+      `function issueCertification(db, cropId, certType, issuedBy) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO certifications (id, crop_id, cert_type, issued_at, expires_at, issued_by) VALUES (?, ?, ?, ?, ?, ?)").run(certId, cropId, certType, issuedAt, expiresAt, issuedBy);
+    db.prepare("INSERT INTO certification_labels (id, cert_id, crop_id, cert_type, label_created_at) VALUES (?, ?, ?, ?, ?)").run(randomUUID(), certId, cropId, certType, issuedAt);
+    db.prepare("UPDATE crops SET certified = 1 WHERE id = ?").run(cropId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AG-006"]!(src, "agriculture.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["AG-006"]!(src, "agriculture.ts")).toHaveLength(0);
   });
 });

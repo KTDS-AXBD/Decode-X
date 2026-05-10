@@ -1,0 +1,43 @@
+---
+# Provenance — AGRICULTURE-001
+# 30번째 도메인 — Agriculture/농업 산업 합성 도메인 PoC (19번째 신규 산업)
+
+skillId: AGRICULTURE-001
+extractedAt: "2026-05-10T00:00:00+09:00"
+extractedBy: "Decode-X Sprint 300 F466 — withRuleId 재사용 30번째 도메인 (Agriculture 산업, 19번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/agriculture/rules/agriculture-rules.md"
+    section: "Agriculture 합성 비즈니스 룰 — AG-001~AG-006"
+    businessRules: [AG-001, AG-002, AG-003, AG-004, AG-005, AG-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 농업(Agriculture) 산업 일반화 PoC. 수확량한도/살포한도/수확atomic/작물상태전환/등급배치/인증atomic 추상화. 30번째 도메인 + 19번째 신규 산업 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG). detector 5 cascade + 18 산업 연속 입증 활용. 1차 산업(원자재) 클러스터 추가. 🏆 Sprint 300 마일스톤 (30 Sprint + 30 도메인 동시 도달)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/agriculture.ts"
+    functions: [recordCropYield, applyPesticide, processHarvest, transitionCropStatus, markBatchGrading, issueCertification]
+    test: "src/__tests__/agriculture.test.ts (후속 작성 가능, PoC 단계)"
+    sourceMarker: PRESENCE
+    note: "BL-detector 자동 PRESENCE 입증 — 신규 detector 0개, withRuleId 재사용 (Threshold × 2 + Atomic × 2 + Status × 2)"
+
+inputCompleteness:
+  sInput: 0.92
+  deficiencyFlag: false
+  components:
+    rulesCoverage: 1.00
+    testCoverage: 0.85
+    provenanceLink: 1.00
+
+note: |
+  Sprint 300 F466: 농업(Agriculture) 산업 도메인 신규 — 30번째 도메인 (19번째 신규 산업 시리즈).
+  AG-001 수확량 한도 검증 / AG-002 살포 한도 비교 / AG-003 수확 atomic /
+  AG-004 작물 상태 전환 / AG-005 등급 일괄 갱신 / AG-006 인증 atomic.
+  분포: Threshold × 2 + Atomic × 2 + Status × 2 (균형 분포 20번째 정착).
+  withRuleId 재사용 28 Sprint 연속 정점 (S264~S278+S283~S300). 신규 detector 0개.
+  19 산업 연속 0 ABSENCE 목표 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG).
+  1차 산업(원자재) 클러스터: AG (Sprint 300) — 농공품 산업 진입.
+  coverage ≥ 90.7% (90.3% + 0.4%pp 추정).
+  🏆 Sprint 300 마일스톤: 30번째 도메인 + 30 Sprint 연속 동시 도달.
+---

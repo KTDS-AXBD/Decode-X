@@ -493,6 +493,26 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processTakedown",
     ],
   },
+  {
+    container: "pharmacy",
+    rulesPath: `${SPEC_CONTAINER_BASE}/pharmacy/rules/pharmacy-rules.md`,
+    // Sprint 299 (F465): Pharmacy 합성 도메인 — 29번째 도메인 (제약/약국 산업, 18번째 신규 산업).
+    // PH-001~PH-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 27 Sprint 연속 정점 (S264~S278+S283~S299).
+    // 18번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH).
+    // 🎯 90.4% coverage 안정화 (90% 돌파 직후).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/pharmacy.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/pharmacy/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "validateDosage",
+      "checkRefillQuota",
+      "dispensePrescription",
+      "transitionPrescriptionStatus",
+      "markRecalledBatches",
+      "checkDrugInteraction",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

@@ -622,7 +622,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 153 detectors (Sprint 298 F464 — media MD-001~MD-006 added, 28번째 도메인 미디어 산업, 17번째 신규, 90% coverage 돌파)", () => {
+  it("exposes 159 detectors (Sprint 299 F465 — pharmacy PH-001~PH-006 added, 29번째 도메인 제약/약국 산업, 18번째 신규, 90.4% coverage 안정화)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "BB-001",
       "BB-002",
@@ -741,6 +741,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "P-005",
       "P-006",
       "P-007",
+      "PH-001",
+      "PH-002",
+      "PH-003",
+      "PH-004",
+      "PH-005",
+      "PH-006",
       "RE-001",
       "RE-002",
       "RE-003",
@@ -2138,5 +2144,107 @@ function markExpiringContent(db, expirationCutoffDate) {
     const markers = BL_DETECTOR_REGISTRY["MD-006"]!(src, "media.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["MD-006"]!(src, "media.ts")).toHaveLength(0);
+  });
+});
+
+// F465 (Sprint 299) — pharmacy domain PH-001~006 PRESENCE (idempotent 2-step)
+describe("pharmacy domain — PH-001~006 via withRuleId (Sprint 299 F465)", () => {
+  it("PH-001 PRESENCE — dosageAmount >= MAX_DAILY_DOSE threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "pharmacy.ts",
+      `const MAX_DAILY_DOSE = 4000;
+function validateDosage(db, prescriptionId, dosageAmount) {
+  if (dosageAmount >= MAX_DAILY_DOSE) {
+    throw new PharmacyError('E422-DOSAGE-EXCEEDED', 'Daily dosage limit exceeded', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PH-001"]!(src, "pharmacy.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["PH-001"]!(src, "pharmacy.ts")).toHaveLength(0);
+  });
+
+  it("PH-002 PRESENCE — refillsUsed > refillQuotaLimit (Path B, 'limit' keyword)", () => {
+    const src = parseTypeScriptSource(
+      "pharmacy.ts",
+      `function checkRefillQuota(db, prescriptionId, refillsUsed) {
+  const refillQuotaLimit = 3;
+  if (refillsUsed > refillQuotaLimit) {
+    throw new PharmacyError('E422-REFILL-QUOTA', 'Refill quota exceeded', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PH-002"]!(src, "pharmacy.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["PH-002"]!(src, "pharmacy.ts")).toHaveLength(0);
+  });
+
+  it("PH-003 PRESENCE — db.transaction() in dispensePrescription (atomic stock decrement+status+dispenses INSERT)", () => {
+    const src = parseTypeScriptSource(
+      "pharmacy.ts",
+      `function dispensePrescription(db, prescriptionId, pharmacistId) {
+  const tx = db.transaction(() => {
+    db.prepare("UPDATE drugs SET stock_count = stock_count - 1 WHERE id = ?").run(drugId);
+    db.prepare("UPDATE prescriptions SET status = 'dispensed', dispensed_at = ? WHERE id = ?").run(dispensedAt, prescriptionId);
+    db.prepare("INSERT INTO dispenses (id, prescription_id, pharmacist_id, drug_id, dispensed_at) VALUES (?, ?, ?, ?, ?)").run(dispenseId, prescriptionId, pharmacistId, drugId, dispensedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PH-003"]!(src, "pharmacy.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["PH-003"]!(src, "pharmacy.ts")).toHaveLength(0);
+  });
+
+  it("PH-004 PRESENCE — status comparison + 'dispensed'/'completed' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "pharmacy.ts",
+      `function transitionPrescriptionStatus(db, prescriptionId, newStatus) {
+  const prescription = db.prepare("SELECT status FROM prescriptions WHERE id = ?").get(prescriptionId);
+  if (prescription.status === 'issued') throw new PharmacyError("E409-PRESCRIPTION", "Invalid transition", 409);
+  db.prepare("UPDATE prescriptions SET status = 'dispensed' WHERE id = ?").run(prescriptionId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PH-004"]!(src, "pharmacy.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["PH-004"]!(src, "pharmacy.ts")).toHaveLength(0);
+  });
+
+  it("PH-005 PRESENCE — batch status='recalled' update in markRecalledBatches (file context)", () => {
+    // detector는 파일 전체 스캔 — transitionPrescriptionStatus 함수의 status === 비교식이 foundComparison=true 확정
+    const src = parseTypeScriptSource(
+      "pharmacy.ts",
+      `function transitionPrescriptionStatus(db, prescriptionId, newStatus) {
+  const prescription = db.prepare("SELECT status FROM prescriptions WHERE id = ?").get(prescriptionId);
+  if (prescription.status === 'issued') throw new PharmacyError("E409-PRESCRIPTION", "Invalid", 409);
+  db.prepare("UPDATE prescriptions SET status = 'dispensed' WHERE id = ?").run(prescriptionId);
+}
+function markRecalledBatches(db, recallCutoffDate) {
+  const candidates = db.prepare("SELECT id FROM drugs WHERE status = 'active' AND recalled_at <= ?").all(recallCutoffDate);
+  for (const drug of candidates) {
+    db.prepare("UPDATE drugs SET status = 'recalled' WHERE id = ?").run(drug.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PH-005"]!(src, "pharmacy.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["PH-005"]!(src, "pharmacy.ts")).toHaveLength(0);
+  });
+
+  it("PH-006 PRESENCE — db.transaction() in checkDrugInteraction (atomic interaction log+prescription block)", () => {
+    const src = parseTypeScriptSource(
+      "pharmacy.ts",
+      `function checkDrugInteraction(db, prescriptionId, newDrugId) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO interaction_logs (id, prescription_id, new_drug_id, severity, alternative_drug_id, checked_at, blocked) VALUES (?, ?, ?, ?, ?, ?, 1)").run(randomUUID(), prescriptionId, newDrugId, 'severe', altId, checkedAt);
+    db.prepare("UPDATE prescriptions SET status = 'pending' WHERE id = ? AND status = 'issued'").run(prescriptionId);
+    return altId;
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PH-006"]!(src, "pharmacy.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["PH-006"]!(src, "pharmacy.ts")).toHaveLength(0);
   });
 });

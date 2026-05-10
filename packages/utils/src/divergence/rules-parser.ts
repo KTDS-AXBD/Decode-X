@@ -36,7 +36,8 @@ import type { BLRule } from "@ai-foundry/types";
 // F462 (Sprint 296): TC prefix 추가 (telecom 합성 도메인, 26번째 — 통신 산업). 2글자 alternation 동일 우선순위
 // F463 (Sprint 297): BK prefix 추가 (banking 합성 도메인, 27번째 — 은행 산업). 2글자 alternation 동일 우선순위
 // F464 (Sprint 298): MD prefix 추가 (media 합성 도메인, 28번째 — 미디어 산업). 2글자 alternation 동일 우선순위
-const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|LP|CC|DV|SB|IN|HC|ED|RE|LG|HO|TR|MF|RT|EN|GV|TC|BK|MD|P|V)-[A-Z]?\d{1,3}$/;
+// F465 (Sprint 299): PH prefix 추가 (pharmacy 합성 도메인, 29번째 — 제약/약국 산업). longer match first 누적 입증
+const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|LP|CC|DV|SB|IN|HC|ED|RE|LG|HO|TR|MF|RT|EN|GV|TC|BK|MD|PH|P|V)-[A-Z]?\d{1,3}$/;
 const HEADER_PATTERN =
   /\|\s*ID\s*\|\s*condition[^|]*\|\s*criteria[^|]*\|\s*outcome[^|]*\|\s*exception[^|]*\|/i;
 const SEPARATOR_PATTERN = /^\s*\|[\s:|-]+\|\s*$/;

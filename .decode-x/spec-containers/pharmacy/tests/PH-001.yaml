@@ -1,0 +1,86 @@
+# Test Scenarios — PH-001 ~ PH-006 (대표)
+ruleId: PH-001
+domain: pharmacy
+function: validateDosage
+detector: ThresholdCheck (F445 Path A)
+
+scenarios:
+  - id: PH-PH-001-01
+    name: 정상 용량 (dosageAmount=500, under 4000mg limit)
+    given: { prescriptionId: rx-1, dosageAmount: 500, status: issued }
+    when: validateDosage
+    then: { prescriptionId: rx-1, dosageAmount: 500 }
+
+  - id: PH-PH-001-02
+    name: 용량 초과 (dosageAmount=4000) → E422-DOSAGE-EXCEEDED
+    given: { prescriptionId: rx-1, dosageAmount: 4000, status: issued }
+    when: validateDosage
+    then: { error: E422-DOSAGE-EXCEEDED }
+
+  - id: PH-PH-002-01
+    name: 정상 리필 (refillsUsed=2, painkiller refillQuotaLimit=3)
+    given: { prescriptionId: rx-1, refillsUsed: 2, category: painkiller }
+    when: checkRefillQuota
+    then: { refillsUsed: 2, refillQuotaLimit: 3, canRefill: true }
+
+  - id: PH-PH-002-02
+    name: 리필 한도 초과 (refillsUsed=4, painkiller limit=3) → E422-REFILL-QUOTA
+    given: { prescriptionId: rx-1, refillsUsed: 4, category: painkiller }
+    when: checkRefillQuota
+    then: { error: E422-REFILL-QUOTA }
+
+  - id: PH-PH-003-01
+    name: 정상 조제 atomic — stock_count 차감 + dispensed + dispenses INSERT
+    given: { prescriptionId: rx-1, pharmacistId: ph-1, prescription.status: pending, drug.status: active, stock_count: 10 }
+    when: dispensePrescription
+    then:
+      dispenseId: [uuid]
+      stock_count: 9
+      prescriptions.status: dispensed
+      dispenses: inserted
+
+  - id: PH-PH-003-02
+    name: 리콜 약품 조제 시도 → E422-DRUG-RECALLED
+    given: { prescriptionId: rx-1, drug.status: recalled }
+    when: dispensePrescription
+    then: { error: E422-DRUG-RECALLED }
+
+  - id: PH-PH-004-01
+    name: issued → pending 전환
+    given: { prescription: { status: issued } }
+    when: transitionPrescriptionStatus(pending)
+    then: { previousStatus: issued, newStatus: pending }
+
+  - id: PH-PH-004-02
+    name: pending → dispensed 전환
+    given: { prescription: { status: pending } }
+    when: transitionPrescriptionStatus(dispensed)
+    then: { newStatus: dispensed }
+
+  - id: PH-PH-004-03
+    name: issued → completed 역전환 → E409-PRESCRIPTION
+    given: { prescription: { status: issued } }
+    when: transitionPrescriptionStatus(completed)
+    then: { error: E409-PRESCRIPTION }
+
+  - id: PH-PH-005-01
+    name: 리콜 배치 처리 — 2건 active → recalled
+    given: { recallCutoffDate: "2026-05-10", candidates: [{ status: active, recalled_at: "2026-05-09" }, { status: active, recalled_at: "2026-05-10" }] }
+    when: markRecalledBatches("2026-05-10")
+    then: { markedCount: 2, drugs.status: recalled }
+
+  - id: PH-PH-006-01
+    name: 정상 상호작용 검증 — 상호작용 없음 (blocked=0)
+    given: { prescriptionId: rx-1, newDrugId: d-2, prescription.status: pending, interaction: none }
+    when: checkDrugInteraction
+    then:
+      alternativeDrugId: null
+      interaction_logs: inserted (blocked=0)
+
+  - id: PH-PH-006-02
+    name: severe 상호작용 발견 — 차단 + 대체약 추천 (blocked=1)
+    given: { prescriptionId: rx-1, newDrugId: d-2, interaction: severe, alternative_drug_id: d-3 }
+    when: checkDrugInteraction
+    then:
+      alternativeDrugId: d-3
+      interaction_logs: inserted (blocked=1)

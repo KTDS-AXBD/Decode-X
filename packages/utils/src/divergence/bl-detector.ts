@@ -821,4 +821,12 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "MD-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "MD-004"),
   "MD-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "MD-005"),
   "MD-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "MD-006"),
+
+  // F465 (Sprint 299) — Pharmacy 합성 도메인 (29번째 도메인, 제약/약국 산업, 18번째 신규 산업)
+  "PH-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "PH-001"),
+  "PH-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "PH-002"),
+  "PH-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "PH-003"),
+  "PH-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PH-004"),
+  "PH-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PH-005"),
+  "PH-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "PH-006"),
 };

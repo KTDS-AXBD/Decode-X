@@ -1,0 +1,25 @@
+name: PR-001 공과금 청구 한도 검증 테스트
+bl: PR-001
+function: computeUtilityBill
+
+scenarios:
+  - id: PR-001-PASS
+    description: 한도 이내 공과금 청구
+    input:
+      propertyId: "prop-001"
+      tenantId: "tenant-001"
+      billingMonth: "2026-05"
+      totalAmount: 300000
+    expected:
+      approved: true
+
+  - id: PR-001-FAIL
+    description: 한도 초과 공과금 청구
+    input:
+      propertyId: "prop-001"
+      tenantId: "tenant-001"
+      billingMonth: "2026-05"
+      totalAmount: 600000
+    expected:
+      error: E422-UTILITY-BILL-EXCEEDED
+      status: 422

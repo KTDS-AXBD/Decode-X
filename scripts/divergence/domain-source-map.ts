@@ -731,6 +731,26 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processEmergency",
     ],
   },
+  {
+    container: "property",
+    rulesPath: `${SPEC_CONTAINER_BASE}/property/rules/property-rules.md`,
+    // Sprint 311 (F477): Property Mgmt 합성 도메인 — 41번째 도메인 (임대관리 산업, 30번째 신규 산업).
+    // PR-001~PR-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 39 Sprint 연속 정점 (S264~S278+S283~S311).
+    // 30번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR).
+    // 🏆 30 산업 연속 0 ABSENCE round number 마일스톤. RE 부동산 + PR 임대관리 클러스터. 6 BLs 균형 패턴 31번째 정착.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/property.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/property/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "computeUtilityBill",
+      "approveMaintenance",
+      "renewLease",
+      "transitionLeaseStatus",
+      "markInspectionBatch",
+      "processEviction",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

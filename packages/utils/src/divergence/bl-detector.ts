@@ -917,4 +917,13 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "PT-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PT-004"),
   "PT-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PT-005"),
   "PT-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "PT-006"),
+
+  // F477 (Sprint 311) — Property Mgmt 합성 도메인 (41번째 도메인, 임대관리 산업, 30번째 신규 산업)
+  // 🏆 30 산업 연속 0 ABSENCE round number 마일스톤. RE 부동산 + PR 임대관리 클러스터.
+  "PR-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "PR-001"),
+  "PR-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "PR-002"),
+  "PR-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "PR-003"),
+  "PR-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PR-004"),
+  "PR-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PR-005"),
+  "PR-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "PR-006"),
 };

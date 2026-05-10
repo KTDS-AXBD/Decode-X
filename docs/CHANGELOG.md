@@ -13,6 +13,50 @@ author: Sinclair Seo
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 290 (2026-05-10) — Sprint 314 F480 lpon-charge gap fill 🏆 **95.0% Coverage 돌파**
+
+**작업 요약**: Master inline ~30분, Match 100%. LPON pilot 도메인 잔여 갭 17건 중 lpon-charge 4건 detector 매핑으로 **detect-bl coverage 93.5% → 95.0% 돌파 마일스톤** 달성. lpon-charge 컨테이너 4/8 → **8/8 PRESENCE 0 ABSENCE** (100% 활성화).
+
+**구현**:
+- `packages/utils/src/divergence/bl-detector.ts` — BL-001/002/003/004 4 entry 추가 (`withRuleId(detectAtomicTransaction) × 4`)
+- `packages/utils/test/bl-detector.test.ts` — count 243→247, sorted array, 4 PRESENCE + 1 ABSENCE + 1 registered (총 +6 cases)
+- `docs/01-plan/features/F480-lpon-charge-gap-fill.plan.md` (AIF-PLAN-112) 신규
+- `docs/03-reports/sprint-314-F480-lpon-charge-gap-fill-report.md` (AIF-RPRT-115) 신규
+- SPEC.md §6 Sprint 314 블록 + §5 Last Updated
+
+**검증 결과**:
+- ✅ utils 347 → **353 PASS** (+6, 회귀 0)
+- ✅ typecheck (직접 `tsc --noEmit` 우회 — Foundry-X S337 turbo cache 함정 회피) 0 errors
+- ✅ eslint clean
+- ✅ detect-bl --all-domains: **247/260 = 95.0%** (DoD 충족)
+- ✅ lpon-charge: 4/8 → **8/8 applicableDetectors, 0 ABSENCE, 8 PRESENCE** (100%)
+- ✅ CI/CD Run #25627418180 SUCCESS (모든 deploy job 완료)
+
+**메타 학습 — 사전 fs 실측 1회 절환 사례**:
+사용자 1차 선택 lpon-payment 5건 (BL-013/016/017/018/019) → fs 실측 결과 `payment.ts`는 `processPayment` 1개 함수만 가지고 BL-013(charge refund)/BL-016~019(cancel sub-flows)는 다른 파일(cancel.ts/refund.ts) 구현 → detector 추가 시 5 ABSENCE 위험 → "0 ABSENCE 정착 패턴" 깨짐 회피. AskUserQuestion으로 즉시 재확인 후 lpon-charge BL-001~004 (charging.ts에 `// BL-001:`, `// BL-002:` 명시 주석 + try/catch + db.transaction 패턴 모두 존재)로 절환 → 4 PRESENCE 100% 보장. **rules/development-workflow.md S283 표준 절차 (사전 fs 실측 의무화)가 실제 ABSENCE 사고를 막아낸 첫 사례**.
+
+**누적 효과 (S262~S314, 53 Sprint)**:
+| 지표 | S262 시작 | S314 현재 | 증가 |
+|------|:--:|:--:|:--:|
+| Coverage | 13.2% | **95.0%** | +81.8%pp (7.2배+) |
+| 도메인 | 5 | **43** | 8.6배 |
+| BL | 38 | **260** | 6.8배 |
+| Detector | 5 | **247** | 49배 |
+| utils tests | 87 | **353** | 4.1배 |
+
+**withRuleId 재사용 42 Sprint 연속 정점** (S264 F431 gift → S314 F480 lpon-charge). 신규 detector 0개 — 보편 패턴 + 도메인별 ruleId 부여 패턴 정착.
+
+**잔여 13 BLs 후속 후보**:
+- lpon-payment 5 (source 보강 필요 — payment.ts에 BL-013/016~019 패턴 추가)
+- lpon-refund 5 (재실측 필요 — BL-020/021/023/025/030)
+- lpon-settlement 2 (upsert detector 신규 — BL-031/032)
+- lpon-gift 1 (grant detector 신규 — BL-G001)
+- 96~100% 도전 가능
+
+**산출물**: AIF-PLAN-112 + AIF-RPRT-115 + commit `5e47984` (main).
+
+---
+
 ### 세션 289 (2026-05-09~10) — Sprint 290~313 (25 Sprint 연속) + Pipeline 310~313 완결 🏆
 
 **작업 요약**: Master inline + Sprint autopilot WT 25 Sprint 연속 완결 (S289~S313). 28 신규 산업 도메인 추가 (CC~BT) + Sprint Pipeline 310~313 (4 PR MERGED). 30 산업 연속 0 ABSENCE round + 50 Sprint + AIF-PLAN-100 + 4-클러스터 마일스톤 4종.

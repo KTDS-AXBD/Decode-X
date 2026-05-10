@@ -653,6 +653,54 @@ export function detectExpiryExtension(
 }
 
 /**
+ * BL-G001 — gift 발송 구현 PRESENCE/ABSENCE 검출.
+ *
+ * PRESENCE 패턴: `sendGift` 또는 `createGift` 함수 식별자가 소스에 존재.
+ * ABSENCE 패턴: 두 함수 모두 미존재 → gift.ts에 발송 로직 자체 미구현.
+ *
+ * 신뢰도 90% — 함수명 기반 정확 매칭. gift.ts에 sendGift/createGift 부재는
+ * BL-G001 (발송자 발송 → 잔액 차감 + pending 생성) 미구현의 직접 증거.
+ */
+export function detectGiftImplementation(
+  sourceFile: ts.SourceFile,
+  fileName: string,
+): BLDivergenceMarker[] {
+  let foundImpl = false;
+  const targetNames = new Set(["sendGift", "createGift"]);
+
+  function visit(node: ts.Node): void {
+    if (foundImpl) return;
+    if (
+      (ts.isFunctionDeclaration(node) || ts.isMethodDeclaration(node)) &&
+      node.name &&
+      ts.isIdentifier(node.name) &&
+      targetNames.has(node.name.text)
+    ) {
+      foundImpl = true;
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(sourceFile);
+
+  if (!foundImpl) {
+    return [
+      {
+        ruleId: "BL-G001",
+        severity: "HIGH",
+        pattern: "under_implementation",
+        sourceFile: fileName,
+        sourceLine: 0,
+        detail:
+          "BL-G001: No sendGift or createGift function found. Gift sending (balance deduction + pending creation) is not implemented.",
+        confidence: 0.9,
+        autoDetected: true,
+      },
+    ];
+  }
+  return [];
+}
+
+/**
  * Detector function 시그니처 (BL_DETECTOR_REGISTRY 등록용).
  */
 export type DetectorFn = (
@@ -678,7 +726,8 @@ function withRuleId(
  * Sprint 262 (F429): BL-005/006/007/008/014/015/022 (universal patterns via withRuleId).
  * Sprint 264 (F431): BL-G002/G003/G004/G005/G006 (gift domain via withRuleId).
  * Sprint 314 (F480): BL-001/002/003/004 (lpon-charge gap fill — 95.0% coverage 돌파).
- * Sprint 315 (F481): BL-020/021/023/025 (lpon-refund gap fill) + BL-030 (ABSENCE marker).
+ * Sprint 315 (F481): BL-020/021/023/025 (lpon-refund gap fill) + BL-030 (ABSENCE marker — 96.9% coverage).
+ * Sprint 316 (F482): BL-031/032/G001 (lpon-settlement+gift gap fill — 98.1% coverage 도달).
  *
  * 미등록 BL-ID는 detector scope 외 — provenance cross-check에서 UNKNOWN 분류.
  */
@@ -1012,4 +1061,12 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "BL-023": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BL-023"),
   "BL-025": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "BL-025"),
   "BL-030": (sf, fn) => withRuleId(detectExpiryExtension(sf, fn), "BL-030"),
+  // Sprint 316 (F482) — lpon-settlement BL-031/032 + lpon-gift BL-G001 gap fill
+  // BL-031: runBatchSettlement 안 db.transaction(settlement_summaries UPSERT) — 44 Sprint 연속 withRuleId 정점
+  // BL-032: settlement.ts 내 추가 atomic 패턴 (heuristic, settlement × 2 atomic)
+  // BL-G001: gift.ts에 sendGift/createGift 미구현 → ABSENCE marker (detectGiftImplementation)
+  // detect-bl coverage: 252/260 → 255/260 = 98.1% (F481 + F482 통합).
+  "BL-031": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BL-031"),
+  "BL-032": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BL-032"),
+  "BL-G001": (sf, fn) => withRuleId(detectGiftImplementation(sf, fn), "BL-G001"),
 };

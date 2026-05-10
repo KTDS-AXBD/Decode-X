@@ -1127,6 +1127,22 @@
 > **의존성**: 없음 (BL_DETECTOR_REGISTRY 2 entry + DETECTOR_SUPPORTED_RULES 1 entry 추가만).
 - [x] F482 ✅ **MERGED** (lpon-settlement + lpon-gift gap fill — 3 BL 매핑, **P2**, Sprint 316, ✅ MERGED PR #85 세션 291 2026-05-10 autopilot Match 100%): bl-detector.ts BL-031/032 entry (withRuleId × 2) + detectGiftImplementation 신규 (BL-G001 ABSENCE marker) + lpon-settlement 6/6 + lpon-gift 6/6 detector-supported + AIF-PLAN-114 + AIF-RPRT-116. **단독 +1.2%pp / Sprint 315 chain 후 통합 98.1% 도달**. **withRuleId 44 Sprint 연속 정점**.
 
+**Sprint 317 (F483 — lpon-payment BL-013/016/017/018/019 ABSENCE marker, 🔧 IN_PROGRESS 세션 292 2026-05-10 Master inline):**
+> **목표**: LPON pilot 도메인 잔여 5 BLs (lpon-payment) ABSENCE marker 5건 일괄 등록으로 **detect-bl coverage 98.1% → 100%** (260/260) 도달. **🏆 LPON pilot 5 컨테이너 100% 마일스톤 종결**.
+> **DoD**: bl-detector.ts BL-013/016/017/018/019 entry 5종 ABSENCE detector 신규 (`detectCompanyRefund`/`detectPaymentCancellation`/`detectMerchantMpmCancel`/`detectQrMerchantApproval`/`detectWithdrawnUserCancel`) + tests 359 → 365 PASS (+6) + typecheck (직접 tsc 우회, S337) PASS + detect-bl --all-domains **260/260 = 100%** + lpon-payment 0/7 → **7/7 detector-supported** + Plan AIF-PLAN-115 + Report AIF-RPRT-118 + SPEC §6 (8 항목).
+> **Plan**: `docs/01-plan/features/F483-lpon-payment-100-coverage.plan.md` (AIF-PLAN-115).
+> **fs 실측 결과** (rules/development-workflow.md S283 표준 절차):
+>   - payment.ts (169 lines, 1 함수 `processPayment`) — cancel 분기 자체 부재 ✅
+>   - BL-013 ABSENCE — 회사 충전 환불 (`refundByCompany` 부재, refund 도메인 영역)
+>   - BL-014 PRESENCE (이미 등록) — `voucher.status !== 'ACTIVE'` `detectStatusTransition`
+>   - BL-015 PRESENCE (이미 등록) — `if (amount >= 50_000)` `detectThresholdCheck`
+>   - BL-016 ABSENCE — 결제 승인 취소 (`cancelPayment` 부재)
+>   - BL-017 ABSENCE — BC카드 MPM 가맹점 취소 (`cancelByMerchant`/`mpmCancel` 부재)
+>   - BL-018 ABSENCE — QR 가맹점주 취소 승인 (`approveQrCancel` 부재)
+>   - BL-019 ABSENCE — 탈퇴회원 AP06 (`cancelByWithdrawnUser`/`ap06Cancel` 부재)
+> **의존성**: 없음 (BL_DETECTOR_REGISTRY 5 entry 추가 + 5 ABSENCE detector 함수 신규).
+- [ ] F483 🔧 **IN_PROGRESS** (lpon-payment 100% coverage — 5 ABSENCE marker, **P2**, Sprint 317, 🔧 세션 292 2026-05-10 Master inline 시작): bl-detector.ts BL-013/016/017/018/019 entry 5 ABSENCE detector 신규 + utils tests +6 PASS + detect-bl 100% (260/260) + lpon-payment 7/7 활성화 + LPON pilot 5 컨테이너 100% 마일스톤. **누적 56 Sprint** (S262~S317): coverage 13.2% → **100%** (7.6배+).
+
 **Sprint 274 (F440 — Generic Voucher 9번째 도메인 PoC, ✅ DONE 세션 284 후속 3 2026-05-08 Master inline ~1.5h Match 95%):**
 > **결과**: ✅ DONE — Master inline ~1.5h. **9번째 도메인 generic-voucher 신규** — voucher.ts 220 lines (6 함수 + VoucherError) + voucher.test.ts 230 lines (19 cases PASS) + spec-container 16 sub-files (provenance + voucher-rules + V-001~V-006 rules/runbooks/tests + contract) + DOMAIN_MAP entry + REGISTRY 6 entries (Threshold × 3 + Atomic × 1 + Status × 2) + parser regex `V` prefix 확장. **신규 detector 0개** (withRuleId 재사용 9번째 도메인 정점). detect-bl --all-domains: 9 containers, **44/61 = 72.1% coverage** (+3.0%pp vs Sprint 269 69.1%). 6 BL V-001~V-006 모두 PRESENCE 자동 입증 (0 ABSENCE). write-provenance --apply 0 changes. utils 170/170 PASS (회귀 0). **DoD 14/14 PASS**. 산출물: AIF-PLAN-072 + AIF-RPRT-072 + reports/sprint-274-generic-voucher-poc-2026-05-08.{md,json}. **메타 학습**: (a) **withRuleId 재사용 9번째 도메인 정점** (Sprint 264~269+274 7 Sprint 연속), (b) **합성 도메인 PoC의 가치** — LPON 외 일반화 입증 + 신규 도메인 부트스트래핑 template, (c) **VoucherError code-in-message 패턴** — `super(\`[${code}] ${message}\`)` 차기 도메인 표준 권장. **Master inline 14회 연속 회피 패턴 유지** (S253~284).
 - [x] F440 ✅ **DONE** (Generic Voucher 9번째 도메인 — withRuleId 재사용 정점, **P2**, Sprint 274, ✅ DONE 세션 284 후속 3 2026-05-08 Master inline Match 95%): voucher.ts + tests 19 cases + spec-container 16 files + DOMAIN_MAP + REGISTRY 6 + parser regex V. **detector coverage 69.1% → 72.1%**.

@@ -1,0 +1,61 @@
+---
+# Test scenarios — Pet Services domain PT-001~PT-006
+# Sprint 310 F476 — Pet Services 합성 도메인
+
+scenarios:
+  - id: PT-001-PASS
+    rule: PT-001
+    description: "정원 내 펫호텔 예약 — 성공"
+    input: { booked_count: 15, capacity: 30 }
+    expected: PASS
+
+  - id: PT-001-FAIL
+    rule: PT-001
+    description: "펫호텔 정원 초과 — E422-BOARDING-CAPACITY-EXCEEDED"
+    input: { booked_count: 30, capacity: 30 }
+    expected: FAIL
+    error: E422-BOARDING-CAPACITY-EXCEEDED
+
+  - id: PT-002-PASS
+    rule: PT-002
+    description: "백신 한도 내 접종 — 성공"
+    input: { administered_count: 2, vaccinationLimit: 5 }
+    expected: PASS
+
+  - id: PT-002-FAIL
+    rule: PT-002
+    description: "백신 접종 한도 초과 — E422-VACCINATION-QUOTA-EXCEEDED"
+    input: { administered_count: 5, vaccinationLimit: 5 }
+    expected: FAIL
+    error: E422-VACCINATION-QUOTA-EXCEEDED
+
+  - id: PT-003-PASS
+    rule: PT-003
+    description: "booked 그루밍 예약 확정 atomic — 성공"
+    input: { groomingStatus: "booked" }
+    expected: PASS
+
+  - id: PT-004-PASS
+    rule: PT-004
+    description: "booked → checked_in 전환 — 성공"
+    input: { from: "booked", to: "checked_in" }
+    expected: PASS
+
+  - id: PT-004-FAIL
+    rule: PT-004
+    description: "booked → reviewed 직접 전환 불가 — E409-CARE-RECORD"
+    input: { from: "booked", to: "reviewed" }
+    expected: FAIL
+    error: E409-CARE-RECORD
+
+  - id: PT-005-PASS
+    rule: PT-005
+    description: "기준일 이전 pending 건강 기록 일괄 처리 — 성공"
+    input: { visitBefore: "2026-05-10", status: "pending" }
+    expected: PASS
+
+  - id: PT-006-PASS
+    rule: PT-006
+    description: "응급 처치 + 보호자 통보 atomic — 성공"
+    input: { petExists: true, severity: "high" }
+    expected: PASS

@@ -1,0 +1,52 @@
+---
+# Provenance — PET-001
+# 40번째 도메인 — Pet Services 합성 도메인 PoC (29번째 신규 산업)
+
+skillId: PET-001
+extractedAt: "2026-05-10T00:00:00+09:00"
+extractedBy: "Decode-X Sprint 310 F476 — withRuleId 재사용 40번째 도메인 (Pet Services 반려동물 산업, 29번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/pet/rules/pet-rules.md"
+    section: "Pet Services 합성 비즈니스 룰 — PT-001~PT-006"
+    businessRules: [PT-001, PT-002, PT-003, PT-004, PT-005, PT-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 반려동물 서비스(Pet Services) 산업 일반화 PoC. 정원한도/백신한도/그루밍atomic/케어상태전환/건강기록배치/응급atomic 추상화. 40번째 도메인 + 29번째 신규 산업 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT). 신규 detector 0개 — withRuleId 재사용 38 Sprint 연속 정점. 🏆 29 산업 연속 0 ABSENCE 도전. 동물병원+미용 클러스터 (HC+WL+PT) 형성. 6 BLs 균형 패턴 30번째 정착 (round number 마일스톤). 40번째 도메인 마일스톤."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/pet.ts"
+    functions: [bookBoarding, applyVaccination, processGrooming, transitionCareStatus, markHealthRecordBatch, processEmergency]
+
+detection:
+  - ruleId: PT-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "facility.booked_count >= limit (UPPERCASE fallback MAX_BOARDING_CAPACITY, Path A)"
+  - ruleId: PT-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "vaccine.administered_count >= vaccinationLimit (Path B, limit keyword)"
+  - ruleId: PT-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "db.transaction() — groomings UPDATE + grooming_payments INSERT + grooming_owner_matches INSERT + groomers UPDATE"
+  - ruleId: PT-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "booked → checked_in → in_care → checked_out → reviewed"
+  - ruleId: PT-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "batch: processed 갱신 (CC-005 29번째 재사용)"
+  - ruleId: PT-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "db.transaction() — emergencies INSERT + emergency_treatments INSERT + owner_notifications INSERT + pets UPDATE"

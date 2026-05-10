@@ -909,4 +909,12 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "WL-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "WL-004"),
   "WL-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "WL-005"),
   "WL-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "WL-006"),
+
+  // F476 (Sprint 310) — Pet Services 합성 도메인 (40번째 도메인, 반려동물 산업, 29번째 신규 산업)
+  "PT-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "PT-001"),
+  "PT-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "PT-002"),
+  "PT-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "PT-003"),
+  "PT-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PT-004"),
+  "PT-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PT-005"),
+  "PT-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "PT-006"),
 };

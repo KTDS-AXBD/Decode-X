@@ -677,7 +677,7 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 247 detectors (Sprint 314 F480 — lpon-charge BL-001~BL-004 added, 95.0% coverage 돌파)", () => {
+  it("exposes 250 detectors (Sprint 316 F482 — lpon-settlement BL-031/032 + lpon-gift BL-G001 added, 98.1% coverage 도달)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AG-001",
       "AG-002",
@@ -718,11 +718,14 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "BL-027",
       "BL-028",
       "BL-029",
+      "BL-031",
+      "BL-032",
       "BL-033",
       "BL-034",
       "BL-035",
       "BL-036",
       "BL-042",
+      "BL-G001",
       "BL-G002",
       "BL-G003",
       "BL-G004",
@@ -3924,5 +3927,47 @@ function markInventoryRestockBatch(db, restockedBefore) {
     const markers = BL_DETECTOR_REGISTRY["BT-006"]!(src, "beauty.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["BT-006"]!(src, "beauty.ts")).toHaveLength(0);
+  });
+});
+
+describe("BL-031/032 + BL-G001 — lpon-settlement/gift gap fill (Sprint 316 F482)", () => {
+  // settlement.ts: runBatchSettlement 안 db.transaction(settlement_summaries UPSERT) — BL-031/032 atomic
+  // gift.ts: sendGift/createGift 미구현 → BL-G001 ABSENCE
+  const settlementWithAtomicSrc = `
+    function runBatchSettlement(db, periodStart, periodEnd) {
+      const tx = db.transaction(() => {
+        db.prepare("INSERT OR REPLACE INTO settlement_summaries (period_start, charge_count) VALUES (?, ?)").run(periodStart, 5);
+        db.prepare("UPDATE settlement_summaries SET updated_at = ? WHERE period_start = ?").run(new Date().toISOString(), periodStart);
+      });
+      tx();
+    }
+  `;
+
+  it("BL-031 PRESENCE — db.transaction(UPSERT) in settlement → 0 markers", () => {
+    const sf = parseTypeScriptSource("settlement.ts", settlementWithAtomicSrc);
+    const fn = BL_DETECTOR_REGISTRY["BL-031"];
+    expect(fn).toBeDefined();
+    expect(fn!(sf, "settlement.ts")).toEqual([]);
+  });
+
+  it("BL-032 PRESENCE — db.transaction exists in settlement → 0 markers", () => {
+    const sf = parseTypeScriptSource("settlement.ts", settlementWithAtomicSrc);
+    const fn = BL_DETECTOR_REGISTRY["BL-032"];
+    expect(fn).toBeDefined();
+    expect(fn!(sf, "settlement.ts")).toEqual([]);
+  });
+
+  it("BL-G001 ABSENCE — no sendGift/createGift in gift.ts → 1 marker with ruleId BL-G001", () => {
+    const giftNoImplSrc = `
+      function getGiftStatus(db, giftId) {
+        return db.prepare("SELECT * FROM gift_transactions WHERE id = ?").get(giftId);
+      }
+    `;
+    const sf = parseTypeScriptSource("gift.ts", giftNoImplSrc);
+    const fn = BL_DETECTOR_REGISTRY["BL-G001"];
+    expect(fn).toBeDefined();
+    const markers = fn!(sf, "gift.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BL-G001");
   });
 });

@@ -1,0 +1,52 @@
+---
+# Provenance — SPORTS-001
+# 37번째 도메인 — Sports/스포츠 산업 합성 도메인 PoC (26번째 신규 산업)
+
+skillId: SPORTS-001
+extractedAt: "2026-05-10T00:00:00+09:00"
+extractedBy: "Decode-X Sprint 307 F473 — withRuleId 재사용 37번째 도메인 (Sports 산업, 26번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/sports/rules/sports-rules.md"
+    section: "Sports 합성 비즈니스 룰 — SP-001~SP-006"
+    businessRules: [SP-001, SP-002, SP-003, SP-004, SP-005, SP-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 스포츠(Sports) 산업 일반화 PoC. 경기장한도/시즌권한도/티켓판매atomic/이벤트상태전환/상품교체/환불재예약atomic 추상화. 37번째 도메인 + 26번째 신규 산업 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP). detector 신뢰도 누적 활용. event mgmt 산업 클러스터 형성. 🏆 26 산업 연속 0 ABSENCE 마일스톤."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/sports.ts"
+    functions: [bookVenueSeat, applySeasonTicketTier, processTicketSale, transitionEventStatus, markMerchandiseSync, processRefundRebook]
+
+detection:
+  - ruleId: SP-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "totalBooked >= MAX_VENUE_CAPACITY (UPPERCASE constant, Path A)"
+  - ruleId: SP-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "requestedQuantity > seasonTicketLimit (Path B, limit keyword)"
+  - ruleId: SP-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "db.transaction() — ticket_sales INSERT + venue_seats UPDATE + issued_tickets INSERT + ticket_sales.status UPDATE"
+  - ruleId: SP-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "scheduled → ticketing → live → completed → archived"
+  - ruleId: SP-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "batch: synced=1 갱신 (CC-005 26번째 재사용)"
+  - ruleId: SP-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "db.transaction() — refund_records INSERT + ticket_sales UPDATE + venue_seats UPDATE + ticket_sales INSERT + cancellation_logs INSERT + venue_seats UPDATE"

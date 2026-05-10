@@ -651,6 +651,26 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processClassifiedDocument",
     ],
   },
+  {
+    container: "sports",
+    rulesPath: `${SPEC_CONTAINER_BASE}/sports/rules/sports-rules.md`,
+    // Sprint 307 (F473): Sports 합성 도메인 — 37번째 도메인 (스포츠 산업, 26번째 신규 산업).
+    // SP-001~SP-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 35 Sprint 연속 정점 (S264~S278+S283~S307).
+    // 26번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP).
+    // 🏆 26 산업 연속 0 ABSENCE 마일스톤. event mgmt 산업 클러스터 형성. 6 BLs 균형 패턴 27번째 정착.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/sports.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/sports/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "bookVenueSeat",
+      "applySeasonTicketTier",
+      "processTicketSale",
+      "transitionEventStatus",
+      "markMerchandiseSync",
+      "processRefundRebook",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

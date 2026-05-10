@@ -901,4 +901,12 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "CH-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "CH-004"),
   "CH-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "CH-005"),
   "CH-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "CH-006"),
+
+  // F475 (Sprint 309) — Wellness 합성 도메인 (39번째 도메인, 웰니스 산업, 28번째 신규 산업)
+  "WL-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "WL-001"),
+  "WL-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "WL-002"),
+  "WL-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "WL-003"),
+  "WL-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "WL-004"),
+  "WL-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "WL-005"),
+  "WL-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "WL-006"),
 };

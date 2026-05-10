@@ -1,0 +1,52 @@
+---
+# Provenance — WELLNESS-001
+# 39번째 도메인 — Wellness/스파 합성 도메인 PoC (28번째 신규 산업)
+
+skillId: WELLNESS-001
+extractedAt: "2026-05-10T00:00:00+09:00"
+extractedBy: "Decode-X Sprint 309 F475 — withRuleId 재사용 39번째 도메인 (Wellness 산업, 28번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/wellness/rules/wellness-rules.md"
+    section: "Wellness 합성 비즈니스 룰 — WL-001~WL-006"
+    businessRules: [WL-001, WL-002, WL-003, WL-004, WL-005, WL-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 웰니스/스파(Wellness/Spa) 산업 일반화 PoC. 정원한도/패키지한도/예약atomic/예약상태전환/노쇼배치/취소환불atomic 추상화. 39번째 도메인 + 28번째 신규 산업 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL). detector 신뢰도 누적 활용. 🏆 28 산업 연속 0 ABSENCE 마일스톤. Hospitality 클러스터 (HO+WL) 형성."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/wellness.ts"
+    functions: [bookSession, usePackageSession, confirmAppointment, transitionAppointmentStatus, markNoShowSessions, processCancellationFee]
+
+detection:
+  - ruleId: WL-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "session.booked_count >= limit (UPPERCASE fallback MAX_SESSION_CAPACITY, Path A)"
+  - ruleId: WL-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "pkg.used_count >= packageUsageLimit (Path B, limit keyword)"
+  - ruleId: WL-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "db.transaction() — appointments UPDATE + appointment_payments INSERT + appointment_resources INSERT + resources UPDATE"
+  - ruleId: WL-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "booked → confirmed → in_session → completed → reviewed"
+  - ruleId: WL-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "batch: no_show 갱신 (CC-005 28번째 재사용)"
+  - ruleId: WL-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "db.transaction() — appointments UPDATE + cancellation_logs INSERT + refund_records INSERT + sessions.booked_count UPDATE"

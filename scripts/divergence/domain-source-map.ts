@@ -691,6 +691,26 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "issueTaxCertificate",
     ],
   },
+  {
+    container: "wellness",
+    rulesPath: `${SPEC_CONTAINER_BASE}/wellness/rules/wellness-rules.md`,
+    // Sprint 309 (F475): Wellness 합성 도메인 — 39번째 도메인 (웰니스 산업, 28번째 신규 산업).
+    // WL-001~WL-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 37 Sprint 연속 정점 (S264~S278+S283~S309).
+    // 28번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL).
+    // 🏆 28 산업 연속 0 ABSENCE 마일스톤. wellness/spa 추가. Hospitality 클러스터 (HO+WL) 형성. 6 BLs 균형 패턴 29번째 정착.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/wellness.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/wellness/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "bookSession",
+      "usePackageSession",
+      "confirmAppointment",
+      "transitionAppointmentStatus",
+      "markNoShowSessions",
+      "processCancellationFee",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

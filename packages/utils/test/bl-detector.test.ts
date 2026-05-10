@@ -622,7 +622,7 @@ describe("BL-budget/purchase — 10 BL (Sprint 266 F433)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 213 detectors (Sprint 308 F474 — charity CH-001~CH-006 added, 38번째 도메인 비영리 산업, 27번째 신규)", () => {
+  it("exposes 219 detectors (Sprint 309 F475 — wellness WL-001~WL-006 added, 39번째 도메인 웰니스 산업, 28번째 신규)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AG-001",
       "AG-002",
@@ -837,6 +837,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "V-004",
       "V-005",
       "V-006",
+      "WL-001",
+      "WL-002",
+      "WL-003",
+      "WL-004",
+      "WL-005",
+      "WL-006",
     ]);
   });
 
@@ -874,6 +880,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["CH-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["CH-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["CH-006"]).toBeDefined();
+  });
+
+  it("WL-001~WL-006 registered (Sprint 309 F475 — wellness 39번째 도메인)", () => {
+    expect(BL_DETECTOR_REGISTRY["WL-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["WL-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["WL-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["WL-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["WL-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["WL-006"]).toBeDefined();
   });
 
   it("each detector returns BLDivergenceMarker[]", () => {
@@ -3262,5 +3277,109 @@ function markVolunteerSchedule(db, scheduledBefore) {
     const markers = BL_DETECTOR_REGISTRY["CH-006"]!(src, "charity.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["CH-006"]!(src, "charity.ts")).toHaveLength(0);
+  });
+});
+
+// F475 (Sprint 309) — wellness domain WL-001~006 via withRuleId (37 Sprint 연속 정점)
+describe("wellness domain — WL-001~006 via withRuleId (Sprint 309 F475)", () => {
+  it("WL-001 PRESENCE — session.booked_count >= MAX_SESSION_CAPACITY threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "wellness.ts",
+      `const MAX_SESSION_CAPACITY = 20;
+function bookSession(db, sessionId, memberId) {
+  const limit = session.capacity ?? MAX_SESSION_CAPACITY;
+  if (session.booked_count >= limit) {
+    throw new WellnessError('E422-SESSION-CAPACITY-EXCEEDED', 'Session is fully booked', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["WL-001"]!(src, "wellness.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["WL-001"]!(src, "wellness.ts")).toHaveLength(0);
+  });
+
+  it("WL-002 PRESENCE — pkg.used_count >= packageUsageLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "wellness.ts",
+      `function usePackageSession(db, memberId, packageId) {
+  const packageUsageLimit = pkg.packageUsageLimit;
+  if (pkg.used_count >= packageUsageLimit) {
+    throw new WellnessError('E422-PACKAGE-USAGE-EXCEEDED', 'Package sessions exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["WL-002"]!(src, "wellness.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["WL-002"]!(src, "wellness.ts")).toHaveLength(0);
+  });
+
+  it("WL-003 PRESENCE — db.transaction() in confirmAppointment (atomic appointments+appointment_payments+appointment_resources+resources INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "wellness.ts",
+      `function confirmAppointment(db, appointmentId, memberId, resourceId, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("UPDATE appointments SET status = 'confirmed', confirmed_at = ? WHERE id = ?").run(confirmedAt, appointmentId);
+    db.prepare("INSERT INTO appointment_payments (id, appointment_id, member_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(paymentId, appointmentId, memberId, amount, confirmedAt);
+    db.prepare("INSERT INTO appointment_resources (id, appointment_id, resource_id, held_at, released_at) VALUES (?, ?, ?, ?, NULL)").run(resourceHoldId, appointmentId, resourceId, confirmedAt);
+    db.prepare("UPDATE resources SET status = 'held' WHERE id = ?").run(resourceId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["WL-003"]!(src, "wellness.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["WL-003"]!(src, "wellness.ts")).toHaveLength(0);
+  });
+
+  it("WL-004 PRESENCE — status comparison + 'confirmed'/'in_session'/'completed' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "wellness.ts",
+      `function transitionAppointmentStatus(db, appointmentId, newStatus) {
+  const appt = db.prepare("SELECT status FROM appointments WHERE id = ?").get(appointmentId);
+  if (appt.status === 'booked') throw new WellnessError("E409-APPOINTMENT", "Invalid transition", 409);
+  db.prepare("UPDATE appointments SET status = 'confirmed' WHERE id = ?").run(appointmentId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["WL-004"]!(src, "wellness.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["WL-004"]!(src, "wellness.ts")).toHaveLength(0);
+  });
+
+  it("WL-005 PRESENCE — batch no_show update in markNoShowSessions (file context)", () => {
+    const src = parseTypeScriptSource(
+      "wellness.ts",
+      `function transitionAppointmentStatus(db, appointmentId, newStatus) {
+  const appt = db.prepare("SELECT status FROM appointments WHERE id = ?").get(appointmentId);
+  if (appt.status === 'booked') throw new WellnessError("E409-APPOINTMENT", "Invalid", 409);
+  db.prepare("UPDATE appointments SET status = 'confirmed' WHERE id = ?").run(appointmentId);
+}
+function markNoShowSessions(db, scheduledBefore) {
+  const candidates = db.prepare("SELECT a.id FROM appointments a JOIN sessions s ON a.session_id = s.id WHERE s.scheduled_date <= ? AND a.status = 'confirmed'").all(scheduledBefore);
+  for (const appt of candidates) {
+    db.prepare("UPDATE appointments SET status = 'no_show' WHERE id = ?").run(appt.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["WL-005"]!(src, "wellness.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["WL-005"]!(src, "wellness.ts")).toHaveLength(0);
+  });
+
+  it("WL-006 PRESENCE — db.transaction() in processCancellationFee (atomic appointments+cancellation_logs+refund_records+sessions INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "wellness.ts",
+      `function processCancellationFee(db, appointmentId, memberId, penaltyAmount, refundAmount) {
+  const tx = db.transaction(() => {
+    db.prepare("UPDATE appointments SET status = 'cancelled' WHERE id = ?").run(appointmentId);
+    db.prepare("INSERT INTO cancellation_logs (id, appointment_id, member_id, penalty_amount, refund_amount, reason, cancelled_at) VALUES (?, ?, ?, ?, ?, 'member_request', ?)").run(cancellationId, appointmentId, memberId, penaltyAmount, refundAmount, cancelledAt);
+    db.prepare("INSERT INTO refund_records (id, appointment_id, member_id, refund_amount, status, refunded_at) VALUES (?, ?, ?, ?, 'completed', ?)").run(refundId, appointmentId, memberId, refundAmount, cancelledAt);
+    db.prepare("UPDATE sessions SET booked_count = booked_count - 1 WHERE id = ?").run(sessionId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["WL-006"]!(src, "wellness.ts");
+    expect(markers).toHaveLength(0);
+    expect(BL_DETECTOR_REGISTRY["WL-006"]!(src, "wellness.ts")).toHaveLength(0);
   });
 });

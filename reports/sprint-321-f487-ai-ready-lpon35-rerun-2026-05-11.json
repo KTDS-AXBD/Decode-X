@@ -1,0 +1,33 @@
+{
+  "reportId": "sprint-321-f487-ai-ready-lpon35-rerun",
+  "sprint": 321,
+  "fItem": "F487",
+  "createdAt": "2026-05-11T00:00:00.000Z",
+  "status": "DEFERRED",
+  "reason": "LLM API credentials not available in Sprint WT. Master 실행 위임.",
+  "baseline": {
+    "session": "264",
+    "avgScore": 0.506,
+    "containers": 7,
+    "note": "세션 264 F356-B baseline (7 spec-containers, lpon-{refund,charge,payment,gift,settlement,budget,purchase})"
+  },
+  "rerunTarget": {
+    "containers": 8,
+    "specDir": ".decode-x/spec-containers",
+    "orgFilter": "lpon",
+    "forceEval": true,
+    "command": "pnpm tsx scripts/ai-ready/evaluate.ts --spec-dir .decode-x/spec-containers --model haiku --output reports/sprint-321-f487-ai-ready-lpon35-rerun-2026-05-11.json --openrouter"
+  },
+  "masterVerification": {
+    "required": true,
+    "steps": [
+      "OPENROUTER_API_KEY=xxx INTERNAL_API_SECRET=xxx pnpm tsx scripts/ai-ready/evaluate.ts --spec-dir .decode-x/spec-containers --model haiku --openrouter",
+      "Compare avgScore vs baseline 0.506 (expect within ±0.05 for Tree-sitter consistency)",
+      "Append actual results to this JSON file as 'actualResults' field"
+    ]
+  },
+  "risk": {
+    "R2": "F356-A 평가 입력이 Tree-sitter 통합 후 spec-container에 반영 안 된 경우 baseline 0.506 유지로 무영향 종결",
+    "status": "DEFERRED — Master 실행 후 업데이트 필요"
+  }
+}

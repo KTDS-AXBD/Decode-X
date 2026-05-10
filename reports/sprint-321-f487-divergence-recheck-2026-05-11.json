@@ -1,0 +1,4548 @@
+{
+  "detectorVersion": "2.1.0",
+  "measuredAt": "2026-05-10T23:50:00.370Z",
+  "mode": "all-domains",
+  "totalContainers": 45,
+  "totalBLs": 272,
+  "totalApplicableDetectors": 272,
+  "coverage": 1,
+  "results": [
+    {
+      "container": "lpon-refund",
+      "rulesPath": ".decode-x/spec-containers/lpon-refund/rules/refund-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/refund.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 11,
+      "parsedBLs": [
+        "BL-020",
+        "BL-021",
+        "BL-022",
+        "BL-023",
+        "BL-024",
+        "BL-025",
+        "BL-026",
+        "BL-027",
+        "BL-028",
+        "BL-029",
+        "BL-030"
+      ],
+      "applicableDetectors": 11,
+      "perRule": [
+        {
+          "ruleId": "BL-020",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-020",
+            "condition": "거래 환불 요청이 접수될 때",
+            "criteria": "거래의 환불 가능 여부(rfndPsbltyYn) = 'Y'",
+            "outcome": "환불 처리를 진행한다",
+            "exception": "rfndPsbltyYn = 'N'이면 환불 거부"
+          }
+        },
+        {
+          "ruleId": "BL-021",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-021",
+            "condition": "환불 가능 여부 체크를 통과한 경우",
+            "criteria": "환불 가능 조건 충족",
+            "outcome": "입금 처리를 진행한다",
+            "exception": "조건 미충족 시 환불 거부"
+          }
+        },
+        {
+          "ruleId": "BL-022",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-022",
+            "condition": "입금이 정상적으로 완료된 경우",
+            "criteria": "입금 프로세스가 에러 없이 종료됨",
+            "outcome": "환불 완료 처리한다",
+            "exception": "[미정의]"
+          }
+        },
+        {
+          "ruleId": "BL-023",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-023",
+            "condition": "입금이 실패한 경우",
+            "criteria": "입금 프로세스에서 오류 발생",
+            "outcome": "에러를 반환한다",
+            "exception": "[미정의]"
+          }
+        },
+        {
+          "ruleId": "BL-024",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-024",
+            "condition": "미사용 상품권 환불 요청 시",
+            "criteria": "구매 후 7일 이내 환불 요청",
+            "outcome": "전액 환불 처리한다",
+            "exception": "7일 초과 시 환불 불가"
+          }
+        },
+        {
+          "ruleId": "BL-025",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-025",
+            "condition": "기 사용 상품권 잔액 환불 요청 시",
+            "criteria": "전체 금액의 60% 이상 사용",
+            "outcome": "잔액 환불이 가능하다",
+            "exception": "60% 미만 사용 시 잔액 환불 불가"
+          }
+        },
+        {
+          "ruleId": "BL-026",
+          "detected": 1,
+          "markers": [
+            {
+              "ruleId": "BL-026",
+              "severity": "MEDIUM",
+              "pattern": "missing_alt_branch",
+              "sourceFile": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/refund.ts",
+              "sourceLine": 0,
+              "detail": "BL-026: No cashback/discount branch with reject/alt outcome found. Expected: if (voucher.cashback_amount > 0) { throw new RefundError('CASHBACK_REFUND_DENIED', ...) } or equivalent ALT outcome.",
+              "confidence": 0.65,
+              "autoDetected": true
+            }
+          ],
+          "rule": {
+            "id": "BL-026",
+            "condition": "캐시백 또는 할인보전 금액 환불 요청 시",
+            "criteria": "캐시백 및 할인보전 금액에 해당",
+            "outcome": "현금 환불 불가",
+            "exception": "[미정의 — 포인트 전환 등 대안 검토 필요]"
+          }
+        },
+        {
+          "ruleId": "BL-027",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-027",
+            "condition": "계좌 오류로 환불 실패 시",
+            "criteria": "환불계좌 오류 발생",
+            "outcome": "소비자가 환불계좌 재등록 또는 고객센터 수기 접수로 환불 처리한다",
+            "exception": "[미정의]"
+          }
+        },
+        {
+          "ruleId": "BL-028",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-028",
+            "condition": "환불 요청 시 제외금액 산정이 필요할 때",
+            "criteria": "환불요청액에서 제외금액을 차감",
+            "outcome": "입금액 = 환불요청액 − 제외금액으로 계산한다",
+            "exception": "제외금액이 0이면 전액 환불"
+          }
+        },
+        {
+          "ruleId": "BL-029",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-029",
+            "condition": "유효기간 만료 상품권 환불 요청 시",
+            "criteria": "원칙적으로 환불 불가",
+            "outcome": "환불을 거부한다. 단, 강성 민원 시 강제환불 기능을 활용한다",
+            "exception": "[미정의]"
+          }
+        },
+        {
+          "ruleId": "BL-030",
+          "detected": 1,
+          "markers": [
+            {
+              "ruleId": "BL-030",
+              "severity": "MEDIUM",
+              "pattern": "missing_validation_check",
+              "sourceFile": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/refund.ts",
+              "sourceLine": 0,
+              "detail": "No expiry extension handling found. Expected: rejection for EXTENSION-type requests (e.g., if (refundType === 'EXTENSION') throw RefundError('EXTENSION_NOT_ALLOWED', ...)).",
+              "confidence": 0.75,
+              "autoDetected": true
+            }
+          ],
+          "rule": {
+            "id": "BL-030",
+            "condition": "상품권 유효기간 연장 요청 시",
+            "criteria": "소진공 요청사항에 해당",
+            "outcome": "유효기간 연장 불가",
+            "exception": "[미정의]"
+          }
+        }
+      ],
+      "crossCheck": [
+        {
+          "ruleId": "BL-024",
+          "manualStatus": "RESOLVED",
+          "autoDetectionCount": 0,
+          "recommendedStatus": "RESOLVED",
+          "detectorSupported": true,
+          "reason": "Status consistent — RESOLVED in both manual and auto."
+        },
+        {
+          "ruleId": "BL-028",
+          "manualStatus": "RESOLVED",
+          "autoDetectionCount": 0,
+          "recommendedStatus": "RESOLVED",
+          "detectorSupported": true,
+          "reason": "Status consistent — RESOLVED in both manual and auto."
+        },
+        {
+          "ruleId": "BL-026",
+          "manualStatus": "OPEN",
+          "autoDetectionCount": 1,
+          "recommendedStatus": "OPEN",
+          "detectorSupported": true,
+          "reason": "Manual=OPEN and auto-detector confirms 1 occurrences. Status consistent."
+        },
+        {
+          "ruleId": "BL-029",
+          "manualStatus": "RESOLVED",
+          "autoDetectionCount": 0,
+          "recommendedStatus": "RESOLVED",
+          "detectorSupported": true,
+          "reason": "Status consistent — RESOLVED in both manual and auto."
+        },
+        {
+          "ruleId": "BL-027",
+          "manualStatus": "RESOLVED",
+          "autoDetectionCount": 0,
+          "recommendedStatus": "RESOLVED",
+          "detectorSupported": true,
+          "reason": "Status consistent — RESOLVED in both manual and auto."
+        }
+      ],
+      "summary": {
+        "totalMarkers": 2,
+        "presenceCount": 9,
+        "absenceCount": 2,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "lpon-charge",
+      "rulesPath": ".decode-x/spec-containers/lpon-charge/rules/charge-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/charging.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 8,
+      "parsedBLs": [
+        "BL-001",
+        "BL-002",
+        "BL-003",
+        "BL-004",
+        "BL-005",
+        "BL-006",
+        "BL-007",
+        "BL-008"
+      ],
+      "applicableDetectors": 8,
+      "perRule": [
+        {
+          "ruleId": "BL-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-001",
+            "condition": "충전 요청 시 출금계좌에서 출금을 시도하는 경우",
+            "criteria": "출금계좌 잔액 ≥ 충전 요청 금액",
+            "outcome": "출금 처리를 진행한다",
+            "exception": "잔액 부족 시 출금 실패 에러를 반환한다"
+          }
+        },
+        {
+          "ruleId": "BL-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-002",
+            "condition": "출금이 정상적으로 완료된 경우",
+            "criteria": "출금 프로세스가 에러 없이 종료됨",
+            "outcome": "충전 완료 처리한다",
+            "exception": "—"
+          }
+        },
+        {
+          "ruleId": "BL-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-003",
+            "condition": "출금이 실패한 경우",
+            "criteria": "출금 프로세스에서 오류 발생",
+            "outcome": "에러를 반환하고 충전 프로세스를 중단한다",
+            "exception": "—"
+          }
+        },
+        {
+          "ruleId": "BL-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-004",
+            "condition": "출금 요청 후 응답이 타임아웃된 경우",
+            "criteria": "출금 요청 후 응답 대기 시간 > 타임아웃 기준",
+            "outcome": "5분 후 출금상태조회 API를 호출하여 처리 결과를 확인하고 후속 처리를 진행한다",
+            "exception": "—"
+          }
+        },
+        {
+          "ruleId": "BL-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-005",
+            "condition": "이용자가 충전을 요청하는 경우",
+            "criteria": "충전 요청 금액 ≤ 충전 가능 금액 한도",
+            "outcome": "충전 확정 처리를 진행한다",
+            "exception": "한도 초과 시 충전 거부"
+          }
+        },
+        {
+          "ruleId": "BL-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-006",
+            "condition": "회사가 충전을 요청하는 경우",
+            "criteria": "충전 요청 금액 ≤ 회사별 충전 한도",
+            "outcome": "충전 원장 처리를 진행한다",
+            "exception": "한도 초과 시 충전 거부"
+          }
+        },
+        {
+          "ruleId": "BL-007",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-007",
+            "condition": "이용자가 포인트 충전을 요청한 경우",
+            "criteria": "포인트 충전 요청이 유효하고 한도 내",
+            "outcome": "포인트 충전 확정 처리한다",
+            "exception": "유효하지 않거나 한도 초과 시 거부"
+          }
+        },
+        {
+          "ruleId": "BL-008",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-008",
+            "condition": "자동충전 금액이 설정될 때",
+            "criteria": "blceCondAmt(잔액 조건), ymdCondAmt(일자 조건), condSmAmt(복합 조건) 중 하나 이상 충족",
+            "outcome": "조건에 따라 자동충전 금액(stngAmt)이 산정되어 적용된다",
+            "exception": "조건 미충족 시 자동충전 미실행"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 8,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "lpon-payment",
+      "rulesPath": ".decode-x/spec-containers/lpon-payment/rules/payment-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/payment.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 7,
+      "parsedBLs": [
+        "BL-013",
+        "BL-014",
+        "BL-015",
+        "BL-016",
+        "BL-017",
+        "BL-018",
+        "BL-019"
+      ],
+      "applicableDetectors": 7,
+      "perRule": [
+        {
+          "ruleId": "BL-013",
+          "detected": 1,
+          "markers": [
+            {
+              "ruleId": "BL-013",
+              "severity": "HIGH",
+              "pattern": "under_implementation",
+              "sourceFile": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/payment.ts",
+              "sourceLine": 0,
+              "detail": "BL-013: No refundByCompany or cancelChargeRefund function found. Company-initiated charge refund is not implemented in payment domain (handled in refund domain).",
+              "confidence": 0.9,
+              "autoDetected": true
+            }
+          ],
+          "rule": {
+            "id": "BL-013",
+            "condition": "회사가 충전 환불을 요청하는 경우",
+            "criteria": "환불 요청이 유효함",
+            "outcome": "충전 환불 처리를 진행한다",
+            "exception": "유효하지 않은 요청 시 거부"
+          }
+        },
+        {
+          "ruleId": "BL-014",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-014",
+            "condition": "결제가 정상적으로 완료된 경우",
+            "criteria": "결제 완료 상태 확인 (status='PAID')",
+            "outcome": "결제취소가 가능하다 (부분취소, 망취소 포함)",
+            "exception": "결제 미완료(PENDING/FAILED) 시 취소 불가 (E409)"
+          }
+        },
+        {
+          "ruleId": "BL-015",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-015",
+            "condition": "결제 금액이 50,000원 이상인 경우",
+            "criteria": "결제 요청 금액 ≥ 50,000원",
+            "outcome": "SMS를 발송한다",
+            "exception": "50,000원 미만 시 SMS 미발송"
+          }
+        },
+        {
+          "ruleId": "BL-016",
+          "detected": 1,
+          "markers": [
+            {
+              "ruleId": "BL-016",
+              "severity": "HIGH",
+              "pattern": "under_implementation",
+              "sourceFile": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/payment.ts",
+              "sourceLine": 0,
+              "detail": "BL-016: No cancelPayment or refundPayment function found. Payment cancellation request flow (card authorization reversal + transaction history update) is not implemented.",
+              "confidence": 0.9,
+              "autoDetected": true
+            }
+          ],
+          "rule": {
+            "id": "BL-016",
+            "condition": "결제 승인 취소 요청이 접수된 경우",
+            "criteria": "취소 요청이 정상적으로 접수됨",
+            "outcome": "카드사에 취소 요청을 전달하고 거래 기록을 업데이트한다",
+            "exception": "접수 실패 시 에러 반환"
+          }
+        },
+        {
+          "ruleId": "BL-017",
+          "detected": 1,
+          "markers": [
+            {
+              "ruleId": "BL-017",
+              "severity": "HIGH",
+              "pattern": "under_implementation",
+              "sourceFile": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/payment.ts",
+              "sourceLine": 0,
+              "detail": "BL-017: No cancelByMerchant, mpmCancel, or sendMpmCancelMessage function found. Merchant-initiated cancellation via BC card MPM message transmission is not implemented.",
+              "confidence": 0.9,
+              "autoDetected": true
+            }
+          ],
+          "rule": {
+            "id": "BL-017",
+            "condition": "가맹점주가 온누리앱에서 결제내역 확인 후 취소버튼을 클릭한 경우",
+            "criteria": "취소버튼 클릭 이벤트 발생",
+            "outcome": "BC카드 MPM으로 결제 취소전문을 전송한다",
+            "exception": "전송 실패 시 재시도"
+          }
+        },
+        {
+          "ruleId": "BL-018",
+          "detected": 1,
+          "markers": [
+            {
+              "ruleId": "BL-018",
+              "severity": "HIGH",
+              "pattern": "under_implementation",
+              "sourceFile": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/payment.ts",
+              "sourceLine": 0,
+              "detail": "BL-018: No approveQrCancel, merchantApproveCancel, or qrMerchantApprove function found. QR cancellation request awaiting merchant approval flow is not implemented.",
+              "confidence": 0.9,
+              "autoDetected": true
+            }
+          ],
+          "rule": {
+            "id": "BL-018",
+            "condition": "QR 결제 취소 요청이 생성된 경우",
+            "criteria": "가맹점주가 취소 승인 처리를 완료",
+            "outcome": "취소 처리가 완료된다",
+            "exception": "가맹점주 미승인 시 취소 보류"
+          }
+        },
+        {
+          "ruleId": "BL-019",
+          "detected": 1,
+          "markers": [
+            {
+              "ruleId": "BL-019",
+              "severity": "HIGH",
+              "pattern": "under_implementation",
+              "sourceFile": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/payment.ts",
+              "sourceLine": 0,
+              "detail": "BL-019: No cancelByWithdrawnUser, ap06Cancel, or withdrawnUserRefund function found. Withdrawn user payment/purchase cancellation via external AP06 API is not implemented.",
+              "confidence": 0.9,
+              "autoDetected": true
+            }
+          ],
+          "rule": {
+            "id": "BL-019",
+            "condition": "탈퇴 후 결제 또는 매입 취소가 발생한 경우",
+            "criteria": "탈퇴 회원의 취소 발생",
+            "outcome": "AP06(지급형 상품권 조회/지급) API를 통해 취소 처리한다",
+            "exception": "API 실패 시 수기처리"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 5,
+        "presenceCount": 2,
+        "absenceCount": 5,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "lpon-gift",
+      "rulesPath": ".decode-x/spec-containers/lpon-gift/rules/gift-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/gift.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "BL-G001",
+        "BL-G002",
+        "BL-G003",
+        "BL-G004",
+        "BL-G005",
+        "BL-G006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "BL-G001",
+          "detected": 1,
+          "markers": [
+            {
+              "ruleId": "BL-G001",
+              "severity": "HIGH",
+              "pattern": "under_implementation",
+              "sourceFile": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/gift.ts",
+              "sourceLine": 0,
+              "detail": "BL-G001: No sendGift or createGift function found. Gift sending (balance deduction + pending creation) is not implemented.",
+              "confidence": 0.9,
+              "autoDetected": true
+            }
+          ],
+          "rule": {
+            "id": "BL-G001",
+            "condition": "발송자가 선물 발송 요청 시",
+            "criteria": "발송 금액 ≤ 발송자 잔액 AND 수신자 계정이 유효",
+            "outcome": "발송자 잔액에서 선물 금액 차감 후 `gift_transactions` 생성, `status=pending`",
+            "exception": "잔액 부족 또는 수신자 미존재 시 에러 반환"
+          }
+        },
+        {
+          "ruleId": "BL-G002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-G002",
+            "condition": "수신자가 선물 수락 요청 시",
+            "criteria": "`gift_transactions.status = 'pending'` AND `expires_at > NOW()`",
+            "outcome": "수신자 잔액 증가 + `status → 'accepted'` + `GiftAccepted` 이벤트",
+            "exception": "이미 수락/거절/만료/취소된 경우 HTTP 422"
+          }
+        },
+        {
+          "ruleId": "BL-G003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-G003",
+            "condition": "수신자가 선물 거절 요청 시",
+            "criteria": "`gift_transactions.status = 'pending'`",
+            "outcome": "발송자 잔액 복원 + `status → 'rejected'` + `GiftRejected` 이벤트",
+            "exception": "이미 처리된 선물 → HTTP 422"
+          }
+        },
+        {
+          "ruleId": "BL-G004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-G004",
+            "condition": "선물 만료 시점 도달 시",
+            "criteria": "`expires_at < NOW()` AND `status = 'pending'`",
+            "outcome": "발송자 잔액 복원 + `status → 'expired'` + `GiftExpired` 이벤트",
+            "exception": "이미 수락된 경우 만료 처리 불가 (ES-GIFT-001)"
+          }
+        },
+        {
+          "ruleId": "BL-G005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-G005",
+            "condition": "발송자가 선물 취소 요청 시",
+            "criteria": "`status = 'pending'` (수락 전)",
+            "outcome": "발송자 잔액 즉시 복원 + `status → 'canceled'` + `GiftCanceled` 이벤트",
+            "exception": "`status = 'accepted'` 이면 취소 불가 → HTTP 422 (ES-GIFT-002)"
+          }
+        },
+        {
+          "ruleId": "BL-G006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-G006",
+            "condition": "수신자 선물 수락으로 잔액 이전 시",
+            "criteria": "발송자 차감 + 수신자 증가 단일 원자 처리",
+            "outcome": "`gift_ledger_entries` 2행 (debit_sender + credit_receiver) 원자 삽입",
+            "exception": "한쪽 실패 시 전체 롤백 + `GiftTransferFailed` (ES-GIFT-003)"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 1,
+        "presenceCount": 5,
+        "absenceCount": 1,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "lpon-settlement",
+      "rulesPath": ".decode-x/spec-containers/lpon-settlement/rules/settlement-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/settlement.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "BL-031",
+        "BL-032",
+        "BL-033",
+        "BL-034",
+        "BL-035",
+        "BL-036"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "BL-031",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-031",
+            "condition": "충전 또는 환불 거래 발생 시",
+            "criteria": "충전 건수, 금액, 할인금액, 환불 건수, 금액, 수수료 집계",
+            "outcome": "충전/환불 내역 집계하여 `settlement_summaries` 갱신",
+            "exception": "거래 0건 시 집계 생략"
+          }
+        },
+        {
+          "ruleId": "BL-032",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-032",
+            "condition": "포인트 충전 또는 환불 거래 발생 시",
+            "criteria": "포인트 충전 건수/금액, 환불 건수/금액 집계",
+            "outcome": "포인트 충전/환불 현황을 `settlement_summaries`에 집계",
+            "exception": "거래 0건 시 집계 생략"
+          }
+        },
+        {
+          "ruleId": "BL-033",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-033",
+            "condition": "BATCH_004 실행 시",
+            "criteria": "스케줄 또는 수동 실행",
+            "outcome": "`calculations`, `calculation_transactions` 조회 후 반복 갱신",
+            "exception": "배치 실패 시 알림 발송 (ES-SETTLE-001, 003)"
+          }
+        },
+        {
+          "ruleId": "BL-034",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-034",
+            "condition": "계산 데이터 처리 필요 시",
+            "criteria": "`calculations`, `calculation_transactions` 존재",
+            "outcome": "거래 데이터 반복 처리 후 두 테이블 갱신",
+            "exception": "데이터 미존재 시 스킵"
+          }
+        },
+        {
+          "ruleId": "BL-035",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-035",
+            "condition": "특정 기간 산정 점검 데이터 조회 요청 시",
+            "criteria": "기간 파라미터 유효",
+            "outcome": "해당 기간 산정 점검 데이터 반환",
+            "exception": "기간 파라미터 무효 → 에러"
+          }
+        },
+        {
+          "ruleId": "BL-036",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-036",
+            "condition": "수수료 산출 시",
+            "criteria": "`fee_reflected IN ('Y', 'N')` **[Fill: ES-SETTLE-002]**",
+            "outcome": "Y → 수수료 차감 후 정산 / N → 전액 정산",
+            "exception": "NULL 또는 이외 값 → `INVALID_FEE_FLAG` 에러"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "lpon-budget",
+      "rulesPath": ".decode-x/spec-containers/lpon-budget/rules/budget-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/budget.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 5,
+      "parsedBLs": [
+        "BB-001",
+        "BB-002",
+        "BB-003",
+        "BB-004",
+        "BB-005"
+      ],
+      "applicableDetectors": 5,
+      "perRule": [
+        {
+          "ruleId": "BB-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BB-001",
+            "condition": "회사가 예산을 배정 요청하는 경우",
+            "criteria": "배정 금액 > 0 AND 배정 금액 ≤ 회사 최대 한도",
+            "outcome": "예산 원장(`budget_ledger`)에 배정 기록 생성, 예산 잔액 갱신",
+            "exception": "한도 초과 또는 음수 금액 시 거부, E422 반환"
+          }
+        },
+        {
+          "ruleId": "BB-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BB-002",
+            "condition": "직원이 상품권 충전 요청 시 예산 차감",
+            "criteria": "해당 직원의 예산 잔액 ≥ 충전 요청 금액",
+            "outcome": "예산 잔액 차감 후 lpon-charge 충전 프로세스 진행",
+            "exception": "예산 부족 시 충전 거부 (E422 BUDGET_INSUFFICIENT)"
+          }
+        },
+        {
+          "ruleId": "BB-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BB-003",
+            "condition": "예산 잔액이 임계치 이하로 감소할 때",
+            "criteria": "예산 잔액 ≤ 배정 금액의 10%",
+            "outcome": "담당자(company admin)에게 소진 임박 알림(LMS) 발송",
+            "exception": "알림 설정 비활성 시 미발송"
+          }
+        },
+        {
+          "ruleId": "BB-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BB-004",
+            "condition": "예산 배정 기간이 종료되는 경우",
+            "criteria": "이월 정책(`rollover_yn`)이 'Y'로 설정됨",
+            "outcome": "미사용 잔액을 다음 기간으로 이월 처리",
+            "exception": "`rollover_yn = 'N'` 시 잔액 소멸(status=EXPIRED)"
+          }
+        },
+        {
+          "ruleId": "BB-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BB-005",
+            "condition": "예산 차감 후 충전 프로세스가 실패한 경우",
+            "criteria": "외부 출금 API 오류 또는 충전 확정 실패 확인",
+            "outcome": "차감된 예산을 즉시 원복(복구), 잔액 롤백",
+            "exception": "복구 실패 시 수기처리 에스컬레이션 (ES-BUDGET-002)"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 5,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "lpon-purchase",
+      "rulesPath": ".decode-x/spec-containers/lpon-purchase/rules/purchase-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/purchase.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 5,
+      "parsedBLs": [
+        "BP-001",
+        "BP-002",
+        "BP-003",
+        "BP-004",
+        "BP-005"
+      ],
+      "applicableDetectors": 5,
+      "perRule": [
+        {
+          "ruleId": "BP-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BP-001",
+            "condition": "이용자가 상품권 구매를 요청하는 경우",
+            "criteria": "구매 금액 > 0 AND 구매 금액 ≤ 1회 구매 한도",
+            "outcome": "결제 처리 진행 후 신규 상품권(`vouchers`) 발행",
+            "exception": "한도 초과 시 E422 반환"
+          }
+        },
+        {
+          "ruleId": "BP-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BP-002",
+            "condition": "구매 결제가 정상 완료된 경우",
+            "criteria": "결제 프로세스가 에러 없이 종료됨",
+            "outcome": "상품권 발행 (`vouchers` INSERT, purchased_at 설정, expires_at = purchased_at + 유효기간)",
+            "exception": "결제 실패 시 상품권 미발행"
+          }
+        },
+        {
+          "ruleId": "BP-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BP-003",
+            "condition": "이용자의 월별 구매 한도 검증 시",
+            "criteria": "해당 월 누적 구매 금액 + 신규 금액 ≤ 월 구매 한도",
+            "outcome": "구매 허용 진행",
+            "exception": "한도 초과 시 E422 MONTHLY_LIMIT_EXCEEDED"
+          }
+        },
+        {
+          "ruleId": "BP-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BP-004",
+            "condition": "동일 구매 요청이 재전송된 경우",
+            "criteria": "`purchaseRequestId`가 `purchase_transactions`에 이미 존재하고 `status = 'completed'`",
+            "outcome": "기존 voucher_id를 반환 (이중 발행 방지)",
+            "exception": "`status = 'processing'` 시 HTTP 409 + PURCHASE_IN_PROGRESS"
+          }
+        },
+        {
+          "ruleId": "BP-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BP-005",
+            "condition": "구매 완료 후 7일 이내 미사용 환불 요청 시",
+            "criteria": "상품권 잔액 = 액면가 (미사용) AND 구매일로부터 7일 이내",
+            "outcome": "전액 환불 처리 (BL-024 연동, lpon-charge 취소 흐름 준용)",
+            "exception": "7일 초과 또는 일부 사용 시 환불 불가"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 5,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "miraeasset-pension",
+      "rulesPath": ".decode-x/spec-containers/miraeasset-pension/rules/pension-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/pension.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 7,
+      "parsedBLs": [
+        "P-001",
+        "P-002",
+        "P-003",
+        "P-004",
+        "P-005",
+        "P-006",
+        "P-007"
+      ],
+      "applicableDetectors": 7,
+      "perRule": [
+        {
+          "ruleId": "P-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "P-001",
+            "condition": "가입자가 퇴직연금 가입을 신청하는 경우",
+            "criteria": "근속기간 ≥ 1년 AND 연령 ≥ 18세 AND 고용 상태 = 재직 중",
+            "outcome": "가입 승인 후 계좌 개설 처리",
+            "exception": "조건 미충족 시 가입 거부 (E422-INELIGIBLE)"
+          }
+        },
+        {
+          "ruleId": "P-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "P-002",
+            "condition": "가입자가 연간 적립 요청을 하는 경우",
+            "criteria": "요청 적립 금액 > 0 AND (기적립 + 요청액) ≤ 연간 법정 한도(1,800만원)",
+            "outcome": "적립 원장(`pension_ledger`) 갱신 및 적립 완료 처리",
+            "exception": "한도 초과 시 적립 거부 (E422-LIMIT_EXCEEDED)"
+          }
+        },
+        {
+          "ruleId": "P-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "P-003",
+            "condition": "가입자가 중도인출을 요청하는 경우",
+            "criteria": "인출 사유가 법정 허용 사유(주택 구입·전세·의료비·재난 등)에 해당",
+            "outcome": "중도인출 요청 상태를 '심사 중'으로 전환 후 처리 진행",
+            "exception": "허용 사유 미해당 시 인출 거부 (E403-INVALID_REASON)"
+          }
+        },
+        {
+          "ruleId": "P-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "P-004",
+            "condition": "가입자가 연금 수령 개시를 신청하는 경우",
+            "criteria": "신청자 연령 ≥ 55세 AND 가입 기간 ≥ 5년",
+            "outcome": "수령 개시 상태로 전환 및 수령 스케줄 생성",
+            "exception": "조건 미충족 시 수령 개시 거부 (E422-AGE_NOT_MET)"
+          }
+        },
+        {
+          "ruleId": "P-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "P-005",
+            "condition": "가입자의 연간 납입액에 세액공제를 적용하는 경우",
+            "criteria": "세액공제 대상 납입액 ≤ 연간 세액공제 한도(900만원)",
+            "outcome": "세액공제 한도 이내 납입액에 대해 세액공제 처리",
+            "exception": "한도 초과분은 세액공제 제외, 초과 납입 기록 유지"
+          }
+        },
+        {
+          "ruleId": "P-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "P-006",
+            "condition": "가입자가 중도 해지를 요청하는 경우",
+            "criteria": "해지 요청 상태 = 'PENDING' AND 해지 사유 코드 유효",
+            "outcome": "계좌 상태를 'TERMINATED'로 전환하고 잔여 원리금 환급",
+            "exception": "진행 중인 중도인출 건 존재 시 해지 보류 (E409-WITHDRAWAL_IN_PROGRESS)"
+          }
+        },
+        {
+          "ruleId": "P-007",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "P-007",
+            "condition": "원리금 지급(만기 수령·중도인출·해지 환급)을 처리하는 경우",
+            "criteria": "원금과 이자가 모두 정상 계산된 상태",
+            "outcome": "원금 차감 + 이자 지급 + 지급 이력 기록을 하나의 트랜잭션으로 처리",
+            "exception": "이자 계산 오류 또는 원금 부족 시 전체 롤백 (ES-PENSION-003)"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 7,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "generic-voucher",
+      "rulesPath": ".decode-x/spec-containers/generic-voucher/rules/voucher-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/voucher.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "V-001",
+        "V-002",
+        "V-003",
+        "V-004",
+        "V-005",
+        "V-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "V-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "V-001",
+            "condition": "바우처 발행 요청 시",
+            "criteria": "issuer당 일일 발행 카운트 < 1,000",
+            "outcome": "INSERT vouchers (status=active, balance=amount, expires_at=issued_at+365일)",
+            "exception": "한도 도달 시 `E429-LIMIT` throw"
+          }
+        },
+        {
+          "ruleId": "V-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "V-002",
+            "condition": "바우처 사용 가능 검증 시",
+            "criteria": "`now ≤ expires_at` AND `status = 'active'`",
+            "outcome": "`canUse=true` + daysLeft 반환",
+            "exception": "만료 시 `E410-EXPIRED`, 비활성 시 `E409-STATUS`"
+          }
+        },
+        {
+          "ruleId": "V-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "V-003",
+            "condition": "바우처 사용 시 잔액 차감",
+            "criteria": "`balance ≥ amount`",
+            "outcome": "atomic transaction (UPDATE balance + INSERT ledger + 무결성 검증)",
+            "exception": "잔액 부족 시 `E422-BAL`, integrity fail 시 rollback `E500-INTEGRITY`"
+          }
+        },
+        {
+          "ruleId": "V-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "V-004",
+            "condition": "정기 batch 또는 redeem 후 trigger",
+            "criteria": "`balance ≤ 1,000` AND `status = 'active'`",
+            "outcome": "`status → 'destroyed'` + balance=0",
+            "exception": "미달 시 active 유지 (no-op)"
+          }
+        },
+        {
+          "ruleId": "V-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "V-005",
+            "condition": "환불 요청 시",
+            "criteria": "`used_count = 0` AND `days_since_issue ≤ 7`",
+            "outcome": "`status → 'refunded'` + balance=0 + (옵션) 결제 환불 호출",
+            "exception": "사용 1건+ `E422-USED`, 7일 초과 `E422-WINDOW`"
+          }
+        },
+        {
+          "ruleId": "V-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "V-006",
+            "condition": "양도 요청 시",
+            "criteria": "`transferred_count = 0` AND `status = 'active'`",
+            "outcome": "owner_id 변경 + transferred_count+=1 + `status → 'transferred'`",
+            "exception": "이미 양도 시 `E423-LOCKED`, 비활성 시 `E409-STATUS`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "loyalty-points",
+      "rulesPath": ".decode-x/spec-containers/loyalty-points/rules/loyalty-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/loyalty.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "LP-001",
+        "LP-002",
+        "LP-003",
+        "LP-004",
+        "LP-005",
+        "LP-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "LP-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "LP-001",
+            "condition": "포인트 적립 요청 시",
+            "criteria": "`today_earned + amount ≤ 10,000P`",
+            "outcome": "계정 balance + amount, EARN ledger insert",
+            "exception": "일일 한도 초과 시 `E429-LIMIT` throw"
+          }
+        },
+        {
+          "ruleId": "LP-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "LP-002",
+            "condition": "포인트 사용 가능 검증 시",
+            "criteria": "`balance ≥ amount` AND `status = 'active'`",
+            "outcome": "`canUse=true` 반환",
+            "exception": "계정 미존재 `E404-ACCOUNT`, 잔액 부족 `E422-BAL`, 비활성 `E409-STATUS`"
+          }
+        },
+        {
+          "ruleId": "LP-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "LP-003",
+            "condition": "사용 시 차감",
+            "criteria": "`balance ≥ amount`",
+            "outcome": "atomic transaction (UPDATE balance + INSERT REDEEM ledger + 무결성 검증)",
+            "exception": "rollback on integrity fail (`E500-INTEGRITY`)"
+          }
+        },
+        {
+          "ruleId": "LP-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "LP-004",
+            "condition": "만료 자동 소멸 (정기 batch)",
+            "criteria": "`now > expires_at` AND `status = 'active'`",
+            "outcome": "`status → 'expired'`, balance=0",
+            "exception": "만료 전 active 유지 (no-op)"
+          }
+        },
+        {
+          "ruleId": "LP-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "LP-005",
+            "condition": "등급 승급 (누적 임계 도달)",
+            "criteria": "`total_earned ≥ 50,000` (SILVER) 또는 `≥ 200,000` (GOLD)",
+            "outcome": "grade BRONZE → SILVER → GOLD",
+            "exception": "임계 미달 시 등급 유지"
+          }
+        },
+        {
+          "ruleId": "LP-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "LP-006",
+            "condition": "환불 시 적립 회수",
+            "criteria": "`days_since_earn ≤ 30` AND `balance ≥ earn_amount`",
+            "outcome": "balance/total_earned 차감 + CLAWBACK ledger insert",
+            "exception": "`E422-WINDOW` (30일 초과) 또는 `E422-USED` (잔액 부족)"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "lpon-cancel",
+      "rulesPath": ".decode-x/spec-containers/lpon-cancel/rules/cancel-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/cancel.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 1,
+      "parsedBLs": [
+        "BL-042"
+      ],
+      "applicableDetectors": 1,
+      "perRule": [
+        {
+          "ruleId": "BL-042",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BL-042",
+            "condition": "결제 망 취소 처리 시 (외부 결제망 이벤트 수신)",
+            "criteria": "`status='PAID'` AND `idempotencyKey` 미사용",
+            "outcome": "`payments.status='NETWORK_CANCELED'` + cancel_transactions INSERT (`type='NETWORK'`) + vouchers.balance += amount (atomic transaction)",
+            "exception": "이미 처리됨 → `ALREADY_PROCESSED` 멱등 응답, PAID 아님 → `E409`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 1,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "credit-card",
+      "rulesPath": ".decode-x/spec-containers/credit-card/rules/credit-card-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/credit-card.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "CC-001",
+        "CC-002",
+        "CC-003",
+        "CC-004",
+        "CC-005",
+        "CC-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "CC-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "CC-001",
+            "condition": "카드 발급 신청 시",
+            "criteria": "`creditScore ≥ 600` AND `annualIncome ≥ 24,000,000`",
+            "outcome": "`credit_cards` INSERT (status='active'), 한도 = min(requested, 연소득×30% + scoreBonus)",
+            "exception": "`E422-CS` (점수 미달) 또는 `E422-IN` (소득 미달)"
+          }
+        },
+        {
+          "ruleId": "CC-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "CC-002",
+            "condition": "결제 승인 전 한도 검증 시",
+            "criteria": "`card.status = 'active'` AND `credit_limit - used_amount ≥ amount`",
+            "outcome": "`canPay=true`, remainingLimit 반환",
+            "exception": "`E404-CARD`, `E409-ST` (비활성), `E422-LIMIT` (한도 초과)"
+          }
+        },
+        {
+          "ruleId": "CC-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "CC-003",
+            "condition": "결제 승인 시",
+            "criteria": "한도 검증 통과",
+            "outcome": "atomic transaction (`used_amount += amount` + `card_transactions` INSERT status='approved')",
+            "exception": "rollback on integrity fail"
+          }
+        },
+        {
+          "ruleId": "CC-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "CC-004",
+            "condition": "카드 상태 전환 (active → blocked/expired/cancelled)",
+            "criteria": "`previousStatus = 'active'`",
+            "outcome": "`credit_cards.status` UPDATE, previousStatus 반환",
+            "exception": "`E409-TR` (active 아닌 상태에서 전환 불가)"
+          }
+        },
+        {
+          "ruleId": "CC-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "CC-005",
+            "condition": "연체 자동 마킹 (정기 batch)",
+            "criteria": "`status='active'` AND `used_amount > 0` AND `last_payment_at < now - 30days`",
+            "outcome": "`status → 'delinquent'`, `delinquent_since = now`",
+            "exception": "결제 이력 있거나 미사용 시 marking 제외"
+          }
+        },
+        {
+          "ruleId": "CC-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "CC-006",
+            "condition": "결제 취소 (가맹점/사용자)",
+            "criteria": "`transaction.status = 'approved'`",
+            "outcome": "atomic transaction (`card_transactions.status='cancelled'` + `used_amount -= amount` 한도 복구)",
+            "exception": "`E404-TX`, `E409-TX` (이미 cancelled/refunded)"
+          }
+        }
+      ],
+      "crossCheck": [
+        {
+          "ruleId": "CC-001",
+          "manualStatus": "RESOLVED",
+          "autoDetectionCount": 0,
+          "recommendedStatus": "RESOLVED",
+          "detectorSupported": true,
+          "reason": "Status consistent — RESOLVED in both manual and auto."
+        },
+        {
+          "ruleId": "CC-002",
+          "manualStatus": "RESOLVED",
+          "autoDetectionCount": 0,
+          "recommendedStatus": "RESOLVED",
+          "detectorSupported": true,
+          "reason": "Status consistent — RESOLVED in both manual and auto."
+        }
+      ],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "delivery",
+      "rulesPath": ".decode-x/spec-containers/delivery/rules/delivery-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/delivery.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "DV-001",
+        "DV-002",
+        "DV-003",
+        "DV-004",
+        "DV-005",
+        "DV-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "DV-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "DV-001",
+            "condition": "배송 요청 시",
+            "criteria": "`MIN_WEIGHT_KG ≤ weightKg ≤ MAX_WEIGHT_KG` (0.1~30kg)",
+            "outcome": "`deliveries` INSERT (status='PENDING') + `delivery_events` CREATED, expectedDeliveryAt 자동 산정",
+            "exception": "`E422-WT-MIN` (미달) 또는 `E422-WT-MAX` (초과)"
+          }
+        },
+        {
+          "ruleId": "DV-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "DV-002",
+            "condition": "배송 시작 전 지역별 한도 검증",
+            "criteria": "`regionLimit ≥ weight_kg` (RURAL ≤ 10kg, OVERSEAS ≤ 20kg, 기타 ≤ 30kg)",
+            "outcome": "`canShip=true`, regionLimit 반환",
+            "exception": "`E404-DV`, `E409-ST` (PENDING 아님), `E422-RGN-LIMIT` (지역 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "DV-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "DV-003",
+            "condition": "배송 시작 시",
+            "criteria": "`delivery.status = 'PENDING'`",
+            "outcome": "atomic transaction (`status='SHIPPED'` + `shipped_at=now` + `delivery_events` SHIPPED INSERT)",
+            "exception": "`E404-DV` 또는 `E409-ST`"
+          }
+        },
+        {
+          "ruleId": "DV-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "DV-004",
+            "condition": "상태 전환 (SHIPPED → DELIVERED/CANCELLED/RETURNED, PENDING → CANCELLED)",
+            "criteria": "허용된 상태 전환 매트릭스 충족",
+            "outcome": "`deliveries.status` UPDATE + `delivered_at`/`cancelled_at` 설정",
+            "exception": "`E409-TR` (불허 전환)"
+          }
+        },
+        {
+          "ruleId": "DV-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "DV-005",
+            "condition": "배송 지연 자동 마킹 (정기 batch)",
+            "criteria": "`status='SHIPPED'` AND `expected_delivery_at < now - 3days`",
+            "outcome": "`status='DELAYED'`, `delayed_since=now`, 마킹된 deliveryIds 반환",
+            "exception": "정상 배송은 marking 제외"
+          }
+        },
+        {
+          "ruleId": "DV-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "DV-006",
+            "condition": "배송 취소 + 반품 처리",
+            "criteria": "`status ∈ {SHIPPED, DELIVERED}`",
+            "outcome": "atomic transaction (`status='RETURNED'` + `cancelled_at=now` + `return_requests` INSERT, refund=weight × 1,000원)",
+            "exception": "`E404-DV`, `E409-DV` (PENDING/CANCELLED/RETURNED 상태)"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "subscription",
+      "rulesPath": ".decode-x/spec-containers/subscription/rules/subscription-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/subscription.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "SB-001",
+        "SB-002",
+        "SB-003",
+        "SB-004",
+        "SB-005",
+        "SB-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "SB-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "SB-001",
+            "condition": "구독 생성 시",
+            "criteria": "`priceKrw ≥ MIN_PRICE_KRW` AND `MIN_CYCLE_DAYS ≤ cycleDays ≤ MAX_CYCLE_DAYS`",
+            "outcome": "`subscriptions` INSERT (status='active', cycle_count=0, next_charge_at = now + cycleDays)",
+            "exception": "`E422-PR` (가격 미달), `E422-CY-MIN` (주기 미달), `E422-CY-MAX` (주기 초과)"
+          }
+        },
+        {
+          "ruleId": "SB-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "SB-002",
+            "condition": "자동결제 직전 한도 검증",
+            "criteria": "`sub.status='active'` AND `auto_charge_limit ≥ price_krw`",
+            "outcome": "`canCharge=true`, remainingHeadroom 반환",
+            "exception": "`E404-SB`, `E409-ST` (비활성), `E422-LIMIT` (한도 미달)"
+          }
+        },
+        {
+          "ruleId": "SB-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "SB-003",
+            "condition": "자동 갱신 트리거",
+            "criteria": "`next_charge_at ≤ now` AND `status='active'`",
+            "outcome": "atomic transaction (`subscription_payments` INSERT status='success' + cycle_index++ + UPDATE next_charge_at = now + cycle_days)",
+            "exception": "`E404-SB` 또는 `E409-ST`"
+          }
+        },
+        {
+          "ruleId": "SB-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "SB-004",
+            "condition": "상태 전환 (active ↔ paused, active → cancelled, paused → cancelled)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`status` UPDATE + cancelled_at 조건부 설정",
+            "exception": "`E409-TR` (불허 전환)"
+          }
+        },
+        {
+          "ruleId": "SB-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "SB-005",
+            "condition": "만료 자동 처리 (정기 batch)",
+            "criteria": "`status='active'` AND `expires_at IS NOT NULL` AND `expires_at < now`",
+            "outcome": "`status='expired'`, 마킹된 subscriptionIds 반환",
+            "exception": "만료 안 됐거나 expires_at NULL 시 제외"
+          }
+        },
+        {
+          "ruleId": "SB-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "SB-006",
+            "condition": "취소 + 환불 처리",
+            "criteria": "`status NOT IN {cancelled, expired}`",
+            "outcome": "atomic transaction (`status='cancelled'` + `cancelled_at=now` + `subscription_payments` INSERT status='refunded' if elapsedDays ≤ MAX_REFUND_DAYS)",
+            "exception": "`E404-SB`, `E409-SB` (이미 종료)"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "insurance",
+      "rulesPath": ".decode-x/spec-containers/insurance/rules/insurance-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/insurance.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "IN-001",
+        "IN-002",
+        "IN-003",
+        "IN-004",
+        "IN-005",
+        "IN-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "IN-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "IN-001",
+            "condition": "보험 가입 시",
+            "criteria": "`premiumKrw ≥ MIN_PREMIUM_KRW` AND `MIN_INSURED_AGE ≤ insuredAge ≤ MAX_INSURED_AGE`",
+            "outcome": "`policies` INSERT (status='active', reserved_amount=0, expires_at = +1년)",
+            "exception": "`E422-PR` (premium 미달), `E422-AGE-MIN` / `E422-AGE-MAX`"
+          }
+        },
+        {
+          "ruleId": "IN-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "IN-002",
+            "condition": "청구 한도 검증 시",
+            "criteria": "`policy.status='active'` AND `coverage_limit - reserved_amount ≥ claim_amount`",
+            "outcome": "`canClaim=true`, remainingCoverage 반환",
+            "exception": "`E404-PO`, `E409-ST` (비활성), `E422-LIMIT` (한도 초과)"
+          }
+        },
+        {
+          "ruleId": "IN-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "IN-003",
+            "condition": "청구 승인 시",
+            "criteria": "claim pending + policy active + 한도 충분",
+            "outcome": "atomic transaction (`claims.status='approved'` + `policies.reserved_amount += claim_amount`)",
+            "exception": "`E404-CL`, `E409-CL`, `E409-PO`, `E422-LIMIT`"
+          }
+        },
+        {
+          "ruleId": "IN-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "IN-004",
+            "condition": "정책 상태 전환 (active ↔ suspended, → cancelled)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`policies.status` UPDATE + cancelled_at 조건부",
+            "exception": "`E409-TR` (불허 전환)"
+          }
+        },
+        {
+          "ruleId": "IN-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "IN-005",
+            "condition": "만료 자동 처리 (정기 batch)",
+            "criteria": "`status='active'` AND `expires_at IS NOT NULL` AND `expires_at < now`",
+            "outcome": "`status='expired'`, 마킹된 policyIds 반환",
+            "exception": "만료 안 됐거나 expires_at NULL 시 제외"
+          }
+        },
+        {
+          "ruleId": "IN-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "IN-006",
+            "condition": "청구 거절 + 환불 처리",
+            "criteria": "claim pending",
+            "outcome": "atomic transaction (`claims.status='rejected'` + 30일 이내 시 `claim_payments` INSERT type='refund' amount=premium_krw)",
+            "exception": "`E404-CL`, `E409-CL`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "healthcare",
+      "rulesPath": ".decode-x/spec-containers/healthcare/rules/healthcare-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/healthcare.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "HC-001",
+        "HC-002",
+        "HC-003",
+        "HC-004",
+        "HC-005",
+        "HC-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "HC-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "HC-001",
+            "condition": "환자 등록 시",
+            "criteria": "`MIN_PATIENT_AGE ≤ patientAge ≤ MAX_PATIENT_AGE` (0~130)",
+            "outcome": "`patients` INSERT (status='active')",
+            "exception": "`E422-AGE-MIN` (음수) 또는 `E422-AGE-MAX` (초과)"
+          }
+        },
+        {
+          "ruleId": "HC-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "HC-002",
+            "condition": "처방 일일 한도 검증",
+            "criteria": "`patient.status='active'` AND `MAX_DAILY_DOSAGE_MG - activeDosage ≥ requestedDosageMg`",
+            "outcome": "`canPrescribe=true`, remainingHeadroom 반환",
+            "exception": "`E404-PT`, `E409-ST` (비활성), `E422-LIMIT` (한도 초과)"
+          }
+        },
+        {
+          "ruleId": "HC-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "HC-003",
+            "condition": "예약 잡기",
+            "criteria": "slot status='available'",
+            "outcome": "atomic transaction (`appointments` INSERT status='booked' + `slots` UPDATE status='reserved')",
+            "exception": "`E404-SL`, `E409-SL`"
+          }
+        },
+        {
+          "ruleId": "HC-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "HC-004",
+            "condition": "예약 상태 전환 (booked → checked_in/cancelled/no_show, checked_in → completed/cancelled)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`appointments.status` UPDATE + cancelled_at 조건부",
+            "exception": "`E409-TR`"
+          }
+        },
+        {
+          "ruleId": "HC-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "HC-005",
+            "condition": "약제 만료 자동 처리 (정기 batch)",
+            "criteria": "`status='active'` AND `expires_at < now`",
+            "outcome": "`status='expired'`, 마킹된 prescriptionIds 반환",
+            "exception": "만료 안 됐을 시 제외"
+          }
+        },
+        {
+          "ruleId": "HC-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "HC-006",
+            "condition": "예약 취소 + 환불 처리",
+            "criteria": "`status ∈ {booked, checked_in}`",
+            "outcome": "atomic transaction (`status='cancelled'` + `slots` 해제. 24시간 이전 시 100% 환불, 미만 시 0원)",
+            "exception": "`E404-AP`, `E409-AP`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "education",
+      "rulesPath": ".decode-x/spec-containers/education/rules/education-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/education.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "ED-001",
+        "ED-002",
+        "ED-003",
+        "ED-004",
+        "ED-005",
+        "ED-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "ED-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "ED-001",
+            "condition": "학생 등록 시",
+            "criteria": "`MIN_STUDENT_AGE ≤ studentAge ≤ MAX_STUDENT_AGE` (6~100)",
+            "outcome": "`students` INSERT (status='active')",
+            "exception": "`E422-AGE-MIN` 또는 `E422-AGE-MAX`"
+          }
+        },
+        {
+          "ruleId": "ED-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "ED-002",
+            "condition": "수강 학점 한도 검증",
+            "criteria": "`student.status='active'` AND `MAX_CREDITS_PER_TERM - enrolledCredits ≥ requestedCredits`",
+            "outcome": "`canEnroll=true`, remainingCreditsLimit 반환",
+            "exception": "`E404-ST`, `E409-ST`, `E422-LIMIT`"
+          }
+        },
+        {
+          "ruleId": "ED-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "ED-003",
+            "condition": "수강 신청",
+            "criteria": "course open + capacity 여유",
+            "outcome": "atomic transaction (`enrollments` INSERT status='enrolled' + `courses.enrolled_count++`)",
+            "exception": "`E404-CO`, `E409-CO`, `E422-FULL`"
+          }
+        },
+        {
+          "ruleId": "ED-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "ED-004",
+            "condition": "수강 상태 전환 (enrolled → completed/withdrawn/failed, completed → graded)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`enrollments.status` UPDATE + completed_at/withdrawn_at",
+            "exception": "`E409-TR`"
+          }
+        },
+        {
+          "ruleId": "ED-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "ED-005",
+            "condition": "학기 만료 시 미수료 자동 처리 (정기 batch)",
+            "criteria": "`term.term_end < now` AND `enrollment.status='enrolled'`",
+            "outcome": "`status='failed'`, completed_at=now, 마킹된 enrollmentIds 반환",
+            "exception": "term 미존재 또는 term_end 미도달 시 skip"
+          }
+        },
+        {
+          "ruleId": "ED-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "ED-006",
+            "condition": "수강 취소 + 환불",
+            "criteria": "`status='enrolled'`",
+            "outcome": "atomic transaction (`status='withdrawn'` + `courses.enrolled_count--`. 학기 시작 7일 이전 시 100% 환불, 미만 시 0원)",
+            "exception": "`E404-EN`, `E409-EN`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "realestate",
+      "rulesPath": ".decode-x/spec-containers/realestate/rules/realestate-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/realestate.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "RE-001",
+        "RE-002",
+        "RE-003",
+        "RE-004",
+        "RE-005",
+        "RE-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "RE-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "RE-001",
+            "condition": "매물 등록 시",
+            "criteria": "`MIN_SIZE_M2 ≤ sizeM2 ≤ MAX_SIZE_M2` (5~10,000)",
+            "outcome": "`properties` INSERT (status='listed')",
+            "exception": "`E422-SZ-MIN` 또는 `E422-SZ-MAX`"
+          }
+        },
+        {
+          "ruleId": "RE-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "RE-002",
+            "condition": "임차 한도 검증",
+            "criteria": "`tenant.status='verified'` AND `monthly_income × 0.4 ≥ monthlyRentKrw`",
+            "outcome": "`canLease=true`, remainingRentLimit 반환",
+            "exception": "`E404-TN`, `E409-ST`, `E422-LIMIT`"
+          }
+        },
+        {
+          "ruleId": "RE-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "RE-003",
+            "condition": "계약 체결",
+            "criteria": "property status='listed'",
+            "outcome": "atomic transaction (`leases` INSERT status='active' + `properties.status='leased'`)",
+            "exception": "`E404-PR`, `E409-PR`"
+          }
+        },
+        {
+          "ruleId": "RE-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "RE-004",
+            "condition": "계약 상태 전환 (active → expiring/terminated/renewed)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`leases.status` UPDATE + terminated_at 조건부",
+            "exception": "`E409-TR`"
+          }
+        },
+        {
+          "ruleId": "RE-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "RE-005",
+            "condition": "계약 만료 자동 처리 (정기 batch)",
+            "criteria": "`status='active'` AND `end_at < now`",
+            "outcome": "`status='expiring'`, 마킹된 leaseIds 반환",
+            "exception": "end_at 미도달 시 skip"
+          }
+        },
+        {
+          "ruleId": "RE-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "RE-006",
+            "condition": "계약 취소 + 환불",
+            "criteria": "`status='active'`",
+            "outcome": "atomic transaction (`status='terminated'` + `properties.status='listed'`. 시작 14일 이전 시 deposit 100% 환불, 미만 시 0원)",
+            "exception": "`E404-LS`, `E409-LS`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "logistics",
+      "rulesPath": ".decode-x/spec-containers/logistics/rules/logistics-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/logistics.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "LG-001",
+        "LG-002",
+        "LG-003",
+        "LG-004",
+        "LG-005",
+        "LG-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "LG-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "LG-001",
+            "condition": "화물 발송 등록 시",
+            "criteria": "`weightKg ≤ MAX_WEIGHT_KG(30,000)` AND `volumeM3 ≤ MAX_VOLUME_M3(100)` AND 양수",
+            "outcome": "`shipments` INSERT (status='pending')",
+            "exception": "`E422-WT-MAX`, `E422-VL-MAX`, `E422-DIM-MIN`"
+          }
+        },
+        {
+          "ruleId": "LG-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "LG-002",
+            "condition": "경로 거리 검증",
+            "criteria": "`shipment.status='pending'` AND `routeDistanceKm ≤ maxRouteLimit(20,000)`",
+            "outcome": "`route_distance_km` UPDATE, `withinLimit=true`",
+            "exception": "`E404-SH`, `E409-ST`, `E422-LIMIT`"
+          }
+        },
+        {
+          "ruleId": "LG-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "LG-003",
+            "condition": "세관 통관",
+            "criteria": "`shipment.status='pending'`, `declaredValueUsd ≥ 0`",
+            "outcome": "atomic transaction (`customs_records` INSERT status='cleared' + `shipments.status='in_transit'`)",
+            "exception": "`E404-SH`, `E409-SH`, `E422-VAL`"
+          }
+        },
+        {
+          "ruleId": "LG-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "LG-004",
+            "condition": "배송 상태 전환 (pending → in_transit → delivered/returned)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`shipments.status` UPDATE + delivered_at 조건부",
+            "exception": "`E409-TR`"
+          }
+        },
+        {
+          "ruleId": "LG-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "LG-005",
+            "condition": "재고 stale 자동 처리 (정기 batch)",
+            "criteria": "`status='active'` AND `last_updated < cutoffDate`",
+            "outcome": "`status='stale'`, 마킹된 inventoryIds 반환",
+            "exception": "cutoff 미도달 시 skip"
+          }
+        },
+        {
+          "ruleId": "LG-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "LG-006",
+            "condition": "반품 RMA + 재고 복구",
+            "criteria": "`shipment.status='delivered' or 'in_transit'` AND 발송 30일 이내",
+            "outcome": "atomic transaction (`rma_records` INSERT status='initiated' + `shipments.status='returned'`)",
+            "exception": "`E404-SH`, `E409-SH`, `E422-RMA-EXP`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "hospitality",
+      "rulesPath": ".decode-x/spec-containers/hospitality/rules/hospitality-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/hospitality.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "HO-001",
+        "HO-002",
+        "HO-003",
+        "HO-004",
+        "HO-005",
+        "HO-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "HO-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "HO-001",
+            "condition": "객실 예약 요청 시",
+            "criteria": "`requestedRooms ≤ availableRooms` AND `requestedRooms > 0`",
+            "outcome": "`bookings` INSERT (status='pending')",
+            "exception": "`E422-RM-MAX`, `E422-RM-MIN`"
+          }
+        },
+        {
+          "ruleId": "HO-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "HO-002",
+            "condition": "예약 취소 환불 정책 적용 시",
+            "criteria": "`booking.status='pending' or 'confirmed'` AND `hoursUntilCheckIn > cancellationLimitHours`",
+            "outcome": "전액 환불 처리",
+            "exception": "`E404-BK`, `E409-BK`, `E422-CANCEL-EXP`"
+          }
+        },
+        {
+          "ruleId": "HO-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "HO-003",
+            "condition": "체크인 처리 시",
+            "criteria": "`booking.status='confirmed'` AND 배정 가능 객실 존재",
+            "outcome": "atomic: `bookings.status='checked_in'` + `rooms.status='occupied'`",
+            "exception": "`E404-BK`, `E409-BK`, `E409-RM`"
+          }
+        },
+        {
+          "ruleId": "HO-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "HO-004",
+            "condition": "예약 상태 전환 (pending → confirmed → checked_in → checked_out)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`bookings.status` UPDATE",
+            "exception": "`E404-BK`, `E409-TR`"
+          }
+        },
+        {
+          "ruleId": "HO-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "HO-005",
+            "condition": "하우스키핑 일괄 완료 처리 (정기 batch)",
+            "criteria": "`rooms.housekeeping_status='dirty'`",
+            "outcome": "`housekeeping_status='clean'` 일괄 UPDATE",
+            "exception": "대상 없으면 markedCount=0"
+          }
+        },
+        {
+          "ruleId": "HO-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "HO-006",
+            "condition": "오버부킹 보상 트랜잭션",
+            "criteria": "`booking.status='pending'` AND `availableRooms=0`",
+            "outcome": "atomic: `overbooking_log` INSERT + `bookings.status='cancelled'` + 보상 처리",
+            "exception": "`E404-BK`, `E409-OB`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "travel",
+      "rulesPath": ".decode-x/spec-containers/travel/rules/travel-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/travel.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "TR-001",
+        "TR-002",
+        "TR-003",
+        "TR-004",
+        "TR-005",
+        "TR-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "TR-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "TR-001",
+            "condition": "항공 예약 요청 시",
+            "criteria": "`seatsRequested ≤ availableSeats` AND `seatsRequested > 0`",
+            "outcome": "`itineraries` INSERT (status='pending')",
+            "exception": "`E422-ST-MAX`, `E422-ST-MIN`, `E422-ST-AVAIL`"
+          }
+        },
+        {
+          "ruleId": "TR-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "TR-002",
+            "condition": "운임 등급 업그레이드 요청 시",
+            "criteria": "`availableMiles ≥ requiredMilesLimit`",
+            "outcome": "`fare_class` UPDATE + miles 차감",
+            "exception": "`E404-IT`, `E409-IT`, `E422-MILES`"
+          }
+        },
+        {
+          "ruleId": "TR-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "TR-003",
+            "condition": "여정 확정 처리 시",
+            "criteria": "`itinerary.status='pending'` AND 결제 금액 유효",
+            "outcome": "atomic: `itineraries.status='confirmed'` + PNR 발급 + `trips` INSERT",
+            "exception": "`E404-IT`, `E409-IT`"
+          }
+        },
+        {
+          "ruleId": "TR-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "TR-004",
+            "condition": "여행 상태 전환 (pending → confirmed → checked_in → completed)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`trips.status` UPDATE",
+            "exception": "`E404-TR`, `E409-TR`"
+          }
+        },
+        {
+          "ruleId": "TR-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "TR-005",
+            "condition": "결항 여행 일괄 취소 처리 (시스템 배치)",
+            "criteria": "`trips.status IN ('pending','confirmed')` AND flight cancelled",
+            "outcome": "`trips.status='cancelled'` 일괄 UPDATE + `disruption_log` INSERT",
+            "exception": "대상 없으면 markedCount=0"
+          }
+        },
+        {
+          "ruleId": "TR-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "TR-006",
+            "condition": "취소 환불 + 마일리지 복구 트랜잭션",
+            "criteria": "`itinerary.status IN ('pending','confirmed')`",
+            "outcome": "atomic: `itineraries.status='cancelled'` + `refund_log` INSERT",
+            "exception": "`E404-IT`, `E409-IT`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "manufacturing",
+      "rulesPath": ".decode-x/spec-containers/manufacturing/rules/manufacturing-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/manufacturing.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "MF-001",
+        "MF-002",
+        "MF-003",
+        "MF-004",
+        "MF-005",
+        "MF-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "MF-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "MF-001",
+            "condition": "BOM 폭발 요청 시",
+            "criteria": "`components.length ≤ BOM_MAX_COMPONENTS` AND `components.length > 0`",
+            "outcome": "`boms` INSERT (status='active')",
+            "exception": "`E422-BOM-MAX`, `E422-BOM-EMPTY`"
+          }
+        },
+        {
+          "ruleId": "MF-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "MF-002",
+            "condition": "생산 주문 요청 시",
+            "criteria": "`requiredCapacity ≤ capacityLimit`",
+            "outcome": "`production_orders` INSERT (status='pending')",
+            "exception": "`E422-CAP-MAX`, `E422-CAP-MIN`"
+          }
+        },
+        {
+          "ruleId": "MF-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "MF-003",
+            "condition": "생산 주문 확정 처리 시",
+            "criteria": "`order.status='pending'`",
+            "outcome": "atomic: `production_orders.status='confirmed'` + `production_lots` INSERT",
+            "exception": "`E404-ORD`, `E409-ORD`"
+          }
+        },
+        {
+          "ruleId": "MF-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "MF-004",
+            "condition": "생산 상태 전환 (planned → in_progress → qc → released)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`production_lots.status` UPDATE",
+            "exception": "`E404-LOT`, `E409-LOT`"
+          }
+        },
+        {
+          "ruleId": "MF-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "MF-005",
+            "condition": "불량 lot 일괄 격리 처리 (시스템 배치)",
+            "criteria": "`production_lots.status IN ('in_progress','qc')` AND 결함 확인",
+            "outcome": "`production_lots.status='quarantined'` 일괄 UPDATE + `defect_quarantine_log` INSERT",
+            "exception": "대상 없으면 quarantinedCount=0"
+          }
+        },
+        {
+          "ruleId": "MF-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "MF-006",
+            "condition": "출하 해제 + 재고 조정 트랜잭션",
+            "criteria": "`lot.status='qc'`",
+            "outcome": "atomic: `production_lots.status='released'` + `shipment_log` INSERT",
+            "exception": "`E404-LOT`, `E409-LOT`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "retail",
+      "rulesPath": ".decode-x/spec-containers/retail/rules/retail-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/retail.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "RT-001",
+        "RT-002",
+        "RT-003",
+        "RT-004",
+        "RT-005",
+        "RT-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "RT-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "RT-001",
+            "condition": "SKU 목록 조회 요청 시",
+            "criteria": "`requestedTier ≤ MAX_SKU_PRICE_TIER` AND `requestedTier > 0`",
+            "outcome": "`sku_catalog` 조회 반환",
+            "exception": "`E422-TIER-MAX`, `E422-TIER-MIN`"
+          }
+        },
+        {
+          "ruleId": "RT-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "RT-002",
+            "condition": "프로모션 적용 요청 시",
+            "criteria": "`cartTotal ≥ minOrderLimit` AND `promotion.status='active'`",
+            "outcome": "할인 금액 계산 반환",
+            "exception": "`E422-PROMO-MIN`, `E404-PROMO`, `E409-PROMO`"
+          }
+        },
+        {
+          "ruleId": "RT-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "RT-003",
+            "condition": "주문 체크아웃 처리 시",
+            "criteria": "`cartItems.length > 0` AND `totalAmount > 0`",
+            "outcome": "atomic: `orders` INSERT (status='placed') + `inventory_sync_log` INSERT",
+            "exception": "`E422-CART-EMPTY`, `E422-AMOUNT-MIN`"
+          }
+        },
+        {
+          "ruleId": "RT-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "RT-004",
+            "condition": "주문 상태 전환 (placed → confirmed → shipped → delivered → completed)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`orders.status` UPDATE",
+            "exception": "`E404-ORD`, `E409-ORD`"
+          }
+        },
+        {
+          "ruleId": "RT-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "RT-005",
+            "condition": "재고 일괄 동기화 처리 (시스템 배치)",
+            "criteria": "`sku_catalog.stock_status = 'available'` AND 동기화 대상 확인",
+            "outcome": "`sku_catalog.stock_status='synced'` 일괄 UPDATE + `inventory_sync_log` INSERT",
+            "exception": "대상 없으면 syncedCount=0"
+          }
+        },
+        {
+          "ruleId": "RT-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "RT-006",
+            "condition": "반품 + 환불 트랜잭션",
+            "criteria": "`order.status IN ('delivered','completed')`",
+            "outcome": "atomic: `orders.status='returned'` + `return_log` INSERT",
+            "exception": "`E404-ORD`, `E409-ORD`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "energy",
+      "rulesPath": ".decode-x/spec-containers/energy/rules/energy-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/energy.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "EN-001",
+        "EN-002",
+        "EN-003",
+        "EN-004",
+        "EN-005",
+        "EN-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "EN-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "EN-001",
+            "condition": "계량기 검침 기록 시",
+            "criteria": "`usageKwh ≥ 0` AND `usageKwh ≤ MAX_METER_USAGE_KWH` AND `meter.status NOT IN (suspended, locked)`",
+            "outcome": "`meter_readings` INSERT + `meters.last_reading_kwh` UPDATE",
+            "exception": "`E422-USAGE-MAX`, `E422-USAGE-NEG`, `E404-METER`, `E409-METER`"
+          }
+        },
+        {
+          "ruleId": "EN-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "EN-002",
+            "condition": "누진 요금 구간 계산 시",
+            "criteria": "`currentUsage ≤ tierUsageLimit` (구간 탐색)",
+            "outcome": "해당 구간 요금 반환 + `meters.status='billed'`",
+            "exception": "`E404-TIER`"
+          }
+        },
+        {
+          "ruleId": "EN-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "EN-003",
+            "condition": "사용량 경보 트리거 시",
+            "criteria": "`currentUsage > alertThresholdKwh`",
+            "outcome": "atomic: `meter_readings` INSERT + `outage_records` INSERT (status='pending')",
+            "exception": "`E422-ALERT-THRESHOLD`, `E404-METER`"
+          }
+        },
+        {
+          "ruleId": "EN-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "EN-004",
+            "condition": "계량기 상태 전환 (active → reading_due → billed → paid → active)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`meters.status` UPDATE",
+            "exception": "`E404-METER`, `E409-METER`"
+          }
+        },
+        {
+          "ruleId": "EN-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "EN-005",
+            "condition": "정전 일괄 통보 처리 (시스템 배치)",
+            "criteria": "`outage_records.status = 'pending'` AND 대상 계정 확인",
+            "outcome": "`outage_records.status='notified'` 일괄 UPDATE + `notified_at` 설정",
+            "exception": "대상 없으면 notifiedCount=0"
+          }
+        },
+        {
+          "ruleId": "EN-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "EN-006",
+            "condition": "연체 정지 처리 시",
+            "criteria": "`overdue_days > MAX_OVERDUE_DAYS` AND `suspended_at IS NULL`",
+            "outcome": "atomic: `overdue_accounts.suspended_at` SET + `meters.status='suspended'` + `meters.status='locked'`",
+            "exception": "`E404-OVERDUE`, `E422-OVERDUE`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "government",
+      "rulesPath": ".decode-x/spec-containers/government/rules/government-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/government.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "GV-001",
+        "GV-002",
+        "GV-003",
+        "GV-004",
+        "GV-005",
+        "GV-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "GV-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "GV-001",
+            "condition": "허가 신청 요청 시",
+            "criteria": "`currentCount < MAX_ANNUAL_PERMIT_COUNT` AND 회계연도 기준 확인",
+            "outcome": "`permit_applications` INSERT + 카운트 증가",
+            "exception": "`E422-PERMIT-LIMIT` (연간 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "GV-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "GV-002",
+            "condition": "누진 수수료 구간 계산 시",
+            "criteria": "`feeAmount <= feeTierLimit` (구간 탐색)",
+            "outcome": "해당 구간 요율 반환 + `permit_applications.status='reviewing'`",
+            "exception": "`E404-FEE-TIER`"
+          }
+        },
+        {
+          "ruleId": "GV-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "GV-003",
+            "condition": "결재 워크플로우 처리 시",
+            "criteria": "`permit.status = 'reviewing'`",
+            "outcome": "atomic: `approval_workflows` INSERT + `permit_applications.status='approved'` + `permit_applications.status='issued'`",
+            "exception": "`E404-PERMIT`, `E409-PERMIT`"
+          }
+        },
+        {
+          "ruleId": "GV-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "GV-004",
+            "condition": "신청 상태 전환 (submitted → reviewing → approved → issued)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`permit_applications.status` UPDATE",
+            "exception": "`E404-APPLICATION`, `E409-APPLICATION`"
+          }
+        },
+        {
+          "ruleId": "GV-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "GV-005",
+            "condition": "연체 가산금 일괄 처리 (배치)",
+            "criteria": "`overdue_penalties.status = 'pending'` AND 대상 신청자 확인",
+            "outcome": "`overdue_penalties.status='penalized'` 일괄 UPDATE + 가산금 반영",
+            "exception": "대상 없으면 penalizedCount=0"
+          }
+        },
+        {
+          "ruleId": "GV-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "GV-006",
+            "condition": "문서 검증 처리 시",
+            "criteria": "`document.status = 'pending'`",
+            "outcome": "atomic: `documents.status='validated'` + `documents.status='certified'` + `documents.status='issued'`",
+            "exception": "`E404-DOCUMENT`, `E409-DOCUMENT`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "telecom",
+      "rulesPath": ".decode-x/spec-containers/telecom/rules/telecom-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/telecom.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "TC-001",
+        "TC-002",
+        "TC-003",
+        "TC-004",
+        "TC-005",
+        "TC-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "TC-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "TC-001",
+            "condition": "가입 회선 활성화 요청 시",
+            "criteria": "`activeLines < MAX_ACTIVE_LINES` AND 고객 기준 활성 회선 조회",
+            "outcome": "`subscriptions` INSERT + status='active' 활성화",
+            "exception": "`E422-LINE-LIMIT` (동시 가입 회선 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "TC-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "TC-002",
+            "condition": "데이터 사용량 기록 시",
+            "criteria": "`usageBytes <= dataQuotaLimit` (var-vs-var, `limit` keyword 매칭)",
+            "outcome": "`data_usages` INSERT + 사용량 누적",
+            "exception": "`E429-DATA-QUOTA` (데이터 할당량 초과)"
+          }
+        },
+        {
+          "ruleId": "TC-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "TC-003",
+            "condition": "플랜 업그레이드 요청 시",
+            "criteria": "`subscription.status = 'active'`",
+            "outcome": "atomic: `subscriptions.plan_id` UPDATE + `billing_cycles` INSERT + `subscriptions.activated_at` 갱신",
+            "exception": "`E404-SUBSCRIPTION`, `E409-SUBSCRIPTION`"
+          }
+        },
+        {
+          "ruleId": "TC-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "TC-004",
+            "condition": "가입 상태 전환 (pending → active → suspended → terminated)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`subscriptions.status` UPDATE",
+            "exception": "`E404-SUBSCRIPTION`, `E409-SUBSCRIPTION`"
+          }
+        },
+        {
+          "ruleId": "TC-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "TC-005",
+            "condition": "청구 주기 일괄 처리 (배치)",
+            "criteria": "`billing_cycles.status = 'pending'` AND 해당 청구 월 대상 확인",
+            "outcome": "`billing_cycles.status='billed'` 일괄 UPDATE + `billed_at` 기록",
+            "exception": "대상 없으면 billedCount=0"
+          }
+        },
+        {
+          "ruleId": "TC-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "TC-006",
+            "condition": "번호이동 처리 시",
+            "criteria": "`subscription.status != 'terminated'`",
+            "outcome": "atomic: `port_out_requests` INSERT + `subscriptions.status='terminated'` + `terminated_at` 기록",
+            "exception": "`E404-SUBSCRIPTION`, `E409-SUBSCRIPTION`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "banking",
+      "rulesPath": ".decode-x/spec-containers/banking/rules/banking-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/banking.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "BK-001",
+        "BK-002",
+        "BK-003",
+        "BK-004",
+        "BK-005",
+        "BK-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "BK-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BK-001",
+            "condition": "출금 요청 시",
+            "criteria": "`amount < MAX_WITHDRAWAL_AMOUNT` (UPPERCASE 상수) AND 잔액 충분",
+            "outcome": "`transactions` INSERT + `accounts.balance` 차감",
+            "exception": "`E422-WITHDRAWAL-LIMIT` (1회 출금 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "BK-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BK-002",
+            "condition": "송금 처리 시",
+            "criteria": "`feeAmount <= transferFeeLimit` (var-vs-var, `limit` keyword 매칭)",
+            "outcome": "수수료 계산 완료 + 송금 허용",
+            "exception": "`E422-TRANSFER-FEE` (수수료 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "BK-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BK-003",
+            "condition": "계좌 이체 요청 시",
+            "criteria": "`fromAccount.status = 'active'` AND `toAccount.status = 'active'` AND 잔액 충분",
+            "outcome": "atomic: `accounts.balance` 양쪽 UPDATE + `transactions` INSERT",
+            "exception": "`E404-ACCOUNT`, `E409-ACCOUNT`, `E422-INSUFFICIENT-FUNDS`"
+          }
+        },
+        {
+          "ruleId": "BK-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BK-004",
+            "condition": "계좌 상태 전환 (pending_kyc → active → frozen → dormant → closed)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`accounts.status` UPDATE + 타임스탬프 기록",
+            "exception": "`E404-ACCOUNT`, `E409-ACCOUNT`"
+          }
+        },
+        {
+          "ruleId": "BK-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BK-005",
+            "condition": "휴면 계좌 일괄 처리 (배치)",
+            "criteria": "`accounts.status = 'active'` AND 최근 거래 < inactiveCutoffDate",
+            "outcome": "`accounts.status='dormant'` 일괄 UPDATE + `dormant_at` 기록",
+            "exception": "대상 없으면 markedCount=0"
+          }
+        },
+        {
+          "ruleId": "BK-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BK-006",
+            "condition": "KYC 본인확인 처리 시",
+            "criteria": "`account.status = 'pending_kyc'`",
+            "outcome": "atomic: `kyc_records` INSERT + `aml_checks` INSERT + `accounts.status='active'`",
+            "exception": "`E404-ACCOUNT`, `E409-ACCOUNT`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "media",
+      "rulesPath": ".decode-x/spec-containers/media/rules/media-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/media.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "MD-001",
+        "MD-002",
+        "MD-003",
+        "MD-004",
+        "MD-005",
+        "MD-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "MD-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "MD-001",
+            "condition": "스트리밍 요청 시",
+            "criteria": "`concurrentStreamCount < MAX_CONCURRENT_STREAMS` (UPPERCASE 상수) AND 구독 status='active'",
+            "outcome": "스트리밍 허용 + 세션 활성화",
+            "exception": "`E422-STREAM-LIMIT` (동시 시청 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "MD-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "MD-002",
+            "condition": "콘텐츠 시청 시",
+            "criteria": "`viewedCount <= viewQuotaLimit` (var-vs-var, `limit` keyword 매칭)",
+            "outcome": "시청 허용 + 카운트 증가",
+            "exception": "`E422-VIEW-QUOTA` (무료 시청 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "MD-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "MD-003",
+            "condition": "콘텐츠 라이선스 요청 시",
+            "criteria": "`content.status = 'published'` AND `license_count > 0`",
+            "outcome": "atomic: `license_count` 차감 + `licenses` INSERT",
+            "exception": "`E404-CONTENT`, `E409-CONTENT`, `E422-LICENSE-EXHAUSTED`"
+          }
+        },
+        {
+          "ruleId": "MD-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "MD-004",
+            "condition": "콘텐츠 상태 전환 (draft → reviewing → published → archived/expired)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`contents.status` UPDATE + 타임스탬프 기록",
+            "exception": "`E404-CONTENT`, `E409-CONTENT`"
+          }
+        },
+        {
+          "ruleId": "MD-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "MD-005",
+            "condition": "만료 콘텐츠 일괄 처리 (배치)",
+            "criteria": "`contents.status = 'published'` AND `expires_at <= expirationCutoffDate`",
+            "outcome": "`contents.status='expired'` 일괄 UPDATE",
+            "exception": "대상 없으면 markedCount=0"
+          }
+        },
+        {
+          "ruleId": "MD-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "MD-006",
+            "condition": "콘텐츠 테이크다운 처리 시",
+            "criteria": "`content.status != 'archived'` AND `report` 존재",
+            "outcome": "atomic: `contents.status='archived'` + `reports.status='resolved'` + `licenses` 무효화 + `refunds` INSERT",
+            "exception": "`E404-CONTENT`, `E404-REPORT`, `E409-CONTENT`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "pharmacy",
+      "rulesPath": ".decode-x/spec-containers/pharmacy/rules/pharmacy-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/pharmacy.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "PH-001",
+        "PH-002",
+        "PH-003",
+        "PH-004",
+        "PH-005",
+        "PH-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "PH-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "PH-001",
+            "condition": "처방 용량 검증 시",
+            "criteria": "`dosageAmount < MAX_DAILY_DOSE` (UPPERCASE 상수, 4000mg) AND 처방 status='issued' or 'pending'",
+            "outcome": "용량 허용 + status='pending' 전환",
+            "exception": "`E422-DOSAGE-EXCEEDED` (일일 최대 용량 초과)"
+          }
+        },
+        {
+          "ruleId": "PH-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "PH-002",
+            "condition": "처방 리필 요청 시",
+            "criteria": "`refillsUsed <= refillQuotaLimit` (var-vs-var, `limit` keyword 매칭)",
+            "outcome": "리필 허용 + canRefill=true",
+            "exception": "`E422-REFILL-QUOTA` (처방 잔여 횟수 초과)"
+          }
+        },
+        {
+          "ruleId": "PH-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "PH-003",
+            "condition": "처방 조제 요청 시",
+            "criteria": "`prescription.status = 'pending'` AND `drug.status != 'recalled'` AND `stock_count > 0`",
+            "outcome": "atomic: `stock_count` 차감 + `prescriptions.status='dispensed'` + `dispenses` INSERT",
+            "exception": "`E404-PRESCRIPTION`, `E409-PRESCRIPTION`, `E422-DRUG-RECALLED`, `E422-OUT-OF-STOCK`"
+          }
+        },
+        {
+          "ruleId": "PH-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "PH-004",
+            "condition": "처방 상태 전환 (issued → pending → dispensed → completed → expired)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`prescriptions.status` UPDATE + 타임스탬프 기록",
+            "exception": "`E404-PRESCRIPTION`, `E409-PRESCRIPTION`"
+          }
+        },
+        {
+          "ruleId": "PH-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "PH-005",
+            "condition": "리콜 대상 약품 일괄 처리 (배치)",
+            "criteria": "`drugs.status = 'active'` AND `recalled_at <= recallCutoffDate`",
+            "outcome": "`drugs.status='recalled'` 일괄 UPDATE",
+            "exception": "대상 없으면 markedCount=0"
+          }
+        },
+        {
+          "ruleId": "PH-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "PH-006",
+            "condition": "약물 상호작용 검증 시",
+            "criteria": "severe 상호작용 없으면 처방 허용",
+            "outcome": "atomic: 상호작용 검증 + 대체약 추천 + 처방 차단 (interaction_logs INSERT)",
+            "exception": "`E404-PRESCRIPTION`, `E404-DRUG`, `E409-PRESCRIPTION`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "agriculture",
+      "rulesPath": ".decode-x/spec-containers/agriculture/rules/agriculture-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/agriculture.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "AG-001",
+        "AG-002",
+        "AG-003",
+        "AG-004",
+        "AG-005",
+        "AG-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "AG-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "AG-001",
+            "condition": "작물 수확량 기록 시",
+            "criteria": "`yieldPerHectare < MAX_YIELD_PER_HECTARE` (UPPERCASE 상수, 10000 kg/ha) AND 작물 status='mature' or 'harvested'",
+            "outcome": "수확량 허용 + status='harvested' 전환",
+            "exception": "`E422-YIELD-EXCEEDED` (단위 면적당 최대 수확량 초과)"
+          }
+        },
+        {
+          "ruleId": "AG-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "AG-002",
+            "condition": "살충제 살포 요청 시",
+            "criteria": "`pesticideApplied <= pesticideQuotaLimit` (var-vs-var, `limit` keyword 매칭)",
+            "outcome": "살포 허용 + approved=true",
+            "exception": "`E422-PESTICIDE-QUOTA` (살포 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "AG-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "AG-003",
+            "condition": "수확 처리 요청 시",
+            "criteria": "`crop.status = 'mature'` AND `field.status != 'restricted'`",
+            "outcome": "atomic: `harvests` INSERT + `gradings` INSERT + `crops.status='harvested'`",
+            "exception": "`E404-CROP`, `E409-CROP`, `E404-FIELD`, `E422-FIELD-RESTRICTED`"
+          }
+        },
+        {
+          "ruleId": "AG-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "AG-004",
+            "condition": "작물 상태 전환 (planted → growing → mature → harvested → sold)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`crops.status` UPDATE + 타임스탬프 기록",
+            "exception": "`E404-CROP`, `E409-CROP`"
+          }
+        },
+        {
+          "ruleId": "AG-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "AG-005",
+            "condition": "등급 대상 수확물 일괄 처리 (배치)",
+            "criteria": "`harvests.graded = 0` AND `harvested_at <= gradingCutoffDate`",
+            "outcome": "`harvests.status='graded'` 일괄 UPDATE",
+            "exception": "대상 없으면 markedCount=0"
+          }
+        },
+        {
+          "ruleId": "AG-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "AG-006",
+            "condition": "작물 인증 발급 시",
+            "criteria": "`crop.status = 'harvested' or 'sold'` AND `grade != 'rejected'`",
+            "outcome": "atomic: `certifications` INSERT + `certification_labels` INSERT + `crops.certified=1`",
+            "exception": "`E404-CROP`, `E409-CROP`, `E422-CROP-REJECTED`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "construction",
+      "rulesPath": ".decode-x/spec-containers/construction/rules/construction-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/construction.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "CN-001",
+        "CN-002",
+        "CN-003",
+        "CN-004",
+        "CN-005",
+        "CN-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "CN-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "CN-001",
+            "condition": "입찰 제출 시",
+            "criteria": "`bidAmount < MAX_BID_AMOUNT_LIMIT` (UPPERCASE 상수, 1,000,000,000 KRW) AND 프로젝트 status='bidding'",
+            "outcome": "입찰 허용 + bids INSERT",
+            "exception": "`E422-BID-LIMIT` (입찰 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "CN-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "CN-002",
+            "condition": "보유금 계산 시",
+            "criteria": "`retentionRate <= retentionRateLimit` (var-vs-var, `limit` keyword 매칭)",
+            "outcome": "보유금 허용 + 기록",
+            "exception": "`E422-RETENTION-EXCEEDED` (보유금 비율 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "CN-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "CN-003",
+            "condition": "변경 청구 처리 시",
+            "criteria": "`project.status = 'in_progress'`",
+            "outcome": "atomic: `change_orders` INSERT + `projects.contract_value` 갱신 + `change_order_approvals` INSERT",
+            "exception": "`E404-PROJECT`, `E409-PROJECT`"
+          }
+        },
+        {
+          "ruleId": "CN-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "CN-004",
+            "condition": "프로젝트 상태 전환 (bidding → awarded → in_progress → completed → closed)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`projects.status` UPDATE + 타임스탬프 기록",
+            "exception": "`E404-PROJECT`, `E409-PROJECT`"
+          }
+        },
+        {
+          "ruleId": "CN-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "CN-005",
+            "condition": "마일스톤 일괄 완료 처리 (배치)",
+            "criteria": "`milestones.completed = 0` AND `due_date <= dueDateCutoff`",
+            "outcome": "`milestones.completed=1, status='completed'` 일괄 UPDATE",
+            "exception": "대상 없으면 markedCount=0"
+          }
+        },
+        {
+          "ruleId": "CN-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "CN-006",
+            "condition": "안전 검사 처리 시",
+            "criteria": "`project.status = 'in_progress'`",
+            "outcome": "atomic: `safety_inspections` INSERT + `correction_orders` INSERT(실패 시) + `projects.last_inspection_*` UPDATE",
+            "exception": "`E404-PROJECT`, `E409-PROJECT`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "maritime",
+      "rulesPath": ".decode-x/spec-containers/maritime/rules/maritime-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/maritime.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "MR-001",
+        "MR-002",
+        "MR-003",
+        "MR-004",
+        "MR-005",
+        "MR-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "MR-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "MR-001",
+            "condition": "화물 선적 시",
+            "criteria": "`cargoTons < MAX_CARGO_CAPACITY_TONS` (UPPERCASE 상수, 200,000 tons) AND 선박 status='available' 또는 'loading'",
+            "outcome": "선적 허용 + shipments INSERT",
+            "exception": "`E422-CARGO-LIMIT` (화물 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "MR-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "MR-002",
+            "condition": "운임 계산 시",
+            "criteria": "`quotedRate <= freightRateLimit` (var-vs-var, `limit` keyword 매칭)",
+            "outcome": "운임 허용 + freight_rates INSERT",
+            "exception": "`E422-FREIGHT-RATE-EXCEEDED` (운임 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "MR-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "MR-003",
+            "condition": "통관 처리 시",
+            "criteria": "`shipment.status = 'arrived'`",
+            "outcome": "atomic: `customs_declarations` INSERT + `customs_approvals` INSERT + `shipments.customs_cleared` 갱신",
+            "exception": "`E404-SHIPMENT`, `E409-SHIPMENT`"
+          }
+        },
+        {
+          "ruleId": "MR-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "MR-004",
+            "condition": "선적 상태 전환 (booked → loaded → at_sea → arrived → delivered)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`shipments.status` UPDATE + 타임스탬프 기록",
+            "exception": "`E404-SHIPMENT`, `E409-SHIPMENT`"
+          }
+        },
+        {
+          "ruleId": "MR-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "MR-005",
+            "condition": "항구 처리 일괄 갱신 (배치)",
+            "criteria": "`shipments.status = 'arrived'` AND `arrived_at <= arrivalCutoff` AND `port_handled = 0`",
+            "outcome": "`port_handled=1, status='port_cleared'` 일괄 UPDATE",
+            "exception": "대상 없으면 handledCount=0"
+          }
+        },
+        {
+          "ruleId": "MR-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "MR-006",
+            "condition": "손상 신고 처리 시",
+            "criteria": "`shipment.status = 'delivered'` 또는 `'arrived'`",
+            "outcome": "atomic: `damage_claims` INSERT + `compensation_records` INSERT + `shipments.damage_claim_filed` UPDATE",
+            "exception": "`E404-SHIPMENT`, `E409-SHIPMENT`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "transit",
+      "rulesPath": ".decode-x/spec-containers/transit/rules/transit-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/transit.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "TS-001",
+        "TS-002",
+        "TS-003",
+        "TS-004",
+        "TS-005",
+        "TS-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "TS-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "TS-001",
+            "condition": "노선 탑승 요청 시",
+            "criteria": "`passengerCount < MAX_ROUTE_CAPACITY` (UPPERCASE 상수, 1,200명) AND route.status='active'",
+            "outcome": "탑승 허용 + trips INSERT",
+            "exception": "`E422-CAPACITY-LIMIT` (정원 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "TS-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "TS-002",
+            "condition": "요금 계산 시",
+            "criteria": "`zoneFare <= fareZoneLimit` (var-vs-var, `limit` keyword 매칭)",
+            "outcome": "요금 허용 + fare_records INSERT",
+            "exception": "`E422-FARE-EXCEEDED` (요금 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "TS-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "TS-003",
+            "condition": "환승 처리 시",
+            "criteria": "`trip.status = 'in_transit'` AND 승객 ID 일치",
+            "outcome": "atomic: `transfers` INSERT + `integrated_passes` INSERT + `trips.status` 갱신 + 신규 `trips` INSERT",
+            "exception": "`E404-TRIP`, `E409-TRIP`, `E403-TRIP`"
+          }
+        },
+        {
+          "ruleId": "TS-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "TS-004",
+            "condition": "트립 상태 전환 (boarded → in_transit → transferred → completed)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`trips.status` UPDATE + 타임스탬프 기록",
+            "exception": "`E404-TRIP`, `E409-TRIP`"
+          }
+        },
+        {
+          "ruleId": "TS-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "TS-005",
+            "condition": "정기권 일괄 갱신 (배치)",
+            "criteria": "`season_passes.valid_until <= expiryBefore` AND `renewed = 0` AND `status = 'active'`",
+            "outcome": "`renewed=1, renewed_at=NOW()` 일괄 UPDATE",
+            "exception": "대상 없으면 renewedCount=0"
+          }
+        },
+        {
+          "ruleId": "TS-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "TS-006",
+            "condition": "운행 중단 환불 처리 시",
+            "criteria": "`route.status = 'suspended'`",
+            "outcome": "atomic: `suspension_refunds` INSERT + `refund_records` INSERT + `routes.suspension_refund_issued` UPDATE",
+            "exception": "`E404-ROUTE`, `E409-ROUTE`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "aviation",
+      "rulesPath": ".decode-x/spec-containers/aviation/rules/aviation-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/aviation.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "AV-001",
+        "AV-002",
+        "AV-003",
+        "AV-004",
+        "AV-005",
+        "AV-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "AV-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "AV-001",
+            "condition": "승객 탑승 요청 시",
+            "criteria": "`passengerCount < MAX_PASSENGER_CAPACITY` (UPPERCASE 상수, 400명) AND flight.status='boarding'",
+            "outcome": "탑승 허용 + passengers INSERT",
+            "exception": "`E422-CAPACITY-LIMIT` (탑승 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "AV-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "AV-002",
+            "condition": "연료 할당 시",
+            "criteria": "`requiredFuel <= fuelQuotaLimit` (var-vs-var, `limit` keyword 매칭)",
+            "outcome": "연료 허용 + fuel_allocations INSERT",
+            "exception": "`E422-FUEL-EXCEEDED` (연료 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "AV-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "AV-003",
+            "condition": "비행 운항 dispatch 시",
+            "criteria": "`flight.status = 'boarding'`",
+            "outcome": "atomic: `dispatch_records` INSERT + `flight_clearances` INSERT + `flights.status` 갱신 + `crew_schedules.status` 갱신",
+            "exception": "`E404-FLIGHT`, `E409-FLIGHT`"
+          }
+        },
+        {
+          "ruleId": "AV-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "AV-004",
+            "condition": "비행 상태 전환 (scheduled → boarding → departed → in_flight → landed → completed)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`flights.status` UPDATE + 타임스탬프 기록",
+            "exception": "`E404-FLIGHT`, `E409-FLIGHT`"
+          }
+        },
+        {
+          "ruleId": "AV-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "AV-005",
+            "condition": "승무원 일괄 교대 (배치)",
+            "criteria": "`crew_schedules.assigned_at <= rotationBefore` AND `status = 'on_duty'` AND `rotation_due = 1`",
+            "outcome": "`status='rotated', rotated_at=NOW()` 일괄 UPDATE",
+            "exception": "대상 없으면 rotatedCount=0"
+          }
+        },
+        {
+          "ruleId": "AV-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "AV-006",
+            "condition": "수하물 클레임 처리 시",
+            "criteria": "`baggage.damage_status != 'intact'`",
+            "outcome": "atomic: `baggage_claims` INSERT + `damage_assessments` INSERT + `compensation_records` INSERT + `baggage_claim_filed` UPDATE",
+            "exception": "`E404-BAGGAGE`, `E409-BAGGAGE`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "mining",
+      "rulesPath": ".decode-x/spec-containers/mining/rules/mining-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/mining.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "MN-001",
+        "MN-002",
+        "MN-003",
+        "MN-004",
+        "MN-005",
+        "MN-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "MN-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "MN-001",
+            "condition": "채광량 기록 요청 시",
+            "criteria": "`totalExtracted < MAX_EXTRACTION_QUOTA` (UPPERCASE 상수, 50000톤)",
+            "outcome": "채광 허용 + extractions INSERT",
+            "exception": "`E422-QUOTA-EXCEEDED` (일일 채광 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "MN-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "MN-002",
+            "condition": "로열티 계산 시",
+            "criteria": "`royaltyAmount <= royaltyTierLimit` (var-vs-var, `limit` keyword 매칭)",
+            "outcome": "로열티 승인 + royalty_records INSERT",
+            "exception": "`E422-ROYALTY-EXCEEDED` (로열티 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "MN-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "MN-003",
+            "condition": "발파 작업 실행 시",
+            "criteria": "`blast_operation.status = 'planned'`",
+            "outcome": "atomic: `blast_records` INSERT + `safety_clearances` INSERT + `blast_operations.status` 갱신 + `ore_batches.status` 갱신",
+            "exception": "`E404-BLAST`, `E409-BLAST`"
+          }
+        },
+        {
+          "ruleId": "MN-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "MN-004",
+            "condition": "광석 상태 전환 (extracted → graded → processed → shipped)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`ore_batches.status` UPDATE + 타임스탬프 기록",
+            "exception": "`E404-BATCH`, `E409-BATCH`"
+          }
+        },
+        {
+          "ruleId": "MN-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "MN-005",
+            "condition": "환경 준수 일괄 점검",
+            "criteria": "`compliance_checks.scheduled_at <= scheduledBefore` AND `status = 'pending'`",
+            "outcome": "`status='checked', checked_at=NOW()` 일괄 UPDATE",
+            "exception": "대상 없으면 checkedCount=0"
+          }
+        },
+        {
+          "ruleId": "MN-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "MN-006",
+            "condition": "안전 사고 처리 시",
+            "criteria": "사고 신고 필수",
+            "outcome": "atomic: `safety_incidents` INSERT + `incident_investigations` INSERT + `corrective_actions` INSERT + `safety_incidents.filed` UPDATE",
+            "exception": "조회 실패 시 MiningError"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "defense",
+      "rulesPath": ".decode-x/spec-containers/defense/rules/defense-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/defense.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "DF-001",
+        "DF-002",
+        "DF-003",
+        "DF-004",
+        "DF-005",
+        "DF-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "DF-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "DF-001",
+            "condition": "무기 보유 기록 요청 시",
+            "criteria": "`totalQuantity < MAX_WEAPON_INVENTORY_LIMIT` (UPPERCASE 상수, 500)",
+            "outcome": "보유 허용 + weapon_inventory INSERT",
+            "exception": "`E422-INVENTORY-EXCEEDED` (단위부대 무기 보유 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "DF-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "DF-002",
+            "condition": "보안 레벨 검증 시",
+            "criteria": "`clearanceLevel <= clearanceLevelLimit` (var-vs-var, `limit` keyword 매칭)",
+            "outcome": "보안 레벨 승인",
+            "exception": "`E422-CLEARANCE-EXCEEDED` (보안 레벨 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "DF-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "DF-003",
+            "condition": "임무 파견 요청 시",
+            "criteria": "`mission.status = 'planned'`",
+            "outcome": "atomic: `missions` INSERT + `mission_assignments` INSERT + `mission_equipment` INSERT + `mission_communications` INSERT",
+            "exception": "`E404-MISSION`, `E409-MISSION`"
+          }
+        },
+        {
+          "ruleId": "DF-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "DF-004",
+            "condition": "임무 상태 전환 (planned → briefed → executing → completed → debriefed)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`missions.status` UPDATE + 타임스탬프 기록",
+            "exception": "`E404-MISSION`, `E409-MISSION`"
+          }
+        },
+        {
+          "ruleId": "DF-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "DF-005",
+            "condition": "훈련 교체 일괄 처리",
+            "criteria": "`training_schedules.scheduled_at <= scheduledBefore` AND `status = 'scheduled'`",
+            "outcome": "`status='completed', completed_at=NOW()` 일괄 UPDATE",
+            "exception": "대상 없으면 completedCount=0"
+          }
+        },
+        {
+          "ruleId": "DF-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "DF-006",
+            "condition": "기밀 문서 처리 시",
+            "criteria": "문서 처리 필수",
+            "outcome": "atomic: `classified_documents` INSERT + `document_validations` INSERT + `document_issuances` INSERT + `document_audit_logs` INSERT + `classified_documents.status` UPDATE",
+            "exception": "조회 실패 시 DefenseError"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "sports",
+      "rulesPath": ".decode-x/spec-containers/sports/rules/sports-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/sports.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "SP-001",
+        "SP-002",
+        "SP-003",
+        "SP-004",
+        "SP-005",
+        "SP-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "SP-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "SP-001",
+            "condition": "경기장 좌석 예약 요청 시",
+            "criteria": "`totalBooked < MAX_VENUE_CAPACITY` (UPPERCASE 상수, 50000)",
+            "outcome": "예약 허용 + venue_seats INSERT",
+            "exception": "`E422-VENUE-CAPACITY-EXCEEDED` (경기장 좌석 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "SP-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "SP-002",
+            "condition": "시즌권 신청 시",
+            "criteria": "`requestedQuantity <= seasonTicketLimit` (var-vs-var, `limit` keyword 매칭)",
+            "outcome": "시즌권 승인",
+            "exception": "`E422-SEASON-TICKET-EXCEEDED` (시즌권 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "SP-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "SP-003",
+            "condition": "티켓 판매 요청 시",
+            "criteria": "`venue_seats.status = 'held'`",
+            "outcome": "atomic: `ticket_sales` INSERT + `venue_seats` UPDATE + `issued_tickets` INSERT + `ticket_sales.status` UPDATE",
+            "exception": "`E404-SEAT`, `E409-TICKET`"
+          }
+        },
+        {
+          "ruleId": "SP-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "SP-004",
+            "condition": "이벤트 상태 전환 (scheduled → ticketing → live → completed → archived)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`events.status` UPDATE + 타임스탬프 기록",
+            "exception": "`E404-EVENT`, `E409-EVENT`"
+          }
+        },
+        {
+          "ruleId": "SP-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "SP-005",
+            "condition": "상품 일괄 동기화 처리",
+            "criteria": "`merchandise_batches.created_at <= syncedBefore` AND `status = 'pending'`",
+            "outcome": "`status='synced', synced_at=NOW()` 일괄 UPDATE",
+            "exception": "대상 없으면 syncedCount=0"
+          }
+        },
+        {
+          "ruleId": "SP-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "SP-006",
+            "condition": "환불 + 재예약 요청 시",
+            "criteria": "원본 판매 존재 필수",
+            "outcome": "atomic: `refund_records` INSERT + `ticket_sales` UPDATE + `venue_seats` UPDATE + `ticket_sales` INSERT + `cancellation_logs` INSERT + `venue_seats` UPDATE",
+            "exception": "조회 실패 시 SportsError"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "charity",
+      "rulesPath": ".decode-x/spec-containers/charity/rules/charity-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/charity.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "CH-001",
+        "CH-002",
+        "CH-003",
+        "CH-004",
+        "CH-005",
+        "CH-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "CH-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "CH-001",
+            "condition": "기부 영수증 발급 요청 시",
+            "criteria": "`amount < MAX_RECEIPT_AMOUNT` (UPPERCASE 상수, 10,000,000)",
+            "outcome": "영수증 발급 허용 + donation_receipts INSERT",
+            "exception": "`E422-RECEIPT-LIMIT-EXCEEDED` (영수증 발급 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "CH-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "CH-002",
+            "condition": "보조금 신청 시",
+            "criteria": "`requestedAmount <= grantTierLimit` (var-vs-var, `limit` keyword 매칭)",
+            "outcome": "보조금 승인",
+            "exception": "`E422-GRANT-TIER-EXCEEDED` (보조금 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "CH-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "CH-003",
+            "condition": "기금 집행 요청 시",
+            "criteria": "`grants.status = 'approved'`",
+            "outcome": "atomic: `fund_disbursements` INSERT + `grants` UPDATE + `disbursement_receipts` INSERT + `fund_disbursements.status` UPDATE",
+            "exception": "`E404-GRANT`"
+          }
+        },
+        {
+          "ruleId": "CH-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "CH-004",
+            "condition": "캠페인 상태 전환 (draft → active → closed → reported → audited)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`campaigns.status` UPDATE + 타임스탬프 기록",
+            "exception": "`E404-CAMPAIGN`, `E409-CAMPAIGN`"
+          }
+        },
+        {
+          "ruleId": "CH-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "CH-005",
+            "condition": "자원봉사 일정 일괄 처리",
+            "criteria": "`volunteer_schedules.scheduled_date <= scheduledBefore` AND `status = 'pending'`",
+            "outcome": "`status='assigned', synced_at=NOW()` 일괄 UPDATE",
+            "exception": "대상 없으면 syncedCount=0"
+          }
+        },
+        {
+          "ruleId": "CH-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "CH-006",
+            "condition": "세금증명 발급 요청 시",
+            "criteria": "기부 내역 존재 필수",
+            "outcome": "atomic: `tax_certificates` INSERT + `donations` UPDATE + `tax_reports` INSERT + `tax_certificates.reported_at` UPDATE",
+            "exception": "조회 실패 시 CharityError"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "wellness",
+      "rulesPath": ".decode-x/spec-containers/wellness/rules/wellness-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/wellness.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "WL-001",
+        "WL-002",
+        "WL-003",
+        "WL-004",
+        "WL-005",
+        "WL-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "WL-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "WL-001",
+            "condition": "세션 예약 요청 시",
+            "criteria": "`session.booked_count < capacity` (UPPERCASE fallback MAX_SESSION_CAPACITY)",
+            "outcome": "예약 허용 + appointments INSERT",
+            "exception": "`E422-SESSION-CAPACITY-EXCEEDED` (정원 초과)"
+          }
+        },
+        {
+          "ruleId": "WL-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "WL-002",
+            "condition": "패키지 세션 사용 요청 시",
+            "criteria": "`pkg.used_count < packageUsageLimit` (var-vs-var, `limit` keyword 매칭)",
+            "outcome": "패키지 사용 허용 + used_count 증가",
+            "exception": "`E422-PACKAGE-USAGE-EXCEEDED` (패키지 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "WL-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "WL-003",
+            "condition": "예약 확정 요청 시",
+            "criteria": "`appointments.status = 'booked'`",
+            "outcome": "atomic: appointments UPDATE + appointment_payments INSERT + appointment_resources INSERT + resources UPDATE",
+            "exception": "`E404-APPOINTMENT`"
+          }
+        },
+        {
+          "ruleId": "WL-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "WL-004",
+            "condition": "예약 상태 전환 (booked → confirmed → in_session → completed → reviewed)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`appointments.status` UPDATE",
+            "exception": "`E404-APPOINTMENT`, `E409-APPOINTMENT`"
+          }
+        },
+        {
+          "ruleId": "WL-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "WL-005",
+            "condition": "노쇼 세션 일괄 처리",
+            "criteria": "`sessions.scheduled_date <= scheduledBefore` AND `appointments.status = 'confirmed'`",
+            "outcome": "`status='no_show'` 일괄 UPDATE",
+            "exception": "대상 없으면 markedCount=0"
+          }
+        },
+        {
+          "ruleId": "WL-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "WL-006",
+            "condition": "예약 취소 요청 시",
+            "criteria": "예약 내역 존재 + 미취소 상태",
+            "outcome": "atomic: appointments UPDATE + cancellation_logs INSERT + refund_records INSERT + sessions.booked_count UPDATE",
+            "exception": "`E404-APPOINTMENT`, `E409-ALREADY-CANCELLED`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "pet",
+      "rulesPath": ".decode-x/spec-containers/pet/rules/pet-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/pet.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "PT-001",
+        "PT-002",
+        "PT-003",
+        "PT-004",
+        "PT-005",
+        "PT-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "PT-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "PT-001",
+            "condition": "펫호텔 예약 요청 시",
+            "criteria": "`facility.booked_count < capacity` (UPPERCASE fallback MAX_BOARDING_CAPACITY)",
+            "outcome": "예약 허용 + boardings INSERT",
+            "exception": "`E422-BOARDING-CAPACITY-EXCEEDED` (정원 초과)"
+          }
+        },
+        {
+          "ruleId": "PT-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "PT-002",
+            "condition": "백신 접종 요청 시",
+            "criteria": "`vaccine.administered_count < vaccinationLimit` (var-vs-var, `limit` keyword 매칭)",
+            "outcome": "접종 허용 + administered_count 증가",
+            "exception": "`E422-VACCINATION-QUOTA-EXCEEDED` (백신 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "PT-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "PT-003",
+            "condition": "그루밍 예약 확정 요청 시",
+            "criteria": "`groomings.status = 'booked'`",
+            "outcome": "atomic: groomings UPDATE + grooming_payments INSERT + grooming_owner_matches INSERT + groomers UPDATE",
+            "exception": "`E404-GROOMING`"
+          }
+        },
+        {
+          "ruleId": "PT-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "PT-004",
+            "condition": "케어 상태 전환 (booked → checked_in → in_care → checked_out → reviewed)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`care_records.status` UPDATE",
+            "exception": "`E404-CARE-RECORD`, `E409-CARE-RECORD`"
+          }
+        },
+        {
+          "ruleId": "PT-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "PT-005",
+            "condition": "건강 기록 일괄 처리",
+            "criteria": "`health_records.visit_date <= visitBefore` AND `health_records.status = 'pending'`",
+            "outcome": "`status='processed'` 일괄 UPDATE",
+            "exception": "대상 없으면 markedCount=0"
+          }
+        },
+        {
+          "ruleId": "PT-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "PT-006",
+            "condition": "응급 처치 요청 시",
+            "criteria": "반려동물 존재 확인",
+            "outcome": "atomic: emergencies INSERT + emergency_treatments INSERT + owner_notifications INSERT + pets UPDATE",
+            "exception": "`E404-PET`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "property",
+      "rulesPath": ".decode-x/spec-containers/property/rules/property-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/property.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "PR-001",
+        "PR-002",
+        "PR-003",
+        "PR-004",
+        "PR-005",
+        "PR-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "PR-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "PR-001",
+            "condition": "공과금 청구 요청 시",
+            "criteria": "`totalAmount < MAX_UTILITY_BILL_AMOUNT` (UPPERCASE constant)",
+            "outcome": "청구 허용 + utility_bills INSERT",
+            "exception": "`E422-UTILITY-BILL-EXCEEDED` (한도 초과)"
+          }
+        },
+        {
+          "ruleId": "PR-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "PR-002",
+            "condition": "유지보수 승인 요청 시",
+            "criteria": "`requestedAmount <= maintenanceBudgetLimit` (var-vs-var, `limit` keyword 매칭)",
+            "outcome": "승인 + maintenance_requests UPDATE",
+            "exception": "`E422-MAINTENANCE-BUDGET-EXCEEDED` (예산 초과)"
+          }
+        },
+        {
+          "ruleId": "PR-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "PR-003",
+            "condition": "임대 계약 갱신 요청 시",
+            "criteria": "`leases.status = 'active'`",
+            "outcome": "atomic: leases UPDATE + lease_renewals INSERT + deposits INSERT",
+            "exception": "`E404-LEASE`"
+          }
+        },
+        {
+          "ruleId": "PR-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "PR-004",
+            "condition": "임대 상태 전환 (pending → active → renewed → terminated → archived)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`leases.status` UPDATE",
+            "exception": "`E404-LEASE`, `E409-LEASE-STATUS`"
+          }
+        },
+        {
+          "ruleId": "PR-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "PR-005",
+            "condition": "정기 점검 일괄 처리",
+            "criteria": "`property_inspections.scheduled_date <= scheduledBefore` AND `status = 'scheduled'`",
+            "outcome": "`status='inspected'` 일괄 UPDATE",
+            "exception": "대상 없으면 markedCount=0"
+          }
+        },
+        {
+          "ruleId": "PR-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "PR-006",
+            "condition": "명도 처리 요청 시",
+            "criteria": "임대 계약 존재 + 미보관 확인",
+            "outcome": "atomic: evictions INSERT + legal_proceedings INSERT + eviction_notifications INSERT + lease_closures INSERT + leases UPDATE",
+            "exception": "`E404-LEASE`, `E409-LEASE-ARCHIVED`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "fitness",
+      "rulesPath": ".decode-x/spec-containers/fitness/rules/fitness-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/fitness.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "FT-001",
+        "FT-002",
+        "FT-003",
+        "FT-004",
+        "FT-005",
+        "FT-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "FT-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "FT-001",
+            "condition": "클래스 예약 요청 시",
+            "criteria": "`cls.booked_count < capacity` (UPPERCASE fallback MAX_CLASS_CAPACITY)",
+            "outcome": "예약 허용 + class_bookings INSERT",
+            "exception": "`E422-CLASS-CAPACITY-EXCEEDED` (정원 초과)"
+          }
+        },
+        {
+          "ruleId": "FT-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "FT-002",
+            "condition": "PT 세션 사용 요청 시",
+            "criteria": "`membership.pt_sessions_used < ptSessionLimit` (var-vs-var, `limit` keyword 매칭)",
+            "outcome": "PT 세션 허용 + pt_sessions_used 증가",
+            "exception": "`E422-PT-SESSION-LIMIT-EXCEEDED` (PT 세션 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "FT-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "FT-003",
+            "condition": "PT 예약 요청 시",
+            "criteria": "`trainer_slots.status = 'available'`",
+            "outcome": "atomic: pt_bookings INSERT + trainer_slots UPDATE + pt_payments INSERT",
+            "exception": "`E404-SLOT`"
+          }
+        },
+        {
+          "ruleId": "FT-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "FT-004",
+            "condition": "진행 상태 전환 (initial → in_progress → assessment → completed)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`member_progress.status` UPDATE + 타임스탬프 기록",
+            "exception": "`E404-PROGRESS`, `E409-PROGRESS`"
+          }
+        },
+        {
+          "ruleId": "FT-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "FT-005",
+            "condition": "노쇼 클래스 예약 일괄 처리",
+            "criteria": "`fitness_classes.scheduled_at <= scheduledBefore` AND `class_bookings.status = 'booked'`",
+            "outcome": "`status='no_show'` 일괄 UPDATE",
+            "exception": "대상 없으면 markedCount=0"
+          }
+        },
+        {
+          "ruleId": "FT-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "FT-006",
+            "condition": "기구 예약 요청 시",
+            "criteria": "`equipment.status = 'available'`",
+            "outcome": "atomic: equipment_reservations INSERT + equipment_holds INSERT + equipment UPDATE",
+            "exception": "`E404-EQUIPMENT`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "beauty",
+      "rulesPath": ".decode-x/spec-containers/beauty/rules/beauty-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/beauty.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "BT-001",
+        "BT-002",
+        "BT-003",
+        "BT-004",
+        "BT-005",
+        "BT-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "BT-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BT-001",
+            "condition": "좌석 예약 요청 시",
+            "criteria": "`seat.booked_count < capacity` (UPPERCASE fallback MAX_SEAT_CAPACITY)",
+            "outcome": "예약 허용 + seat_bookings INSERT",
+            "exception": "`E422-SEAT-CAPACITY-EXCEEDED` (정원 초과)"
+          }
+        },
+        {
+          "ruleId": "BT-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BT-002",
+            "condition": "로열티 할인 적용 요청 시",
+            "criteria": "`membership.loyalty_usage < loyaltyTierLimit` (var-vs-var, `limit` keyword 매칭)",
+            "outcome": "할인 허용 + loyalty_usage 증가",
+            "exception": "`E422-LOYALTY-TIER-LIMIT-EXCEEDED` (로열티 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "BT-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BT-003",
+            "condition": "미용 예약 확정 요청 시",
+            "criteria": "`stylists.status = 'available'`",
+            "outcome": "atomic: appointments INSERT + stylists UPDATE + appointment_payments INSERT",
+            "exception": "`E404-STYLIST`"
+          }
+        },
+        {
+          "ruleId": "BT-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BT-004",
+            "condition": "예약 상태 전환 (booked → confirmed → in_service → completed → reviewed)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`appointments.status` UPDATE",
+            "exception": "`E404-APPOINTMENT`, `E409-APPOINTMENT`"
+          }
+        },
+        {
+          "ruleId": "BT-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BT-005",
+            "condition": "재고 재입고 일괄 처리",
+            "criteria": "`inventory_items.status = 'depleted'` AND `restocked_at <= restockedBefore`",
+            "outcome": "`status='restocked'` 일괄 UPDATE",
+            "exception": "대상 없으면 markedCount=0"
+          }
+        },
+        {
+          "ruleId": "BT-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "BT-006",
+            "condition": "수수료 정산 요청 시",
+            "criteria": "`appointments.status = 'completed'`",
+            "outcome": "atomic: commission_records INSERT + settlements INSERT + commission_records UPDATE",
+            "exception": "`E404-COMPLETED-APPOINTMENT`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "telemedicine",
+      "rulesPath": ".decode-x/spec-containers/telemedicine/rules/telemedicine-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/telemedicine.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "TM-001",
+        "TM-002",
+        "TM-003",
+        "TM-004",
+        "TM-005",
+        "TM-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "TM-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "TM-001",
+            "condition": "진료 슬롯 예약 요청 시",
+            "criteria": "`slot.booked_count < capacity` (UPPERCASE fallback MAX_SLOT_CAPACITY)",
+            "outcome": "예약 허용 + slot_bookings INSERT",
+            "exception": "`E422-SLOT-CAPACITY-EXCEEDED` (정원 초과)"
+          }
+        },
+        {
+          "ruleId": "TM-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "TM-002",
+            "condition": "처방 한도 적용 요청 시",
+            "criteria": "`subscription.prescription_usage < prescriptionLimit` (var-vs-var, `limit` keyword 매칭)",
+            "outcome": "처방 허용 + prescription_usage 증가",
+            "exception": "`E422-PRESCRIPTION-LIMIT-EXCEEDED` (처방 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "TM-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "TM-003",
+            "condition": "원격진료 예약 확정 요청 시",
+            "criteria": "`doctors.status = 'available'`",
+            "outcome": "atomic: consultations INSERT + doctors UPDATE + consultation_payments INSERT",
+            "exception": "`E404-DOCTOR`"
+          }
+        },
+        {
+          "ruleId": "TM-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "TM-004",
+            "condition": "진료 상태 전환 (booked → in_progress → completed → prescribed → reviewed)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`consultations.status` UPDATE",
+            "exception": "`E404-CONSULTATION`, `E409-CONSULTATION`"
+          }
+        },
+        {
+          "ruleId": "TM-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "TM-005",
+            "condition": "처방전 만료 일괄 처리",
+            "criteria": "`prescriptions.status = 'active'` AND `valid_until <= expiredBefore`",
+            "outcome": "`status='expired'` 일괄 UPDATE",
+            "exception": "대상 없으면 markedCount=0"
+          }
+        },
+        {
+          "ruleId": "TM-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "TM-006",
+            "condition": "진료비 정산 요청 시",
+            "criteria": "`consultations.status = 'completed'`",
+            "outcome": "atomic: billing_records INSERT + payouts INSERT + billing_records UPDATE",
+            "exception": "`E404-COMPLETED-CONSULTATION`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    },
+    {
+      "container": "veterinary",
+      "rulesPath": ".decode-x/spec-containers/veterinary/rules/veterinary-rules.md",
+      "sourcePath": "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/veterinary.ts",
+      "sourceCodeStatus": "present",
+      "rulesParsed": 6,
+      "parsedBLs": [
+        "VT-001",
+        "VT-002",
+        "VT-003",
+        "VT-004",
+        "VT-005",
+        "VT-006"
+      ],
+      "applicableDetectors": 6,
+      "perRule": [
+        {
+          "ruleId": "VT-001",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "VT-001",
+            "condition": "진료 슬롯 예약 요청 시",
+            "criteria": "`slot.booked_count < capacity` (UPPERCASE fallback MAX_APPOINTMENT_CAPACITY)",
+            "outcome": "예약 허용 + slot_bookings INSERT",
+            "exception": "`E422-SLOT-CAPACITY-EXCEEDED` (정원 초과)"
+          }
+        },
+        {
+          "ruleId": "VT-002",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "VT-002",
+            "condition": "백신 한도 적용 요청 시",
+            "criteria": "`subscription.vaccine_usage < vaccineLimit` (var-vs-var, `limit` keyword 매칭)",
+            "outcome": "백신 허용 + vaccine_usage 증가",
+            "exception": "`E422-VACCINE-LIMIT-EXCEEDED` (백신 한도 초과)"
+          }
+        },
+        {
+          "ruleId": "VT-003",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "VT-003",
+            "condition": "진료 예약 확정 요청 시",
+            "criteria": "`veterinarians.status = 'available'`",
+            "outcome": "atomic: appointments INSERT + veterinarians UPDATE + appointment_payments INSERT",
+            "exception": "`E404-VETERINARIAN`"
+          }
+        },
+        {
+          "ruleId": "VT-004",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "VT-004",
+            "condition": "진료 상태 전환 (scheduled → in_progress → completed → billed → reviewed)",
+            "criteria": "허용 매트릭스 충족",
+            "outcome": "`appointments.status` UPDATE",
+            "exception": "`E404-APPOINTMENT`, `E409-APPOINTMENT`"
+          }
+        },
+        {
+          "ruleId": "VT-005",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "VT-005",
+            "condition": "의무기록 만료 일괄 처리",
+            "criteria": "`medical_records.status = 'active'` AND `archive_eligible_at <= expiredBefore`",
+            "outcome": "`status='archived'` 일괄 UPDATE",
+            "exception": "대상 없으면 markedCount=0"
+          }
+        },
+        {
+          "ruleId": "VT-006",
+          "detected": 0,
+          "markers": [],
+          "rule": {
+            "id": "VT-006",
+            "condition": "동물병원 정산 요청 시",
+            "criteria": "`appointments.status = 'completed'`",
+            "outcome": "atomic: vet_billing_records INSERT + vet_payouts INSERT + vet_billing_records UPDATE",
+            "exception": "`E404-COMPLETED-APPOINTMENT`"
+          }
+        }
+      ],
+      "crossCheck": [],
+      "summary": {
+        "totalMarkers": 0,
+        "presenceCount": 6,
+        "absenceCount": 0,
+        "notApplicableCount": 0
+      }
+    }
+  ]
+}

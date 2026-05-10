@@ -1,0 +1,61 @@
+---
+# Test scenarios — Transit domain TS-001~TS-006
+# Sprint 303 F469 — Public Transport 합성 도메인
+
+scenarios:
+  - id: TS-001-PASS
+    rule: TS-001
+    description: "정원 내 탑승 — 성공"
+    input: { passengerCount: 100, MAX_ROUTE_CAPACITY: 1200 }
+    expected: PASS
+
+  - id: TS-001-FAIL
+    rule: TS-001
+    description: "정원 초과 탑승 시도 — E422-CAPACITY-LIMIT"
+    input: { passengerCount: 1200, MAX_ROUTE_CAPACITY: 1200 }
+    expected: FAIL
+    error: E422-CAPACITY-LIMIT
+
+  - id: TS-002-PASS
+    rule: TS-002
+    description: "zone_1 요금 한도 내 — 성공"
+    input: { zoneFare: 1300, fareZoneLimit: 1500 }
+    expected: PASS
+
+  - id: TS-002-FAIL
+    rule: TS-002
+    description: "zone_1 요금 한도 초과 — E422-FARE-EXCEEDED"
+    input: { zoneFare: 2000, fareZoneLimit: 1500 }
+    expected: FAIL
+    error: E422-FARE-EXCEEDED
+
+  - id: TS-003-PASS
+    rule: TS-003
+    description: "in_transit 상태에서 환승 — 성공"
+    input: { tripStatus: "in_transit" }
+    expected: PASS
+
+  - id: TS-004-PASS
+    rule: TS-004
+    description: "boarded → in_transit 전환 — 성공"
+    input: { from: "boarded", to: "in_transit" }
+    expected: PASS
+
+  - id: TS-004-FAIL
+    rule: TS-004
+    description: "boarded → completed 직접 전환 불가 — E409-TRIP"
+    input: { from: "boarded", to: "completed" }
+    expected: FAIL
+    error: E409-TRIP
+
+  - id: TS-005-PASS
+    rule: TS-005
+    description: "만료 정기권 일괄 갱신 — 성공"
+    input: { expiryBefore: "2026-05-01", renewed: 0, status: "active" }
+    expected: PASS
+
+  - id: TS-006-PASS
+    rule: TS-006
+    description: "suspended 노선 환불+보상 처리 — 성공"
+    input: { routeStatus: "suspended", refundAmount: 1500, compensationAmount: 500 }
+    expected: PASS

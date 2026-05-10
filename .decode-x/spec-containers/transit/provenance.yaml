@@ -1,0 +1,52 @@
+---
+# Provenance — TRANSIT-001
+# 33번째 도메인 — Public Transport/대중교통 산업 합성 도메인 PoC (22번째 신규 산업)
+
+skillId: TRANSIT-001
+extractedAt: "2026-05-10T00:00:00+09:00"
+extractedBy: "Decode-X Sprint 303 F469 — withRuleId 재사용 33번째 도메인 (Public Transport 산업, 22번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/transit/rules/transit-rules.md"
+    section: "Public Transport 합성 비즈니스 룰 — TS-001~TS-006"
+    businessRules: [TS-001, TS-002, TS-003, TS-004, TS-005, TS-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 대중교통(Public Transport) 산업 일반화 PoC. 정원한도/요금한도/환승atomic/트립상태전환/정기권배치/운행중단atomic 추상화. 33번째 도메인 + 22번째 신규 산업 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS). detector 신뢰도 누적 활용. 공공서비스 + transit 인프라 특화."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/transit.ts"
+    functions: [checkRouteCapacity, computeFare, processTransfer, transitionTripStatus, markSeasonPassRenewal, processSuspensionRefund]
+
+detection:
+  - ruleId: TS-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "passengerCount >= MAX_ROUTE_CAPACITY (UPPERCASE constant, Path A)"
+  - ruleId: TS-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "zoneFare > fareZoneLimit (Path B, limit keyword)"
+  - ruleId: TS-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "db.transaction() — transfers + integrated_passes + trips UPDATE"
+  - ruleId: TS-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "boarded → in_transit → transferred → completed"
+  - ruleId: TS-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "batch: renewed=1 갱신 (CC-005 22번째 재사용)"
+  - ruleId: TS-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-10T00:00:00+09:00"
+    notes: "db.transaction() — suspension_refunds + refund_records + suspension_refund_issued UPDATE"

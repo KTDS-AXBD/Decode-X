@@ -1192,6 +1192,15 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "VT-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "VT-004"),
   "VT-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "VT-005"),
   "VT-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "VT-006"),
+
+  // F488 (세션 295) — Gym 합성 도메인 (46번째 도메인, 헬스장 매장 산업, 35번째 신규 산업)
+  // PT+FT+GY 스포츠/헬스 3-클러스터 형성. 47 Sprint 연속 정점 도전 (S264~S278+S283~S319+S295).
+  "GY-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "GY-001"),
+  "GY-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "GY-002"),
+  "GY-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "GY-003"),
+  "GY-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "GY-004"),
+  "GY-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "GY-005"),
+  "GY-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "GY-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

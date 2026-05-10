@@ -831,6 +831,26 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processVeterinaryBilling",
     ],
   },
+  {
+    container: "gym",
+    rulesPath: `${SPEC_CONTAINER_BASE}/gym/rules/gym-rules.md`,
+    // 세션 295 (F488): Gym 합성 도메인 — 46번째 도메인 (헬스장 매장 산업, 35번째 신규 산업).
+    // GY-001~GY-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 47 Sprint 연속 정점 도전 (S264~S278+S283~S319+S295).
+    // 35번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT+TM+VT+GY).
+    // 🏆 35 산업 연속 0 ABSENCE 도전. PT+FT+GY 3-클러스터 스포츠/헬스 형성. 6 BLs 균형 패턴 36번째 정착.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/gym.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/gym/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "registerGymMember",
+      "applyPtLimit",
+      "registerMemberWithLocker",
+      "transitionMembershipStatus",
+      "markExpiredMembershipBatch",
+      "processTrainerBilling",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

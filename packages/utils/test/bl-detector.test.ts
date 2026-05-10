@@ -806,6 +806,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "GV-004",
       "GV-005",
       "GV-006",
+      "GY-001",
+      "GY-002",
+      "GY-003",
+      "GY-004",
+      "GY-005",
+      "GY-006",
       "HC-001",
       "HC-002",
       "HC-003",
@@ -1042,6 +1048,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["VT-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["VT-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["VT-006"]).toBeDefined();
+  });
+
+  it("GY-001~GY-006 registered (세션 295 F488 — gym 46번째 도메인, PT+FT+GY 스포츠/헬스 3-클러스터, 47 Sprint 연속 정점)", () => {
+    expect(BL_DETECTOR_REGISTRY["GY-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["GY-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["GY-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["GY-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["GY-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["GY-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -4183,6 +4198,104 @@ function markMedicalRecordArchiveBatch(db, expiredBefore) {
     const markers = BL_DETECTOR_REGISTRY["VT-006"]!(src, "veterinary.ts");
     expect(markers).toHaveLength(0);
     expect(BL_DETECTOR_REGISTRY["VT-006"]!(src, "veterinary.ts")).toHaveLength(0);
+  });
+});
+
+// F488 (세션 295) — gym domain GY-001~006 via withRuleId (47 Sprint 연속 정점 도전)
+describe("gym domain — GY-001~006 via withRuleId (세션 295 F488)", () => {
+  it("GY-001 PRESENCE — member_count >= MAX_GYM_CAPACITY threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "gym.ts",
+      `const MAX_GYM_CAPACITY = 300;
+function registerGymMember(db, branchId, memberId) {
+  const branch = db.prepare("SELECT member_count, capacity FROM branches WHERE id = ?").get(branchId);
+  const limit = branch.capacity ?? MAX_GYM_CAPACITY;
+  if (branch.member_count >= limit) {
+    throw new GymError('E422-GYM-CAPACITY-EXCEEDED', 'Branch is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GY-001"]!(src, "gym.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("GY-002 PRESENCE — pt_used >= ptLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "gym.ts",
+      `function applyPtLimit(db, memberId, membershipId) {
+  const membership = db.prepare("SELECT pt_used, pt_limit FROM memberships WHERE id = ? AND member_id = ? LIMIT 1").get(membershipId, memberId);
+  const ptLimit = membership.pt_limit;
+  if (membership.pt_used >= ptLimit) {
+    throw new GymError('E422-PT-LIMIT-EXCEEDED', 'PT session quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GY-002"]!(src, "gym.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("GY-003 PRESENCE — db.transaction() in registerMemberWithLocker (atomic members+lockers+member_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "gym.ts",
+      `function registerMemberWithLocker(db, branchId, membershipId, lockerId, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO members (id, branch_id, membership_id, payment_id, locker_id, status, joined_at) VALUES (?, ?, ?, ?, ?, 'active', ?)").run(memberId, branchId, membershipId, paymentId, lockerId, joinedAt);
+    db.prepare("UPDATE lockers SET status = 'occupied', occupied_by = ? WHERE id = ?").run(memberId, lockerId);
+    db.prepare("INSERT INTO member_payments (id, member_id, membership_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(paymentId, memberId, membershipId, amount, joinedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GY-003"]!(src, "gym.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("GY-004 PRESENCE — status comparison + 'paused'/'active'/'expired'/'cancelled' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "gym.ts",
+      `function transitionMembershipStatus(db, membershipId, newStatus) {
+  const membership = db.prepare("SELECT status FROM memberships WHERE id = ?").get(membershipId);
+  if (membership.status === 'paused') throw new GymError("E409-MEMBERSHIP", "Invalid transition", 409);
+  db.prepare("UPDATE memberships SET status = 'paused' WHERE id = ?").run(membershipId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GY-004"]!(src, "gym.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("GY-005 PRESENCE — batch expired update in markExpiredMembershipBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "gym.ts",
+      `function transitionMembershipStatus(db, membershipId, newStatus) {
+  const membership = db.prepare("SELECT status FROM memberships WHERE id = ?").get(membershipId);
+  if (membership.status === 'paused') throw new GymError("E409-MEMBERSHIP", "Invalid", 409);
+  db.prepare("UPDATE memberships SET status = 'paused' WHERE id = ?").run(membershipId);
+}
+function markExpiredMembershipBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM memberships WHERE status = 'active' AND expires_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE memberships SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GY-005"]!(src, "gym.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("GY-006 PRESENCE — db.transaction() in processTrainerBilling (atomic trainer_billing_records+trainer_payouts INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "gym.ts",
+      `function processTrainerBilling(db, trainerId, ptSessionId, revenue, billingRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO trainer_billing_records (id, trainer_id, pt_session_id, revenue, billing_rate, billing_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(billingId, trainerId, ptSessionId, revenue, billingRate, billingAmount);
+    db.prepare("INSERT INTO trainer_payouts (id, billing_id, trainer_id, amount, status, settled_at) VALUES (?, ?, ?, ?, 'settled', ?)").run(payoutId, billingId, trainerId, billingAmount, settledAt);
+    db.prepare("UPDATE trainer_billing_records SET status = 'settled' WHERE id = ?").run(billingId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GY-006"]!(src, "gym.ts");
+    expect(markers).toHaveLength(0);
   });
 });
 

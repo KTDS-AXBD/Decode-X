@@ -1,0 +1,52 @@
+---
+# Provenance — GYM-001
+# 46번째 도메인 — Gym 헬스장 매장 합성 도메인 PoC (35번째 신규 산업)
+
+skillId: GYM-001
+extractedAt: "2026-05-11T00:00:00+09:00"
+extractedBy: "Decode-X 세션 295 F488 — withRuleId 재사용 46번째 도메인 (Gym 헬스장 매장 산업, 35번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/gym/rules/gym-rules.md"
+    section: "Gym 합성 비즈니스 룰 — GY-001~GY-006"
+    businessRules: [GY-001, GY-002, GY-003, GY-004, GY-005, GY-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 헬스장(Gym) 매장 운영 산업 일반화 PoC. 회원정원/PT한도/회원등록atomic/멤버십상태전환/만료멤버십배치/트레이너정산atomic 추상화. 46번째 도메인 + 35번째 신규 산업 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT+TM+VT+GY). detector 신뢰도 누적 활용. 🏆 47 Sprint 연속 정점 도전. PT+FT+GY 3-클러스터 스포츠/헬스 형성 (Personal Training + Fitness 운동 + Gym 매장운영)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/gym.ts"
+    functions: [registerGymMember, applyPtLimit, registerMemberWithLocker, transitionMembershipStatus, markExpiredMembershipBatch, processTrainerBilling]
+
+detection:
+  - ruleId: GY-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-11T00:00:00+09:00"
+    notes: "branch.member_count >= limit (UPPERCASE fallback MAX_GYM_CAPACITY, Path A)"
+  - ruleId: GY-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-11T00:00:00+09:00"
+    notes: "membership.pt_used >= ptLimit (Path B, limit keyword)"
+  - ruleId: GY-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-11T00:00:00+09:00"
+    notes: "db.transaction() — members INSERT + lockers UPDATE + member_payments INSERT"
+  - ruleId: GY-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-11T00:00:00+09:00"
+    notes: "active → paused → expired → cancelled"
+  - ruleId: GY-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-11T00:00:00+09:00"
+    notes: "batch: expired 갱신 (BT-005/TM-005/VT-005 35번째 재사용)"
+  - ruleId: GY-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-11T00:00:00+09:00"
+    notes: "db.transaction() — trainer_billing_records INSERT + trainer_payouts INSERT + trainer_billing_records UPDATE"

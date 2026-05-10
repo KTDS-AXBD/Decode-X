@@ -1,0 +1,97 @@
+# Test scenarios — Gym domain GY-001~GY-006
+# 세션 295 F488 — Gym 헬스장 매장 합성 도메인
+
+scenarios:
+  - id: GY-001-PASS
+    rule: GY-001
+    description: "정원 내 헬스장 회원 등록 — 성공"
+    input: { member_count: 150, capacity: 300 }
+    expected: PASS
+
+  - id: GY-001-FAIL
+    rule: GY-001
+    description: "헬스장 지점 정원 초과 — E422-GYM-CAPACITY-EXCEEDED"
+    input: { member_count: 300, capacity: 300 }
+    expected: FAIL
+    error: E422-GYM-CAPACITY-EXCEEDED
+
+  - id: GY-002-PASS
+    rule: GY-002
+    description: "PT 한도 내 PT 세션 사용 — 성공"
+    input: { pt_used: 4, ptLimit: 10 }
+    expected: PASS
+
+  - id: GY-002-FAIL
+    rule: GY-002
+    description: "PT 한도 초과 — E422-PT-LIMIT-EXCEEDED"
+    input: { pt_used: 10, ptLimit: 10 }
+    expected: FAIL
+    error: E422-PT-LIMIT-EXCEEDED
+
+  - id: GY-003-PASS
+    rule: GY-003
+    description: "available 락커 신규 회원 등록 atomic — 성공"
+    input: { locker_status: available }
+    expected: PASS
+    side_effects:
+      - members INSERT (status='active')
+      - lockers UPDATE (status='occupied')
+      - member_payments INSERT (status='paid')
+
+  - id: GY-003-FAIL
+    rule: GY-003
+    description: "occupied 락커 회원 등록 — E404-LOCKER"
+    input: { locker_status: occupied }
+    expected: FAIL
+    error: E404-LOCKER
+
+  - id: GY-004-PASS
+    rule: GY-004
+    description: "정상 멤버십 상태 전환 (active → paused)"
+    input: { current_status: active, new_status: paused }
+    expected: PASS
+
+  - id: GY-004-FAIL
+    rule: GY-004
+    description: "비정상 멤버십 상태 전환 (active → cancelled)"
+    input: { current_status: active, new_status: cancelled }
+    expected: FAIL
+    error: E409-MEMBERSHIP
+
+  - id: GY-005-PASS
+    rule: GY-005
+    description: "active 멤버십 일괄 expired 마킹"
+    input:
+      memberships:
+        - { id: m-1, status: active, expires_at: "2026-05-10T00:00:00Z" }
+        - { id: m-2, status: active, expires_at: "2026-05-09T00:00:00Z" }
+      now: "2026-05-11T00:00:00Z"
+    expected: PASS
+    output: { expiredCount: 2, expiredIds: [m-1, m-2] }
+
+  - id: GY-005-EMPTY
+    rule: GY-005
+    description: "expired 대상 없음 — expiredCount=0"
+    input:
+      memberships: []
+      now: "2026-05-11T00:00:00Z"
+    expected: PASS
+    output: { expiredCount: 0, expiredIds: [] }
+
+  - id: GY-006-PASS
+    rule: GY-006
+    description: "completed PT 세션 정산 atomic — 성공"
+    input: { session_status: completed, revenue: 80000, billing_rate: 0.55 }
+    expected: PASS
+    side_effects:
+      - trainer_billing_records INSERT (status='calculated')
+      - trainer_payouts INSERT (status='settled')
+      - trainer_billing_records UPDATE (status='settled')
+    output: { billingAmount: 44000.0 }
+
+  - id: GY-006-FAIL
+    rule: GY-006
+    description: "non-completed PT 세션 정산 시도 — E404-COMPLETED-PT-SESSION"
+    input: { session_status: in_progress, revenue: 80000, billing_rate: 0.55 }
+    expected: FAIL
+    error: E404-COMPLETED-PT-SESSION

@@ -5,13 +5,66 @@ version: 1.0
 status: active
 category: general
 created: 2026-02-26
-updated: 2026-05-10
+updated: 2026-05-11
 author: Sinclair Seo
 ---
 
 # CHANGELOG
 
 > 세션 히스토리 아카이브 (최신이 상단)
+
+### 세션 294 (2026-05-11) — Sprint 319+320 순차 Pipeline ✅ DONE 🎯 **Veterinary 34번째 신규 산업 (PT+VT 동물 케어 2-클러스터) + SPEC drift cleanup 4건**
+
+**작업 요약**: Master inline 합 ~40분 (Sprint 319 ~30분 코드 + Sprint 320 ~10분 docs), Match 100%. `/ax:todo plan` 워크플로우로 사전 등록 3건(F485/F486/F487) 검토 → 사용자 결정으로 **Sprint 319+320 순차 Pipeline** 진행 (SPEC.md 영역 충돌 회피 차원). Sprint 319 Veterinary 합성 도메인 PoC + Sprint 320 SPEC drift cleanup 4건 일관 처리. **detect-bl coverage 272/272 = 100.0%** 유지 (45 containers / 34번째 신규 산업 0 ABSENCE / **PT+VT 동물 케어 2-클러스터 형성**). withRuleId **46 Sprint 연속 정점** (S264~S278+S283~S319). **Master inline 17회 연속 회피 패턴** (S253~S320, 1세션 2 Sprint 누적).
+
+**Sprint 319 F485 — Veterinary 합성 도메인 PoC** (main `4100be2`, 17 files, +858/-9):
+- `반제품-스펙/pilot-lpon-cancel/working-version/src/domain/veterinary.ts` (~280 lines, 6 함수 + VeterinaryError):
+  - `bookAppointmentSlot` (VT-001 Threshold Path A, MAX_APPOINTMENT_CAPACITY=20)
+  - `applyVaccineLimit` (VT-002 Threshold Path B, vaccineLimit var-vs-var)
+  - `confirmAppointment` (VT-003 Atomic — appointments + veterinarians UPDATE + appointment_payments INSERT)
+  - `transitionAppointmentStatus` (VT-004 Status — scheduled→in_progress→completed→billed→reviewed)
+  - `markMedicalRecordArchiveBatch` (VT-005 Status batch — active→archived)
+  - `processVeterinaryBilling` (VT-006 Atomic — vet_billing_records + vet_payouts INSERT/UPDATE)
+- `.decode-x/spec-containers/veterinary/` (9 files): provenance.yaml + rules/veterinary-rules.md + runbooks VT-001~006 + tests/VT-001.yaml
+- `scripts/divergence/domain-source-map.ts` — DOMAIN_MAP 45번째 entry 추가 (`container: "veterinary"`)
+- `packages/utils/src/divergence/rules-parser.ts` — VT prefix 추가 (BL_ID_PATTERN, longer match first VT 앞 V)
+- `packages/utils/src/divergence/bl-detector.ts` — REGISTRY VT-001~006 6 entries (withRuleId × 6)
+- `packages/utils/test/bl-detector.test.ts` — sorted keys VT 삽입 + VT registered describe + 6 PRESENCE describe block
+- `packages/utils/test/rules-parser.test.ts` — VT prefix 매칭 테스트 1건
+- `docs/01-plan/features/F485-veterinary-domain-poc.plan.md` (AIF-PLAN-117)
+
+**검증 결과**:
+- ✅ utils tests **384 PASS** (+8 vs 376) — 10 test files, 4.55s
+- ✅ typecheck PASS (직접 tsc 우회, S337 함정 회피, exit 0)
+- ✅ detect-bl **272/272 = 100.0%** 유지 (45 containers / 6 BLs / 0 ABSENCE)
+- ✅ withRuleId 46 Sprint 연속 정점 (신규 detector 0개)
+
+**Sprint 320 F486 — SPEC drift cleanup** (main `b4cb75a`, 1 file, +18/-23):
+- 4 stale F-items 일관 정합화:
+  - F476 (Pet Services Sprint 310): 🔧 IN_PROGRESS → ✅ DONE
+  - F477 (Property Mgmt Sprint 311): 🔧 PLANNED → ✅ DONE
+  - F479 (Beauty Salon Sprint 313): 🔧 PLANNED → ✅ DONE
+  - F359 (round-trip 확장 Sprint 251 중복 등록): 📋 PLANNED → ✅ DONE PR #46 `224d3d9`
+- Sprint 320 블록 자체 ✅ DONE 마킹 + §5 마지막 실측 Sprint 319+320 통합 갱신
+- S279 8건 일관 처리 표준 절차 재현 (rules/development-workflow.md)
+
+**메타 학습**:
+- (a) **withRuleId 46 Sprint 연속 정점** (S264~S319) — 신규 detector 0개 유지로 34번째 산업 부트스트래핑
+- (b) **PT+VT 동물 케어 2-클러스터 형성** — Pet Services 일반(F476) + Veterinary 진료(F485) segment 분리 입증 (9번째 named cluster)
+- (c) **사전 fs 실측 절차 적중** (rules/development-workflow.md S283) — Telemedicine 17 files / 882 insertions 패턴 검증 후 veterinary 디자인 도출, hallucination 0건
+- (d) **Master inline 17회 연속 회피 패턴 유지** (S253~S320) — autopilot Production Smoke Test 14회차 변종 / .sprint-context conflict 17회차 모두 회피
+- (e) **사용자 선택 적중** — 순차 Pipeline 결정으로 SPEC.md 같은 영역(§6 Sprint 블록 + §5 마지막 실측) 병렬 squash merge conflict 사전 회피
+
+**누적 효과** (S262~S320, 59 Sprint):
+- coverage 13.2% → **100%** (7.6배+, 절대값 5 → 272 = 54배)
+- 도메인 5 → 45 (9배), BL 38 → 272, detector 5 → 272
+- 9 명명 클러스터 형성 (의료 HC+PH+TM 3-클러스터 / 정부 GV+DF / 항공 TR+AV / 물류 LG+MR / 1차 AG+MN / 부동산 RE+PR / 서비스 4종 WL+SP+FT+BT / **동물 케어 PT+VT 신규**)
+
+**차기 후보**:
+- F487 F358 Phase 4 — LPON 전수 production 재추출 + DIVERGENCE 5건 후속 + F356-A 통합 (P1, 별도 Plan 1~2h 필요, Sprint 실행 4-6h)
+- 보안 후속 2건 — 1Password CLI signin + MP 변경 (사용자 콘솔 작업)
+
+---
 
 ### 세션 293 (2026-05-10) — Sprint 318 F484 ✅ DONE 🎯 **Telemedicine 33번째 신규 산업 (HC+PH+TM 의료 3-클러스터 형성)**
 

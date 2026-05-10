@@ -1,0 +1,86 @@
+# Test Scenarios — MD-001 ~ MD-006 (대표)
+ruleId: MD-001
+domain: media
+function: activateMediaSubscription
+detector: ThresholdCheck (F445 Path A)
+
+scenarios:
+  - id: MD-MD-001-01
+    name: 정상 스트리밍 (concurrentStreamCount=2, under limit)
+    given: { subscriptionId: sub-1, concurrentStreamCount: 2, status: active, tier: standard }
+    when: activateMediaSubscription
+    then: { subscriptionId: sub-1, tier: standard }
+
+  - id: MD-MD-001-02
+    name: 동시 스트림 한도 초과 (concurrentStreamCount=4) → E422-STREAM-LIMIT
+    given: { subscriptionId: sub-1, concurrentStreamCount: 4, status: active }
+    when: activateMediaSubscription
+    then: { error: E422-STREAM-LIMIT }
+
+  - id: MD-MD-002-01
+    name: 정상 시청 (viewedCount=5, free tier viewQuotaLimit=10)
+    given: { userId: user-1, viewedCount: 5, tier: free }
+    when: checkViewQuota
+    then: { viewedCount: 5, viewQuotaLimit: 10, withinQuota: true }
+
+  - id: MD-MD-002-02
+    name: 시청 한도 초과 (viewedCount=11, free tier) → E422-VIEW-QUOTA
+    given: { userId: user-1, viewedCount: 11, tier: free }
+    when: checkViewQuota
+    then: { error: E422-VIEW-QUOTA }
+
+  - id: MD-MD-003-01
+    name: 정상 라이선싱 atomic — license_count 차감 + licenses INSERT
+    given: { contentId: ct-1, userId: user-1, licenseType: streaming, content.status: published, license_count: 10 }
+    when: processLicensing
+    then:
+      licenseId: [uuid]
+      license_count: 9
+      licenses: inserted (status=active)
+
+  - id: MD-MD-003-02
+    name: 비공개 콘텐츠 라이선스 시도 → E409-CONTENT
+    given: { contentId: ct-1, content.status: archived }
+    when: processLicensing
+    then: { error: E409-CONTENT }
+
+  - id: MD-MD-004-01
+    name: draft → reviewing 전환
+    given: { content: { status: draft } }
+    when: transitionContentStatus(reviewing)
+    then: { previousStatus: draft, newStatus: reviewing }
+
+  - id: MD-MD-004-02
+    name: reviewing → published 전환
+    given: { content: { status: reviewing } }
+    when: transitionContentStatus(published)
+    then: { newStatus: published }
+
+  - id: MD-MD-004-03
+    name: draft → published 역전환 → E409-CONTENT
+    given: { content: { status: draft } }
+    when: transitionContentStatus(published)
+    then: { error: E409-CONTENT }
+
+  - id: MD-MD-005-01
+    name: 만료 콘텐츠 일괄 처리 — 2건 published → expired
+    given: { expirationCutoffDate: "2026-05-10", candidates: [{ status: published, expires_at: "2026-05-09" }, { status: published, expires_at: "2026-05-10" }] }
+    when: markExpiringContent("2026-05-10")
+    then: { markedCount: 2, contents.status: expired }
+
+  - id: MD-MD-006-01
+    name: 정상 테이크다운 atomic — archived + resolved + revoked + refunds
+    given: { contentId: ct-1, reportId: rp-1, content.status: published, activeLicenses: 3 }
+    when: processTakedown
+    then:
+      contents.status: archived
+      reports.status: resolved
+      licenses.status: revoked (3건)
+      refunds: inserted (3건)
+      refundCount: 3
+
+  - id: MD-MD-006-02
+    name: 이미 비공개 콘텐츠 테이크다운 시도 → E409-CONTENT
+    given: { contentId: ct-1, content.status: archived }
+    when: processTakedown
+    then: { error: E409-CONTENT }

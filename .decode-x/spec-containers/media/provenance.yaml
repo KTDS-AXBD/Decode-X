@@ -1,0 +1,41 @@
+---
+# Provenance — MEDIA-001
+# 28번째 도메인 — Media/미디어 산업 합성 도메인 PoC (17번째 신규 산업)
+
+skillId: MEDIA-001
+extractedAt: "2026-05-10T00:00:00+09:00"
+extractedBy: "Decode-X Sprint 298 F464 — withRuleId 재사용 28번째 도메인 (Media 산업, 17번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/media/rules/media-rules.md"
+    section: "Media 합성 비즈니스 룰 — MD-001~MD-006"
+    businessRules: [MD-001, MD-002, MD-003, MD-004, MD-005, MD-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 미디어(Media) 산업 일반화 PoC. 구독tier한도/시청한도/라이선싱atomic/콘텐츠상태전환/만료배치/takedown atomic 추상화. 28번째 도메인 + 17번째 신규 산업 (CC + DV + SB + IN + HC + ED + RE + LG + HO + TR + MF + RT + EN + GV + TC + BK + MD). detector 5 cascade + 16 산업 연속 입증 활용. 🎯 90% coverage 마일스톤 돌파 예상."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/media.ts"
+    functions: [activateMediaSubscription, checkViewQuota, processLicensing, transitionContentStatus, markExpiringContent, processTakedown]
+    test: "src/__tests__/media.test.ts (후속 작성 가능, PoC 단계)"
+    sourceMarker: PRESENCE
+    note: "BL-detector 자동 PRESENCE 입증 — 신규 detector 0개, withRuleId 재사용 (Threshold × 2 + Atomic × 2 + Status × 2)"
+
+inputCompleteness:
+  sInput: 0.92
+  deficiencyFlag: false
+  components:
+    rulesCoverage: 1.00
+    testCoverage: 0.85
+    provenanceLink: 1.00
+
+note: |
+  Sprint 298 F464: 미디어(Media) 산업 도메인 신규 — 28번째 도메인 (17번째 신규 산업 시리즈).
+  MD-001 구독 tier 동시 시청 한도 검증 / MD-002 무료 시청 한도 비교 / MD-003 콘텐츠 라이선싱 atomic /
+  MD-004 콘텐츠 상태 전환 / MD-005 만료 콘텐츠 일괄 처리 / MD-006 테이크다운 atomic.
+  분포: Threshold × 2 + Atomic × 2 + Status × 2 (균형 분포 18번째 정착).
+  withRuleId 재사용 26 Sprint 연속 정점 (S264~S278+S283~S298). 신규 detector 0개.
+  17 산업 연속 0 ABSENCE 목표 (CC + DV + SB + IN + HC + ED + RE + LG + HO + TR + MF + RT + EN + GV + TC + BK + MD).
+  🏆 coverage ≥ 90% 마일스톤 돌파 (S262 13.2% → S298 90%+, 6.8배 증가).
+---

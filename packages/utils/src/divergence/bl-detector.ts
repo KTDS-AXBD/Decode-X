@@ -606,6 +606,53 @@ export function detectAtomicTransaction(
 }
 
 /**
+ * BL-030 — 유효기간 연장 거부 PRESENCE/ABSENCE 검출.
+ *
+ * PRESENCE 패턴: "extend" / "extension" / "renew" 식별자 또는 문자열 리터럴.
+ * 구현 예시: if (refundType === 'EXTENSION') throw new RefundError('EXTENSION_NOT_ALLOWED', ...)
+ *
+ * ABSENCE: 패턴 미발견 — 유효기간 연장 거부 로직 자체 미구현.
+ * 신뢰도 75%.
+ */
+export function detectExpiryExtension(
+  sourceFile: ts.SourceFile,
+  fileName: string,
+): BLDivergenceMarker[] {
+  let foundExtension = false;
+
+  function visit(node: ts.Node): void {
+    if (ts.isIdentifier(node) && /extend|extension|renew/i.test(node.text)) {
+      foundExtension = true;
+    }
+    if (
+      (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) &&
+      /extend|extension|EXTEND|EXTENSION/i.test(node.text)
+    ) {
+      foundExtension = true;
+    }
+    ts.forEachChild(node, visit);
+  }
+  visit(sourceFile);
+
+  if (!foundExtension) {
+    return [
+      {
+        ruleId: "BL-EXPIRY-EXTENSION-GENERIC",
+        severity: "MEDIUM",
+        pattern: "missing_validation_check",
+        sourceFile: fileName,
+        sourceLine: 0,
+        detail:
+          "No expiry extension handling found. Expected: rejection for EXTENSION-type requests (e.g., if (refundType === 'EXTENSION') throw RefundError('EXTENSION_NOT_ALLOWED', ...)).",
+        confidence: 0.75,
+        autoDetected: true,
+      },
+    ];
+  }
+  return [];
+}
+
+/**
  * Detector function 시그니처 (BL_DETECTOR_REGISTRY 등록용).
  */
 export type DetectorFn = (
@@ -631,6 +678,7 @@ function withRuleId(
  * Sprint 262 (F429): BL-005/006/007/008/014/015/022 (universal patterns via withRuleId).
  * Sprint 264 (F431): BL-G002/G003/G004/G005/G006 (gift domain via withRuleId).
  * Sprint 314 (F480): BL-001/002/003/004 (lpon-charge gap fill — 95.0% coverage 돌파).
+ * Sprint 315 (F481): BL-020/021/023/025 (lpon-refund gap fill) + BL-030 (ABSENCE marker).
  *
  * 미등록 BL-ID는 detector scope 외 — provenance cross-check에서 UNKNOWN 분류.
  */
@@ -954,4 +1002,14 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "BT-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BT-004"),
   "BT-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BT-005"),
   "BT-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BT-006"),
+  // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
+  // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
+  // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /
+  // BL-030 (유효기간 연장 거부 미구현 ABSENCE — detectExpiryExtension → refund.ts에서 0 hits → 1 marker)
+  // detect-bl coverage: 247/260 → 252/260 = 96.9%.
+  "BL-020": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BL-020"),
+  "BL-021": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BL-021"),
+  "BL-023": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BL-023"),
+  "BL-025": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "BL-025"),
+  "BL-030": (sf, fn) => withRuleId(detectExpiryExtension(sf, fn), "BL-030"),
 };

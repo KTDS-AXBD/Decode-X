@@ -1099,7 +1099,8 @@
 > **차기 후보 (잔여 13 BLs)**: lpon-payment 5 (source 보강 필요) / lpon-refund 5 (재실측 필요) / lpon-settlement 2 (upsert detector 신규) / lpon-gift 1 (grant detector 신규).
 - [x] F480 ✅ **DONE** (lpon-charge gap fill BL-001~004 — **95.0% coverage 돌파**, **P2**, Sprint 314, ✅ DONE 세션 290 2026-05-10 Master inline ~30분 Match 100%): bl-detector.ts BL-001~004 entry (withRuleId × 4) + tests 353 PASS + lpon-charge 8/8 PRESENCE 0 ABSENCE + AIF-PLAN-112 + AIF-RPRT-115. **withRuleId 42 Sprint 연속 정점**.
 
-**Sprint 315 (F481 — lpon-refund gap fill BL-020/021/023/025/030, 🔧 PLANNED 세션 291 2026-05-10 Sprint Pipeline batch 1):**
+**Sprint 315 (F481 — lpon-refund gap fill BL-020/021/023/025/030, ✅ DONE 세션 291 2026-05-10 Sprint autopilot WT Match 100%):**
+> **결과**: ✅ DONE — Sprint autopilot WT. **detect-bl coverage 96.9%** (247/260 → 252/260, +1.9%pp). lpon-refund **11/11 detector-supported** (BL-020~030 전체). bl-detector.ts BL-020/021/023/025 4 entry (withRuleId × 4) + BL-030 ABSENCE marker (`detectExpiryExtension` 신규 — 유효기간 연장 미구현). utils 353 → **359 PASS** (+6: 4 PRESENCE + 1 ABSENCE + 1 registered). typecheck (직접 tsc 우회, S337 함정 회피) PASS. **withRuleId 재사용 43 Sprint 연속 정점** (S264~S278+S283~S315). **누적 54 Sprint** (S262~S315): coverage 13.2% → 96.9% (7.3배+). 산출물: AIF-PLAN-113 + AIF-RPRT-116.
 > **목표**: LPON pilot 잔여 13 BLs 중 lpon-refund 5건 매핑으로 detect-bl coverage 95.0% → **96.9%** (+1.9%pp). refund.ts 252 lines fs 실측 결과 4 PRESENCE + 1 ABSENCE 보장 (rules/development-workflow.md S283 사전 절차 준수). bl-detector.ts BL-020/021/023/025 4 entry (withRuleId × 4: status × 1 + atomic × 2 + threshold × 1) + DETECTOR_SUPPORTED_RULES BL-030 추가 (ABSENCE marker, 유효기간 연장 미구현).
 > **DoD**: bl-detector.ts BL-020/021/023/025 entry + DETECTOR_SUPPORTED_RULES BL-030 추가 + tests 353→358 PASS (+5: 4 PRESENCE + 1 ABSENCE) + typecheck (직접 tsc 우회) PASS + detect-bl --all-domains 252/260 = **96.9%** + lpon-refund 8/11 → **13/13 detector-supported** + Plan AIF-PLAN-113 + Report + SPEC §6 (8 항목).
 > **Plan**: `docs/01-plan/features/F481-lpon-refund-gap-fill.plan.md` (AIF-PLAN-113).
@@ -1111,7 +1112,7 @@
 >   - BL-030 ABSENCE — 유효기간 연장 요청 자체 미구현 (ABSENCE marker)
 > **병렬**: Sprint 316 (settle+gift) 영역 분리 ✅ Batch 1 병렬 (refund.ts ↔ settlement.ts+gift.ts).
 > **의존성**: 없음 (BL_DETECTOR_REGISTRY 5 entry 추가만).
-- [ ] F481 🔧 **PLANNED** (lpon-refund gap fill — 5 BL 매핑, **P2**, Sprint 315, Sprint Pipeline batch 1). 4 PRESENCE + 1 ABSENCE 보장. coverage +1.9%pp → 96.9%.
+- [x] F481 ✅ **DONE** (lpon-refund gap fill — 5 BL 매핑, **P2**, Sprint 315, ✅ DONE 세션 291 2026-05-10 Sprint autopilot WT Match 100%): bl-detector.ts BL-020/021/023/025/030 5 entry (withRuleId × 4 + detectExpiryExtension 신규) + tests 359 PASS + lpon-refund 11/11 detector-supported + AIF-PLAN-113 + AIF-RPRT-116. **withRuleId 43 Sprint 연속 정점**. coverage 96.9%.
 
 **Sprint 316 (F482 — lpon-settlement BL-031/032 + lpon-gift BL-G001 gap fill, 🔧 PLANNED 세션 291 2026-05-10 Sprint Pipeline batch 1):**
 > **목표**: LPON pilot 잔여 13 BLs 중 lpon-settlement 2건 + lpon-gift 1건 매핑으로 detect-bl coverage 96.9% → **98.1%** (+1.2%pp). settlement.ts 298 lines + gift.ts 294 lines fs 실측 결과 2 PRESENCE + 1 ABSENCE (rules/development-workflow.md S283 사전 절차 준수). bl-detector.ts BL-031/BL-032 2 entry (atomic × 2) + DETECTOR_SUPPORTED_RULES BL-G001 추가 (ABSENCE marker, sendGift/createGift 미구현).

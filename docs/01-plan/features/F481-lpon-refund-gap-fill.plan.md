@@ -3,7 +3,7 @@ id: AIF-PLAN-113
 sprint: 315
 feature: F481
 title: lpon-refund gap fill — BL-020/021/023/025/030 detector 매핑 (96.9% coverage)
-status: active
+status: done
 estimated_hours: 0.5
 created: 2026-05-10
 related: [AIF-PLAN-112, AIF-PLAN-064]

@@ -1099,6 +1099,32 @@
 > **차기 후보 (잔여 13 BLs)**: lpon-payment 5 (source 보강 필요) / lpon-refund 5 (재실측 필요) / lpon-settlement 2 (upsert detector 신규) / lpon-gift 1 (grant detector 신규).
 - [x] F480 ✅ **DONE** (lpon-charge gap fill BL-001~004 — **95.0% coverage 돌파**, **P2**, Sprint 314, ✅ DONE 세션 290 2026-05-10 Master inline ~30분 Match 100%): bl-detector.ts BL-001~004 entry (withRuleId × 4) + tests 353 PASS + lpon-charge 8/8 PRESENCE 0 ABSENCE + AIF-PLAN-112 + AIF-RPRT-115. **withRuleId 42 Sprint 연속 정점**.
 
+**Sprint 315 (F481 — lpon-refund gap fill BL-020/021/023/025/030, 🔧 PLANNED 세션 291 2026-05-10 Sprint Pipeline batch 1):**
+> **목표**: LPON pilot 잔여 13 BLs 중 lpon-refund 5건 매핑으로 detect-bl coverage 95.0% → **96.9%** (+1.9%pp). refund.ts 252 lines fs 실측 결과 4 PRESENCE + 1 ABSENCE 보장 (rules/development-workflow.md S283 사전 절차 준수). bl-detector.ts BL-020/021/023/025 4 entry (withRuleId × 4: status × 1 + atomic × 2 + threshold × 1) + DETECTOR_SUPPORTED_RULES BL-030 추가 (ABSENCE marker, 유효기간 연장 미구현).
+> **DoD**: bl-detector.ts BL-020/021/023/025 entry + DETECTOR_SUPPORTED_RULES BL-030 추가 + tests 353→358 PASS (+5: 4 PRESENCE + 1 ABSENCE) + typecheck (직접 tsc 우회) PASS + detect-bl --all-domains 252/260 = **96.9%** + lpon-refund 8/11 → **13/13 detector-supported** + Plan AIF-PLAN-113 + Report + SPEC §6 (8 항목).
+> **Plan**: `docs/01-plan/features/F481-lpon-refund-gap-fill.plan.md` (AIF-PLAN-113).
+> **fs 실측 결과** (refund.ts:62/124/161/180-194/198-210/107-113):
+>   - BL-020 PRESENCE — `rfnd_psblty_yn = 'Y'` INSERT/SELECT (status transition)
+>   - BL-021 PRESENCE — `db.transaction(()=>{deposit + voucher.balance})` (atomic)
+>   - BL-023 PRESENCE — try/catch + `status='FAILED'` rollback (atomic)
+>   - BL-025 PRESENCE — `usageRate < 0.6 throw` (threshold)
+>   - BL-030 ABSENCE — 유효기간 연장 요청 자체 미구현 (ABSENCE marker)
+> **병렬**: Sprint 316 (settle+gift) 영역 분리 ✅ Batch 1 병렬 (refund.ts ↔ settlement.ts+gift.ts).
+> **의존성**: 없음 (BL_DETECTOR_REGISTRY 5 entry 추가만).
+- [ ] F481 🔧 **PLANNED** (lpon-refund gap fill — 5 BL 매핑, **P2**, Sprint 315, Sprint Pipeline batch 1). 4 PRESENCE + 1 ABSENCE 보장. coverage +1.9%pp → 96.9%.
+
+**Sprint 316 (F482 — lpon-settlement BL-031/032 + lpon-gift BL-G001 gap fill, 🔧 PLANNED 세션 291 2026-05-10 Sprint Pipeline batch 1):**
+> **목표**: LPON pilot 잔여 13 BLs 중 lpon-settlement 2건 + lpon-gift 1건 매핑으로 detect-bl coverage 96.9% → **98.1%** (+1.2%pp). settlement.ts 298 lines + gift.ts 294 lines fs 실측 결과 2 PRESENCE + 1 ABSENCE (rules/development-workflow.md S283 사전 절차 준수). bl-detector.ts BL-031/BL-032 2 entry (atomic × 2) + DETECTOR_SUPPORTED_RULES BL-G001 추가 (ABSENCE marker, sendGift/createGift 미구현).
+> **DoD**: bl-detector.ts BL-031/BL-032 entry + DETECTOR_SUPPORTED_RULES BL-G001 추가 + tests 358→361 PASS (+3) + typecheck PASS + detect-bl --all-domains 255/260 = **98.1%** + lpon-settlement 4/6 → **6/6** + lpon-gift 5/6 → **6/6** + Plan AIF-PLAN-114 + Report + SPEC §6 (8 항목).
+> **Plan**: `docs/01-plan/features/F482-lpon-settle-gift-gap-fill.plan.md` (AIF-PLAN-114).
+> **fs 실측 결과**:
+>   - BL-031 PRESENCE — settlement.ts:84-156 `runBatchSettlement` 안 `db.transaction(()=>{settlement_summaries UPSERT})` (atomic)
+>   - BL-032 PRESENCE — settlement.ts atomic 패턴 매칭 (포인트 별도 함수 부재여도 일반 atomic 매칭 가능)
+>   - BL-G001 ABSENCE — gift.ts에 `sendGift`/`createGift` 함수 부재, INSERT INTO gift_transactions 0건 (ABSENCE marker)
+> **병렬**: Sprint 315 (refund) 영역 분리 ✅ Batch 1 병렬 (settlement.ts+gift.ts ↔ refund.ts).
+> **의존성**: 없음 (BL_DETECTOR_REGISTRY 2 entry + DETECTOR_SUPPORTED_RULES 1 entry 추가만).
+- [ ] F482 🔧 **PLANNED** (lpon-settlement + lpon-gift gap fill — 3 BL 매핑, **P2**, Sprint 316, Sprint Pipeline batch 1). 2 PRESENCE + 1 ABSENCE 보장. coverage +1.2%pp → 98.1%.
+
 **Sprint 274 (F440 — Generic Voucher 9번째 도메인 PoC, ✅ DONE 세션 284 후속 3 2026-05-08 Master inline ~1.5h Match 95%):**
 > **결과**: ✅ DONE — Master inline ~1.5h. **9번째 도메인 generic-voucher 신규** — voucher.ts 220 lines (6 함수 + VoucherError) + voucher.test.ts 230 lines (19 cases PASS) + spec-container 16 sub-files (provenance + voucher-rules + V-001~V-006 rules/runbooks/tests + contract) + DOMAIN_MAP entry + REGISTRY 6 entries (Threshold × 3 + Atomic × 1 + Status × 2) + parser regex `V` prefix 확장. **신규 detector 0개** (withRuleId 재사용 9번째 도메인 정점). detect-bl --all-domains: 9 containers, **44/61 = 72.1% coverage** (+3.0%pp vs Sprint 269 69.1%). 6 BL V-001~V-006 모두 PRESENCE 자동 입증 (0 ABSENCE). write-provenance --apply 0 changes. utils 170/170 PASS (회귀 0). **DoD 14/14 PASS**. 산출물: AIF-PLAN-072 + AIF-RPRT-072 + reports/sprint-274-generic-voucher-poc-2026-05-08.{md,json}. **메타 학습**: (a) **withRuleId 재사용 9번째 도메인 정점** (Sprint 264~269+274 7 Sprint 연속), (b) **합성 도메인 PoC의 가치** — LPON 외 일반화 입증 + 신규 도메인 부트스트래핑 template, (c) **VoucherError code-in-message 패턴** — `super(\`[${code}] ${message}\`)` 차기 도메인 표준 권장. **Master inline 14회 연속 회피 패턴 유지** (S253~284).
 - [x] F440 ✅ **DONE** (Generic Voucher 9번째 도메인 — withRuleId 재사용 정점, **P2**, Sprint 274, ✅ DONE 세션 284 후속 3 2026-05-08 Master inline Match 95%): voucher.ts + tests 19 cases + spec-container 16 files + DOMAIN_MAP + REGISTRY 6 + parser regex V. **detector coverage 69.1% → 72.1%**.

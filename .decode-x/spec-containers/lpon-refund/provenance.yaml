@@ -188,3 +188,118 @@ divergenceSummary:
   publishedAt: "2026-04-21T08:40:00+09:00"
   publishedBy: "Decode-X Sprint 218 F354 (TD-24)"
   kpiCompliance: "≥3 DIVERGENCE markers (Phase 3 KPI) — 5건 발행으로 충족"
+
+# F504 (Sprint 332 세션 299, 2026-05-12): io_structure / comment_doc_alignment 80%+ 도전 — 방식 B 전수 적용
+# F496 PoC 결과 (lpon-charge 5/6 → 6/6 PASS, +16.7%pp avg score 0.880 → 0.908) 패턴 7 containers 전수 확장
+
+inputSchema:
+  - ruleId: BL-020
+    function: checkRefundEligibility
+    parameters:
+      transactionId: { type: string, description: "환불 대상 거래 ID" }
+    returns:
+      rfndPsbltyYn: { type: enum, values: [Y, N] }
+      reason: { type: string, description: "N인 경우 사유" }
+    errors: []
+
+  - ruleId: BL-021
+    function: requestRefundDeposit
+    parameters:
+      transactionId: { type: string }
+      refundAccount: { type: string, description: "환불 계좌 (마스킹)" }
+      refundAmount: { type: number, description: "환불 금액 (원)" }
+    returns:
+      depositRequestId: { type: string }
+      status: { type: enum, values: [requested, processing] }
+    errors: [REFUND_ELIGIBILITY_FAILED]
+
+  - ruleId: BL-022
+    function: completeRefundOnDepositSuccess
+    parameters:
+      depositRequestId: { type: string }
+    returns:
+      refundCompletedAt: { type: ISO8601 }
+      status: { type: enum, values: [COMPLETED] }
+    errors: []
+
+  - ruleId: BL-023
+    function: handleRefundDepositFailure
+    parameters:
+      depositRequestId: { type: string }
+      errorCode: { type: string }
+    returns:
+      newStatus: { type: enum, values: [FAILED] }
+      errorMessage: { type: string }
+    errors: [E500]
+
+  - ruleId: BL-024
+    function: refundUnusedVoucherWithin7Days
+    parameters:
+      voucherId: { type: string }
+      requestTimestamp: { type: ISO8601 }
+    returns:
+      refundedAmount: { type: number, description: "전액 환불" }
+      eligible: { type: boolean }
+    errors: [E422-OVER-7-DAYS]
+
+  - ruleId: BL-025
+    function: refundUsedVoucherIf60PercentUsed
+    parameters:
+      voucherId: { type: string }
+      currentBalance: { type: number }
+      faceAmount: { type: number }
+    returns:
+      usageRate: { type: number, description: "사용률 (0.0~1.0)" }
+      refundableAmount: { type: number, description: "환불 가능 금액 (잔액)" }
+      eligible: { type: boolean }
+    errors: [INSUFFICIENT_USAGE]
+
+  - ruleId: BL-026
+    function: rejectCashbackRefund
+    parameters:
+      voucherId: { type: string }
+      cashbackAmount: { type: number }
+    returns:
+      rejected: { type: boolean }
+      reason: { type: string, default: "캐시백/할인보전 금액 현금 환불 불가" }
+      alternativeRoute: { type: string, description: "포인트 전환 등 대안 (미정의)" }
+    errors: []
+
+  - ruleId: BL-027
+    function: handleAccountErrorRefund
+    parameters:
+      transactionId: { type: string }
+      errorCode: { type: string }
+    returns:
+      manualEscalation: { type: boolean, default: true }
+      customerNotificationSent: { type: boolean }
+    errors: []
+
+  - ruleId: BL-028
+    function: calculateRefundDepositAmount
+    parameters:
+      transactionId: { type: string }
+      refundRequestedAmount: { type: number }
+      exclusionAmount: { type: number, description: "제외금액 (수수료/할인 등)" }
+    returns:
+      depositAmount: { type: number, description: "환불요청액 − 제외금액" }
+      breakdown: { type: object, description: "분배 명세" }
+    errors: []
+
+  - ruleId: BL-029
+    function: handleExpiredVoucherRefund
+    parameters:
+      voucherId: { type: string }
+      forceFlag: { type: boolean, default: false, description: "강성 민원 시 강제환불 트리거" }
+    returns:
+      rejected: { type: boolean, description: "force=false 시 기본 거부" }
+      forcedRefundAmount: { type: number, description: "force=true 시 강제환불 금액" }
+    errors: [EXPIRED_VOUCHER_REJECTED]
+
+# ES (Empty Slot) ↔ BL cross-reference 매핑 (F504, 2026-05-12)
+esToBlMapping:
+  ES-REFUND-001: { bls: [BL-020], topic: "rfndPsbltyYn 판정 오류 — 환불 가능 여부 플래그 false positive/negative 운영 대응" }
+  ES-REFUND-002: { bls: [BL-026], topic: "캐시백 환불불가 — 포인트 전환 등 대안 운영 (미정의 영역)" }
+  ES-REFUND-003: { bls: [BL-027], topic: "환불계좌 오류 재처리 — 소비자 재등록 또는 수기 접수" }
+  ES-REFUND-004: { bls: [BL-029, BL-025], topic: "강제환불 처리 — 유효기간 만료 + 강성 민원 시 강제환불 권한 운영" }
+  ES-REFUND-005: { bls: [BL-028], topic: "제외금액 산정 오류 — 환불요청액 − 제외금액 계산 분쟁 시 대응" }

@@ -1,5 +1,7 @@
 # ES-PURCHASE-001: 이중 구매 발생 — 운영 가이드
 
+**Related BL (F504 cross-ref)**: BP-004, BP-001
+
 **Empty Slot ID**: ES-PURCHASE-001
 **대상**: 운영팀 / 백엔드 개발자
 

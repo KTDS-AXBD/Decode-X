@@ -1,5 +1,7 @@
 # ES-BUDGET-001: 예산 한도 초과 — 운영 가이드
 
+**Related BL (F504 cross-ref)**: BB-001, BB-002
+
 **Empty Slot ID**: ES-BUDGET-001
 **대상**: 운영팀 / 백엔드 개발자
 

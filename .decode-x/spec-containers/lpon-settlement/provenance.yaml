@@ -34,3 +34,81 @@ inputCompleteness:
 
 handoffTarget: Foundry-X
 handoffVersion: "FX-SPEC-003 v1.0"
+
+# F504 (Sprint 332 세션 299, 2026-05-12): io_structure / comment_doc_alignment 80%+ 도전 — 방식 B 전수 적용
+# F496 PoC 결과 (lpon-charge 5/6 → 6/6 PASS, +16.7%pp avg score 0.880 → 0.908) 패턴 7 containers 전수 확장
+
+inputSchema:
+  - ruleId: BL-031
+    function: aggregateChargeRefundTransactions
+    parameters:
+      periodStart: { type: ISO8601 }
+      periodEnd: { type: ISO8601 }
+    returns:
+      chargeCount: { type: integer }
+      chargeAmount: { type: number }
+      discountAmount: { type: number }
+      refundCount: { type: integer }
+      refundAmount: { type: number }
+      feeAmount: { type: number }
+      settlementSummaryId: { type: string }
+    errors: []
+
+  - ruleId: BL-032
+    function: aggregatePointChargeRefund
+    parameters:
+      periodStart: { type: ISO8601 }
+      periodEnd: { type: ISO8601 }
+    returns:
+      pointChargeCount: { type: integer }
+      pointChargeAmount: { type: number }
+      pointRefundCount: { type: integer }
+      pointRefundAmount: { type: number }
+      settlementSummaryId: { type: string }
+    errors: []
+
+  - ruleId: BL-033
+    function: runBatchSettlement
+    parameters:
+      trigger: { type: enum, values: [scheduled, manual] }
+      now: { type: ISO8601 }
+    returns:
+      batchRunId: { type: string }
+      processedRows: { type: integer }
+      status: { type: enum, values: [success, failed] }
+    errors: [BATCH_FAILED]
+
+  - ruleId: BL-034
+    function: iterateAndUpdateCalculations
+    parameters:
+      calculationIds: { type: array, items: string }
+    returns:
+      updatedCount: { type: integer }
+      skippedCount: { type: integer, description: "데이터 미존재 시 skip" }
+    errors: []
+
+  - ruleId: BL-035
+    function: queryPeriodicSettlementCheckData
+    parameters:
+      periodStart: { type: ISO8601 }
+      periodEnd: { type: ISO8601 }
+    returns:
+      checkData: { type: array, items: object }
+      totalRows: { type: integer }
+    errors: [INVALID_PERIOD_PARAMETER]
+
+  - ruleId: BL-036
+    function: calculateFee
+    parameters:
+      transactionId: { type: string }
+      feeReflected: { type: enum, values: [Y, N] }
+    returns:
+      settlementAmount: { type: number, description: "Y → 수수료 차감, N → 전액 정산" }
+      feeAmount: { type: number }
+    errors: [INVALID_FEE_FLAG]
+
+# ES (Empty Slot) ↔ BL cross-reference 매핑 (F504, 2026-05-12)
+esToBlMapping:
+  ES-SETTLE-001: { bls: [BL-033, BL-034], topic: "정산 배치 멱등성 — 동일 기간 재실행 시 중복 집계 방지 + idempotency 키" }
+  ES-SETTLE-002: { bls: [BL-036], topic: "정산수수료 반영 기준 — fee_reflected Y/N 분기 판정 + 회계 정합성 검증" }
+  ES-SETTLE-003: { bls: [BL-033, BL-035], topic: "배치 부분 재처리 — 일부 row 실패 시 재시도 정책 + 알림 발송" }

@@ -1,5 +1,7 @@
 # ES-REFUND-003: 환불계좌 오류 재처리 — 운영 가이드
 
+**Related BL (F504 cross-ref)**: BL-027
+
 **Empty Slot ID**: ES-REFUND-003
 **대상**: 운영팀 / CS팀
 

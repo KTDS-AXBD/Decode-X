@@ -1,5 +1,7 @@
 # ES-REFUND-002: 캐시백 환불불가 — 운영 가이드
 
+**Related BL (F504 cross-ref)**: BL-026
+
 **Empty Slot ID**: ES-REFUND-002
 **대상**: 운영팀 / CS팀
 

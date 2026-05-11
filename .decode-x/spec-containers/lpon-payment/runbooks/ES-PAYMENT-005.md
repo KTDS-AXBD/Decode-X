@@ -1,5 +1,7 @@
 # ES-PAYMENT-005: 탈퇴 회원 결제취소 AP06 실패 — 운영 가이드
 
+**Related BL (F504 cross-ref)**: BL-019
+
 **Empty Slot ID**: ES-PAYMENT-005
 **대상**: 운영팀 / 정산팀
 

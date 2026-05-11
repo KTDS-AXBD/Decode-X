@@ -1,5 +1,7 @@
 # ES-PURCHASE-002: 월 한도 오류 — 운영 가이드
 
+**Related BL (F504 cross-ref)**: BP-003
+
 **Empty Slot ID**: ES-PURCHASE-002
 **대상**: 운영팀
 

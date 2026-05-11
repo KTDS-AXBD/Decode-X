@@ -1,5 +1,7 @@
 # ES-SETTLE-001: 정산 배치 멱등성 — 운영 가이드
 
+**Related BL (F504 cross-ref)**: BL-033, BL-034
+
 **Empty Slot ID**: ES-SETTLE-001
 **대상**: 운영팀 / SRE / 배치 담당자
 

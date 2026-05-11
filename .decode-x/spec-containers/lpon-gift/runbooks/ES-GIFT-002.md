@@ -1,5 +1,7 @@
 # ES-GIFT-002: 선물 발송 취소 — 운영 가이드
 
+**Related BL (F504 cross-ref)**: BL-G005, BL-G002
+
 **Empty Slot ID**: ES-GIFT-002
 **대상**: 운영팀 / 고객센터
 

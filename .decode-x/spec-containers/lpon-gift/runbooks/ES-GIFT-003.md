@@ -1,5 +1,7 @@
 # ES-GIFT-003: 선물 잔액 이전 원자성 장애 — 운영 가이드
 
+**Related BL (F504 cross-ref)**: BL-G006, BL-G002
+
 **Empty Slot ID**: ES-GIFT-003
 **대상**: 백엔드 개발자 / SRE
 

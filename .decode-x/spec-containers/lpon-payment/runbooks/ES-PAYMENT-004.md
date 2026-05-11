@@ -1,5 +1,7 @@
 # ES-PAYMENT-004: SMS 발송 실패 — 운영 가이드
 
+**Related BL (F504 cross-ref)**: BL-015
+
 **Empty Slot ID**: ES-PAYMENT-004
 **대상**: 운영팀
 

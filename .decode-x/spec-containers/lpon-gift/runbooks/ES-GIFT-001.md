@@ -1,5 +1,7 @@
 # ES-GIFT-001: 선물 만료 처리 — 운영 가이드
 
+**Related BL (F504 cross-ref)**: BL-G004, BL-G002
+
 **Empty Slot ID**: ES-GIFT-001
 **대상**: 운영팀 / 백엔드 개발자
 

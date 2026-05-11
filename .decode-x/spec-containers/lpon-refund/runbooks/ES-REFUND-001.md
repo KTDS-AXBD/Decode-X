@@ -1,5 +1,7 @@
 # ES-REFUND-001: rfndPsbltyYn 판정 오류 — 운영 가이드
 
+**Related BL (F504 cross-ref)**: BL-020
+
 **Empty Slot ID**: ES-REFUND-001
 **대상**: 운영팀 / 백엔드 개발자
 

@@ -1,5 +1,7 @@
 # ES-SETTLE-002: 정산수수료 반영 기준 — 운영 가이드
 
+**Related BL (F504 cross-ref)**: BL-036
+
 **Empty Slot ID**: ES-SETTLE-002
 **대상**: 운영팀 관리자 / 재무담당자
 

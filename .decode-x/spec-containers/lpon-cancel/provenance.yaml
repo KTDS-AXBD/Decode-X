@@ -43,3 +43,26 @@ note: |
   신규 BL은 BL-042 (network cancel) 1건만이며, BL-014/016/017은 lpon-payment 도메인에 이미 정의됨.
   본 도메인은 detector coverage 산정에서 BL-042 PRESENCE 입증만 추가 (+1.5%pp 예상).
   부트스트래핑 효율 최고 — cancel.ts source 이미 존재하므로 spec-container만 신규 작성.
+
+# F504 (Sprint 332 세션 299, 2026-05-12): io_structure / comment_doc_alignment 80%+ 도전 — 방식 B 전수 적용
+# F496 PoC 결과 (lpon-charge 5/6 → 6/6 PASS, +16.7%pp avg score 0.880 → 0.908) 패턴 7 containers 전수 확장
+# 명시적 inputSchema/outputSchema + ES↔BL cross-reference 추가로 LLM 평가 향상
+
+inputSchema:
+  - ruleId: BL-042
+    function: processNetworkCancel
+    parameters:
+      paymentId: { type: string, description: "결제 트랜잭션 ID (status=PAID 대상)" }
+      idempotencyKey: { type: string, description: "외부 결제망 멱등성 키 (UUID v4)" }
+      networkEventTimestamp: { type: ISO8601, description: "외부 결제망 이벤트 발생 시각" }
+    returns:
+      cancelTransactionId: { type: string, description: "취소 트랜잭션 ID (type=NETWORK)" }
+      newPaymentStatus: { type: enum, values: [NETWORK_CANCELED] }
+      voucherBalanceRestored: { type: number, description: "복원된 voucher 잔액 (원)" }
+      processedAt: { type: ISO8601 }
+    errors: [E409-PAYMENT-NOT-PAID, ALREADY_PROCESSED]
+
+# ES (Empty Slot) ↔ BL cross-reference 매핑
+# 실 runbook 토픽 기반 매핑 (F504, 2026-05-12)
+esToBlMapping:
+  ES-CANCEL-001: { bls: [BL-042], topic: "결제망 취소 멱등성 — 동일 idempotencyKey 2회 수신 시 ALREADY_PROCESSED 반환 + 재처리 차단" }

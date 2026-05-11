@@ -1,5 +1,7 @@
 # ES-PAYMENT-002: CARD 승인 실패 — 운영 가이드
 
+**Related BL (F504 cross-ref)**: BL-016, BL-019
+
 **Empty Slot ID**: ES-PAYMENT-002
 **대상**: 운영팀 / 백엔드 개발자
 

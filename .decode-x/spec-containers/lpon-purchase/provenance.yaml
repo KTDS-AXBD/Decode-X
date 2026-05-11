@@ -39,3 +39,69 @@ inputCompleteness:
 
 handoffTarget: Foundry-X
 handoffVersion: "FX-SPEC-003 v1.0"
+
+# F504 (Sprint 332 세션 299, 2026-05-12): io_structure / comment_doc_alignment 80%+ 도전 — 방식 B 전수 적용
+# F496 PoC 결과 (lpon-charge 5/6 → 6/6 PASS, +16.7%pp avg score 0.880 → 0.908) 패턴 7 containers 전수 확장
+
+inputSchema:
+  - ruleId: BP-001
+    function: purchaseVoucher
+    parameters:
+      userId: { type: string, description: "이용자 ID" }
+      purchaseAmount: { type: number, description: "구매 금액 (원, > 0)" }
+      perTransactionLimit: { type: number, description: "1회 구매 한도 (원)" }
+    returns:
+      voucherId: { type: string }
+      purchaseTransactionId: { type: string }
+      status: { type: enum, values: [processing, completed] }
+    errors: [E422-PER-TRANSACTION-LIMIT-EXCEEDED, E422-NEGATIVE-AMOUNT]
+
+  - ruleId: BP-002
+    function: issueVoucherOnPayment
+    parameters:
+      purchaseTransactionId: { type: string }
+      paymentId: { type: string }
+      validityDays: { type: integer, default: 365, description: "유효기간 (일)" }
+    returns:
+      voucherId: { type: string }
+      faceAmount: { type: number }
+      purchasedAt: { type: ISO8601 }
+      expiresAt: { type: ISO8601 }
+    errors: [PAYMENT_FAILED_NO_ISSUE]
+
+  - ruleId: BP-003
+    function: enforceMonthlyPurchaseLimit
+    parameters:
+      userId: { type: string }
+      requestedAmount: { type: number }
+      monthlyLimit: { type: number, description: "월 구매 한도 (원)" }
+    returns:
+      cumulativeAmount: { type: number, description: "당월 누적 구매 금액" }
+      approved: { type: boolean }
+    errors: [E422-MONTHLY-LIMIT-EXCEEDED]
+
+  - ruleId: BP-004
+    function: handleIdempotentPurchase
+    parameters:
+      purchaseRequestId: { type: string, description: "멱등성 키" }
+    returns:
+      voucherId: { type: string, description: "기존 voucher_id (이중 발행 방지)" }
+      status: { type: enum, values: [completed, processing] }
+    errors: [PURCHASE_IN_PROGRESS, HTTP_409]
+
+  - ruleId: BP-005
+    function: refundUnusedVoucherWithin7Days
+    parameters:
+      voucherId: { type: string }
+      requestTimestamp: { type: ISO8601 }
+    returns:
+      refundId: { type: string }
+      refundedAmount: { type: number, description: "전액 환불" }
+      refundRoute: { type: string, default: "BL-024 연동 (lpon-charge 취소 흐름)" }
+    errors: [E422-NOT-REFUNDABLE-USED-OR-EXPIRED]
+
+# ES (Empty Slot) ↔ BL cross-reference 매핑 (F504, 2026-05-12)
+esToBlMapping:
+  ES-PURCHASE-001: { bls: [BP-004, BP-001], topic: "이중 구매 발생 — 동일 purchaseRequestId 처리 + 멱등성 키 검증" }
+  ES-PURCHASE-002: { bls: [BP-003], topic: "월 한도 오류 — 누적 집계 race condition + 한도 reset 시점" }
+  ES-PURCHASE-003: { bls: [BP-002, BP-005], topic: "유효기간 오류 — expiresAt 계산 + 7일 환불 윈도우 경계" }

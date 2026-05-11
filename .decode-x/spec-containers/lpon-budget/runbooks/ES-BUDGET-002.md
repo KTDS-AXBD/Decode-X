@@ -1,5 +1,7 @@
 # ES-BUDGET-002: 예산 복구 실패 — 운영 가이드
 
+**Related BL (F504 cross-ref)**: BB-005
+
 **Empty Slot ID**: ES-BUDGET-002
 **대상**: 운영팀 / 백엔드 개발자
 

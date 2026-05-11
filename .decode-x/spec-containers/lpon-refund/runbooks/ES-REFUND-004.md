@@ -1,5 +1,7 @@
 # ES-REFUND-004: 강제환불 처리 — 운영 가이드
 
+**Related BL (F504 cross-ref)**: BL-029, BL-025
+
 **Empty Slot ID**: ES-REFUND-004
 **대상**: 운영팀 (강제환불 권한 보유자만)
 

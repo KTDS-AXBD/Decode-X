@@ -1,5 +1,7 @@
 # ES-SETTLE-003: 배치 부분 재처리 — 운영 가이드
 
+**Related BL (F504 cross-ref)**: BL-033, BL-035
+
 **Empty Slot ID**: ES-SETTLE-003
 **대상**: SRE / 배치 담당자
 

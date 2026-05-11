@@ -1,5 +1,7 @@
 # ES-PURCHASE-003: 유효기간 오류 — 운영 가이드
 
+**Related BL (F504 cross-ref)**: BP-002, BP-005
+
 **Empty Slot ID**: ES-PURCHASE-003
 **대상**: 운영팀 / DBA
 

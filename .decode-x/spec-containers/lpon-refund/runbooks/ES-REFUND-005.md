@@ -1,5 +1,7 @@
 # ES-REFUND-005: 제외금액 산정 오류 — 운영 가이드
 
+**Related BL (F504 cross-ref)**: BL-028
+
 **Empty Slot ID**: ES-REFUND-005
 **대상**: 운영팀 / 정산팀
 

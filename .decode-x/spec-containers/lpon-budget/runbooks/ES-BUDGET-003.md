@@ -1,5 +1,7 @@
 # ES-BUDGET-003: 기간 말 배치 처리 — 운영 가이드
 
+**Related BL (F504 cross-ref)**: BB-003, BB-004
+
 **Empty Slot ID**: ES-BUDGET-003
 **대상**: 운영팀 / DBA
 

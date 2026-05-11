@@ -1,5 +1,7 @@
 # ES-PAYMENT-001: 결제 멱등성 — 운영 가이드
 
+**Related BL (F504 cross-ref)**: BL-014, BL-016
+
 **Empty Slot ID**: ES-PAYMENT-001
 **대상**: 운영팀 / 백엔드 개발자
 

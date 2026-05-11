@@ -41,3 +41,89 @@ inputCompleteness:
     - "BL-017(QR 취소 가맹점 버튼), BL-018(QR 취소 승인) — 가맹점 UI 연동 세부 미정의"
     - "BL-019(탈퇴회원 AP06 API) — 외부 API 스펙 미포함"
     - "MIXED 결제 부분 실패 시 보상 트랜잭션 규칙 미정의 → ES-PAYMENT-003"
+
+# F504 (Sprint 332 세션 299, 2026-05-12): io_structure / comment_doc_alignment 80%+ 도전 — 방식 B 전수 적용
+# F496 PoC 결과 (lpon-charge 5/6 → 6/6 PASS, +16.7%pp avg score 0.880 → 0.908) 패턴 7 containers 전수 확장
+
+inputSchema:
+  - ruleId: BL-013
+    function: requestChargeRefund
+    parameters:
+      companyId: { type: string, description: "회사 ID (요청 주체)" }
+      chargeTransactionId: { type: string, description: "환불 대상 충전 ID" }
+      requestedAmount: { type: number, description: "환불 요청 금액 (원)" }
+    returns:
+      refundRequestId: { type: string }
+      status: { type: enum, values: [accepted, rejected] }
+    errors: [E422-INVALID-REFUND-REQUEST]
+
+  - ruleId: BL-014
+    function: cancelPayment
+    parameters:
+      paymentId: { type: string, description: "결제 ID (status=PAID 대상)" }
+      cancelType: { type: enum, values: [FULL, PARTIAL, NETWORK] }
+      cancelAmount: { type: number, description: "부분취소 시 취소 금액 (원)" }
+    returns:
+      cancelTransactionId: { type: string }
+      newPaymentStatus: { type: enum, values: [CANCELED, PARTIAL_CANCELED, NETWORK_CANCELED] }
+    errors: [E409-PAYMENT-NOT-PAID]
+
+  - ruleId: BL-015
+    function: sendPaymentSMS
+    parameters:
+      paymentId: { type: string }
+      paymentAmount: { type: number, description: "결제 금액 (원)" }
+      recipientPhone: { type: string, description: "수신자 휴대전화 (마스킹)" }
+    returns:
+      smsDispatched: { type: boolean }
+      messageId: { type: string }
+    errors: [SMS_DISPATCH_FAILED]
+
+  - ruleId: BL-016
+    function: requestCardCancelApproval
+    parameters:
+      paymentId: { type: string }
+      cardCompanyCode: { type: string, description: "카드사 코드 (예: BC, KB, ...)" }
+    returns:
+      approvalRequestId: { type: string }
+      transmittedToVan: { type: boolean }
+    errors: [CARD_VAN_DISPATCH_FAILED]
+
+  - ruleId: BL-017
+    function: triggerQrCancelTransmit
+    parameters:
+      paymentId: { type: string }
+      merchantId: { type: string, description: "가맹점 ID" }
+      cancelButtonEventTimestamp: { type: ISO8601 }
+    returns:
+      transmitted: { type: boolean }
+      retryCount: { type: integer, default: 0 }
+    errors: [VAN_TRANSMIT_FAILED]
+
+  - ruleId: BL-018
+    function: completeQrCancelOnApproval
+    parameters:
+      paymentId: { type: string }
+      merchantApprovalTimestamp: { type: ISO8601, description: "가맹점주 취소 승인 시각" }
+    returns:
+      cancelCompleted: { type: boolean }
+      finalStatus: { type: enum, values: [CANCELED, PENDING_APPROVAL] }
+    errors: [MERCHANT_NOT_APPROVED]
+
+  - ruleId: BL-019
+    function: processWithdrawnUserCancelViaAP06
+    parameters:
+      paymentId: { type: string }
+      withdrawnUserId: { type: string }
+    returns:
+      ap06Response: { type: object, description: "AP06 API 응답" }
+      manualEscalation: { type: boolean, description: "API 실패 시 수기처리 플래그" }
+    errors: [AP06_API_FAILED]
+
+# ES (Empty Slot) ↔ BL cross-reference 매핑 (F504, 2026-05-12)
+esToBlMapping:
+  ES-PAYMENT-001: { bls: [BL-014, BL-016], topic: "결제 멱등성 — 동일 paymentRequestId 2회 처리 방지" }
+  ES-PAYMENT-002: { bls: [BL-016, BL-019], topic: "CARD 승인 실패 — VAN 통신 실패 + 카드사 에러 응답 분기" }
+  ES-PAYMENT-003: { bls: [BL-014], topic: "MIXED 결제 부분 실패 — voucher+card 동시 결제 시 한쪽 실패 보상" }
+  ES-PAYMENT-004: { bls: [BL-015], topic: "SMS 발송 실패 — 50,000원 이상 결제 통지 누락 시 재시도 정책" }
+  ES-PAYMENT-005: { bls: [BL-019], topic: "탈퇴 회원 결제취소 AP06 실패 — 수기처리 에스컬레이션" }

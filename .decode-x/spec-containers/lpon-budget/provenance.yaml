@@ -40,3 +40,71 @@ inputCompleteness:
 
 handoffTarget: Foundry-X
 handoffVersion: "FX-SPEC-003 v1.0"
+
+# F504 (Sprint 332 세션 299, 2026-05-12): io_structure / comment_doc_alignment 80%+ 도전 — 방식 B 전수 적용
+# F496 PoC 결과 (lpon-charge 5/6 → 6/6 PASS, +16.7%pp avg score 0.880 → 0.908) 패턴 7 containers 전수 확장
+
+inputSchema:
+  - ruleId: BB-001
+    function: allocateBudget
+    parameters:
+      companyId: { type: string, description: "회사 ID" }
+      periodId: { type: string, description: "예산 기간 ID (YYYY-MM)" }
+      allocatedAmount: { type: number, description: "배정 금액 (원, > 0)" }
+    returns:
+      budgetLedgerId: { type: string }
+      remainingBalance: { type: number }
+      allocatedAt: { type: ISO8601 }
+    errors: [E422-BUDGET-LIMIT-EXCEEDED, E422-NEGATIVE-AMOUNT]
+
+  - ruleId: BB-002
+    function: deductBudgetForCharge
+    parameters:
+      companyId: { type: string }
+      employeeId: { type: string }
+      chargeAmount: { type: number, description: "충전 요청 금액 (원)" }
+    returns:
+      newBalance: { type: number, description: "차감 후 예산 잔액" }
+      allowed: { type: boolean }
+    errors: [E422-BUDGET-INSUFFICIENT]
+
+  - ruleId: BB-003
+    function: notifyBudgetThreshold
+    parameters:
+      companyId: { type: string }
+      currentBalance: { type: number }
+      allocatedAmount: { type: number }
+    returns:
+      notificationSent: { type: boolean }
+      thresholdRatio: { type: number, description: "임계치 비율 (예: 0.1 = 10%)" }
+    errors: []
+
+  - ruleId: BB-004
+    function: rolloverOrExpireBudget
+    parameters:
+      companyId: { type: string }
+      periodId: { type: string }
+      rolloverYn: { type: enum, values: [Y, N] }
+    returns:
+      rolledOverAmount: { type: number, description: "이월 금액 (rollover=Y)" }
+      expiredAmount: { type: number, description: "소멸 금액 (rollover=N)" }
+      nextPeriodId: { type: string }
+    errors: []
+
+  - ruleId: BB-005
+    function: restoreBudgetOnChargeFailure
+    parameters:
+      companyId: { type: string }
+      chargeTransactionId: { type: string }
+      deductedAmount: { type: number }
+    returns:
+      restoredAmount: { type: number }
+      newBalance: { type: number }
+      restoredAt: { type: ISO8601 }
+    errors: [BUDGET_RESTORE_FAILED]
+
+# ES (Empty Slot) ↔ BL cross-reference 매핑 (F504, 2026-05-12)
+esToBlMapping:
+  ES-BUDGET-001: { bls: [BB-001, BB-002], topic: "예산 배정 한도 초과 처리 — 동시 배정 race condition + 음수 잔액 방지 (낙관적 잠금)" }
+  ES-BUDGET-002: { bls: [BB-005], topic: "예산 복구 실패 시 수기처리 에스컬레이션" }
+  ES-BUDGET-003: { bls: [BB-003, BB-004], topic: "임계치 알림 + 기간 종료 이월/소멸 정책 수동 운영 가이드" }

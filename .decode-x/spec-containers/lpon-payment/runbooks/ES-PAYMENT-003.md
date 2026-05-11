@@ -1,5 +1,7 @@
 # ES-PAYMENT-003: MIXED 결제 부분 실패 — 운영 가이드
 
+**Related BL (F504 cross-ref)**: BL-014
+
 **Empty Slot ID**: ES-PAYMENT-003
 **대상**: 운영팀 / 백엔드 개발자
 

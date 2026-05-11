@@ -1,5 +1,8 @@
 # ES-CHARGE-009: 잔액 조회 캐시 무효화 — 운영 가이드
 
+**Related BL (F496 cross-ref)**: BL-002
+
+
 **Empty Slot ID**: ES-CHARGE-009
 **대상**: 운영팀 / 백엔드 개발자
 

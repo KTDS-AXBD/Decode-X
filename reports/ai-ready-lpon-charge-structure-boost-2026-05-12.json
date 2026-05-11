@@ -1,0 +1,62 @@
+{
+  "executedAt": "2026-05-11T02:13:28.979Z",
+  "modelVersion": "sonnet",
+  "totalSkills": 1,
+  "totalCostUsd": 0.564708,
+  "evaluations": [
+    {
+      "skillId": "lpon-charge",
+      "skillName": "lpon-charge",
+      "criteria": [
+        {
+          "criterion": "source_consistency",
+          "score": 0.95,
+          "rationale": "provenance.yaml의 businessRules 선언(BL-001~BL-008, 총 8건)과 originalRules 표의 ID 컬럼을 1:1 대조한 결과, 모든 BL이 'BL-001' 형식으로 완전히 일치한다. ID 표기 변동(BL-1, BL001 등) 없음. 각 행의 condition/criteria/outcome 내용도 provenance inputSchema의 함수 설명과 정합한다: BL-001(출금계좌 잔액 ≥ 요청금액 → 출금 진행), BL-002(출금 정상 완료 → 충전 완료), BL-003(출금 실패 → 에러 반환·중단), BL-004(타임아웃 → 5분 후 상태조회), BL-005(이용자 한도 이내 → 충전 확정), BL-006(회사 한도 이내 → 원장 처리), BL-007(포인트 충전 유효·한도 내 → 확정), BL-008(blceCondAmt/ymdCondAmt/condSmAmt 조건 충족 → stngAmt 자동충전). exception 열은 BL-001('잔액 부족 시 출금 실패 에러 반환'), BL-005('한도 초과 시 충전 거부'), BL-006('한도 초과 시 충전 거부'), BL-007('유효하지 않거나 한도 초과 시 거부'), BL-008('조건 미충족 시 자동충전 미실행')에 실내용이 기재되어 있고, BL-002·BL-003·BL-004는 '—'(예외 없음 명시)로 처리되어 빈칸·null 없이 완결되었다. ES 규칙들이 참조하는 BL(ES-CHARGE-001→BL-001,BL-002; ES-CHARGE-002→BL-004; ES-CHARGE-003→BL-005,BL-006; ES-CHARGE-004→BL-008; ES-CHARGE-005→BL-005,BL-006; ES-CHARGE-006→BL-005,BL-006; ES-CHARGE-007→BL-001,BL-003; ES-CHARGE-008→BL-001,BL-002,BL-003; ES-CHARGE-009→BL-002)도 모두 originalRules에 존재한다. 미세한 감점 요인으로 BL-004 exception '—' 처리가 '5분 후 재조회에서도 불명확 시 수기처리' 엣지케이스를 포괄하지 않아 내용 완결성이 경미하게 부족하나, 표기 자체는 규정 준수이므로 0.95로 평가한다.",
+          "passThreshold": 0.75,
+          "passed": true
+        },
+        {
+          "criterion": "comment_doc_alignment",
+          "score": 0.92,
+          "rationale": "평가 대상 spec-container는 BL-001~BL-008 총 8개 규칙과 ES-CHARGE-001~009 총 9개 Empty Slot에 대해 각각 대응하는 runbook이 존재한다. 각 runbook의 Related BL cross-reference가 명시되어 있으며(예: ES-CHARGE-001 runbook → BL-001, BL-002), condition/criteria/outcome 반영 수준을 검토하면 다음과 같다. ES-CHARGE-001 runbook은 '동일 chargeRequestId 2회 처리 방지'라는 condition과 '기존 트랜잭션 결과 반환/신규 출금 미발생'이라는 outcome을 정확히 반영한다. ES-CHARGE-002 runbook은 BL-004의 '5분 후 상태조회' condition과 P1/P2 에스컬레이션 outcome을 구체적 SLA(1시간/4시간)와 함께 정확히 기술한다. ES-CHARGE-003 runbook은 BL-005/BL-006의 한도 초과 거부 condition과 분할 충전 안내 outcome을 고객센터 스크립트 형태로 반영한다. ES-CHARGE-004 runbook은 BL-008의 자동충전 중복 방지 condition과 락 획득/해제 outcome을 SQL 절차와 함께 정확히 설명한다. ES-CHARGE-005~009 runbook도 각 ES 규칙의 condition-criteria-outcome을 운영 절차, SQL, CLI 명령어 수준으로 충실히 반영한다. 다만 ES-CHARGE-009 runbook의 Related BL이 BL-002만 명시되어 있으나 해당 ES는 BL-001(출금 전 잔액 확인)과도 연관성이 있어 cross-reference가 일부 불완전하다. 또한 BL-003(출금 실패 시 에러 반환 및 중단)에 직접 대응하는 독립 runbook이 없고 ES-CHARGE-007/008 runbook에 간접 포함되어 있어 1~2개 rule의 runbook 커버리지가 완전하지 않다. 전반적으로 대부분의 rule-runbook 매핑이 정확하고 내용 일치도가 높아 0.9+ 구간에 근접하나, 위 두 가지 미세한 불일치로 0.92로 평가한다.",
+          "passThreshold": 0.75,
+          "passed": true
+        },
+        {
+          "criterion": "io_structure",
+          "score": 0.82,
+          "rationale": "tests/contract/*.yaml의 given/when/then 구조를 전반적으로 분석한 결과, 두 계층의 테스트 시나리오가 존재한다. ES-CHARGE-001~009 기반 시나리오(TC-IDEM, TC-ESC, TC-SPLIT, TC-LOCK, TC-EVT, TC-RL, TC-RETRY, TC-DW, TC-CACHE)는 given 필드에 구체적 값과 타입이 명시되어 있다. 예를 들어 TC-IDEM-001은 chargeRequestId: 'req-abc-001'(string), existingStatus: 'completed'(enum), existingChargeId: 'charge-existing-001'(string)으로 타입과 의미가 명확하다. TC-ESC-001은 amount: 100000(number), withdrawalStatus: 'UNKNOWN'(enum), retryCount: 2(integer)로 정의되어 있다. TC-CACHE 시나리오는 cacheState 객체 내 balance(number), cachedSecondsAgo(integer), exists(boolean)를 중첩 구조로 명시해 의미 파악이 용이하다. then 필드도 대부분 boolean + 구체적 값(responseStatus: 409, errorCode: 'CHARGE_IN_PROGRESS', retryAfterSeconds: 10, escalationPriority: 'P1')으로 상태 변화와 응답 형태를 정의한다. 반면 POL-LPON-CHARGE-001 기반 계약 테스트(TC-CHARGE-001~006)는 상대적으로 추상적이다. TC-CHARGE-004의 then.follow_up_action: 'determined_by_status'는 출력 의미가 불명확하고, TC-CHARGE-001의 then 필드가 boolean only(withdrawal_processed, charge_completed)로 chargeId, newBalance 등 구체적 반환값이 누락되어 있다. TC-CHARGE-005의 then.charged_amount: 100000은 구체적이나 pointChargeId나 newPointBalance 같은 추가 출력 필드가 없다. 전체적으로 ES 기반 시나리오는 0.85+ 수준이나 BL 기반 계약 테스트가 0.6 수준으로 평균을 낮춰 0.82로 평가한다.",
+          "passThreshold": 0.75,
+          "passed": true
+        },
+        {
+          "criterion": "exception_handling",
+          "score": 0.95,
+          "rationale": "rules/*.md(BL-001~BL-008) 전체에 exception/else 절이 명시되어 있다. BL-001은 '잔액 부족 시 출금 실패 에러 반환', BL-005·BL-006은 '한도 초과 시 충전 거부', BL-007은 '유효하지 않거나 한도 초과 시 거부', BL-008은 '조건 미충족 시 자동충전 미실행'을 명확히 정의한다. BL-002·BL-003·BL-004는 exception 절이 '—'로 표기되어 있으나, ES-CHARGE-001~009가 이를 보완하여 멱등성 위반(CHARGE_IN_PROGRESS/409), 타임아웃 에스컬레이션(P1/P2), 이중 출금(DUPLICATE_BLOCKED/UNCERTAIN), 캐시 장애(BALANCE_API_UNAVAILABLE) 등 세부 예외를 상세히 정의한다. tests/*.yaml에서도 예외 시나리오가 광범위하게 커버된다: TC-CHARGE-002(INSUFFICIENT_BALANCE), TC-CHARGE-003(LIMIT_EXCEEDED), TC-IDEM-003(CHARGE_IN_PROGRESS/409), TC-ESC-001·002(WITHDRAWAL_TIMEOUT_UNRESOLVED), TC-RETRY-003(FAILED_RETRY_EXHAUSTED), TC-RETRY-004(FAILED_CLIENT_ERROR), TC-DW-001(WITHDRAWAL_DUPLICATE_DETECTED/409), TC-DW-004(WITHDRAWAL_STATUS_UNCERTAIN), TC-CACHE-005(stale 캐시), TC-CACHE-006(BALANCE_API_UNAVAILABLE), TC-RL-002(RATE_LIMIT_EXCEEDED/429), TC-RL-004(Circuit Breaker/503) 등 error_code와 비정상 상태가 명시적으로 포함된다. 다만 BL-002·BL-003·BL-004의 원본 테이블 exception 절이 '—'로 공란 처리된 점, contract tests(TC-CHARGE-004~006)에서 일부 에러 코드가 누락된 점이 소폭 감점 요인이다.",
+          "passThreshold": 0.75,
+          "passed": true
+        },
+        {
+          "criterion": "srp_reusability",
+          "score": 0.88,
+          "rationale": "전체 9개 ES rule(ES-CHARGE-001~009)은 대체로 단일 업무 책임을 명확히 분리하고 있다. ES-CHARGE-001(멱등성), ES-CHARGE-002(타임아웃 에스컬레이션), ES-CHARGE-004(자동충전 분산 락), ES-CHARGE-008(이중 출금 감지), ES-CHARGE-009(캐시 무효화)는 각각 독립적인 condition 그룹을 처리하며 BL cross-reference도 1:1 또는 소수 BL에 집중되어 있다. 그러나 ES-CHARGE-003(분할 충전 가이드)과 ES-CHARGE-005(이벤트 한도 증량), ES-CHARGE-006(Rate Limiting)은 모두 BL-005·BL-006(이용자/회사 한도)을 공통 참조하며, 세 rule 모두 '충전 한도 초과 처리'라는 동일 도메인 내에서 서로 다른 측면을 다루고 있어 condition 경계가 일부 중첩된다. 특히 ES-CHARGE-003의 '잔여 한도 안내'와 ES-CHARGE-005의 '이벤트 한도 증량'은 동일 충전 요청 흐름에서 순서 의존성이 있음에도 상호 참조가 없어 적용 우선순위가 불명확하다. ES-CHARGE-007(재시도 정책)은 BL-001·BL-003을 참조하나 ES-CHARGE-008(이중 출금 감지)과 타임아웃 재호출 시나리오가 일부 중복된다(BL-004 경로에서 두 rule이 동시 적용 가능). 전반적으로 대부분의 rule이 SRP를 준수하나, 한도 관련 3개 rule(ES-003/005/006) 간 조건 중첩과 ES-007·ES-008 간 타임아웃 재호출 경계 모호성이 존재하여 완전한 독립 참조에 제약이 있다.",
+          "passThreshold": 0.75,
+          "passed": true
+        },
+        {
+          "criterion": "testability",
+          "score": 0.93,
+          "rationale": "테스트 시나리오는 ES-CHARGE-001~009 및 Contract Tests(TC-CHARGE-001~006)를 포함해 총 40건 이상으로 구성되어 있으며, happy path·edge case·error case가 균형 있게 커버된다. Happy path: TC-IDEM-001(completed 멱등성 반환), TC-LOCK-001(락 없을 때 자동충전 정상 실행), TC-CACHE-001(TTL 이내 캐시 히트), TC-CHARGE-001(잔액 충분 시 충전 성공) 등이 구체적 값으로 정의된다. Edge case: TC-SPLIT-003(한도 정확히 일치 시 정상 처리, requestedAmount=200000/dailyLimitUsed=800000/dailyLimit=1000000), TC-EVT-004(이벤트 시작 시각 경계값 currentTime='2026-04-18T00:00:00+09:00'), TC-LOCK-003(스테일 락 35분 경과 후 재실행 허용), TC-CACHE-003(TTL 90초 초과 캐시 실시간 재조회) 등 경계값 시나리오가 충실하다. Error case: TC-RETRY-003(3회 503 후 FAILED_RETRY_EXHAUSTED + alertSent:true + manualQueueEnqueued:true), TC-DW-004(외부 API 타임아웃 → UNCERTAIN + 409 + slaSatisfied:'4hours'), TC-RL-004(시스템 임계치 1100req/min 초과 → 503 + circuitBreakerStatus:'OPEN'), TC-CACHE-006(캐시 없음 + 외부 API 장애 → BALANCE_API_UNAVAILABLE) 등이 구체적 에러코드·HTTP 상태·수치로 명시된다. Given/when/then 모두 chargeRequestId, amount, retryCount, requestsInLastSecond 등 구체적 값으로 자동화 구현이 가능하다. 다만 TC-CHARGE-004의 then.follow_up_action이 'determined_by_status'로 추상적이고, TC-CHARGE-005~006의 Contract Tests가 ES 시나리오 대비 상대적으로 단순하여 0.93으로 평가한다.",
+          "passThreshold": 0.75,
+          "passed": true
+        }
+      ],
+      "totalScore": 0.908,
+      "passCount": 6,
+      "overallPassed": true,
+      "modelVersion": "sonnet",
+      "evaluatedAt": "2026-05-11T02:13:28.970Z",
+      "costUsd": 0.564708
+    }
+  ]
+}

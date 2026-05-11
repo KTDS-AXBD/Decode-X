@@ -1,5 +1,8 @@
 # ES-CHARGE-005: 명절/이벤트 기간 충전 한도 증량 — 운영 가이드
 
+**Related BL (F496 cross-ref)**: BL-005, BL-006
+
+
 **Empty Slot ID**: ES-CHARGE-005
 **대상**: 운영팀 / 관리자
 

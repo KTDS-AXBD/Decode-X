@@ -1,5 +1,8 @@
 # ES-CHARGE-004: 자동충전 중복 실행 방지 — 운영 가이드
 
+**Related BL (F496 cross-ref)**: BL-008
+
+
 **Empty Slot ID**: ES-CHARGE-004
 **대상**: 운영팀 / 백엔드 개발자
 

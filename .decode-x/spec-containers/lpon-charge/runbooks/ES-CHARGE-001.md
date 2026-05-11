@@ -1,5 +1,8 @@
 # ES-CHARGE-001: 충전 멱등성 — 운영 가이드
 
+**Related BL (F496 cross-ref)**: BL-001, BL-002
+
+
 **Empty Slot ID**: ES-CHARGE-001
 **대상**: 운영팀 / 백엔드 개발자
 

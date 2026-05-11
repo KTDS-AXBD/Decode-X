@@ -1,5 +1,8 @@
 # ES-CHARGE-003: 분할 충전 — 운영 가이드
 
+**Related BL (F496 cross-ref)**: BL-005, BL-006
+
+
 **Empty Slot ID**: ES-CHARGE-003
 **대상**: 고객센터 상담원 / 운영팀
 

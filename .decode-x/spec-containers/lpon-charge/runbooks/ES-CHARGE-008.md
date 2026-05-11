@@ -1,5 +1,8 @@
 # ES-CHARGE-008: 이중 출금 감지 — 운영 가이드
 
+**Related BL (F496 cross-ref)**: BL-001, BL-002, BL-003
+
+
 **Empty Slot ID**: ES-CHARGE-008
 **대상**: 운영팀 / 결제 인프라 팀
 

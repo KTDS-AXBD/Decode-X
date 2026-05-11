@@ -1,5 +1,8 @@
 # ES-CHARGE-002: 출금 타임아웃 에스컬레이션 — 운영 가이드
 
+**Related BL (F496 cross-ref)**: BL-004
+
+
 **Empty Slot ID**: ES-CHARGE-002
 **대상**: 운영팀 온콜 담당자
 

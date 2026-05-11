@@ -1,5 +1,8 @@
 # ES-CHARGE-006: 대량 충전 Rate Limiting — 운영 가이드
 
+**Related BL (F496 cross-ref)**: BL-005, BL-006
+
+
 **Empty Slot ID**: ES-CHARGE-006
 **대상**: 운영팀 / 백엔드 개발자
 

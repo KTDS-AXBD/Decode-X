@@ -1,5 +1,8 @@
 # ES-CHARGE-007: 외부 API 장애 시 재시도 — 운영 가이드
 
+**Related BL (F496 cross-ref)**: BL-001, BL-003
+
+
 **Empty Slot ID**: ES-CHARGE-007
 **대상**: 운영팀 / 백엔드 개발자
 

@@ -1210,7 +1210,6 @@
 - [x] F492 ✅ **DONE** (F356-A iterate — Sonnet 상향 31% → 79.2%, Phase 2 Conditional GO, **P2**, Sprint 325, ✅ DONE 세션 296 2026-05-12 Master inline + LLM ~35분 Match 100%): Sonnet 48 calls = 38/48 PASS = **79.2%** (Haiku 31% +48.2%pp), AI-Ready PASS skills 8/8, avg 0.841, 비용 $2.25. Phase 2 GO 임계값 80% 0.8%pp 미달 (Conditional GO). 후속 방식 A(프롬프트 재설계 +$2.2) 또는 방식 B(spec-container 구조 보강 docs-only) 권고.
 > **배경 (사전)**: 세션 295 F489 F356-A Phase 2 NOGO 판정(31% pass rate < 80%). 권고 3종 중 (1) Threshold 0.65 조정 + (2) Tier 상향 Haiku→Sonnet/Opus + (3) 프롬프트 재설계 few-shot examples 중 가장 효과 큰 (2)+(3) 조합으로 재실행.
 > **달성**: (2) Tier 상향(Sonnet) 단독 채택 → 31% → **79.2% (+48.2%pp)** 입증. Phase 2 Conditional GO 도달. (1) Threshold 조정 + (3) 프롬프트 재설계는 미실행 (Sonnet 단독으로 거의 GO 달성, 추가 iterate 후속 결정).
-- [ ] F492 📋 **PLANNED** (F356-A iterate — Sonnet/Opus 상향 + 프롬프트 재설계, **P2**, Sprint 325, 세션 296 사전 등록 2026-05-12): scripts/ai-ready/evaluate.ts tier 분기 + prompt few-shot 보강 + Sonnet 재실행 + iterate 보고서. autopilot WT 또는 Master inline. ~2h.
 
 **Sprint 326 (F500 — Car Sharing CS 합성 도메인 PoC, 48번째 도메인 / 37번째 신규 산업, ✅ DONE 세션 297 Master inline ~30분 Match 100% 2026-05-12):**
 > **결과**: ✅ DONE — Master inline ~30분, LLM $0. **37번째 신규 산업 Car Sharing** — carsharing.ts ~280 lines (6 함수: reserveSharingVehicle/applyDistanceLimit/confirmPickup/transitionRentalStatus/markOverdueReturnBatch/processOperatorBilling + CarSharingError code-in-message) + spec-container 9 sub-files (provenance + carsharing-rules + CS-001~006 runbooks + CS-001.yaml tests) + DOMAIN_MAP 48번째 entry sourceCodeStatus="present" + parser regex CS prefix 확장 (BL_ID_PATTERN line 57) + REGISTRY CS-001~006 (Threshold × 2 + Atomic × 2 + Status × 2 균형) + utils tests 400 → **408 PASS** (+8: sorted keys CS 6 entry + CS-001~006 registered describe + 6 PRESENCE describe block + rules-parser CS prefix 1 case). **신규 detector 0개** — withRuleId 재사용 **49 Sprint 연속 정점** (S264~S278+S283~S319+S295+S296+S297). typecheck (직접 tsc 우회, S337 함정 회피) PASS exit 0. detect-bl --all-domains: **48 containers, 290/290 = 100.0%** 유지 (37번째 산업 0 ABSENCE). **TR+AV+CS 운송 3-클러스터 형성** (Transit + Aviation + Car Sharing). **Master inline 23회 연속 회피 패턴 유지** (S253~S322+S324+S323+S325+S326). **DoD 12/12 PASS**.
@@ -1234,12 +1233,15 @@
 > **메타**: 1 container PoC가 효과 입증 시 8 containers 전수 적용 차기 별도 Sprint로 분리. Phase 2 GO 도달 시 F356-A Phase 2 NOGO → GO 종결.
 - [ ] F496 📋 **PLANNED** (lpon-charge 구조 보강 PoC + Sonnet 재평가, **P2**, Sprint 327, 세션 297 사전 등록 2026-05-12): provenance.yaml inputSchema/outputSchema + runbook↔rules cross-reference + Sonnet 단일 container 재평가 + io_structure/comment_doc_alignment 효과 정량화 + Phase 2 GO 도달 가능성 평가. Master inline ~1.5h + $0.30.
 
-**Sprint 328 (F499 — SPEC drift cleanup F492 중복 등록 정합화, 📋 PLANNED 세션 297 사전 등록 2026-05-12):**
+**Sprint 328 (F499 — SPEC drift cleanup F492 중복 등록 정합화, ✅ DONE 세션 297 Master inline ~5분 Match 100% 2026-05-12, docs-only):**
+> **결과**: ✅ DONE — Master inline ~5분, docs-only. SPEC.md F492 stale PLANNED 라인 1건 제거 (line 1213 → 삭제). line 1210 ✅ DONE Sprint 325 SSOT 유지. grep 검증: F492 single occurrence 확정 (✅ DONE 1건). Sprint 320 F486 SPEC drift cleanup 패턴 재현 (S279 8건 표준 절차).
+> **DoD 3/3 PASS**: F492 중복 라인 제거 ✅ + SSOT 단일 유지 ✅ + Match 100% ✅.
+> **메타**: drift cleanup 패턴 표준 절차 정착 (F486 S279 → F499 S297).
+- [x] F499 ✅ **DONE** (SPEC drift cleanup — F492 중복 등록 정합화, **P3**, Sprint 328, ✅ DONE 세션 297 2026-05-12 Master inline ~5분): F492 stale PLANNED 라인 1건 제거 + SSOT 단일 유지. docs-only.
 > **배경**: 세션 296 종결 후 `/ax:todo plan` Step 1 수집 시 F492 line 1213 stale PLANNED 잔존 발견 (line 1210에 F492 ✅ DONE Sprint 325 SSOT 등록). Sprint 320 F486 SPEC drift cleanup 패턴 재현 (S279 8건 표준 절차).
 > **목표**: SPEC.md line 1213 F492 PLANNED 중복 등록 라인 1건 제거. docs-only.
 > **DoD**: SPEC.md F492 중복 라인 제거 + line 1210 SSOT 유지 + commit + Match 100%.
 > **의존성**: 없음 (SPEC.md 단독).
-- [ ] F499 📋 **PLANNED** (SPEC drift cleanup — F492 중복 등록 정합화, **P3**, Sprint 328, 세션 297 사전 등록 2026-05-12): SPEC.md line 1213 F492 PLANNED 중복 1건 제거. docs-only Master inline ~10분.
 
 **Sprint 329 (F501 — /skills GET endpoint default filter 확장, 📋 PLANNED 세션 297 사전 등록 2026-05-12):**
 > **배경**: 세션 296 Sprint 323 F487 후속 Master 독립 검증 시 발견 — `/skills` GET endpoint default filter가 `status='published'`만 노출(1건만), production D1 db-skill에는 bundled 52 + reviewed 8 + published 1 + superseded 3,924 = 3,985 rows 존재. batch evaluate endpoint(F413 Sprint 241 보정)는 `status IN ('bundled', 'reviewed')`로 해소됐으나 list GET endpoint는 그대로. AIF-REQ-040 R3 후속 항목 (TD 신규 후보).

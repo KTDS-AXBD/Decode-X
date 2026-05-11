@@ -217,8 +217,10 @@ export async function handleListSkills(
 ): Promise<Response> {
   const url = new URL(request.url);
   // F501 (Sprint 329 세션 297): ?org= query param 우선, X-Organization-Id 헤더 fallback. AIF-REQ-040 R3 후속.
-  const organizationId =
-    url.searchParams.get("org") ?? request.headers.get("X-Organization-Id") ?? "unknown";
+  // F505 (Sprint 334 세션 299): .toUpperCase() normalize — TD-64 해소. tenant ID 대문자 SSOT 강제 (docs/governance/tenant-id-convention.md).
+  const organizationId = (
+    url.searchParams.get("org") ?? request.headers.get("X-Organization-Id") ?? "unknown"
+  ).toUpperCase();
   const domain = url.searchParams.get("domain");
   const subdomain = url.searchParams.get("subdomain");
   const status = url.searchParams.get("status");

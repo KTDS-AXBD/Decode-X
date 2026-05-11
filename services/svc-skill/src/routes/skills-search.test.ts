@@ -176,6 +176,97 @@ describe("handleListSkills — ?org= query param (F501 Sprint 329)", () => {
   });
 });
 
+// ── handleListSkills — F505 (Sprint 334 세션 299) .toUpperCase() normalize ──
+
+describe("handleListSkills — organizationId .toUpperCase() normalize (F505 Sprint 334, TD-64)", () => {
+  /**
+   * Bind capture helper — mockDbMulti의 prepare/bind 체인에서 bind 인자(첫 번째 = organizationId)를
+   * 캡처한다. F505 normalize 검증 전용.
+   */
+  function mockDbCaptureBind(callSequence: Array<{
+    first?: Record<string, unknown> | null;
+    all?: Record<string, unknown>[];
+  }>): { db: D1Database; capturedBinds: unknown[][] } {
+    const capturedBinds: unknown[][] = [];
+    let callIndex = 0;
+    const db = {
+      prepare: vi.fn().mockImplementation(() => {
+        const idx = callIndex;
+        callIndex++;
+        const entry = callSequence[idx] ?? callSequence[callSequence.length - 1];
+        const methods = {
+          first: vi.fn().mockResolvedValue(entry?.first ?? null),
+          all: vi.fn().mockResolvedValue({ results: entry?.all ?? [] }),
+          run: vi.fn().mockResolvedValue({ success: true }),
+        };
+        const bindFn = vi.fn().mockImplementation((...args: unknown[]) => {
+          capturedBinds.push(args);
+          return methods;
+        });
+        return { ...methods, bind: bindFn };
+      }),
+    } as unknown as D1Database;
+    return { db, capturedBinds };
+  }
+
+  it("normalizes lowercase ?org=lpon → LPON before D1 bind", async () => {
+    const { db, capturedBinds } = mockDbCaptureBind([
+      { first: { cnt: 8 } },
+      { all: [row1] },
+    ]);
+    const env = mockEnvWith(db);
+    const req = new Request("https://test.internal/skills?org=lpon");
+    const res = await handleListSkills(req, env);
+
+    expect(res.status).toBe(200);
+    // 첫 번째 prepare = COUNT(*) 쿼리, 첫 번째 bind 인자 = organizationId
+    expect(capturedBinds[0]?.[0]).toBe("LPON");
+    // 두 번째 prepare = SELECT 쿼리도 동일 normalize
+    expect(capturedBinds[1]?.[0]).toBe("LPON");
+  });
+
+  it("preserves uppercase ?org=LPON (idempotent .toUpperCase())", async () => {
+    const { db, capturedBinds } = mockDbCaptureBind([
+      { first: { cnt: 894 } },
+      { all: [row1] },
+    ]);
+    const env = mockEnvWith(db);
+    const req = new Request("https://test.internal/skills?org=LPON");
+    const res = await handleListSkills(req, env);
+
+    expect(res.status).toBe(200);
+    expect(capturedBinds[0]?.[0]).toBe("LPON");
+  });
+
+  it("normalizes mixed-case ?org=Lpon → LPON", async () => {
+    const { db, capturedBinds } = mockDbCaptureBind([
+      { first: { cnt: 8 } },
+      { all: [row1] },
+    ]);
+    const env = mockEnvWith(db);
+    const req = new Request("https://test.internal/skills?org=Lpon");
+    const res = await handleListSkills(req, env);
+
+    expect(res.status).toBe(200);
+    expect(capturedBinds[0]?.[0]).toBe("LPON");
+  });
+
+  it("normalizes X-Organization-Id header fallback lowercase 'miraeasset' → 'MIRAEASSET'", async () => {
+    const { db, capturedBinds } = mockDbCaptureBind([
+      { first: { cnt: 2827 } },
+      { all: [row1] },
+    ]);
+    const env = mockEnvWith(db);
+    const req = new Request("https://test.internal/skills", {
+      headers: { "X-Organization-Id": "miraeasset" },
+    });
+    const res = await handleListSkills(req, env);
+
+    expect(res.status).toBe(200);
+    expect(capturedBinds[0]?.[0]).toBe("MIRAEASSET");
+  });
+});
+
 // ── handleListSkills — text search (q) ──────────────────────────────
 
 describe("handleListSkills — text search", () => {

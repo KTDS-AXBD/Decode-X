@@ -13,9 +13,42 @@ author: Sinclair Seo
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
-### 세션 298 (2026-05-11) — Sprint 321 (F487 MERGED) 잔재 정리 🧹
+### 세션 298 (2026-05-11) — Sprint 321 잔재 정리 + `/ax:todo plan` Pipeline 3건 (330/331/332) 🧹🍔 **Sprint 330 F502 Fast Food FS 38번째 신규 산업 ✅ + Sprint 331 F503 LPON case 정책 결정 docs ✅ + Sprint 332 F504 방식 B 전수 차기 세션 분리**
 
-**작업 요약**: 어제 23:59 (UTC) MERGED된 Sprint 321 (F487, PR #87) 의 인프라 잔재 정리만 수행. 코드 변경 0 + LLM 호출 0 + 사용자 결정 1종(AskUserQuestion 정리 범위 multiSelect).
+**작업 요약**: 직전 세션 297 종료 commit 직후 인프라 정리(Sprint 321 F487 MERGED 잔재) 1차 + `/ax:todo plan` 워크플로우로 차기 후보 5건 중 3건 채택 + Master inline 순차 Sprint 330/331 완결, Sprint 332는 작업량 실측(~4h + $4.5 LLM 48 calls) 사용자 결정 후 차기 세션 분리. 사용자 결정 7종(AskUserQuestion): (1) 정리 범위 multiSelect / (2) 작업 3건 multiSelect (D+E+A) / (3) 실행 방식 Master inline 순차 / (4) LPON scope docs-only / (5) 진입 시점 즉시 / (6) LPON 정책 안 A / (7) 코드 fix F505 별도 Sprint / (8) Sprint 332 차기 세션 분리. 누적 3 commits (`d48c09d` 사전 등록 + `c511a09` F502 + `8208f30` F503).
+
+**🏆 마일스톤**: detect-bl **296/296 = 100.0%** (49 containers, 38 신규 산업 0 ABSENCE), **withRuleId 50 Sprint 연속 정점 도달** (S264~S278+S283~S319+S295~S298), **DV+WL+FT+FS QSR 외식 4-클러스터 신규 형성**, Master inline **26회 연속 회피 패턴 유지** (S253~S330+S331).
+
+**Sprint 330 F502 — Fast Food FS 49번째 도메인 / 38번째 신규 산업** (main `c511a09`, Master inline ~30분, Match 100%, DoD 12/12 PASS):
+- `반제품-스펙/pilot-lpon-cancel/working-version/src/domain/fastfood.ts` (~280 lines, 6 함수 + FastFoodError):
+  - `placeOrder` (FS-001 Threshold Path A, MAX_DAILY_ORDERS_PER_KIOSK=300)
+  - `applyComboDiscount` (FS-002 Threshold Path B, discountLimit var-vs-var)
+  - `processPayment` (FS-003 AtomicTransaction)
+  - `transitionOrderStatus` (FS-004 StatusTransition matrix)
+  - `markStaleOrderBatch` (FS-005 batch status)
+  - `settleDailyRevenue` (FS-006 AtomicTransaction franchise settlement)
+- `.decode-x/spec-containers/fastfood/` 9 files (provenance + rules + 6 runbooks + 1 test fixture)
+- `scripts/divergence/domain-source-map.ts` DOMAIN_MAP 49번째 entry
+- `packages/utils/src/divergence/rules-parser.ts` BL_ID_PATTERN FS prefix 추가
+- `packages/utils/src/divergence/bl-detector.ts` BL_DETECTOR_REGISTRY FS-001~006 withRuleId × 6 (신규 detector 0개)
+- `packages/utils/test/bl-detector.test.ts` +8 cases (FS-001~006 PRESENCE + sorted keys 6 + registered describe)
+- `packages/utils/test/rules-parser.test.ts` +1 case (FS prefix)
+- utils tests 408 → **416 PASS** (+8) ✅ / typecheck 직접 tsc 우회 PASS exit 0 ✅ / detect-bl 290 → **296/296 = 100%** 유지 ✅
+- 거울 변환: carsharing.ts (S297 F500) → fastfood.ts 1:1 패턴 그대로 변환 (function name + Schema name + Error class + 한국어 주석 매핑 일관)
+
+**Sprint 331 F503 — LPON vs lpon case sensitivity 정책 결정 docs (안 A 채택)** (main `8208f30`, Master inline ~20분, Match 100%, DoD 6/6 PASS, docs-only):
+- 3안 정량 분석: (A) Endpoint Normalize 1 line/.toUpperCase()/~15분/회귀 0/즉시 효과, (B) Strict 유지 0 line/case drift 재발 위험, (C) Tenant ID 표준화 + D1 마이그 8 rows UPDATE/~45분/destructive
+- 사용자 결정: **안 A 채택 + F505 별도 Sprint 분리** (Sprint 331 docs-only 일관성 유지)
+- 산출: `docs/03-analysis/features/sprint-331-lpon-case-decision.analysis.md` (AIF-ANLS-120, 9 sections)
+- SPEC §8 **TD-64 신규 등록** (P3, LPON vs lpon 영구 차단 — F505 분리)
+- F505 사전 등록 (Sprint 미정 사전 F-item 등록 섹션, ~30분 Master inline 후속 작업)
+
+**Sprint 332 F504 — 방식 B 전수 적용 차기 세션 분리** (📋 PLANNED 유지, SPEC §6 사전 등록 보존):
+- 작업량 실측: 7 containers × (provenance.yaml inputSchema/outputSchema/esToBlMapping + runbooks cross-ref) + Sonnet 8 전수 재평가 48 calls + reports = ~4h + $4.5 LLM
+- 사용자 결정: 한 세션 inline 주입 시 맥락 누락/품질 저하 위험 → 다음 세션 단독 진행
+- 현 진행도: lpon-charge ✅ (F496 PoC 적용 완료, inputSchema + esToBlMapping 보유) + 7 containers (refund/settlement/gift/payment/cancel/purchase/budget) 모두 미보강 = Sprint 332에서 7건 일괄 보강
+
+**(추가) Sprint 321 (F487 MERGED) 잔재 정리** (`24f6150`, 직전 세션 297 종료 직후, 사용자 결정 1종): 어제 23:59 (UTC) MERGED된 Sprint 321 (F487, PR #87) 의 인프라 잔재 정리만 수행. 코드 변경 0 + LLM 호출 0.
 
 **정리 항목 4종**:
 1. **Signal 4 파일 삭제**: `/tmp/sprint-signals/Decode-X-321.signal` + `rename-fired-321.flag` + `tmux-rename-321-created.log` + `tmux-rename-321.log` (모두 STATUS=MERGED 완료 후 잔존)

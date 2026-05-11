@@ -13,6 +13,85 @@ author: Sinclair Seo
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 296 (2026-05-12) — `/ax:todo plan` Pipeline 4건 ✅ **Sprint 322 F494 Parking PK 36번째 신규 산업 + Sprint 324 F493 RBAC SSOT docs + Sprint 323 F487 후속 PARTIAL→DONE + Sprint 325 F492 F356-A iterate Sonnet Phase 2 Conditional GO**
+
+**작업 요약**: `/ax:todo plan` 워크플로우로 사전 등록 4건 commit+push 후 Master inline + Master LLM 호출 혼합 모드로 4건 순차 종결. 사용자 결정 4종(AskUserQuestion): 작업 4건 선택 / HT prefix → audit fix → PK 재결정 / F490 차기 세션 분리 유지 / 혼합 실행. **detect-bl coverage 278/278 → 284/284 = 100.0% 유지** (47 containers, 36번째 신규 산업 Parking 0 ABSENCE, **RE+PR+PK 부동산 3-클러스터 형성**). withRuleId **48 Sprint 연속 정점** (S264~S322). Master inline **22회 연속 회피 패턴** (S253~S325). 누적 5 commits (`cd55e5c`+`6dd821a`+`10b99cd`+`129cee6`+`a8d830f`) + LLM 비용 $2.25 (Sonnet 48 calls).
+
+**Sprint 322 F494 — Parking PK 47번째 도메인 / 36번째 신규 산업** (main `6dd821a`, Master inline ~30분, Match 100%, DoD 12/12 PASS):
+- **S283 audit fix 1차 정착** — 1차 후보 HT(Hotel) → hospitality.ts(HO prefix, 9번째 신규) 흡수 영역 중복 감지 + 2차 후보 FD(Food Delivery) → delivery.ts(DV prefix, 11번째 신규) 흡수 영역 중복 감지 + 3차 사용자 재결정 PK 채택. rules/development-workflow.md S283 "Sprint 사전 등록 + Plan 작성 fs 실측 의무화" 3-step audit 절차 표준화 첫 사례.
+- `반제품-스펙/pilot-lpon-cancel/working-version/src/domain/parking.ts` (280 lines, 6 함수 + ParkingError code-in-message):
+  - `reserveParkingSlot` (PK-001 Threshold Path A, MAX_PARKING_SLOTS=500)
+  - `applyMonthlyPassLimit` (PK-002 Threshold Path B, slotLimit var-vs-var)
+  - `confirmEntry` (PK-003 AtomicTransaction — parking_sessions+slot_reservations+parking_payments)
+  - `transitionReservationStatus` (PK-004 StatusTransition matrix: pending→confirmed→checked_in→completed/cancelled)
+  - `markUnauthorizedExitBatch` (PK-005 StatusTransition batch — 36번째 재사용 패턴)
+  - `processOperatorBilling` (PK-006 AtomicTransaction — operator_billing_records+operator_payouts)
+- spec-container 9 files: provenance + parking-rules + 6 runbooks(PK-001~006) + 1 tests(PK-001.yaml) — 합성 schema 9 tables
+- DOMAIN_MAP 47번째 entry + parser BL_ID_PATTERN PK prefix + REGISTRY PK-001~006 (withRuleId × 6, 신규 detector 0개)
+- utils tests 392 → **400 PASS** (+8: sorted keys PK 6 entry + PK-001~006 registered describe + 6 PRESENCE describe block + rules-parser PK prefix 1 case)
+- typecheck PASS (직접 tsc 우회, S337 함정 회피, exit 0)
+- detect-bl --all-domains: 47 containers, **284/284 = 100.0%** 유지 (36 신규 산업 PK 0 ABSENCE)
+- 🏆 withRuleId **48 Sprint 연속 정점** 도달 (S264~S322) / **36 산업 연속 0 ABSENCE 정점 유지** / **RE+PR+PK 부동산 3-클러스터 형성**
+
+**Sprint 324 F493 — RBAC 도메인 결정 docs Production CfUser 4 role SSOT** (main `10b99cd`, Master inline ~1h, Match 100%, docs-only):
+- 3 모델 실측 정밀 분석:
+  - **CfUser** (auth-store.ts) — Production 운영 SSOT 4 role: executive/engineer/admin/guest
+  - **UserRole** (packages/types/src/users.ts) — Admin UI 관리용 3 role (guest 제외)
+  - **rbac.Role** (packages/types/src/rbac.ts) — PRD §18 RBAC 6 role: Analyst/Reviewer/Developer/Client/Executive/Admin
+- 사용자 결정(AskUserQuestion): **Production CfUser 4 role SSOT 채택** — 실 운영 active 사용 + CF Access JWT 통합 + 코드 마이그레이션 비용 최소 + 운영 직무 매칭
+- **CfUser 4 → rbac.Role 6 매핑 테이블** 1:N 명시: executive→Executive+Client / engineer→Developer+Analyst+Reviewer / admin→Admin+Executive+Developer / guest→Client(읽기 전용)
+- PRD §18 갱신 권고문 (인증 SSOT vs 권한 매트릭스 layer 분리) + 5 후속 F-item 분리 권고 (rbac.ts mapCfRoleToRbacRoles helper / AuthContext RoleBasedGate / UserRole 결정 / PRD §18 본문 갱신 / svc-* CF Access JWT validate)
+- 산출: `docs/03-analysis/features/sprint-324-rbac-domain-decision.analysis.md` (AIF-ANLS-119, ~250 lines, 8 sections, 코드 변경 0)
+- DoD 6/6 PASS — 3 모델 비교 + SSOT 결정 + 매핑 테이블 + PRD 권고 + 후속 F-item 분리 + 코드 변경 0 약속 충족
+
+**Sprint 323 F487 후속 — Sprint 321 PARTIAL → DONE 전환 (Master 독립 검증)** (main `129cee6`, Master inline ~30분, Match 100%):
+- Production state 직접 검증 (`wrangler d1 execute --remote`):
+  - **db-skill 3,985 rows 무손실 입증** — bundled 52 + reviewed 8 + published 1 + superseded 3,924
+  - LPON 35 (uppercase) bundled 보존 + lpon 8 (lowercase) bundled
+- **`/skills` GET endpoint default filter 한계 발견** — `status='published'`만 노출(1건만), batch evaluate endpoint(F413 보정 status IN (bundled, reviewed))와 분리 패턴 잔존
+- LPON vs lpon 케이스 분리 패턴 재확인 (Sprint 241 F413 R3 동계열)
+- **autopilot Production Smoke Test 14회차 변종 회피 성공** — autopilot은 spec-container 기준 재실측 + reports 스텁, Master는 D1 직접 cross-check로 독립 입증
+- F356-A 재평가는 F492(Sprint 325)로 통합 → Haiku 단독 재실행 skip + 1회 LLM 호출 비용 절약
+- 잔존 BL-026 ABSENCE 1건은 Tree-sitter Java (F358 Phase 1 후속)로 분리
+- **TD 신규 후보 1건**: `/skills` GET endpoint default filter 확장 (AIF-REQ-040 R3 후속, 별도 Sprint 분리 권고)
+- 산출: `reports/sprint-321-master-validation-2026-05-12.md` (6 sections) + Sprint 321 F487 ✅ DONE 전환
+
+**Sprint 325 F492 — F356-A iterate Sonnet 상향, Phase 2 Conditional GO 도달** (main `a8d830f`, Master inline ~30분 + LLM 호출 ~5분, Match 100%, DoD 7/7 PASS):
+- 🎯 **결정적 결과** — Tier 상향 단독으로 31% → **79.2% (+48.2%pp)**:
+  - F356-A 원본 (Haiku, 세션 295): 13/42 = 31.0% pass rate → **NOGO**
+  - F492 (Sonnet, 세션 296): **38/48 = 79.2% pass rate** → **Conditional GO** (80% 임계값 -0.8%pp)
+  - AI-Ready PASS skills **8/8 (100%)** + 평균 score **0.841** (Haiku 0.5~0.6 추정 대비 +40~70%)
+  - 비용: $2.2501 (Sonnet 48 calls, Haiku 18× 비용 vs 정확도 2.55× 도달)
+- **기준별 4종 100% PASS** (Sonnet으로 충분 입증): source_consistency / exception_handling / srp_reusability / testability
+- **2종 잔존** (spec-container 구조 한계 영역): io_structure 37.5% + comment_doc_alignment 37.5% — provenance.yaml/runbook에 실 I/O schema + ID cross-reference 부재
+- 인프라 변경:
+  - `scripts/ai-ready/sample-loader.ts`: `loadSpecContainers(specDir, prefix?)` 시그니처 확장
+  - `scripts/ai-ready/evaluate.ts`: `--prefix lpon-` 옵션 신규
+- 후속 권고:
+  - **방식 A**: Sonnet + 프롬프트 재설계 2회 (총 ~$4.5) — io_structure/comment 강화
+  - **방식 B**: spec-container 구조 보강 docs-only (LLM 비용 0) — provenance.yaml inputSchema/outputSchema 명시 + runbook↔rules ID cross-reference
+  - Opus 추가 호출 비추천 (marginal effect 추정, 비용 ~$10)
+- 산출: `reports/ai-ready-poc-sonnet-iterate-2026-05-12.json` (48 evaluations) + `reports/ai-ready-poc-sonnet-iterate-report-2026-05-12.md` (8 sections)
+
+**메타 학습 5종**:
+- (a) **Tier 상향 단독으로 거대 효과 입증** — F356-A NOGO 주 원인은 모델 capability 부족 (rubric/프롬프트 결함 아님). NOGO 분석 시 "rubric 결함 가설" 우선 의심 자제 메타 학습 정착.
+- (b) **AI self-validation 한계 명확화** — F489 "수기 검증은 인간 검토자 영역" 정합 (Haiku 31% 정확 → Sonnet으로 GO 도달).
+- (c) **autopilot Production Smoke 14회차 변종 회피 패턴 성공 적용** — F487/F492 모두 Master 직접 검증/실행으로 reports hallucination 위험 0건.
+- (d) **3 모델 불일치 패턴 정착** — F491(발견) → F493(결정 분리) 표준 절차 첫 적용.
+- (e) **S283 audit fix 1차 정착** — fs 실측으로 1차 후보 충돌 사전 감지 + 사용자 재결정 = 3-step audit 절차 표준화 첫 사례.
+
+**검증 결과**:
+- ✅ typecheck (직접 tsc 우회, S337 함정 회피)
+- ✅ utils tests 400/400 PASS
+- ✅ detect-bl 284/284 = 100.0% (47 containers)
+- ✅ Production D1 db-skill 3,985 rows 무손실
+- ✅ Sonnet 48 calls = 38/48 PASS (79.2% pass rate)
+- ✅ 5 commits push (cd55e5c..a8d830f → origin/main)
+
+**차기 후보**: F492 후속 방식 A(Sonnet+프롬프트 재설계 ~$4.5) 또는 방식 B(spec-container 구조 보강 docs-only) / F490 secret rotation 7-worker (~3h) / F493 후속 코드 마이그레이션 5 F-item (별도 Sprint 분리) / 신규 산업 37번째 (CS/FS) / `/skills` GET endpoint filter 확장 TD 신규.
+
+---
+
 ### 세션 295 (2026-05-11) — `/ax:todo plan` Pipeline 5건 🎯 **Sprint 321 F487 PARTIAL MERGED + F488 Gym 35번째 신규 산업 + F491 RBAC SSOT + F489 F356-A NOGO 판정**
 
 **작업 요약**: `/ax:todo plan` 워크플로우로 5건 동시 진행 — Sprint 321 autopilot WT(F487 production 재추출) + Master inline 3건(F488 Gym 신규 도메인 + F491 RBAC role SSOT fix-forward + F489 F356-A 종결 보고서). F490 secret rotation은 사용자 결정으로 차기 세션 이관. Sprint 321 autopilot 16분 만에 PR #87 MERGED — **autopilot Production Smoke 14회차 변종 패턴 발견**(PARTIAL — DIVERGENCE 5건 재실측 + repackaging 스크립트 준비만 자체 종결, Production 재추출 + F356-A 재평가 + Master 독립 검증은 Master 위임). Audit 발견 1건 — 사용자 1순위 선택 FT(Fitness)는 Sprint 312/F478 기등록 → GY 단독으로 재결정(rules/development-workflow.md S283 패턴 재현). detect-bl coverage 272/272 → **278/278 = 100.0%** 유지(46 containers, 35번째 신규 산업 0 ABSENCE, **PT+FT+GY 스포츠/헬스 3-클러스터 형성**). withRuleId **47 Sprint 연속 정점 도전** (S264~S278+S283~S319+S295). Master inline **18회 연속 회피 패턴** (S253~S320+S295).

@@ -1229,6 +1229,16 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "FS-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "FS-004"),
   "FS-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "FS-005"),
   "FS-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "FS-006"),
+
+  // F506 (세션 299) — Aerospace 합성 도메인 (50번째 도메인, 항공우주 산업, 39번째 신규 산업)
+  // TR+AV+CS+AS 항공/운송 4-클러스터 확장. 🏆 50번째 도메인 마일스톤 (S262 5 → S299 50, 10배 확장).
+  // 51 Sprint 연속 정점 도전 (S264~S278+S283~S319+S295+S296+S297+S298+S299).
+  "AS-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "AS-001"),
+  "AS-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "AS-002"),
+  "AS-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "AS-003"),
+  "AS-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "AS-004"),
+  "AS-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "AS-005"),
+  "AS-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "AS-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

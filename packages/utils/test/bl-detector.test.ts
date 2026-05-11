@@ -685,6 +685,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "AG-004",
       "AG-005",
       "AG-006",
+      "AS-001",
+      "AS-002",
+      "AS-003",
+      "AS-004",
+      "AS-005",
+      "AS-006",
       "AV-001",
       "AV-002",
       "AV-003",
@@ -1102,6 +1108,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["FS-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["FS-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["FS-006"]).toBeDefined();
+  });
+
+  it("AS-001~AS-006 registered (세션 299 F506 — aerospace 50번째 도메인, TR+AV+CS+AS 항공/운송 4-클러스터, 51 Sprint 연속 정점, 🏆 50번째 도메인 마일스톤)", () => {
+    expect(BL_DETECTOR_REGISTRY["AS-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AS-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AS-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AS-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AS-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AS-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -4637,6 +4652,106 @@ function markStaleOrderBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["FS-006"]!(src, "fastfood.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+// F506 (세션 299) — aerospace domain AS-001~006 via withRuleId (51 Sprint 연속 정점 도전)
+// TR+AV+CS+AS 항공/운송 4-클러스터 확장 (Travel + Aviation + Car Sharing + Aerospace).
+// 🏆 50번째 도메인 마일스톤 (S262 5 → S299 50, 10배 확장).
+describe("aerospace domain — AS-001~006 via withRuleId (세션 299 F506)", () => {
+  it("AS-001 PRESENCE — active_launches >= MAX_DAILY_LAUNCHES_PER_PAD threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "aerospace.ts",
+      `const MAX_DAILY_LAUNCHES_PER_PAD = 24;
+function scheduleLaunch(db, launchPadId, orbitId) {
+  const pad = db.prepare("SELECT active_launches, total_capacity FROM launch_pad_pool WHERE id = ?").get(launchPadId);
+  const limit = pad.total_capacity ?? MAX_DAILY_LAUNCHES_PER_PAD;
+  if (pad.active_launches >= limit) {
+    throw new AerospaceError('E422-LAUNCH-PAD-CAPACITY-EXCEEDED', 'Launch pad is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AS-001"]!(src, "aerospace.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("AS-002 PRESENCE — fee_used + fee >= orbitFeeLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "aerospace.ts",
+      `function applyOrbitFeeTier(db, contractorId, orbitId, fee) {
+  const orbit = db.prepare("SELECT fee_used, fee_limit FROM contractor_orbits WHERE id = ? AND contractor_id = ? LIMIT 1").get(orbitId, contractorId);
+  const orbitFeeLimit = orbit.fee_limit;
+  if (orbit.fee_used + fee >= orbitFeeLimit) {
+    throw new AerospaceError('E422-ORBIT-FEE-LIMIT-EXCEEDED', 'Orbit fee quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AS-002"]!(src, "aerospace.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("AS-003 PRESENCE — db.transaction() in executeMission (atomic payloads+missions+mission_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "aerospace.ts",
+      `function executeMission(db, launchPadId, missionId, payloadNumber, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO payloads (id, launch_pad_id, mission_id, payload_number, status, deployed_at) VALUES (?, ?, ?, ?, 'launching', ?)").run(payloadId, launchPadId, missionId, payloadNumber, deployedAt);
+    db.prepare("UPDATE missions SET status = 'launching', payload_id = ?, mission_payment_id = ? WHERE id = ?").run(payloadId, missionPaymentId, missionId);
+    db.prepare("INSERT INTO mission_payments (id, mission_id, payload_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(missionPaymentId, missionId, payloadId, amount, deployedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AS-003"]!(src, "aerospace.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("AS-004 PRESENCE — status comparison + 'confirmed'/'launching'/'inOrbit'/'aborted' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "aerospace.ts",
+      `function transitionMissionStatus(db, missionId, newStatus) {
+  const mission = db.prepare("SELECT status FROM missions WHERE id = ?").get(missionId);
+  if (mission.status === 'pending') throw new AerospaceError("E409-MISSION", "Invalid transition", 409);
+  db.prepare("UPDATE missions SET status = 'confirmed' WHERE id = ?").run(missionId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AS-004"]!(src, "aerospace.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("AS-005 PRESENCE — batch retire update in retireSatelliteBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "aerospace.ts",
+      `function transitionMissionStatus(db, missionId, newStatus) {
+  const mission = db.prepare("SELECT status FROM missions WHERE id = ?").get(missionId);
+  if (mission.status === 'pending') throw new AerospaceError("E409-MISSION", "Invalid", 409);
+  db.prepare("UPDATE missions SET status = 'confirmed' WHERE id = ?").run(missionId);
+}
+function retireSatelliteBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM payloads WHERE status = 'inOrbit' AND deployed_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE payloads SET status = 'retired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AS-005"]!(src, "aerospace.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("AS-006 PRESENCE — db.transaction() in processAbortRefund (atomic abort_refund_records+abort_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "aerospace.ts",
+      `function processAbortRefund(db, contractorId, payloadId, missionCost, refundRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO abort_refund_records (id, contractor_id, payload_id, mission_cost, refund_rate, refund_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(abortRefundId, contractorId, payloadId, missionCost, refundRate, refundAmount);
+    db.prepare("INSERT INTO abort_refunds (id, abort_refund_id, contractor_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, abortRefundId, contractorId, refundAmount, refundedAt);
+    db.prepare("UPDATE abort_refund_records SET status = 'refunded' WHERE id = ?").run(abortRefundId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AS-006"]!(src, "aerospace.ts");
     expect(markers).toHaveLength(0);
   });
 });

@@ -912,6 +912,28 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "settleDailyRevenue",
     ],
   },
+  {
+    container: "aerospace",
+    rulesPath: `${SPEC_CONTAINER_BASE}/aerospace/rules/aerospace-rules.md`,
+    // 세션 299 (F506): Aerospace 합성 도메인 — 50번째 도메인 (항공우주 산업, 39번째 신규 산업).
+    // AS-001~AS-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 51 Sprint 연속 정점 도전 (S264~S278+S283~S319+S295+S296+S297+S298+S299).
+    // 39번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT+TM+VT+GY+PK+CS+FS+AS).
+    // 🏆 50번째 도메인 마일스톤 (S262 5 → S299 50, 10배 확장).
+    // 🏆 39 산업 연속 0 ABSENCE 도전. TR+AV+CS+AS 항공/운송 4-클러스터 확장 (Travel 여행 + Aviation 항공 + Car Sharing 카셰어링 + Aerospace 항공우주).
+    // 6 BLs 균형 패턴 40번째 정착.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/aerospace.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/aerospace/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "scheduleLaunch",
+      "applyOrbitFeeTier",
+      "executeMission",
+      "transitionMissionStatus",
+      "retireSatelliteBatch",
+      "processAbortRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

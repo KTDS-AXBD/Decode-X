@@ -1,0 +1,97 @@
+# Test scenarios — Aerospace domain AS-001~AS-006
+# 세션 299 F506 — Aerospace 항공우주 합성 도메인
+
+scenarios:
+  - id: AS-001-PASS
+    rule: AS-001
+    description: "정원 내 발사대 발사 — 성공"
+    input: { active_launches: 12, total_capacity: 24 }
+    expected: PASS
+
+  - id: AS-001-FAIL
+    rule: AS-001
+    description: "발사대 일일 정원 초과 — E422-LAUNCH-PAD-CAPACITY-EXCEEDED"
+    input: { active_launches: 24, total_capacity: 24 }
+    expected: FAIL
+    error: E422-LAUNCH-PAD-CAPACITY-EXCEEDED
+
+  - id: AS-002-PASS
+    rule: AS-002
+    description: "궤도 수수료 한도 내 사용 — 성공"
+    input: { fee_used: 200000, fee: 150000, orbitFeeLimit: 500000 }
+    expected: PASS
+
+  - id: AS-002-FAIL
+    rule: AS-002
+    description: "궤도 수수료 한도 초과 — E422-ORBIT-FEE-LIMIT-EXCEEDED"
+    input: { fee_used: 450000, fee: 60000, orbitFeeLimit: 500000 }
+    expected: FAIL
+    error: E422-ORBIT-FEE-LIMIT-EXCEEDED
+
+  - id: AS-003-PASS
+    rule: AS-003
+    description: "confirmed 미션 실행 atomic — 성공"
+    input: { mission_status: confirmed }
+    expected: PASS
+    side_effects:
+      - payloads INSERT (status='launching')
+      - missions UPDATE (status='launching')
+      - mission_payments INSERT (status='paid')
+
+  - id: AS-003-FAIL
+    rule: AS-003
+    description: "non-confirmed 미션 실행 — E404-MISSION"
+    input: { mission_status: pending }
+    expected: FAIL
+    error: E404-MISSION
+
+  - id: AS-004-PASS
+    rule: AS-004
+    description: "정상 미션 상태 전환 (pending → confirmed)"
+    input: { current_status: pending, new_status: confirmed }
+    expected: PASS
+
+  - id: AS-004-FAIL
+    rule: AS-004
+    description: "비정상 미션 상태 전환 (pending → inOrbit)"
+    input: { current_status: pending, new_status: inOrbit }
+    expected: FAIL
+    error: E409-MISSION
+
+  - id: AS-005-PASS
+    rule: AS-005
+    description: "inOrbit 위성 일괄 퇴역 마킹"
+    input:
+      payloads:
+        - { id: p-1, status: inOrbit, deployed_at: "2026-05-10T12:00:00Z" }
+        - { id: p-2, status: inOrbit, deployed_at: "2026-05-10T12:30:00Z" }
+      now: "2026-05-11T00:00:00Z"
+    expected: PASS
+    output: { retiredCount: 2, retiredIds: [p-1, p-2] }
+
+  - id: AS-005-EMPTY
+    rule: AS-005
+    description: "퇴역 대상 없음 — retiredCount=0"
+    input:
+      payloads: []
+      now: "2026-05-11T00:00:00Z"
+    expected: PASS
+    output: { retiredCount: 0, retiredIds: [] }
+
+  - id: AS-006-PASS
+    rule: AS-006
+    description: "launching payload abort 환불 atomic — 성공"
+    input: { payload_status: launching, mission_cost: 1000000, refund_rate: 0.6 }
+    expected: PASS
+    side_effects:
+      - abort_refund_records INSERT (status='calculated')
+      - abort_refunds INSERT (status='refunded')
+      - abort_refund_records UPDATE (status='refunded')
+    output: { refundAmount: 600000.0 }
+
+  - id: AS-006-FAIL
+    rule: AS-006
+    description: "non-launching payload abort 시도 — E404-LAUNCHING-PAYLOAD"
+    input: { payload_status: inOrbit, mission_cost: 1000000, refund_rate: 0.6 }
+    expected: FAIL
+    error: E404-LAUNCHING-PAYLOAD

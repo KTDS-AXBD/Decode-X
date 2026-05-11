@@ -57,7 +57,8 @@ import type { BLRule } from "@ai-foundry/types";
 // F494 (세션 296): PK prefix 추가 (parking 합성 도메인, 47번째 — 주차 관리 산업, 36번째 신규). RE+PR+PK 부동산 3-클러스터 형성. 48 Sprint 연속 정점 도전. S283 audit fix 1차(HT/FD 중복 → PK 채택).
 // F500 (세션 297): CS prefix 추가 (carsharing 합성 도메인, 48번째 — 카쉐어링 산업, 37번째 신규). TR+AV+CS 운송 3-클러스터 형성. 49 Sprint 연속 정점 도전.
 // F502 (세션 298): FS prefix 추가 (fastfood 합성 도메인, 49번째 — 패스트푸드 산업, 38번째 신규). DV+WL+FT+FS QSR 외식 4-클러스터 확장. 50 Sprint 연속 정점 도전.
-const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|BK|BT|LP|CC|CH|CS|DV|SB|SP|IN|HC|ED|RE|LG|HO|TM|TR|MF|RT|EN|GV|TC|MD|PH|AG|CN|MR|TS|AV|MN|DF|FS|FT|GY|PK|WL|PT|PR|VT|P|V)-[A-Z]?\d{1,3}$/;
+// F506 (세션 299): AS prefix 추가 (aerospace 합성 도메인, 50번째 — 항공우주 산업, 39번째 신규). TR+AV+CS+AS 항공/운송 4-클러스터 확장. 51 Sprint 연속 정점 도전. 🏆 50번째 도메인 마일스톤 (S262 5 → S299 50, 10배 확장).
+const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|BK|BT|LP|AS|CC|CH|CS|DV|SB|SP|IN|HC|ED|RE|LG|HO|TM|TR|MF|RT|EN|GV|TC|MD|PH|AG|CN|MR|TS|AV|MN|DF|FS|FT|GY|PK|WL|PT|PR|VT|P|V)-[A-Z]?\d{1,3}$/;
 const HEADER_PATTERN =
   /\|\s*ID\s*\|\s*condition[^|]*\|\s*criteria[^|]*\|\s*outcome[^|]*\|\s*exception[^|]*\|/i;
 const SEPARATOR_PATTERN = /^\s*\|[\s:|-]+\|\s*$/;

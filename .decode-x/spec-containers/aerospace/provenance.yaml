@@ -1,0 +1,52 @@
+---
+# Provenance — ASP-001
+# 50번째 도메인 — Aerospace 항공우주 합성 도메인 PoC (39번째 신규 산업)
+
+skillId: ASP-001
+extractedAt: "2026-05-12T00:00:00+09:00"
+extractedBy: "Decode-X 세션 299 F506 — withRuleId 재사용 50번째 도메인 (Aerospace 항공우주 산업, 39번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/aerospace/rules/aerospace-rules.md"
+    section: "Aerospace 합성 비즈니스 룰 — AS-001~AS-006"
+    businessRules: [AS-001, AS-002, AS-003, AS-004, AS-005, AS-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 항공우주(Aerospace) 산업 일반화 PoC. 발사대정원/궤도수수료한도/미션atomic/미션상태전환/위성퇴역배치/abort환불atomic 추상화. 50번째 도메인 + 39번째 신규 산업 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT+TM+VT+GY+PK+CS+FS+AS). detector 신뢰도 누적 활용. 🏆 51 Sprint 연속 정점 도전. 🏆 50번째 도메인 마일스톤 (S262 5 → S299 50, 10배 확장). TR+AV+CS+AS 항공/운송 4-클러스터 확장 (Travel 여행 + Aviation 항공 + Car Sharing 카셰어링 + Aerospace 항공우주)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/aerospace.ts"
+    functions: [scheduleLaunch, applyOrbitFeeTier, executeMission, transitionMissionStatus, retireSatelliteBatch, processAbortRefund]
+
+detection:
+  - ruleId: AS-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-12T00:00:00+09:00"
+    notes: "pad.active_launches >= limit (UPPERCASE fallback MAX_DAILY_LAUNCHES_PER_PAD, Path A)"
+  - ruleId: AS-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-12T00:00:00+09:00"
+    notes: "orbit.fee_used + fee >= orbitFeeLimit (Path B, limit keyword)"
+  - ruleId: AS-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-12T00:00:00+09:00"
+    notes: "db.transaction() — payloads INSERT + missions UPDATE + mission_payments INSERT"
+  - ruleId: AS-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-12T00:00:00+09:00"
+    notes: "pending → confirmed → launching → inOrbit (+ abort)"
+  - ruleId: AS-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-12T00:00:00+09:00"
+    notes: "batch: retire 갱신 (FS-005/CS-005/PK-005/GY-005/VT-005 39번째 재사용)"
+  - ruleId: AS-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-12T00:00:00+09:00"
+    notes: "db.transaction() — abort_refund_records INSERT + abort_refunds INSERT + abort_refund_records UPDATE"

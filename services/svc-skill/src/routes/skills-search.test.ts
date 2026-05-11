@@ -120,6 +120,62 @@ function mockEnvWith(db: D1Database): Env {
   } as unknown as Env;
 }
 
+// ── handleListSkills — F501 (Sprint 329 세션 297) ?org= query param ──
+
+describe("handleListSkills — ?org= query param (F501 Sprint 329)", () => {
+  it("uses ?org= query param when X-Organization-Id header is absent", async () => {
+    const db = mockDbMulti([
+      { first: { cnt: 1 } },
+      { all: [row1] },
+    ]);
+    const env = mockEnvWith(db);
+    const req = new Request("https://test.internal/skills?org=LPON");
+    const res = await handleListSkills(req, env);
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as ApiOk<{ total: number }>;
+    expect(body.data.total).toBe(1);
+
+    // Verify the prepared SQL bound LPON as organization_id (first bind)
+    const prepareCalls = (db.prepare as ReturnType<typeof vi.fn>).mock.calls;
+    const countSql = prepareCalls[0]?.[0] as string;
+    expect(countSql).toContain("organization_id = ?");
+  });
+
+  it("prefers ?org= query param over X-Organization-Id header", async () => {
+    const db = mockDbMulti([
+      { first: { cnt: 1 } },
+      { all: [row1] },
+    ]);
+    const env = mockEnvWith(db);
+    const req = new Request("https://test.internal/skills?org=LPON", {
+      headers: { "X-Organization-Id": "miraeasset" },
+    });
+    const res = await handleListSkills(req, env);
+
+    expect(res.status).toBe(200);
+    // Query param takes precedence — no error, returns mocked rows
+    const body = (await res.json()) as ApiOk<{ total: number }>;
+    expect(body.data.total).toBe(1);
+  });
+
+  it("falls back to X-Organization-Id header when ?org= absent (backward compat)", async () => {
+    const db = mockDbMulti([
+      { first: { cnt: 1 } },
+      { all: [row1] },
+    ]);
+    const env = mockEnvWith(db);
+    const req = new Request("https://test.internal/skills", {
+      headers: { "X-Organization-Id": "lpon" },
+    });
+    const res = await handleListSkills(req, env);
+
+    expect(res.status).toBe(200);
+    const body = (await res.json()) as ApiOk<{ total: number }>;
+    expect(body.data.total).toBe(1);
+  });
+});
+
 // ── handleListSkills — text search (q) ──────────────────────────────
 
 describe("handleListSkills — text search", () => {

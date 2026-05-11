@@ -216,7 +216,9 @@ export async function handleListSkills(
   env: Env,
 ): Promise<Response> {
   const url = new URL(request.url);
-  const organizationId = request.headers.get("X-Organization-Id") ?? "unknown";
+  // F501 (Sprint 329 세션 297): ?org= query param 우선, X-Organization-Id 헤더 fallback. AIF-REQ-040 R3 후속.
+  const organizationId =
+    url.searchParams.get("org") ?? request.headers.get("X-Organization-Id") ?? "unknown";
   const domain = url.searchParams.get("domain");
   const subdomain = url.searchParams.get("subdomain");
   const status = url.searchParams.get("status");

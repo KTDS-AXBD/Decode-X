@@ -1212,7 +1212,9 @@
 > **달성**: (2) Tier 상향(Sonnet) 단독 채택 → 31% → **79.2% (+48.2%pp)** 입증. Phase 2 Conditional GO 도달. (1) Threshold 조정 + (3) 프롬프트 재설계는 미실행 (Sonnet 단독으로 거의 GO 달성, 추가 iterate 후속 결정).
 - [ ] F492 📋 **PLANNED** (F356-A iterate — Sonnet/Opus 상향 + 프롬프트 재설계, **P2**, Sprint 325, 세션 296 사전 등록 2026-05-12): scripts/ai-ready/evaluate.ts tier 분기 + prompt few-shot 보강 + Sonnet 재실행 + iterate 보고서. autopilot WT 또는 Master inline. ~2h.
 
-**Sprint 326 (F500 — Car Sharing CS 합성 도메인 PoC, 48번째 도메인 / 37번째 신규 산업, 📋 PLANNED 세션 297 사전 등록 2026-05-12):**
+**Sprint 326 (F500 — Car Sharing CS 합성 도메인 PoC, 48번째 도메인 / 37번째 신규 산업, ✅ DONE 세션 297 Master inline ~30분 Match 100% 2026-05-12):**
+> **결과**: ✅ DONE — Master inline ~30분, LLM $0. **37번째 신규 산업 Car Sharing** — carsharing.ts ~280 lines (6 함수: reserveSharingVehicle/applyDistanceLimit/confirmPickup/transitionRentalStatus/markOverdueReturnBatch/processOperatorBilling + CarSharingError code-in-message) + spec-container 9 sub-files (provenance + carsharing-rules + CS-001~006 runbooks + CS-001.yaml tests) + DOMAIN_MAP 48번째 entry sourceCodeStatus="present" + parser regex CS prefix 확장 (BL_ID_PATTERN line 57) + REGISTRY CS-001~006 (Threshold × 2 + Atomic × 2 + Status × 2 균형) + utils tests 400 → **408 PASS** (+8: sorted keys CS 6 entry + CS-001~006 registered describe + 6 PRESENCE describe block + rules-parser CS prefix 1 case). **신규 detector 0개** — withRuleId 재사용 **49 Sprint 연속 정점** (S264~S278+S283~S319+S295+S296+S297). typecheck (직접 tsc 우회, S337 함정 회피) PASS exit 0. detect-bl --all-domains: **48 containers, 290/290 = 100.0%** 유지 (37번째 산업 0 ABSENCE). **TR+AV+CS 운송 3-클러스터 형성** (Transit + Aviation + Car Sharing). **Master inline 23회 연속 회피 패턴 유지** (S253~S322+S324+S323+S325+S326). **DoD 12/12 PASS**.
+> **메타 학습**: (a) **withRuleId 49 Sprint 연속 정점** (S264~S326) — 신규 detector 0개로 37번째 산업 부트스트래핑, (b) **운송 3-클러스터 형성** (TR+AV+CS) — 대중교통/항공/카쉐어링 segment 분리 입증, (c) **합성 도메인 PoC 부트스트래핑 정점 유지** — parking 패턴 그대로 복제로 ~30분 1 산업 추가, (d) **Master inline 23회 연속 회피 패턴 유지** (S253~S326) — autopilot Production Smoke Test 14회차 변종 회피.
 > **배경**: 세션 296 종결 시 차기 후보로 명시된 신규 산업 37번째. CS/FS 후보 중 사용자 결정으로 CS(Car Sharing) 채택(2026-05-12 AskUserQuestion). withRuleId 재사용 패턴 48 Sprint 연속 정점 → 49 Sprint 도전.
 > **목표**: 37번째 신규 산업 합성 도메인 추가로 운송 클러스터 확장(TR+AV+CS). withRuleId 재사용 49 Sprint 연속 정점 유지. detect-bl 100% 유지(284/284 → 290/290).
 > **fs 실측 결과 (예상)**:
@@ -1222,7 +1224,7 @@
 > **DoD**: carsharing.ts 6 함수 + CarSharingError + spec-container 9 files + DOMAIN_MAP 48번째 entry + parser CS prefix + REGISTRY CS-001~006 (withRuleId × 6) + utils 400 → 408 PASS (+8) + typecheck 직접 tsc 우회 PASS + detect-bl 284 → 290/290 = 100% 유지 + 37 신규 산업 연속 0 ABSENCE + Match ≥ 90%.
 > **의존성**: 없음 (packages/utils 단독 영역).
 > **메타**: rules/development-workflow.md S283 audit 1차 통과 — CS prefix 사전 fs 실측 미등록 확정 (세션 296 audit).
-- [ ] F500 📋 **PLANNED** (Car Sharing CS 48번째 도메인 — 37번째 신규 산업, **P3**, Sprint 326, 세션 297 사전 등록 2026-05-12): carsharing.ts (6 함수 + CarSharingError) + spec-container 9 files + DOMAIN_MAP 48번째 + parser CS prefix + REGISTRY CS-001~006 (withRuleId × 6) + utils 408 PASS (+8) + detect-bl **290/290 = 100%** 유지 + 운송 3-클러스터 확장 (TR+AV+CS).
+- [x] F500 ✅ **DONE** (Car Sharing CS 48번째 도메인 — 37번째 신규 산업, **P3**, Sprint 326, ✅ DONE 세션 297 2026-05-12 Master inline ~30분 Match 100%): carsharing.ts (6 함수 + CarSharingError) + spec-container 9 files + DOMAIN_MAP 48번째 + parser CS prefix + REGISTRY CS-001~006 (withRuleId × 6) + utils 408 PASS (+8) + detect-bl **290/290 = 100%** 유지 (48 containers) + TR+AV+CS 운송 3-클러스터 형성.
 
 **Sprint 327 (F496 — lpon-charge 구조 보강 PoC + Sonnet 재평가, 📋 PLANNED 세션 297 사전 등록 2026-05-12):**
 > **배경**: 세션 296 F492 결과 분석 (Sonnet 79.2%, Phase 2 Conditional GO -0.8%pp 미달). 약점 잔존 2기준(io_structure 37.5% + comment_doc_alignment 37.5%)이 spec-container 구조 한계 영역으로 명확화. 방식 B(spec-container 구조 보강 docs-only)의 효과 측정 PoC.

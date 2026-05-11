@@ -1211,6 +1211,15 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "PK-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PK-004"),
   "PK-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PK-005"),
   "PK-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "PK-006"),
+
+  // F500 (세션 297) — Car Sharing 합성 도메인 (48번째 도메인, 카쉐어링 산업, 37번째 신규 산업)
+  // TR+AV+CS 운송 3-클러스터 형성. 49 Sprint 연속 정점 도전 (S264~S278+S283~S319+S295+S296+S297).
+  "CS-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "CS-001"),
+  "CS-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "CS-002"),
+  "CS-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "CS-003"),
+  "CS-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "CS-004"),
+  "CS-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "CS-005"),
+  "CS-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "CS-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

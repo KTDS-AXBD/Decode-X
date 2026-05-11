@@ -770,6 +770,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "CN-004",
       "CN-005",
       "CN-006",
+      "CS-001",
+      "CS-002",
+      "CS-003",
+      "CS-004",
+      "CS-005",
+      "CS-006",
       "DF-001",
       "DF-002",
       "DF-003",
@@ -1072,6 +1078,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["PK-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["PK-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["PK-006"]).toBeDefined();
+  });
+
+  it("CS-001~CS-006 registered (세션 297 F500 — carsharing 48번째 도메인, TR+AV+CS 운송 3-클러스터, 49 Sprint 연속 정점)", () => {
+    expect(BL_DETECTOR_REGISTRY["CS-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["CS-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["CS-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["CS-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["CS-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["CS-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -4409,6 +4424,105 @@ function markUnauthorizedExitBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["PK-006"]!(src, "parking.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+// F500 (세션 297) — carsharing domain CS-001~006 via withRuleId (49 Sprint 연속 정점 도전)
+// TR+AV+CS 운송 3-클러스터 형성 (Transit + Aviation + Car Sharing).
+describe("carsharing domain — CS-001~006 via withRuleId (세션 297 F500)", () => {
+  it("CS-001 PRESENCE — active_vehicles >= MAX_FLEET_VEHICLES threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "carsharing.ts",
+      `const MAX_FLEET_VEHICLES = 200;
+function reserveSharingVehicle(db, poolId, passId) {
+  const pool = db.prepare("SELECT active_vehicles, total_vehicles FROM vehicle_pool WHERE id = ?").get(poolId);
+  const limit = pool.total_vehicles ?? MAX_FLEET_VEHICLES;
+  if (pool.active_vehicles >= limit) {
+    throw new CarSharingError('E422-FLEET-CAPACITY-EXCEEDED', 'Fleet is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["CS-001"]!(src, "carsharing.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("CS-002 PRESENCE — distance_used + distance >= distanceLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "carsharing.ts",
+      `function applyDistanceLimit(db, memberId, passId, distance) {
+  const pass = db.prepare("SELECT distance_used, distance_limit FROM member_passes WHERE id = ? AND member_id = ? LIMIT 1").get(passId, memberId);
+  const distanceLimit = pass.distance_limit;
+  if (pass.distance_used + distance >= distanceLimit) {
+    throw new CarSharingError('E422-DISTANCE-LIMIT-EXCEEDED', 'Distance quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["CS-002"]!(src, "carsharing.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("CS-003 PRESENCE — db.transaction() in confirmPickup (atomic rental_sessions+vehicle_reservations+rental_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "carsharing.ts",
+      `function confirmPickup(db, poolId, reservationId, vehicleId, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO rental_sessions (id, pool_id, reservation_id, vehicle_id, status, picked_up_at) VALUES (?, ?, ?, ?, 'active', ?)").run(sessionId, poolId, reservationId, vehicleId, pickedUpAt);
+    db.prepare("UPDATE vehicle_reservations SET status = 'picked_up', vehicle_id = ?, payment_id = ? WHERE id = ?").run(vehicleId, paymentId, reservationId);
+    db.prepare("INSERT INTO rental_payments (id, session_id, reservation_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(paymentId, sessionId, reservationId, amount, pickedUpAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["CS-003"]!(src, "carsharing.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("CS-004 PRESENCE — status comparison + 'confirmed'/'picked_up'/'returned'/'cancelled' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "carsharing.ts",
+      `function transitionRentalStatus(db, reservationId, newStatus) {
+  const reservation = db.prepare("SELECT status FROM vehicle_reservations WHERE id = ?").get(reservationId);
+  if (reservation.status === 'pending') throw new CarSharingError("E409-RESERVATION", "Invalid transition", 409);
+  db.prepare("UPDATE vehicle_reservations SET status = 'confirmed' WHERE id = ?").run(reservationId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["CS-004"]!(src, "carsharing.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("CS-005 PRESENCE — batch overdue update in markOverdueReturnBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "carsharing.ts",
+      `function transitionRentalStatus(db, reservationId, newStatus) {
+  const reservation = db.prepare("SELECT status FROM vehicle_reservations WHERE id = ?").get(reservationId);
+  if (reservation.status === 'pending') throw new CarSharingError("E409-RESERVATION", "Invalid", 409);
+  db.prepare("UPDATE vehicle_reservations SET status = 'confirmed' WHERE id = ?").run(reservationId);
+}
+function markOverdueReturnBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM rental_sessions WHERE status = 'active' AND picked_up_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE rental_sessions SET status = 'overdue' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["CS-005"]!(src, "carsharing.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("CS-006 PRESENCE — db.transaction() in processOperatorBilling (atomic operator_billing_records+operator_payouts INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "carsharing.ts",
+      `function processOperatorBilling(db, operatorId, rentalSessionId, revenue, billingRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO operator_billing_records (id, operator_id, rental_session_id, revenue, billing_rate, billing_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(billingId, operatorId, rentalSessionId, revenue, billingRate, billingAmount);
+    db.prepare("INSERT INTO operator_payouts (id, billing_id, operator_id, amount, status, settled_at) VALUES (?, ?, ?, ?, 'settled', ?)").run(payoutId, billingId, operatorId, billingAmount, settledAt);
+    db.prepare("UPDATE operator_billing_records SET status = 'settled' WHERE id = ?").run(billingId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["CS-006"]!(src, "carsharing.ts");
     expect(markers).toHaveLength(0);
   });
 });

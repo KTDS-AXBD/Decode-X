@@ -55,7 +55,8 @@ import type { BLRule } from "@ai-foundry/types";
 // F485 (Sprint 319): VT prefix 추가 (veterinary 합성 도메인, 45번째 — 동물병원 진료 산업, 34번째 신규). PT+VT 동물 케어 2-클러스터 형성. longer match first (VT 앞 V)
 // F488 (세션 295): GY prefix 추가 (gym 합성 도메인, 46번째 — 헬스장 매장 산업, 35번째 신규). PT+FT+GY 스포츠/헬스 3-클러스터 형성. 47 Sprint 연속 정점 도전 (S264~S278+S283~S319+S295)
 // F494 (세션 296): PK prefix 추가 (parking 합성 도메인, 47번째 — 주차 관리 산업, 36번째 신규). RE+PR+PK 부동산 3-클러스터 형성. 48 Sprint 연속 정점 도전. S283 audit fix 1차(HT/FD 중복 → PK 채택).
-const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|BK|BT|LP|CC|CH|DV|SB|SP|IN|HC|ED|RE|LG|HO|TM|TR|MF|RT|EN|GV|TC|MD|PH|AG|CN|MR|TS|AV|MN|DF|FT|GY|PK|WL|PT|PR|VT|P|V)-[A-Z]?\d{1,3}$/;
+// F500 (세션 297): CS prefix 추가 (carsharing 합성 도메인, 48번째 — 카쉐어링 산업, 37번째 신규). TR+AV+CS 운송 3-클러스터 형성. 49 Sprint 연속 정점 도전.
+const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|BK|BT|LP|CC|CH|CS|DV|SB|SP|IN|HC|ED|RE|LG|HO|TM|TR|MF|RT|EN|GV|TC|MD|PH|AG|CN|MR|TS|AV|MN|DF|FT|GY|PK|WL|PT|PR|VT|P|V)-[A-Z]?\d{1,3}$/;
 const HEADER_PATTERN =
   /\|\s*ID\s*\|\s*condition[^|]*\|\s*criteria[^|]*\|\s*outcome[^|]*\|\s*exception[^|]*\|/i;
 const SEPARATOR_PATTERN = /^\s*\|[\s:|-]+\|\s*$/;

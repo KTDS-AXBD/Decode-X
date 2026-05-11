@@ -163,6 +163,16 @@ describe("rules-parser — parseRulesMarkdown", () => {
     expect(rules.map((r) => r.id)).toEqual(["PK-001", "PK-006"]);
   });
 
+  it("matches carsharing CS-NNN prefix (세션 297 F500, 37번째 신규 산업, TR+AV+CS 운송 3-클러스터)", () => {
+    const md = `| ID | condition | criteria | outcome | exception |
+|----|-----------|----------|---------|-----------|
+| CS-001 | a | b | c | d |
+| CS-006 | a | b | c | d |
+`;
+    const rules = parseRulesMarkdown(md);
+    expect(rules.map((r) => r.id)).toEqual(["CS-001", "CS-006"]);
+  });
+
   it("rejects invalid prefix patterns (BL- without digits, BL-A only)", () => {
     const md = `| ID | condition | criteria | outcome | exception |
 |----|-----------|----------|---------|-----------|

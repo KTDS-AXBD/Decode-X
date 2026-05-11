@@ -872,6 +872,26 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processOperatorBilling",
     ],
   },
+  {
+    container: "carsharing",
+    rulesPath: `${SPEC_CONTAINER_BASE}/carsharing/rules/carsharing-rules.md`,
+    // 세션 297 (F500): Car Sharing 합성 도메인 — 48번째 도메인 (카쉐어링 산업, 37번째 신규 산업).
+    // CS-001~CS-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 49 Sprint 연속 정점 도전 (S264~S278+S283~S319+S295+S296+S297).
+    // 37번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT+TM+VT+GY+PK+CS).
+    // 🏆 37 산업 연속 0 ABSENCE 도전. TR+AV+CS 운송 3-클러스터 형성. 6 BLs 균형 패턴 38번째 정착.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/carsharing.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/carsharing/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "reserveSharingVehicle",
+      "applyDistanceLimit",
+      "confirmPickup",
+      "transitionRentalStatus",
+      "markOverdueReturnBatch",
+      "processOperatorBilling",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

@@ -1,0 +1,97 @@
+# Test scenarios — Car Sharing domain CS-001~CS-006
+# 세션 297 F500 — Car Sharing 카쉐어링 합성 도메인
+
+scenarios:
+  - id: CS-001-PASS
+    rule: CS-001
+    description: "정원 내 fleet 차량 예약 — 성공"
+    input: { active_vehicles: 100, total_vehicles: 200 }
+    expected: PASS
+
+  - id: CS-001-FAIL
+    rule: CS-001
+    description: "fleet 정원 초과 — E422-FLEET-CAPACITY-EXCEEDED"
+    input: { active_vehicles: 200, total_vehicles: 200 }
+    expected: FAIL
+    error: E422-FLEET-CAPACITY-EXCEEDED
+
+  - id: CS-002-PASS
+    rule: CS-002
+    description: "거리 한도 내 사용 — 성공"
+    input: { distance_used: 100, distance: 50, distanceLimit: 500 }
+    expected: PASS
+
+  - id: CS-002-FAIL
+    rule: CS-002
+    description: "거리 한도 초과 — E422-DISTANCE-LIMIT-EXCEEDED"
+    input: { distance_used: 450, distance: 60, distanceLimit: 500 }
+    expected: FAIL
+    error: E422-DISTANCE-LIMIT-EXCEEDED
+
+  - id: CS-003-PASS
+    rule: CS-003
+    description: "confirmed 예약 픽업 atomic — 성공"
+    input: { reservation_status: confirmed }
+    expected: PASS
+    side_effects:
+      - rental_sessions INSERT (status='active')
+      - vehicle_reservations UPDATE (status='picked_up')
+      - rental_payments INSERT (status='paid')
+
+  - id: CS-003-FAIL
+    rule: CS-003
+    description: "non-confirmed 예약 픽업 — E404-RESERVATION"
+    input: { reservation_status: pending }
+    expected: FAIL
+    error: E404-RESERVATION
+
+  - id: CS-004-PASS
+    rule: CS-004
+    description: "정상 예약 상태 전환 (pending → confirmed)"
+    input: { current_status: pending, new_status: confirmed }
+    expected: PASS
+
+  - id: CS-004-FAIL
+    rule: CS-004
+    description: "비정상 예약 상태 전환 (pending → returned)"
+    input: { current_status: pending, new_status: returned }
+    expected: FAIL
+    error: E409-RESERVATION
+
+  - id: CS-005-PASS
+    rule: CS-005
+    description: "active 세션 일괄 overdue 마킹"
+    input:
+      sessions:
+        - { id: s-1, status: active, picked_up_at: "2026-05-10T00:00:00Z" }
+        - { id: s-2, status: active, picked_up_at: "2026-05-09T00:00:00Z" }
+      now: "2026-05-11T00:00:00Z"
+    expected: PASS
+    output: { overdueCount: 2, overdueIds: [s-1, s-2] }
+
+  - id: CS-005-EMPTY
+    rule: CS-005
+    description: "overdue 대상 없음 — overdueCount=0"
+    input:
+      sessions: []
+      now: "2026-05-11T00:00:00Z"
+    expected: PASS
+    output: { overdueCount: 0, overdueIds: [] }
+
+  - id: CS-006-PASS
+    rule: CS-006
+    description: "returned rental session 정산 atomic — 성공"
+    input: { session_status: returned, revenue: 80000, billing_rate: 0.45 }
+    expected: PASS
+    side_effects:
+      - operator_billing_records INSERT (status='calculated')
+      - operator_payouts INSERT (status='settled')
+      - operator_billing_records UPDATE (status='settled')
+    output: { billingAmount: 36000.0 }
+
+  - id: CS-006-FAIL
+    rule: CS-006
+    description: "non-returned rental session 정산 시도 — E404-RETURNED-RENTAL-SESSION"
+    input: { session_status: active, revenue: 80000, billing_rate: 0.45 }
+    expected: FAIL
+    error: E404-RETURNED-RENTAL-SESSION

@@ -13,6 +13,24 @@ author: Sinclair Seo
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 298 (2026-05-11) — Sprint 321 (F487 MERGED) 잔재 정리 🧹
+
+**작업 요약**: 어제 23:59 (UTC) MERGED된 Sprint 321 (F487, PR #87) 의 인프라 잔재 정리만 수행. 코드 변경 0 + LLM 호출 0 + 사용자 결정 1종(AskUserQuestion 정리 범위 multiSelect).
+
+**정리 항목 4종**:
+1. **Signal 4 파일 삭제**: `/tmp/sprint-signals/Decode-X-321.signal` + `rename-fired-321.flag` + `tmux-rename-321-created.log` + `tmux-rename-321.log` (모두 STATUS=MERGED 완료 후 잔존)
+2. **tmux zombie pane `%62` kill**: `/home/sinclair/work/worktrees/Decode-X/sprint-321 (deleted)` cwd_missing 분류 → kill-pane 안전 (sprint 작업 종결 후 WT 디렉토리만 잔존)
+3. **Remote `origin/sprint/321` prune**: `git push origin --delete sprint/321` 실행 시 `remote ref does not exist` — GitHub `delete_branch_on_merge=true`가 이미 자동 삭제 + 로컬 stale tracking ref만 잔존 확인. `git fetch origin --prune` 1회로 정리 완결
+4. **Foundry-X-386 zombie `%63` 보고만**: `/home/sinclair/work/worktrees/Foundry-X/sprint-386` wt_unlisted 분류 → 다른 프로젝트 소관 (Decode-X 정리 범위 외, 사용자 의식 alert)
+
+**검증**: orphan-scan 후 `Git orphan: 0건 (tmux zombies: 1)` — Decode-X 기준 모든 잔재 0건 확인. `git worktree list` main only.
+
+**메타 학습 2종**: (a) **stale tracking ref 패턴** — GitHub 자동 삭제(`delete_branch_on_merge=true`)가 remote는 정확히 처리해도 로컬 `origin/sprint/*` tracking ref는 `git fetch --prune` 없으면 `branch -r`에 유령으로 잔존. development-workflow.md L1 `fetch.prune=true` 글로벌 설정 권장이 이 케이스 차단용 (S253 git-orphan 5종 근본 원인 중 1종 재확인) / (b) **zombie pane 분류 휴리스틱 정착** — `cwd_missing`(WT 디렉토리 삭제됨)은 안전 kill, `wt_unlisted`(worktree 등록 외 경로)는 다른 프로젝트 활성 작업 가능성 신중 판정. 이번엔 path prefix(`Decode-X/` vs `Foundry-X/`)로 분리 명확.
+
+**소요 ~5분 (사용자 인터뷰 1회 포함)**. CHANGELOG.md + MEMORY.md만 갱신 — 코드 변경 0.
+
+차기: Sprint 330+ 신규 등록 또는 직전 세션 297 차기 후보 (방식 B 전수 적용 / F490 secret rotation / F497~F498 RBAC 후속 / 38번째 신규 산업 FS Fast Food / LPON vs lpon 케이스 분리 TD).
+
 ### 세션 297 (2026-05-12) — `/ax:todo plan` Pipeline 4건 ✅ **Sprint 326 F500 Car Sharing CS 37번째 신규 산업 + Sprint 328 F499 SPEC drift cleanup + Sprint 329 F501 /skills filter 확장 + Sprint 327 F496 lpon-charge 구조 보강 PoC 압도적 성공**
 
 **작업 요약**: `/ax:todo plan` 워크플로우로 사전 등록 4건 commit+push 후 Master inline + Master LLM 호출 혼합 모드로 4건 순차 종결. 사용자 결정 3종(AskUserQuestion): 작업 4건 선택 / CS prefix Car Sharing 채택 / F496 scope 1 container PoC 채택. **detect-bl coverage 284/284 → 290/290 = 100.0% 유지** (48 containers, 37번째 신규 산업 CS 0 ABSENCE, **TR+AV+CS 운송 3-클러스터 형성**). withRuleId **49 Sprint 연속 정점** (S264~S326). Master inline **25회 연속 회피 패턴** (S253~S327). 누적 6 commits (`371690d`+`62952db`+`bdced8e`+`1c278aa`+`b26a3e9`+ session-end) + LLM 비용 $0.5647 (Sonnet 6 calls). **🎯 F496 PoC가 결정적 입증**: spec-container 구조 보강만으로 lpon-charge 5/6 → 6/6 PASS (+16.7%pp) — 전수 적용 시 Phase 2 GO 95.8% 도달 추정 (F356-A NOGO → GO 종결 경로 명확화).

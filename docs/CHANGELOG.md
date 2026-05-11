@@ -5,13 +5,47 @@ version: 1.0
 status: active
 category: general
 created: 2026-02-26
-updated: 2026-05-11
+updated: 2026-05-12
 author: Sinclair Seo
 ---
 
 # CHANGELOG
 
 > 세션 히스토리 아카이브 (최신이 상단)
+
+### 세션 299 (2026-05-12) — `/ax:todo plan` Pipeline 4건 ✅ **🏆 50번째 도메인 마일스톤 + 🎯 F356-A Phase 2 GO 91.7% 압도적 도달 + 🔐 TD-64 영구 해소 + 🧹 SPEC drift cleanup 3회차**
+
+**작업 요약**: 세션 298 사전 등록된 Sprint 332 F504 (방식 B 전수) + 본 세션 사전 등록 3건 (Sprint 333 F507 / Sprint 334 F505 / Sprint 335 F506)을 Master inline 순차 ~4.5h로 4 Sprint 전부 완결. 사용자 결정 6종(AskUserQuestion): (1) 경량 작업 multiSelect 3건 (F drift + B F505 + C 39번째 모두 채택), (2) 헤비 작업 F504 방식 B 전수 채택, (3) 39번째 도메인 AS Aerospace 채택 (4 후보 BE/MU/SH 대비), (4) F504 실행 모드 Master inline LLM, (5) 사전 등록 후 즉시 실행, (6) F504 진입 확인. 누적 5 commits (`025b0d8` 사전 등록 + `2e4f0ee` F507 + `1b73adb` F505 + `3349398` F506 + `d4d5ad2` F504).
+
+**Sprint 333 F507 — SPEC §6 Sprint 330 F502 drift cleanup** (Master inline ~5분, Match 100%, docs-only): commit `c511a09`에서 코드 DONE 입증된 F502가 SPEC.md §6 line 1006 stale PLANNED 잔존 → checkbox `[ ] 📋 PLANNED` → `[x] ✅ DONE` + Sprint 330 헤더 보정 + 결과 단락 보강 (Match 100%, DoD 12/12 PASS). **drift cleanup 패턴 3회차 정착** (S279 F486 8건 → S297 F499 F492 → S299 F507 F502).
+
+**Sprint 334 F505 — LPON vs lpon endpoint normalize (TD-64 영구 해소)** (Master inline ~30분, Match 100%, production deploy Version `c05fadcd`): `services/svc-skill/src/routes/skills.ts:220` `.toUpperCase()` normalize + unit test 4건 (mockDbCaptureBind 도입, svc-skill 422 → 426 PASS +4) + typecheck PASS + dry-run 529.09 KiB + production deploy + **smoke verify PASS** (`?org=lpon` HTTP 200 + total **894** = `?org=LPON` 동일, 이전 8 → 894 통합 노출) + `docs/governance/tenant-id-convention.md` 신설 (AIF-GOV-001 대문자 SSOT 강제 + 적용 범위 + 차기 작업). **분리 Sprint 패턴 3회차** (S296 F493 → S298 F503 → S299 F505 의사결정 vs 코드 마이그 분리).
+
+**Sprint 335 F506 — AS Aerospace 50번째 도메인 / 39번째 신규 산업** (Master inline ~30분, Match 100%, DoD 12/12 PASS): aerospace.ts 280 lines (6 함수 scheduleLaunch / applyOrbitFeeTier / executeMission / transitionMissionStatus / retireSatelliteBatch / processAbortRefund + AerospaceError) + spec-container 9 files + DOMAIN_MAP 50번째 + parser AS prefix + REGISTRY AS-001~006 (withRuleId × 6) + utils 416 → **423 PASS** (+7) + typecheck 직접 tsc 우회 PASS + detect-bl 296 → **302/302 = 100%** 유지 + 39 신규 산업 연속 0 ABSENCE + **TR+AV+CS+AS 항공 4-클러스터 신규 형성**. **🏆 withRuleId 51 Sprint 연속 정점** (S264~S299). **🏆 50번째 도메인 마일스톤** (S262 5 → S299 50, 10배 확장). 거울 변환 fastfood.ts → aerospace.ts 1:1 패턴 3회차 (S297 carsharing → S298 fastfood → S299 aerospace).
+
+**Sprint 332 F504 — 방식 B 전수 적용 (Sonnet 8 containers × 6 criteria = 48 LLM calls)** (Master inline ~3h, Match 100%, 비용 $2.4386 예상 $4.5 -46% 절약): 🎯 **F356-A Phase 2 GO 압도적 도달** — 44/48 = **91.7%** PASS rate (목표 80% +11.7%pp 초과), AI-Ready PASS 8/8 (100%), avg score 0.860 (F492 0.841 → +0.019). **F492 약점 2종 영구 해소**: io_structure 37.5% → **75.0%** (+37.5%pp, 80% -5pp 근접), comment_doc_alignment 37.5% → **87.5%** (+50.0%pp). **6 criteria 정점 4종**: source_consistency 100% 🎯 / testability 100% 🎯 / exception_handling 100% 🎯 / comment_doc_alignment 87.5% 🎯 / srp_reusability 87.5% 🎯 / io_structure 75%. 7 containers (lpon-budget/cancel/gift/payment/purchase/refund/settlement) provenance.yaml에 inputSchema (40 BL 함수) + esToBlMapping (23 ES↔BL) + 23 runbooks `**Related BL (F504 cross-ref)**` 헤더. 산출: AIF-RPRT-121 + reports JSON+MD. **방식 B 우위 3축 입증 3회차** (S327 F496 PoC 단일 → S332 F504 전수): 효과 + 재활용성 + O(N) 비용. **AIF-REQ-035 Phase 3 Should S-1 완결**. 추정 95.8% vs 실측 91.7% (-4.1%pp = 8 containers 자연 분산).
+
+**🏆 마일스톤**: 🏆 **50번째 도메인** (S262 5 → S299 50, 10배 확장) + 🏆 **withRuleId 51 Sprint 연속 정점** (S264~S299) + 🏆 **detect-bl 302/302 = 100% 유지** (50 containers) + 🏆 **39 신규 산업 연속 0 ABSENCE** + 🎯 **F356-A Phase 2 GO 종결** (NOGO → 91.7%) + 🔐 **TD-64 영구 해소** + 🛰️ **TR+AV+CS+AS 항공 4-cluster** 신규 형성 + Master inline **28회 연속 회피 패턴 유지** (S253~S335).
+
+**검증 결과**:
+- ✅ typecheck (직접 tsc 우회) PASS
+- ✅ utils 423 PASS (+7 vs S298), svc-skill 426 PASS (+4 vs S298)
+- ✅ detect-bl 302/302 = 100% 유지 (50 containers)
+- ✅ smoke verify `?org=lpon` → 894 통합 노출 (production)
+- ✅ Sonnet 48 calls 평가 PASS (44/48 = 91.7%, AI-Ready 8/8)
+- ✅ production deploy svc-skill Version `c05fadcd`
+
+**메타 학습 4종**:
+- (a) **drift cleanup 표준 절차 정착** (S279 F486 8건 → S297 F499 → S299 F507 3회차) — post-MERGED hook 자동화 후보
+- (b) **분리 Sprint 패턴 정착** (의사결정 docs vs 코드 마이그) — S296 F493 → S298 F503 → S299 F505 3회차
+- (c) **거울 변환 패턴 정점 도달** — carsharing → fastfood → aerospace 1:1 매핑 3회차로 ~30분 신규 산업 부트스트래핑
+- (d) **방식 B 우위 실측 입증** — 추정 95.8% vs 실측 91.7% (-4.1%pp 자연 분산), AIF-RPRT-121 정리
+
+**차기 후보 (후속 세션)**:
+- F490 secret rotation 7-worker (~3h, ~/.secrets/ 정본 의존)
+- F497/F498 RBAC 후속 코드 마이그레이션 (F493 분리 권고 5건 중 일부)
+- F356-B 후속 검토 (Phase 2 GO 종결 후 다음 단계)
+- 51번째 신규 산업 / 신규 클러스터 도전 (withRuleId 52 Sprint 정점)
 
 ### 세션 298 (2026-05-11) — Sprint 321 잔재 정리 + `/ax:todo plan` Pipeline 3건 (330/331/332) 🧹🍔 **Sprint 330 F502 Fast Food FS 38번째 신규 산업 ✅ + Sprint 331 F503 LPON case 정책 결정 docs ✅ + Sprint 332 F504 방식 B 전수 차기 세션 분리**
 

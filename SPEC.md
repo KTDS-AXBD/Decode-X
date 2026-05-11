@@ -1269,17 +1269,18 @@
 > **의존성**: 없음 (svc-skill 단독). Production deploy 필요 (wrangler 권한).
 > **메타**: AIF-REQ-040 R3 후속 종결. LPON vs lpon 케이스 분리는 별도 TD로 분리 유지.
 
-**Sprint 330 (F502 — Fast Food FS 합성 도메인 PoC, 49번째 도메인 / 38번째 신규 산업, 📋 PLANNED 세션 298 사전 등록 2026-05-11):**
-> **배경**: 세션 297 종결 시 차기 후보로 명시된 신규 산업 38번째. 사용자 결정으로 FS(Fast Food) 채택(2026-05-11 AskUserQuestion, multiSelect 3건 중 1건). withRuleId 재사용 패턴 49 Sprint 연속 정점(S264~S326) → 50 Sprint 도전.
-> **목표**: 38번째 신규 산업 합성 도메인 추가. withRuleId 재사용 50 Sprint 연속 정점 유지. detect-bl 100% 유지(290/290 → 296/296 추정 +6 BL).
-> **fs 실측 결과 (예상)**:
+**Sprint 330 (F502 — Fast Food FS 합성 도메인 PoC, 49번째 도메인 / 38번째 신규 산업, ✅ DONE 세션 298 Master inline ~30분 Match 100% 2026-05-11):**
+> **결과**: ✅ DONE — Master inline ~30분, Match 100%, commit `c511a09`. **🏆 withRuleId 50 Sprint 연속 정점 도달** (S264~S278+S283~S319+S295~S298). 🍔 DV+WL+FT+FS QSR 외식 4-클러스터 형성. 38 신규 산업 연속 0 ABSENCE 정점 유지.
+> **배경**: 세션 297 종결 시 차기 후보로 명시된 신규 산업 38번째. 사용자 결정으로 FS(Fast Food) 채택(2026-05-11 AskUserQuestion, multiSelect 3건 중 1건). withRuleId 재사용 패턴 49 Sprint 연속 정점(S264~S326) → 50 Sprint 도달.
+> **목표**: 38번째 신규 산업 합성 도메인 추가. withRuleId 재사용 50 Sprint 연속 정점 유지. detect-bl 100% 유지(290/290 → 296/296 +6 BL).
+> **fs 실측 결과**:
 >   - fastfood.ts (~280 lines, 6 함수 placeOrder / applyComboDiscount / processPayment / transitionOrderStatus / markStaleOrderBatch / settleDailyRevenue + FastFoodError code-in-message)
 >   - 6 BL Threshold × 2 (FS-001 ORDER_LIMIT Path A + FS-002 var-vs-var combo-discount-threshold) + Atomic × 2 (FS-003 payment + FS-006 settlement) + Status × 2 (FS-004 order_state transition + FS-005 batch stale)
 >   - 합성 schema: menu_items / orders / order_items / payments / staff / shift_records / settlements / refunds (8 테이블)
-> **DoD**: fastfood.ts 6 함수 + FastFoodError + spec-container 9 files + DOMAIN_MAP 49번째 entry + parser FS prefix + REGISTRY FS-001~006 (withRuleId × 6) + utils 408 → 416 PASS (+8) + typecheck 직접 tsc 우회 PASS + detect-bl 290 → 296/296 = 100% 유지 + 38 신규 산업 연속 0 ABSENCE + Match ≥ 90%.
+> **DoD 12/12 PASS**: fastfood.ts 6 함수 + FastFoodError ✅ + spec-container 9 files ✅ + DOMAIN_MAP 49번째 entry ✅ + parser FS prefix ✅ + REGISTRY FS-001~006 (withRuleId × 6) ✅ + utils 408 → **416 PASS** (+8) ✅ + typecheck 직접 tsc 우회 PASS ✅ + detect-bl 290 → **296/296 = 100%** 유지 ✅ + 38 신규 산업 연속 0 ABSENCE ✅ + DV+WL+FT+FS QSR 외식 4-클러스터 형성 ✅ + Match 100% ✅ + 거울 변환 carsharing.ts → fastfood.ts 1:1 패턴 일관 ✅.
 > **의존성**: 없음 (packages/utils 단독 영역).
-> **메타**: rules/development-workflow.md S283 audit 1차 통과 — FS prefix 사전 fs 실측 미등록 확정 (세션 298 audit, BL_DETECTOR_REGISTRY 0 hits + fastfood domain file 0건).
-- [ ] F502 📋 **PLANNED** (Fast Food FS 49번째 도메인 — 38번째 신규 산업, **P3**, Sprint 330, 세션 298 사전 등록 2026-05-11): fastfood.ts 6 함수 + FastFoodError + spec-container 9 files + DOMAIN_MAP 49번째 + parser FS prefix + REGISTRY FS-001~006 (withRuleId × 6) + utils 408 → 416 PASS (+8) + detect-bl 290 → 296/296 = 100% 유지 (49 containers) + 38 신규 산업 연속 0 ABSENCE. withRuleId 50 Sprint 연속 정점 도전.
+> **메타**: rules/development-workflow.md S283 audit 1차 통과 — FS prefix 사전 fs 실측 미등록 확정 (세션 298 audit, BL_DETECTOR_REGISTRY 0 hits + fastfood domain file 0건). 거울 변환 카테고리: S297 carsharing → S298 fastfood 2회차 1:1 매핑 (함수명 / Schema / Error class / 주석 매핑 일관). Master inline 26회 연속 회피 패턴 유지 (S253~S330).
+- [x] F502 ✅ **DONE** (Fast Food FS 49번째 도메인 — 38번째 신규 산업, **P3**, Sprint 330, ✅ DONE 세션 298 2026-05-11 Master inline ~30분 Match 100% commit `c511a09`): fastfood.ts 280 lines (6 함수 + FastFoodError) + spec-container 9 files + DOMAIN_MAP 49번째 + parser FS prefix + REGISTRY FS-001~006 (withRuleId × 6) + utils 408 → 416 PASS (+8) + typecheck PASS + detect-bl 290 → 296/296 = 100% 유지 (49 containers) + 38 신규 산업 연속 0 ABSENCE + DV+WL+FT+FS QSR 외식 4-클러스터 형성. **🏆 withRuleId 50 Sprint 연속 정점 도달**.
 
 **Sprint 331 (F503 — LPON vs lpon case sensitivity 정책 결정 + TD-64 등록, ✅ DONE 세션 298 Master inline ~20분 Match 100% 2026-05-11, docs-only):**
 > **결과**: ✅ DONE — Master inline ~20분, docs-only. **3안 정량 분석 결과** — (A) Endpoint Normalize ~15분 / 1 line / 회귀 0 / 즉시 효과, (B) Strict 유지 ~10분 / 0 line / 효과 0 / case drift 재발 위험, (C) Tenant ID 표준화 + D1 migration ~45분 / 8 rows UPDATE / 영구 해소 / production destructive. **사용자 결정 (AskUserQuestion 2종)**: 안 A 채택 + F505 별도 Sprint 분리 (Sprint 331 docs-only 일관성 유지). 산출: docs/03-analysis/features/sprint-331-lpon-case-decision.analysis.md (AIF-ANLS-120, 9 sections).

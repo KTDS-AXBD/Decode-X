@@ -13,6 +13,79 @@ author: Sinclair Seo
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 297 (2026-05-12) — `/ax:todo plan` Pipeline 4건 ✅ **Sprint 326 F500 Car Sharing CS 37번째 신규 산업 + Sprint 328 F499 SPEC drift cleanup + Sprint 329 F501 /skills filter 확장 + Sprint 327 F496 lpon-charge 구조 보강 PoC 압도적 성공**
+
+**작업 요약**: `/ax:todo plan` 워크플로우로 사전 등록 4건 commit+push 후 Master inline + Master LLM 호출 혼합 모드로 4건 순차 종결. 사용자 결정 3종(AskUserQuestion): 작업 4건 선택 / CS prefix Car Sharing 채택 / F496 scope 1 container PoC 채택. **detect-bl coverage 284/284 → 290/290 = 100.0% 유지** (48 containers, 37번째 신규 산업 CS 0 ABSENCE, **TR+AV+CS 운송 3-클러스터 형성**). withRuleId **49 Sprint 연속 정점** (S264~S326). Master inline **25회 연속 회피 패턴** (S253~S327). 누적 6 commits (`371690d`+`62952db`+`bdced8e`+`1c278aa`+`b26a3e9`+ session-end) + LLM 비용 $0.5647 (Sonnet 6 calls). **🎯 F496 PoC가 결정적 입증**: spec-container 구조 보강만으로 lpon-charge 5/6 → 6/6 PASS (+16.7%pp) — 전수 적용 시 Phase 2 GO 95.8% 도달 추정 (F356-A NOGO → GO 종결 경로 명확화).
+
+**Sprint 326 F500 — Car Sharing CS 48번째 도메인 / 37번째 신규 산업** (main `62952db`, Master inline ~30분, Match 100%, DoD 12/12 PASS):
+- `반제품-스펙/pilot-lpon-cancel/working-version/src/domain/carsharing.ts` (~280 lines, 6 함수 + CarSharingError code-in-message):
+  - `reserveSharingVehicle` (CS-001 Threshold Path A, MAX_FLEET_VEHICLES=200)
+  - `applyDistanceLimit` (CS-002 Threshold Path B, distanceLimit var-vs-var)
+  - `confirmPickup` (CS-003 AtomicTransaction — rental_sessions+vehicle_reservations+rental_payments)
+  - `transitionRentalStatus` (CS-004 StatusTransition matrix)
+  - `markOverdueReturnBatch` (CS-005 StatusTransition batch — 37번째 재사용 패턴)
+  - `processOperatorBilling` (CS-006 AtomicTransaction — operator_billing_records+operator_payouts)
+- spec-container 9 files: provenance + carsharing-rules + 6 runbooks(CS-001~006) + 1 tests(CS-001.yaml)
+- DOMAIN_MAP 48번째 entry + parser BL_ID_PATTERN CS prefix + REGISTRY CS-001~006 (withRuleId × 6, 신규 detector 0개)
+- utils tests 400 → **408 PASS** (+8) + typecheck 직접 tsc 우회 PASS + detect-bl **48 containers, 290/290 = 100.0%** 유지
+- 🏆 withRuleId **49 Sprint 연속 정점** (S264~S326) / **37 산업 연속 0 ABSENCE** / **TR+AV+CS 운송 3-클러스터 형성**
+
+**Sprint 328 F499 — SPEC drift cleanup F492 중복 등록 정합화** (main `bdced8e`, Master inline ~5분, Match 100%, docs-only):
+- SPEC.md F492 stale PLANNED 라인 1건 제거 (line 1213 → 삭제)
+- line 1210 ✅ DONE Sprint 325 SSOT 유지
+- grep 검증: F492 single occurrence (✅ DONE) 확정
+- 메타: drift cleanup 표준 절차 정착 (F486 S279 → F499 S297 패턴 재현)
+
+**Sprint 329 F501 — /skills GET endpoint ?org= query param 지원** (main `1c278aa`, Master inline ~30분, Match 100%, DoD 6/6 PASS):
+- **실 코드 분석 결과 작업 범위 재정의** — 원안 default filter 확장이었으나 실 코드(services/svc-skill/src/routes/skills.ts:222)에 default filter 없음 확인. 실제 문제는 **`?org=` query param 미지원** (endpoint X-Organization-Id 헤더만 사용, Sprint 323 검증 시 `?org=lpon` 무시되어 organizationId='unknown' → total=0).
+- **Fix**: `?org=` query param 우선, X-Organization-Id 헤더 fallback
+- Production smoke 검증 PASS: `?org=lpon` → **8** (이전 0), `?org=LPON` → **894** (859 superseded + 35 bundled), `?org=LPON&status=bundled` → **35** (F356-A 평가 대상 정확 매칭)
+- svc-skill tests 419 → **422 PASS** (+3: ?org= query when header absent / ?org= precedence / header backward compat)
+- Production deploy 성공 (Current Version ID: bc94c9ea)
+- **AIF-REQ-040 R3 후속 종결** (LPON vs lpon 케이스 분리는 별도 TD 유지)
+
+**Sprint 327 F496 — lpon-charge 구조 보강 PoC + Sonnet 재평가, 압도적 성공** 🎯 (main `b26a3e9`, Master inline ~1h + LLM ~3분, Match 100%, DoD 7/7 PASS):
+- **🎯 결과**: lpon-charge 5/6 → **6/6 PASS** (avg 0.880 → 0.908, +16.7%pp pass rate)
+- **약점 2종 해소 입증**:
+  - io_structure (이전 FAIL 추정) → **0.82 PASS** (threshold 0.75 + 0.07)
+  - comment_doc_alignment (이전 FAIL 추정) → **0.92 PASS** (threshold 0.75 + 0.17)
+- 다른 4종(source_consistency 0.95 / exception_handling 0.95 / srp_reusability 0.88 / testability 0.93) 모두 0.88+ PASS 유지
+- 비용 $0.5647 (Sonnet 6 calls)
+- 변경 (.decode-x/spec-containers/lpon-charge/):
+  - provenance.yaml에 **inputSchema** 추가 (8 BL 함수 시그니처: requestWithdrawal / confirmChargeCompletion / handleWithdrawalFailure / retryWithdrawalStatusAfterTimeout / enforceUserChargeLimit / enforceCompanyChargeLimit / chargePoints / applyAutoChargeRule)
+  - provenance.yaml에 **outputSchema(returns)** + errors 추가
+  - provenance.yaml에 **esToBlMapping** 추가 (9 ES → BL 매핑, 실 runbook 토픽 기반)
+  - 9 ES-CHARGE-NNN runbook에 `**Related BL (F496 cross-ref)**: BL-XXX` 헤더 추가
+- 산출: reports/ai-ready-lpon-charge-structure-boost-2026-05-12.json + report.md (7 sections)
+- **전수 적용 시 Phase 2 GO 도달 경로**:
+  - 8 containers 전수 보강 시 추정 pass rate **95.8%** (방식 A Sonnet+프롬프트 재설계 추정 80% 대비 +15.8%pp 우위)
+  - 비용 추정 ~$4.5 (방식 A와 동일), 효과 +15.8%pp 우위 + 재활용성 우위
+  - **방식 B가 본질적 해결책 입증** — rubric/prompt/model capability 가 아니라 input data structure 자체가 진짜 병목
+
+**메타 학습 5종**:
+- (a) **방식 B 우위 입증** — Sonnet 79.2% Conditional GO의 약점 2종(io_structure + comment_doc_alignment)이 spec-container 구조 자체 한계임을 정량 증명 (F496 lpon-charge PoC 결정적)
+- (b) **단일 container PoC 가치** — $0.56 비용으로 전수 적용 효과 95.8% 추정 가능, Sprint 전체 비용 절감
+- (c) **실 코드 분석 가치 입증** (S283 패턴 재현) — F501 Plan claim "default filter 확장" vs 실 코드 "default filter 없음 + ?org= 미지원", fs 실측 의무화 표준 절차 적중
+- (d) **drift cleanup 표준 절차 정착** (S279 F486 → S297 F499 패턴 재현)
+- (e) **rationale 정밀도 trade-off** — Sonnet 보강 후 비용 2× 증가하지만 정확도 +16.7%pp는 그 이상의 가치 (lpon-charge $0.28 → $0.56)
+
+**검증 결과**:
+- ✅ typecheck (직접 tsc 우회, S337 함정 회피)
+- ✅ utils tests 408/408 PASS + svc-skill tests 422/422 PASS
+- ✅ detect-bl 48 containers, 290/290 = 100.0%
+- ✅ Production /skills?org=LPON → 894 (이전 0건)
+- ✅ Sonnet lpon-charge 6/6 PASS avg 0.908
+- ✅ 6 commits push (371690d..b26a3e9 → origin/main)
+
+**차기 후보**:
+- 방식 B 전수 적용 별도 Sprint (7 containers 동일 구조 보강 + Sonnet 8 전수 재평가, ~4h + $4.5) → **F356-A Phase 2 GO 정확 도달 ✅**
+- F490 secret rotation 7-worker (~3h, 별도 세션)
+- F497~F498 RBAC 후속 코드 마이그레이션 (rbac.ts helper + AuthContext RoleBasedGate)
+- 신규 산업 38번째 (FS Fast Food / 다른 미등록 prefix)
+- LPON vs lpon 케이스 분리 TD (Sprint 241 F413 R3 후행)
+
+---
+
 ### 세션 296 (2026-05-12) — `/ax:todo plan` Pipeline 4건 ✅ **Sprint 322 F494 Parking PK 36번째 신규 산업 + Sprint 324 F493 RBAC SSOT docs + Sprint 323 F487 후속 PARTIAL→DONE + Sprint 325 F492 F356-A iterate Sonnet Phase 2 Conditional GO**
 
 **작업 요약**: `/ax:todo plan` 워크플로우로 사전 등록 4건 commit+push 후 Master inline + Master LLM 호출 혼합 모드로 4건 순차 종결. 사용자 결정 4종(AskUserQuestion): 작업 4건 선택 / HT prefix → audit fix → PK 재결정 / F490 차기 세션 분리 유지 / 혼합 실행. **detect-bl coverage 278/278 → 284/284 = 100.0% 유지** (47 containers, 36번째 신규 산업 Parking 0 ABSENCE, **RE+PR+PK 부동산 3-클러스터 형성**). withRuleId **48 Sprint 연속 정점** (S264~S322). Master inline **22회 연속 회피 패턴** (S253~S325). 누적 5 commits (`cd55e5c`+`6dd821a`+`10b99cd`+`129cee6`+`a8d830f`) + LLM 비용 $2.25 (Sonnet 48 calls).

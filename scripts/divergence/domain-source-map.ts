@@ -892,6 +892,26 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processOperatorBilling",
     ],
   },
+  {
+    container: "fastfood",
+    rulesPath: `${SPEC_CONTAINER_BASE}/fastfood/rules/fastfood-rules.md`,
+    // 세션 298 (F502): Fast Food 합성 도메인 — 49번째 도메인 (패스트푸드 산업, 38번째 신규 산업).
+    // FS-001~FS-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 50 Sprint 연속 정점 도전 (S264~S278+S283~S319+S295+S296+S297+S298).
+    // 38번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT+TM+VT+GY+PK+CS+FS).
+    // 🏆 38 산업 연속 0 ABSENCE 도전. DV+WL+FT+FS QSR 외식 4-클러스터 확장. 6 BLs 균형 패턴 39번째 정착.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/fastfood.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/fastfood/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "placeOrder",
+      "applyComboDiscount",
+      "processPayment",
+      "transitionOrderStatus",
+      "markStaleOrderBatch",
+      "settleDailyRevenue",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

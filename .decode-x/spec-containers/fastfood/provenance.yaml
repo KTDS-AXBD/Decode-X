@@ -1,0 +1,52 @@
+---
+# Provenance — FFD-001
+# 49번째 도메인 — Fast Food 패스트푸드 합성 도메인 PoC (38번째 신규 산업)
+
+skillId: FFD-001
+extractedAt: "2026-05-11T00:00:00+09:00"
+extractedBy: "Decode-X 세션 298 F502 — withRuleId 재사용 49번째 도메인 (Fast Food 패스트푸드 산업, 38번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/fastfood/rules/fastfood-rules.md"
+    section: "Fast Food 합성 비즈니스 룰 — FS-001~FS-006"
+    businessRules: [FS-001, FS-002, FS-003, FS-004, FS-005, FS-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 패스트푸드(Fast Food) 산업 일반화 PoC. 키오스크주문정원/콤보할인한도/결제atomic/주문상태전환/stale배치/가맹점정산atomic 추상화. 49번째 도메인 + 38번째 신규 산업 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT+TM+VT+GY+PK+CS+FS). detector 신뢰도 누적 활용. 🏆 50 Sprint 연속 정점 도전. DV+WL+FT+FS QSR 외식 4-클러스터 확장 (Delivery 배달 + Wellness 웰니스 + Fitness 피트니스 운동 + Fast Food 패스트푸드)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/fastfood.ts"
+    functions: [placeOrder, applyComboDiscount, processPayment, transitionOrderStatus, markStaleOrderBatch, settleDailyRevenue]
+
+detection:
+  - ruleId: FS-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-11T00:00:00+09:00"
+    notes: "kiosk.active_orders >= limit (UPPERCASE fallback MAX_DAILY_ORDERS_PER_KIOSK, Path A)"
+  - ruleId: FS-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-11T00:00:00+09:00"
+    notes: "membership.discount_used + discount >= discountLimit (Path B, limit keyword)"
+  - ruleId: FS-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-11T00:00:00+09:00"
+    notes: "db.transaction() — kitchen_tickets INSERT + orders UPDATE + order_payments INSERT"
+  - ruleId: FS-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-11T00:00:00+09:00"
+    notes: "pending → confirmed → preparing → ready (+ cancel)"
+  - ruleId: FS-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-11T00:00:00+09:00"
+    notes: "batch: stale 갱신 (CS-005/PK-005/GY-005/VT-005 38번째 재사용)"
+  - ruleId: FS-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-11T00:00:00+09:00"
+    notes: "db.transaction() — franchise_billing_records INSERT + franchise_payouts INSERT + franchise_billing_records UPDATE"

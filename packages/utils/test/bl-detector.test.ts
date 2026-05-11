@@ -800,6 +800,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "EN-004",
       "EN-005",
       "EN-006",
+      "FS-001",
+      "FS-002",
+      "FS-003",
+      "FS-004",
+      "FS-005",
+      "FS-006",
       "FT-001",
       "FT-002",
       "FT-003",
@@ -1087,6 +1093,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["CS-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["CS-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["CS-006"]).toBeDefined();
+  });
+
+  it("FS-001~FS-006 registered (세션 298 F502 — fastfood 49번째 도메인, DV+WL+FT+FS QSR 외식 4-클러스터, 50 Sprint 연속 정점)", () => {
+    expect(BL_DETECTOR_REGISTRY["FS-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["FS-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["FS-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["FS-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["FS-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["FS-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -4523,6 +4538,105 @@ function markOverdueReturnBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["CS-006"]!(src, "carsharing.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+// F502 (세션 298) — fastfood domain FS-001~006 via withRuleId (50 Sprint 연속 정점 도전)
+// DV+WL+FT+FS QSR 외식 4-클러스터 확장 (Delivery + Wellness + Fitness + Fast Food).
+describe("fastfood domain — FS-001~006 via withRuleId (세션 298 F502)", () => {
+  it("FS-001 PRESENCE — active_orders >= MAX_DAILY_ORDERS_PER_KIOSK threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "fastfood.ts",
+      `const MAX_DAILY_ORDERS_PER_KIOSK = 300;
+function placeOrder(db, kioskId, membershipId) {
+  const kiosk = db.prepare("SELECT active_orders, total_capacity FROM kiosk_pool WHERE id = ?").get(kioskId);
+  const limit = kiosk.total_capacity ?? MAX_DAILY_ORDERS_PER_KIOSK;
+  if (kiosk.active_orders >= limit) {
+    throw new FastFoodError('E422-KIOSK-CAPACITY-EXCEEDED', 'Kiosk is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["FS-001"]!(src, "fastfood.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("FS-002 PRESENCE — discount_used + discount >= discountLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "fastfood.ts",
+      `function applyComboDiscount(db, customerId, membershipId, discount) {
+  const membership = db.prepare("SELECT discount_used, discount_limit FROM customer_memberships WHERE id = ? AND customer_id = ? LIMIT 1").get(membershipId, customerId);
+  const discountLimit = membership.discount_limit;
+  if (membership.discount_used + discount >= discountLimit) {
+    throw new FastFoodError('E422-COMBO-DISCOUNT-LIMIT-EXCEEDED', 'Combo discount quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["FS-002"]!(src, "fastfood.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("FS-003 PRESENCE — db.transaction() in processPayment (atomic kitchen_tickets+orders+order_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "fastfood.ts",
+      `function processPayment(db, kioskId, orderId, ticketNumber, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO kitchen_tickets (id, kiosk_id, order_id, ticket_number, status, accepted_at) VALUES (?, ?, ?, ?, 'preparing', ?)").run(ticketId, kioskId, orderId, ticketNumber, acceptedAt);
+    db.prepare("UPDATE orders SET status = 'preparing', ticket_id = ?, payment_id = ? WHERE id = ?").run(ticketId, paymentId, orderId);
+    db.prepare("INSERT INTO order_payments (id, order_id, ticket_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(paymentId, orderId, ticketId, amount, acceptedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["FS-003"]!(src, "fastfood.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("FS-004 PRESENCE — status comparison + 'confirmed'/'preparing'/'ready'/'cancelled' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "fastfood.ts",
+      `function transitionOrderStatus(db, orderId, newStatus) {
+  const order = db.prepare("SELECT status FROM orders WHERE id = ?").get(orderId);
+  if (order.status === 'pending') throw new FastFoodError("E409-ORDER", "Invalid transition", 409);
+  db.prepare("UPDATE orders SET status = 'confirmed' WHERE id = ?").run(orderId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["FS-004"]!(src, "fastfood.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("FS-005 PRESENCE — batch stale update in markStaleOrderBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "fastfood.ts",
+      `function transitionOrderStatus(db, orderId, newStatus) {
+  const order = db.prepare("SELECT status FROM orders WHERE id = ?").get(orderId);
+  if (order.status === 'pending') throw new FastFoodError("E409-ORDER", "Invalid", 409);
+  db.prepare("UPDATE orders SET status = 'confirmed' WHERE id = ?").run(orderId);
+}
+function markStaleOrderBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM kitchen_tickets WHERE status = 'preparing' AND accepted_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE kitchen_tickets SET status = 'stale' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["FS-005"]!(src, "fastfood.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("FS-006 PRESENCE — db.transaction() in settleDailyRevenue (atomic franchise_billing_records+franchise_payouts INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "fastfood.ts",
+      `function settleDailyRevenue(db, franchiseeId, kitchenTicketId, revenue, billingRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO franchise_billing_records (id, franchisee_id, kitchen_ticket_id, revenue, billing_rate, billing_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(billingId, franchiseeId, kitchenTicketId, revenue, billingRate, billingAmount);
+    db.prepare("INSERT INTO franchise_payouts (id, billing_id, franchisee_id, amount, status, settled_at) VALUES (?, ?, ?, ?, 'settled', ?)").run(payoutId, billingId, franchiseeId, billingAmount, settledAt);
+    db.prepare("UPDATE franchise_billing_records SET status = 'settled' WHERE id = ?").run(billingId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["FS-006"]!(src, "fastfood.ts");
     expect(markers).toHaveLength(0);
   });
 });

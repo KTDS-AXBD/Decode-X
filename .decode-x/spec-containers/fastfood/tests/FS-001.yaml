@@ -1,0 +1,97 @@
+# Test scenarios — Fast Food domain FS-001~FS-006
+# 세션 298 F502 — Fast Food 패스트푸드 합성 도메인
+
+scenarios:
+  - id: FS-001-PASS
+    rule: FS-001
+    description: "정원 내 키오스크 주문 — 성공"
+    input: { active_orders: 150, total_capacity: 300 }
+    expected: PASS
+
+  - id: FS-001-FAIL
+    rule: FS-001
+    description: "키오스크 일일 정원 초과 — E422-KIOSK-CAPACITY-EXCEEDED"
+    input: { active_orders: 300, total_capacity: 300 }
+    expected: FAIL
+    error: E422-KIOSK-CAPACITY-EXCEEDED
+
+  - id: FS-002-PASS
+    rule: FS-002
+    description: "콤보 할인 한도 내 사용 — 성공"
+    input: { discount_used: 2000, discount: 1500, discountLimit: 5000 }
+    expected: PASS
+
+  - id: FS-002-FAIL
+    rule: FS-002
+    description: "콤보 할인 한도 초과 — E422-COMBO-DISCOUNT-LIMIT-EXCEEDED"
+    input: { discount_used: 4500, discount: 600, discountLimit: 5000 }
+    expected: FAIL
+    error: E422-COMBO-DISCOUNT-LIMIT-EXCEEDED
+
+  - id: FS-003-PASS
+    rule: FS-003
+    description: "confirmed 주문 결제 atomic — 성공"
+    input: { order_status: confirmed }
+    expected: PASS
+    side_effects:
+      - kitchen_tickets INSERT (status='preparing')
+      - orders UPDATE (status='preparing')
+      - order_payments INSERT (status='paid')
+
+  - id: FS-003-FAIL
+    rule: FS-003
+    description: "non-confirmed 주문 결제 — E404-ORDER"
+    input: { order_status: pending }
+    expected: FAIL
+    error: E404-ORDER
+
+  - id: FS-004-PASS
+    rule: FS-004
+    description: "정상 주문 상태 전환 (pending → confirmed)"
+    input: { current_status: pending, new_status: confirmed }
+    expected: PASS
+
+  - id: FS-004-FAIL
+    rule: FS-004
+    description: "비정상 주문 상태 전환 (pending → ready)"
+    input: { current_status: pending, new_status: ready }
+    expected: FAIL
+    error: E409-ORDER
+
+  - id: FS-005-PASS
+    rule: FS-005
+    description: "preparing 티켓 일괄 stale 마킹"
+    input:
+      tickets:
+        - { id: t-1, status: preparing, accepted_at: "2026-05-10T12:00:00Z" }
+        - { id: t-2, status: preparing, accepted_at: "2026-05-10T12:30:00Z" }
+      now: "2026-05-11T00:00:00Z"
+    expected: PASS
+    output: { staleCount: 2, staleIds: [t-1, t-2] }
+
+  - id: FS-005-EMPTY
+    rule: FS-005
+    description: "stale 대상 없음 — staleCount=0"
+    input:
+      tickets: []
+      now: "2026-05-11T00:00:00Z"
+    expected: PASS
+    output: { staleCount: 0, staleIds: [] }
+
+  - id: FS-006-PASS
+    rule: FS-006
+    description: "ready kitchen ticket 정산 atomic — 성공"
+    input: { ticket_status: ready, revenue: 50000, billing_rate: 0.6 }
+    expected: PASS
+    side_effects:
+      - franchise_billing_records INSERT (status='calculated')
+      - franchise_payouts INSERT (status='settled')
+      - franchise_billing_records UPDATE (status='settled')
+    output: { billingAmount: 30000.0 }
+
+  - id: FS-006-FAIL
+    rule: FS-006
+    description: "non-ready kitchen ticket 정산 시도 — E404-READY-KITCHEN-TICKET"
+    input: { ticket_status: preparing, revenue: 50000, billing_rate: 0.6 }
+    expected: FAIL
+    error: E404-READY-KITCHEN-TICKET

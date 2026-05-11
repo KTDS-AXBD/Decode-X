@@ -173,6 +173,16 @@ describe("rules-parser — parseRulesMarkdown", () => {
     expect(rules.map((r) => r.id)).toEqual(["CS-001", "CS-006"]);
   });
 
+  it("matches fastfood FS-NNN prefix (세션 298 F502, 38번째 신규 산업, DV+WL+FT+FS QSR 외식 4-클러스터)", () => {
+    const md = `| ID | condition | criteria | outcome | exception |
+|----|-----------|----------|---------|-----------|
+| FS-001 | a | b | c | d |
+| FS-006 | a | b | c | d |
+`;
+    const rules = parseRulesMarkdown(md);
+    expect(rules.map((r) => r.id)).toEqual(["FS-001", "FS-006"]);
+  });
+
   it("rejects invalid prefix patterns (BL- without digits, BL-A only)", () => {
     const md = `| ID | condition | criteria | outcome | exception |
 |----|-----------|----------|---------|-----------|

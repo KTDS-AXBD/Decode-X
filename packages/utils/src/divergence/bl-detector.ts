@@ -1220,6 +1220,15 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "CS-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "CS-004"),
   "CS-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "CS-005"),
   "CS-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "CS-006"),
+
+  // F502 (세션 298) — Fast Food 합성 도메인 (49번째 도메인, 패스트푸드 산업, 38번째 신규 산업)
+  // DV+WL+FT+FS QSR 외식 4-클러스터 확장. 50 Sprint 연속 정점 도전 (S264~S278+S283~S319+S295+S296+S297+S298).
+  "FS-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "FS-001"),
+  "FS-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "FS-002"),
+  "FS-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "FS-003"),
+  "FS-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "FS-004"),
+  "FS-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "FS-005"),
+  "FS-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "FS-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

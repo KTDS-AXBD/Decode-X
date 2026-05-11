@@ -153,6 +153,16 @@ describe("rules-parser — parseRulesMarkdown", () => {
     expect(rules.map((r) => r.id)).toEqual(["GY-001", "GY-006"]);
   });
 
+  it("matches parking PK-NNN prefix (세션 296 F494, 36번째 신규 산업, RE+PR+PK 부동산 3-클러스터, S283 audit fix 1차)", () => {
+    const md = `| ID | condition | criteria | outcome | exception |
+|----|-----------|----------|---------|-----------|
+| PK-001 | a | b | c | d |
+| PK-006 | a | b | c | d |
+`;
+    const rules = parseRulesMarkdown(md);
+    expect(rules.map((r) => r.id)).toEqual(["PK-001", "PK-006"]);
+  });
+
   it("rejects invalid prefix patterns (BL- without digits, BL-A only)", () => {
     const md = `| ID | condition | criteria | outcome | exception |
 |----|-----------|----------|---------|-----------|

@@ -1201,6 +1201,16 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "GY-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "GY-004"),
   "GY-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "GY-005"),
   "GY-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "GY-006"),
+
+  // F494 (세션 296) — Parking 합성 도메인 (47번째 도메인, 주차 관리 산업, 36번째 신규 산업)
+  // RE+PR+PK 부동산 3-클러스터 형성. 48 Sprint 연속 정점 도전 (S264~S278+S283~S319+S295+S296).
+  // S283 audit fix 1차: HT(Hotel→hospitality 중복) + FD(Food Delivery→delivery 중복) → PK 채택.
+  "PK-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "PK-001"),
+  "PK-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "PK-002"),
+  "PK-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "PK-003"),
+  "PK-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PK-004"),
+  "PK-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PK-005"),
+  "PK-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "PK-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

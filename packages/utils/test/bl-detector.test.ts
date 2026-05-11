@@ -879,6 +879,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "PH-004",
       "PH-005",
       "PH-006",
+      "PK-001",
+      "PK-002",
+      "PK-003",
+      "PK-004",
+      "PK-005",
+      "PK-006",
       "PR-001",
       "PR-002",
       "PR-003",
@@ -1057,6 +1063,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["GY-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["GY-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["GY-006"]).toBeDefined();
+  });
+
+  it("PK-001~PK-006 registered (세션 296 F494 — parking 47번째 도메인, RE+PR+PK 부동산 3-클러스터, 48 Sprint 연속 정점)", () => {
+    expect(BL_DETECTOR_REGISTRY["PK-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PK-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PK-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PK-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PK-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PK-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -4295,6 +4310,105 @@ function markExpiredMembershipBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["GY-006"]!(src, "gym.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+// F494 (세션 296) — parking domain PK-001~006 via withRuleId (48 Sprint 연속 정점 도전)
+// S283 audit fix 1차: HT(Hotel→hospitality 중복) + FD(Food Delivery→delivery 중복) → PK 채택.
+describe("parking domain — PK-001~006 via withRuleId (세션 296 F494)", () => {
+  it("PK-001 PRESENCE — occupied_slots >= MAX_PARKING_SLOTS threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "parking.ts",
+      `const MAX_PARKING_SLOTS = 500;
+function reserveParkingSlot(db, lotId, passId, vehiclePlate) {
+  const lot = db.prepare("SELECT occupied_slots, total_slots FROM lots WHERE id = ?").get(lotId);
+  const limit = lot.total_slots ?? MAX_PARKING_SLOTS;
+  if (lot.occupied_slots >= limit) {
+    throw new ParkingError('E422-LOT-CAPACITY-EXCEEDED', 'Parking lot is full', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PK-001"]!(src, "parking.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("PK-002 PRESENCE — slot_used >= slotLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "parking.ts",
+      `function applyMonthlyPassLimit(db, memberId, passId) {
+  const pass = db.prepare("SELECT slot_used, slot_limit FROM monthly_passes WHERE id = ? AND member_id = ? LIMIT 1").get(passId, memberId);
+  const slotLimit = pass.slot_limit;
+  if (pass.slot_used >= slotLimit) {
+    throw new ParkingError('E422-PASS-LIMIT-EXCEEDED', 'Monthly pass slot quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PK-002"]!(src, "parking.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("PK-003 PRESENCE — db.transaction() in confirmEntry (atomic parking_sessions+slot_reservations+parking_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "parking.ts",
+      `function confirmEntry(db, lotId, reservationId, vehiclePlate, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO parking_sessions (id, lot_id, reservation_id, vehicle_plate, status, entered_at) VALUES (?, ?, ?, ?, 'active', ?)").run(sessionId, lotId, reservationId, vehiclePlate, enteredAt);
+    db.prepare("UPDATE slot_reservations SET status = 'checked_in', payment_id = ? WHERE id = ?").run(paymentId, reservationId);
+    db.prepare("INSERT INTO parking_payments (id, session_id, reservation_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(paymentId, sessionId, reservationId, amount, enteredAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PK-003"]!(src, "parking.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("PK-004 PRESENCE — status comparison + 'confirmed'/'checked_in'/'completed'/'cancelled' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "parking.ts",
+      `function transitionReservationStatus(db, reservationId, newStatus) {
+  const reservation = db.prepare("SELECT status FROM slot_reservations WHERE id = ?").get(reservationId);
+  if (reservation.status === 'pending') throw new ParkingError("E409-RESERVATION", "Invalid transition", 409);
+  db.prepare("UPDATE slot_reservations SET status = 'confirmed' WHERE id = ?").run(reservationId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PK-004"]!(src, "parking.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("PK-005 PRESENCE — batch unauthorized update in markUnauthorizedExitBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "parking.ts",
+      `function transitionReservationStatus(db, reservationId, newStatus) {
+  const reservation = db.prepare("SELECT status FROM slot_reservations WHERE id = ?").get(reservationId);
+  if (reservation.status === 'pending') throw new ParkingError("E409-RESERVATION", "Invalid", 409);
+  db.prepare("UPDATE slot_reservations SET status = 'confirmed' WHERE id = ?").run(reservationId);
+}
+function markUnauthorizedExitBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM parking_sessions WHERE status = 'active' AND entered_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE parking_sessions SET status = 'unauthorized' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PK-005"]!(src, "parking.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("PK-006 PRESENCE — db.transaction() in processOperatorBilling (atomic operator_billing_records+operator_payouts INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "parking.ts",
+      `function processOperatorBilling(db, operatorId, parkingSessionId, revenue, billingRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO operator_billing_records (id, operator_id, parking_session_id, revenue, billing_rate, billing_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(billingId, operatorId, parkingSessionId, revenue, billingRate, billingAmount);
+    db.prepare("INSERT INTO operator_payouts (id, billing_id, operator_id, amount, status, settled_at) VALUES (?, ?, ?, ?, 'settled', ?)").run(payoutId, billingId, operatorId, billingAmount, settledAt);
+    db.prepare("UPDATE operator_billing_records SET status = 'settled' WHERE id = ?").run(billingId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PK-006"]!(src, "parking.ts");
     expect(markers).toHaveLength(0);
   });
 });

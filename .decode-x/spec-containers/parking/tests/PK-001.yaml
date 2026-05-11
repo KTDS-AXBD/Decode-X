@@ -1,0 +1,97 @@
+# Test scenarios — Parking domain PK-001~PK-006
+# 세션 296 F494 — Parking 주차 관리 합성 도메인
+
+scenarios:
+  - id: PK-001-PASS
+    rule: PK-001
+    description: "정원 내 주차장 슬롯 예약 — 성공"
+    input: { occupied_slots: 250, total_slots: 500 }
+    expected: PASS
+
+  - id: PK-001-FAIL
+    rule: PK-001
+    description: "주차장 정원 초과 — E422-LOT-CAPACITY-EXCEEDED"
+    input: { occupied_slots: 500, total_slots: 500 }
+    expected: FAIL
+    error: E422-LOT-CAPACITY-EXCEEDED
+
+  - id: PK-002-PASS
+    rule: PK-002
+    description: "월회원 한도 내 슬롯 사용 — 성공"
+    input: { slot_used: 8, slotLimit: 30 }
+    expected: PASS
+
+  - id: PK-002-FAIL
+    rule: PK-002
+    description: "월회원 한도 초과 — E422-PASS-LIMIT-EXCEEDED"
+    input: { slot_used: 30, slotLimit: 30 }
+    expected: FAIL
+    error: E422-PASS-LIMIT-EXCEEDED
+
+  - id: PK-003-PASS
+    rule: PK-003
+    description: "confirmed 예약 입차 atomic — 성공"
+    input: { reservation_status: confirmed }
+    expected: PASS
+    side_effects:
+      - parking_sessions INSERT (status='active')
+      - slot_reservations UPDATE (status='checked_in')
+      - parking_payments INSERT (status='paid')
+
+  - id: PK-003-FAIL
+    rule: PK-003
+    description: "non-confirmed 예약 입차 — E404-RESERVATION"
+    input: { reservation_status: pending }
+    expected: FAIL
+    error: E404-RESERVATION
+
+  - id: PK-004-PASS
+    rule: PK-004
+    description: "정상 예약 상태 전환 (pending → confirmed)"
+    input: { current_status: pending, new_status: confirmed }
+    expected: PASS
+
+  - id: PK-004-FAIL
+    rule: PK-004
+    description: "비정상 예약 상태 전환 (pending → completed)"
+    input: { current_status: pending, new_status: completed }
+    expected: FAIL
+    error: E409-RESERVATION
+
+  - id: PK-005-PASS
+    rule: PK-005
+    description: "active 세션 일괄 unauthorized 마킹"
+    input:
+      sessions:
+        - { id: s-1, status: active, entered_at: "2026-05-10T00:00:00Z" }
+        - { id: s-2, status: active, entered_at: "2026-05-09T00:00:00Z" }
+      now: "2026-05-11T00:00:00Z"
+    expected: PASS
+    output: { unauthorizedCount: 2, unauthorizedIds: [s-1, s-2] }
+
+  - id: PK-005-EMPTY
+    rule: PK-005
+    description: "unauthorized 대상 없음 — unauthorizedCount=0"
+    input:
+      sessions: []
+      now: "2026-05-11T00:00:00Z"
+    expected: PASS
+    output: { unauthorizedCount: 0, unauthorizedIds: [] }
+
+  - id: PK-006-PASS
+    rule: PK-006
+    description: "completed parking session 정산 atomic — 성공"
+    input: { session_status: completed, revenue: 50000, billing_rate: 0.45 }
+    expected: PASS
+    side_effects:
+      - operator_billing_records INSERT (status='calculated')
+      - operator_payouts INSERT (status='settled')
+      - operator_billing_records UPDATE (status='settled')
+    output: { billingAmount: 22500.0 }
+
+  - id: PK-006-FAIL
+    rule: PK-006
+    description: "non-completed parking session 정산 시도 — E404-COMPLETED-PARKING-SESSION"
+    input: { session_status: active, revenue: 50000, billing_rate: 0.45 }
+    expected: FAIL
+    error: E404-COMPLETED-PARKING-SESSION

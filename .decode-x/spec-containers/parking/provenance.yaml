@@ -1,0 +1,52 @@
+---
+# Provenance — PKG-001
+# 47번째 도메인 — Parking 주차 관리 합성 도메인 PoC (36번째 신규 산업)
+
+skillId: PKG-001
+extractedAt: "2026-05-12T00:00:00+09:00"
+extractedBy: "Decode-X 세션 296 F494 — withRuleId 재사용 47번째 도메인 (Parking 주차 관리 산업, 36번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/parking/rules/parking-rules.md"
+    section: "Parking 합성 비즈니스 룰 — PK-001~PK-006"
+    businessRules: [PK-001, PK-002, PK-003, PK-004, PK-005, PK-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 주차 관리(Parking) 산업 일반화 PoC. 슬롯정원/월회원한도/입차atomic/예약상태전환/무단출차배치/운영자정산atomic 추상화. 47번째 도메인 + 36번째 신규 산업 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT+TM+VT+GY+PK). detector 신뢰도 누적 활용. 🏆 48 Sprint 연속 정점 도전. RE+PR+PK 부동산 3-클러스터 형성 (Real Estate + Property Mgmt + Parking). audit fix 1차 (HT/Hotel → hospitality 중복 + FD/Food Delivery → delivery 중복 → PK 채택)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/parking.ts"
+    functions: [reserveParkingSlot, applyMonthlyPassLimit, confirmEntry, transitionReservationStatus, markUnauthorizedExitBatch, processOperatorBilling]
+
+detection:
+  - ruleId: PK-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-12T00:00:00+09:00"
+    notes: "lot.occupied_slots >= limit (UPPERCASE fallback MAX_PARKING_SLOTS, Path A)"
+  - ruleId: PK-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-12T00:00:00+09:00"
+    notes: "pass.slot_used >= slotLimit (Path B, limit keyword)"
+  - ruleId: PK-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-12T00:00:00+09:00"
+    notes: "db.transaction() — parking_sessions INSERT + slot_reservations UPDATE + parking_payments INSERT"
+  - ruleId: PK-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-12T00:00:00+09:00"
+    notes: "pending → confirmed → checked_in → completed (+ cancel)"
+  - ruleId: PK-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-12T00:00:00+09:00"
+    notes: "batch: unauthorized 갱신 (BT-005/TM-005/VT-005/GY-005 36번째 재사용)"
+  - ruleId: PK-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-12T00:00:00+09:00"
+    notes: "db.transaction() — operator_billing_records INSERT + operator_payouts INSERT + operator_billing_records UPDATE"

@@ -851,6 +851,27 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processTrainerBilling",
     ],
   },
+  {
+    container: "parking",
+    rulesPath: `${SPEC_CONTAINER_BASE}/parking/rules/parking-rules.md`,
+    // 세션 296 (F494): Parking 합성 도메인 — 47번째 도메인 (주차 관리 산업, 36번째 신규 산업).
+    // PK-001~PK-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 48 Sprint 연속 정점 도전 (S264~S278+S283~S319+S295+S296).
+    // 36번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT+TM+VT+GY+PK).
+    // 🏆 36 산업 연속 0 ABSENCE 도전. RE+PR+PK 부동산 3-클러스터 형성. 6 BLs 균형 패턴 37번째 정착.
+    // S283 audit fix 1차: HT(Hotel→hospitality 중복) + FD(Food Delivery→delivery 중복) → PK 채택.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/parking.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/parking/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "reserveParkingSlot",
+      "applyMonthlyPassLimit",
+      "confirmEntry",
+      "transitionReservationStatus",
+      "markUnauthorizedExitBatch",
+      "processOperatorBilling",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

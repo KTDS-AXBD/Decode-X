@@ -13,6 +13,84 @@ author: Sinclair Seo
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 295 (2026-05-11) — `/ax:todo plan` Pipeline 5건 🎯 **Sprint 321 F487 PARTIAL MERGED + F488 Gym 35번째 신규 산업 + F491 RBAC SSOT + F489 F356-A NOGO 판정**
+
+**작업 요약**: `/ax:todo plan` 워크플로우로 5건 동시 진행 — Sprint 321 autopilot WT(F487 production 재추출) + Master inline 3건(F488 Gym 신규 도메인 + F491 RBAC role SSOT fix-forward + F489 F356-A 종결 보고서). F490 secret rotation은 사용자 결정으로 차기 세션 이관. Sprint 321 autopilot 16분 만에 PR #87 MERGED — **autopilot Production Smoke 14회차 변종 패턴 발견**(PARTIAL — DIVERGENCE 5건 재실측 + repackaging 스크립트 준비만 자체 종결, Production 재추출 + F356-A 재평가 + Master 독립 검증은 Master 위임). Audit 발견 1건 — 사용자 1순위 선택 FT(Fitness)는 Sprint 312/F478 기등록 → GY 단독으로 재결정(rules/development-workflow.md S283 패턴 재현). detect-bl coverage 272/272 → **278/278 = 100.0%** 유지(46 containers, 35번째 신규 산업 0 ABSENCE, **PT+FT+GY 스포츠/헬스 3-클러스터 형성**). withRuleId **47 Sprint 연속 정점 도전** (S264~S278+S283~S319+S295). Master inline **18회 연속 회피 패턴** (S253~S320+S295).
+
+**Sprint 321 F487 — F358 Phase 4 PARTIAL** (autopilot WT 16분, PR #87 `2b150e4` MERGED, Match 100% autopilot scope):
+- 산출(autopilot scope): scripts/divergence/repackage-lpon-35.ts 신규(repackaging 스크립트 준비) + reports 4건 스텁(production-smoke / divergence-recheck / ai-ready-lpon35-rerun / master-validation) + DIVERGENCE 5건 재실측(4 RESOLVED — BL-024/025/027/028 / 1 OPEN BL-026 잔존)
+- 잔여(Master 위임): production 재추출 (LPON 35 R2 재패키징 실 실행), F356-A 재평가 LPON 35 단독, Master ps+curl 독립 9 probe 매트릭스 — production credentials 필요로 별도 후속
+- **autopilot Production Smoke 14회차 변종 패턴**: autopilot이 "준비"만 정직 종결, Master 검증 위임 명시 (S341 16회차 dependency upgrade codemod 변종과 분리 평가)
+- 산출물: `docs/01-plan/features/F487.plan.md` (AIF-PLAN-118 — autopilot 14회차 회피 세트 DoD 5축 명시) + autopilot Plan/Design 추가 작성
+
+**F488 — Gym 합성 도메인 PoC** (main `f4b8e5a`, Master inline ~30분, Match 100%):
+- 46번째 도메인 / 35번째 신규 산업 / PT+FT+GY 3-클러스터 스포츠/헬스 형성
+- `반제품-스펙/pilot-lpon-cancel/working-version/src/domain/gym.ts` (306 lines, 6 함수 + GymError):
+  - `registerGymMember` (GY-001 Threshold Path A, MAX_GYM_CAPACITY=300)
+  - `applyPtLimit` (GY-002 Threshold Path B, ptLimit var-vs-var)
+  - `registerMemberWithLocker` (GY-003 Atomic — members INSERT + lockers UPDATE + member_payments INSERT)
+  - `transitionMembershipStatus` (GY-004 Status — active→paused→expired→cancelled)
+  - `markExpiredMembershipBatch` (GY-005 Status batch — active→expired)
+  - `processTrainerBilling` (GY-006 Atomic — trainer_billing_records + trainer_payouts INSERT/UPDATE)
+- `.decode-x/spec-containers/gym/` (9 files): provenance.yaml + rules/gym-rules.md + runbooks GY-001~006 + tests/GY-001.yaml
+- `scripts/divergence/domain-source-map.ts` — DOMAIN_MAP 46번째 entry 추가 (`container: "gym"`)
+- `packages/utils/src/divergence/rules-parser.ts` — GY prefix 추가 (BL_ID_PATTERN)
+- `packages/utils/src/divergence/bl-detector.ts` — REGISTRY GY-001~006 6 entries (withRuleId × 6)
+- `packages/utils/test/bl-detector.test.ts` — sorted keys GY 삽입 + GY registered describe + 6 PRESENCE describe block
+- `packages/utils/test/rules-parser.test.ts` — GY prefix 매칭 테스트 1건
+- **검증**: utils 392 PASS (+8 vs 384, 회귀 0) + typecheck PASS(직접 tsc 우회, S337 함정 회피) + detect-bl **278/278 = 100.0%** 유지
+
+**F491 — RBAC role SSOT (TD-41 fix-forward 정리)** (main `f9078c4`, Master inline ~10분):
+- `apps/app-web/e2e/fixtures/auth/auth-me-response.ts`: 7-role string union 직접 정의 → production `CfUser['role']` relative import 교체
+- AuthMeResponse role/status 필드 = CfUser['role']/CfUser['status'] 타입 참조
+- 사용처: `auth.spec.ts` 1곳, AUTH_ME_STUB.role='engineer'/status='active' 양쪽 호환 ✅
+- app-web typecheck PASS
+- **분리 TD 등록 후보**: production CfUser 4 role(executive/engineer/admin/guest) vs PRD §18 5 RBAC(Analyst/Reviewer/Developer/Client/Executive) 도메인 모델 불일치 — 별도 도메인 결정 Sprint 필요
+- Sprint 253 P3 fix-forward 잔존 정리 완결
+
+**F489 — F356-A 종결 보고서 + Phase 2 NOGO 판정** (main `a465f99`, Master inline ~30분):
+- F356-A PoC 결과 분석 (rubric-v2 7 skills × 6기준 = 42 점수): **13 PASS / 29 FAIL = 31% pass rate** (Phase 2 GO 임계값 80% 대비 49%pp 부족)
+- **❌ Phase 2 NOGO 판정** — 프롬프트 iterate 또는 Tier 상향(Haiku→Sonnet/Opus) 또는 threshold 재조정 권고
+- 기준별 정확도: srp_reusability 0/7 (0%) 가장 약함 / source_consistency 5/7 (71%) 가장 양호
+- Skill별: lpon-settlement 5/6 (83%) 최고 / lpon-refund 0/6 (0%) 최저
+- 3가지 iterate 권고: (1) Threshold 0.75→0.65, (2) Tier 상향(Sonnet/Opus 재실행 +15~25%pp), (3) 프롬프트 재설계(few-shot examples +20~40%pp)
+- 수기 검증 자체는 인간 검토자 영역(AI self-validation 메타적 의미 약함)으로 별도 후속
+- 산출: `reports/ai-ready-poc-final-report-2026-05-11.md` (신규)
+- F356-A status 정합화: 🔧 IN_PROGRESS → ✅ DONE (PoC 종결 + 결과 분석 종결)
+
+**F490 — Secret rotation 자동화 7-worker 확장** (차기 세션 이관):
+- 사용자 결정: 추정 3h 과중 + 외부 dependency(~/.secrets/ 정본 파일 접근) → 차기 세션 분리
+- SPEC §6 line 1175 📋 PLANNED 상태 유지 (사전 등록만)
+
+**5건 commits 추적**:
+- `33b17a2` docs: Sprint 321 F487 사전 등록 + F488~F491 (세션 295 todo plan)
+- `f4b8e5a` feat: 세션 295 F488 ✅ DONE — Gym 46번째 도메인 / 35번째 신규 산업
+- `2b150e4` feat: Sprint 321 F487 — F358 Phase 4 DIVERGENCE 재실측 + repackaging 스크립트 준비 (#87, squash merge)
+- `f9078c4` fix: 세션 295 F491 ✅ DONE — RBAC role SSOT (TD-41 fix-forward 정리)
+- `a465f99` docs: 세션 295 F489 ✅ DONE — F356-A 종결 보고서 + Phase 2 NOGO 판정
+
+**메타 학습 5종**:
+1. **Audit 누락 패턴 재현 (S283 cross-project)**: 신규 산업 도메인 후보 제시 전 fs 실측 누락 → 사용자 1순위 선택 후 발견(FT 기등록) → 사용자 재결정 비용. 대처: AskUserQuestion 후보 제시 전 prefix grep 실측 의무화
+2. **autopilot Production Smoke 14회차 변종 패턴 신호**: autopilot이 "준비"만 정직 종결 + Master 위임 명시. PR title이 "DIVERGENCE 재실측 + repackaging 스크립트 준비"로 PARTIAL scope 명시 → 14회차 변종(reports hallucination)이 아닌 정상 부분 종결. 향후 분기 진단 휴리스틱 추가
+3. **RBAC role 3 모델 불일치 발견**: CfUser 4(production) vs auth-me-response 7(e2e) vs PRD §18 5(RBAC) — 도메인 모델 결정이 단순 fix-forward 범위 초과. 별도 Sprint 분리 권고
+4. **F356-A self-validation 한계 명시**: AI가 자체 채점 결과를 self-validate하는 것은 메타적으로 의미 약함. 수기 검증은 인간 검토자 영역으로 명시적 분리 필요
+5. **rebase + push 표준 절차 재현 (S280 후행 conflict 패턴 변종)**: F491 push가 Sprint 321 PR #87 main merge 직후 거부 → `git pull --rebase origin main` 1줄 fix로 5초 해소(conflict 없음). post-Sprint Master inline 표준 절차
+
+**검증 결과**:
+- ✅ typecheck PASS (packages/utils + apps/app-web 양쪽, 직접 tsc 우회 S337 함정 회피)
+- ✅ utils tests 392 PASS (+8 vs 384, 회귀 0)
+- ✅ detect-bl 278/278 = 100.0% (46 containers, 35번째 신규 산업 0 ABSENCE)
+- ✅ Sprint 321 PR #87 CI 3/3 SUCCESS (autopilot 자체 검증)
+
+**차기 후보**:
+1. **Sprint 321 F487 후속**: Master credentials production 재추출 + F356-A 재평가 LPON 35 단독
+2. **F490 Secret rotation** (별도 세션, ~3h)
+3. **RBAC 도메인 결정 Sprint**: production CfUser 4 vs PRD §18 5 SSOT 결정 (별도 Sprint)
+4. **F356-A iterate** (Sonnet 재실행 또는 프롬프트 재설계 — 별도 F-item 등록 필요)
+5. **신규 산업 36번째**: HT(Hotel/숙박) 또는 FD(Food Delivery) 등 (parser regex 미등록 prefix 활용)
+
+---
+
 ### 세션 294 (2026-05-11) — Sprint 319+320 순차 Pipeline ✅ DONE 🎯 **Veterinary 34번째 신규 산업 (PT+VT 동물 케어 2-클러스터) + SPEC drift cleanup 4건**
 
 **작업 요약**: Master inline 합 ~40분 (Sprint 319 ~30분 코드 + Sprint 320 ~10분 docs), Match 100%. `/ax:todo plan` 워크플로우로 사전 등록 3건(F485/F486/F487) 검토 → 사용자 결정으로 **Sprint 319+320 순차 Pipeline** 진행 (SPEC.md 영역 충돌 회피 차원). Sprint 319 Veterinary 합성 도메인 PoC + Sprint 320 SPEC drift cleanup 4건 일관 처리. **detect-bl coverage 272/272 = 100.0%** 유지 (45 containers / 34번째 신규 산업 0 ABSENCE / **PT+VT 동물 케어 2-클러스터 형성**). withRuleId **46 Sprint 연속 정점** (S264~S278+S283~S319). **Master inline 17회 연속 회피 패턴** (S253~S320, 1세션 2 Sprint 누적).

@@ -79,19 +79,26 @@ async function loadContainer(containerDir: string): Promise<SkillMeta> {
  * spec-containers 디렉토리 하위 lpon-* 컨테이너를 모두 로드한다.
  * specDir 기본값: .decode-x/spec-containers (프로젝트 루트 기준)
  */
-export async function loadSpecContainers(specDir: string): Promise<SkillMeta[]> {
+export async function loadSpecContainers(specDir: string, prefix?: string): Promise<SkillMeta[]> {
   if (!existsSync(specDir)) {
     throw new Error(`spec-container 디렉토리 없음: ${specDir}`);
   }
   const entries = await readdir(specDir, { withFileTypes: true });
-  const containerDirs = entries
+  let containerDirs = entries
     .filter((e) => e.isDirectory())
-    .map((e) => join(specDir, e.name))
+    .map((e) => e.name)
     .sort();
 
-  if (containerDirs.length === 0) {
-    throw new Error(`spec-container 없음: ${specDir}`);
+  // F492 (Sprint 325): prefix 옵션으로 lpon-* 등 특정 도메인 그룹만 선택 평가 가능
+  if (prefix) {
+    containerDirs = containerDirs.filter((name) => name.startsWith(prefix));
   }
 
-  return Promise.all(containerDirs.map(loadContainer));
+  const fullPaths = containerDirs.map((name) => join(specDir, name));
+
+  if (fullPaths.length === 0) {
+    throw new Error(`spec-container 없음: ${specDir}${prefix ? ` (prefix=${prefix})` : ""}`);
+  }
+
+  return Promise.all(fullPaths.map(loadContainer));
 }

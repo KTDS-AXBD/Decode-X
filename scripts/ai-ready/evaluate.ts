@@ -51,6 +51,7 @@ function parseArgs(): {
   dryRun: boolean;
   directAnthropic: boolean;
   openrouter: boolean;
+  prefix: string | undefined;
 } {
   const args = process.argv.slice(2);
   const get = (flag: string, def: string): string => {
@@ -58,6 +59,7 @@ function parseArgs(): {
     return idx !== -1 && args[idx + 1] !== undefined ? (args[idx + 1] as string) : def;
   };
   const today = new Date().toISOString().slice(0, 10);
+  const prefixIdx = args.indexOf("--prefix");
   return {
     specDir: get("--spec-dir", ".decode-x/spec-containers"),
     model: get("--model", "haiku") as "haiku" | "sonnet" | "opus",
@@ -65,6 +67,7 @@ function parseArgs(): {
     dryRun: args.includes("--dry-run"),
     directAnthropic: args.includes("--direct-anthropic"),
     openrouter: args.includes("--openrouter"),
+    prefix: prefixIdx !== -1 ? args[prefixIdx + 1] : undefined,
   };
 }
 
@@ -330,10 +333,14 @@ async function main(): Promise<void> {
   console.log(`\n🔍 AI-Ready 채점기 — Sprint 232 F402 (TD-42 재작)`);
   console.log(`   spec-dir: ${specDirAbs}`);
   console.log(`   모델: ${args.model} | 출력: ${args.output}`);
-  console.log(`   호출 경로: ${route}\n`);
+  console.log(`   호출 경로: ${route}`);
+  if (args.prefix) {
+    console.log(`   prefix 필터: ${args.prefix}* (F492 Sprint 325)`);
+  }
+  console.log("");
 
   // Step 0: spec-container 목록 확인 (dry-run 포함)
-  const skills = await loadSpecContainers(specDirAbs);
+  const skills = await loadSpecContainers(specDirAbs, args.prefix);
   console.log(`📦 spec-containers: ${skills.length}개 — ${skills.map((s) => s.name).join(", ")}`);
 
   if (args.dryRun) {

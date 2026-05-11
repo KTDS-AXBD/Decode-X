@@ -1192,13 +1192,12 @@
 > **위험**: BL-026 잔존 ABSENCE 1건 — repackaging으로 자동 해소 안 됨, R1 Java 소스 미보유 상태 그대로. Sprint 321 종결 시 BL-026 OPEN 명시 + Sprint 326+ 또는 Tree-sitter Java(F358 Phase 1 후속) 대기.
 - [ ] F487 후속 📋 **PLANNED** (Sprint 323 — production 재추출 + F356-A 재평가 + Master 9-probe smoke, **P1**, Sprint 323, 세션 296 사전 등록 2026-05-12): Sprint 321 PARTIAL 잔존 4축(production 재추출 + smoke 9 probe + F356-A 재평가 + validation report fixup) Master 실행. credentials 미충족 시 차기 세션.
 
-**Sprint 324 (F493 — RBAC 도메인 결정 docs Production CfUser 4 role SSOT, 📋 PLANNED 세션 296 사전 등록 2026-05-12):**
-> **배경**: 세션 295 F491 RBAC role SSOT 작업 중 3 모델 불일치 발견 — production CfUser 4 role(executive/engineer/admin/guest) vs PRD §18 5 RBAC(Analyst/Reviewer/Developer/Client/Executive) vs auth-me-response 7-role(F491 정합화 이전 상태). 단순 fix-forward 범위 초과한 도메인 결정 별도 Sprint로 분리(F491 잔존 권고 항목).
-> **목표**: (1) Production CfUser 4 role을 SSOT로 결정(2026-05-12 AskUserQuestion 사용자 결정), (2) 3 모델 비교 분석 문서 작성, (3) analyst/reviewer/developer/client → 4 role 매핑 테이블 제시, (4) PRD §18 갱신 권고문 + 후속 코드 마이그레이션 별도 Sprint 분리 권고.
-> **DoD**: docs/03-analysis/rbac-domain-decision-2026-05-12.md 신규 (3 모델 비교 + SSOT 결정 + 매핑 테이블 + 권고) + (선택) packages/types/src/auth.ts CfUser type JSDoc 보강 + commit + Match 100% (docs-only).
-> **의존성**: 없음 (docs + types 영역, F494/F487 후속/F492 모두와 충돌 0).
-> **메타**: 코드 마이그레이션(engineer→Developer 같은 RBAC 명칭 통일)은 본 Sprint 범위 밖. 결정 + 매핑 문서화만.
-- [ ] F493 📋 **PLANNED** (RBAC 도메인 결정 docs — Production CfUser 4 role SSOT, **P3**, Sprint 324, 세션 296 사전 등록 2026-05-12): 3 모델 비교 분석 + 4 role SSOT 결정 + 매핑 테이블 + PRD §18 갱신 권고. docs-only Master inline ~1h.
+**Sprint 324 (F493 — RBAC 도메인 결정 docs Production CfUser 4 role SSOT, ✅ DONE 세션 296 Master inline ~1h Match 100% 2026-05-12, docs-only):**
+> **결과**: ✅ DONE — Master inline ~1h, docs-only. **3 모델 실측 정밀 분석** — CfUser 4 role (auth-store.ts production SSOT) + UserRole 3 role (users.ts admin UI용, guest 제외) + rbac.Role 6 role (rbac.ts PRD §18 5 + Admin 권한 매트릭스). **Production CfUser 4 role SSOT 결정** (사용자 결정 AskUserQuestion 2026-05-12) — 실 운영 active 사용 + CF Access JWT 통합 + 코드 마이그레이션 비용 최소 + 운영 직무 매칭 + 향후 매핑 helper로 RBAC 6 role 흡수 가능. **CfUser 4 → rbac.Role 6 매핑 테이블** 명시: executive→Executive+Client / engineer→Developer+Analyst+Reviewer / admin→Admin+Executive+Developer / guest→Client(읽기 전용). **5 후속 F-item 분리 권고**: rbac.ts mapCfRoleToRbacRoles helper / AuthContext RoleBasedGate / UserRole 결정 / PRD §18 본문 갱신 / svc-* CF Access JWT validate. 코드 변경 0 약속 충족.
+> **DoD 6/6 PASS**: 3 모델 비교 ✅ + SSOT 결정 + 근거 ✅ + 매핑 테이블 ✅ + PRD §18 갱신 권고 ✅ + 후속 F-item 분리 권고 ✅ + 코드 변경 0 ✅.
+> **메타**: (a) **3 모델 불일치 패턴 정착** — F491(발견) → F493(결정) 분리 표준 절차 첫 적용, (b) **결정 vs 마이그레이션 분리** — docs-only Sprint로 결정 비용 + 변경 충돌 위험 양쪽 최소화, (c) **인증 vs 권한 분리 명시화** — CfUser(인증)와 rbac.Role(권한) layer 분리 + 매핑 helper 도입 SSOT 분리 핵심.
+> **산출**: docs/03-analysis/features/sprint-324-rbac-domain-decision.analysis.md (AIF-ANLS-119, ~250 lines, 8 sections).
+- [x] F493 ✅ **DONE** (RBAC 도메인 결정 docs — Production CfUser 4 role SSOT, **P3**, Sprint 324, ✅ DONE 세션 296 2026-05-12 Master inline ~1h Match 100%): 3 모델 비교 분석 + 4 role SSOT 결정 + 매핑 테이블 + PRD §18 갱신 권고 + 5 후속 F-item 분리 권고. AIF-ANLS-119.
 
 **Sprint 325 (F492 — F356-A iterate Sonnet/Opus 상향 + 프롬프트 재설계, 📋 PLANNED 세션 296 사전 등록 2026-05-12):**
 > **배경**: 세션 295 F489 F356-A Phase 2 NOGO 판정(31% pass rate < 80%). 권고 3종 중 (1) Threshold 0.65 조정 + (2) Tier 상향 Haiku→Sonnet/Opus + (3) 프롬프트 재설계 few-shot examples 중 가장 효과 큰 (2)+(3) 조합으로 재실행.

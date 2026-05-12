@@ -1,0 +1,97 @@
+# Test scenarios — Music streaming domain MU-001~MU-006
+# 세션 300 F509 — Music streaming 음악 스트리밍 합성 도메인
+
+scenarios:
+  - id: MU-001-PASS
+    rule: MU-001
+    description: "정원 내 스트리밍 세션 시작 — 성공"
+    input: { active_sessions: 25, total_capacity: 50 }
+    expected: PASS
+
+  - id: MU-001-FAIL
+    rule: MU-001
+    description: "동시 세션 정원 초과 — E422-STREAMING-TIER-CAPACITY-EXCEEDED"
+    input: { active_sessions: 50, total_capacity: 50 }
+    expected: FAIL
+    error: E422-STREAMING-TIER-CAPACITY-EXCEEDED
+
+  - id: MU-002-PASS
+    rule: MU-002
+    description: "로열티 수수료 한도 내 사용 — 성공"
+    input: { fee_used: 200000, fee: 150000, royaltyPayoutLimit: 500000 }
+    expected: PASS
+
+  - id: MU-002-FAIL
+    rule: MU-002
+    description: "로열티 수수료 한도 초과 — E422-ROYALTY-PAYOUT-LIMIT-EXCEEDED"
+    input: { fee_used: 450000, fee: 60000, royaltyPayoutLimit: 500000 }
+    expected: FAIL
+    error: E422-ROYALTY-PAYOUT-LIMIT-EXCEEDED
+
+  - id: MU-003-PASS
+    rule: MU-003
+    description: "confirmed 세션 트랙 재생 atomic — 성공"
+    input: { session_status: confirmed }
+    expected: PASS
+    side_effects:
+      - track_plays INSERT (status='playing')
+      - playback_sessions UPDATE (status='playing')
+      - royalty_payouts INSERT (status='paid')
+
+  - id: MU-003-FAIL
+    rule: MU-003
+    description: "non-confirmed 세션 재생 — E404-SESSION"
+    input: { session_status: pending }
+    expected: FAIL
+    error: E404-SESSION
+
+  - id: MU-004-PASS
+    rule: MU-004
+    description: "정상 세션 상태 전환 (pending → confirmed)"
+    input: { current_status: pending, new_status: confirmed }
+    expected: PASS
+
+  - id: MU-004-FAIL
+    rule: MU-004
+    description: "비정상 세션 상태 전환 (pending → completed)"
+    input: { current_status: pending, new_status: completed }
+    expected: FAIL
+    error: E409-SESSION
+
+  - id: MU-005-PASS
+    rule: MU-005
+    description: "completed 트랙 플레이 일괄 만료 마킹"
+    input:
+      track_plays:
+        - { id: tp-1, status: completed, played_at: "2026-05-10T12:00:00Z" }
+        - { id: tp-2, status: completed, played_at: "2026-05-10T12:30:00Z" }
+      now: "2026-05-11T00:00:00Z"
+    expected: PASS
+    output: { expiredCount: 2, expiredIds: [tp-1, tp-2] }
+
+  - id: MU-005-EMPTY
+    rule: MU-005
+    description: "만료 대상 없음 — expiredCount=0"
+    input:
+      track_plays: []
+      now: "2026-05-11T00:00:00Z"
+    expected: PASS
+    output: { expiredCount: 0, expiredIds: [] }
+
+  - id: MU-006-PASS
+    rule: MU-006
+    description: "playing track 구독 취소 환불 atomic — 성공"
+    input: { track_play_status: playing, subscription_cost: 100000, refund_rate: 0.6 }
+    expected: PASS
+    side_effects:
+      - cancellation_refund_records INSERT (status='calculated')
+      - cancellation_refunds INSERT (status='refunded')
+      - cancellation_refund_records UPDATE (status='refunded')
+    output: { refundAmount: 60000.0 }
+
+  - id: MU-006-FAIL
+    rule: MU-006
+    description: "non-playing track 환불 시도 — E404-PLAYING-TRACK"
+    input: { track_play_status: completed, subscription_cost: 100000, refund_rate: 0.6 }
+    expected: FAIL
+    error: E404-PLAYING-TRACK

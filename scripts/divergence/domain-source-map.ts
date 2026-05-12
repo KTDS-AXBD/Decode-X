@@ -934,6 +934,27 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processAbortRefund",
     ],
   },
+  {
+    container: "music",
+    rulesPath: `${SPEC_CONTAINER_BASE}/music/rules/music-rules.md`,
+    // 세션 300 (F509): Music streaming 합성 도메인 — 51번째 도메인 (음악 스트리밍 산업, 40번째 신규 산업).
+    // MU-001~MU-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 52 Sprint 연속 정점 도전 (S264~S278+S283~S319+S295~S300).
+    // 40번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT+TM+VT+GY+PK+CS+FS+AS+MU).
+    // 거울 변환 4회차 (carsharing → fastfood → aerospace → music) — 디지털 콘텐츠 도메인 신규.
+    // 6 BLs 균형 패턴 41번째 정착.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/music.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/music/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "startStream",
+      "applyRoyaltyTier",
+      "playTrack",
+      "transitionSessionStatus",
+      "expireTrackPlayBatch",
+      "processCancellationRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

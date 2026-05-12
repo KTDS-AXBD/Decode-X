@@ -1239,6 +1239,16 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "AS-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "AS-004"),
   "AS-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "AS-005"),
   "AS-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "AS-006"),
+
+  // F509 (세션 300) — Music streaming 합성 도메인 (51번째 도메인, 음악 스트리밍 산업, 40번째 신규 산업)
+  // 거울 변환 4회차 (carsharing → fastfood → aerospace → music). 52 Sprint 연속 정점 도전 (S264~S278+S283~S319+S295~S300).
+  // 디지털 콘텐츠 도메인 신규. withRuleId 재사용 51번째 도메인.
+  "MU-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "MU-001"),
+  "MU-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "MU-002"),
+  "MU-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "MU-003"),
+  "MU-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "MU-004"),
+  "MU-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "MU-005"),
+  "MU-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "MU-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

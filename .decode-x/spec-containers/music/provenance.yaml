@@ -1,0 +1,52 @@
+---
+# Provenance — MUS-001
+# 51번째 도메인 — Music streaming 합성 도메인 PoC (40번째 신규 산업)
+
+skillId: MUS-001
+extractedAt: "2026-05-12T00:00:00+09:00"
+extractedBy: "Decode-X 세션 300 F509 — withRuleId 재사용 51번째 도메인 (Music streaming 음악 스트리밍 산업, 40번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/music/rules/music-rules.md"
+    section: "Music streaming 합성 비즈니스 룰 — MU-001~MU-006"
+    businessRules: [MU-001, MU-002, MU-003, MU-004, MU-005, MU-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 음악 스트리밍(Music streaming) 산업 일반화 PoC. 동시스트림한도/로열티수수료한도/재생atomic/세션상태전환/플레이리스트퇴역배치/구독취소환불atomic 추상화. 51번째 도메인 + 40번째 신규 산업 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT+TM+VT+GY+PK+CS+FS+AS+MU). detector 신뢰도 누적 활용. 🏆 52 Sprint 연속 정점 도전. 거울 변환 4회차 (carsharing → fastfood → aerospace → music)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/music.ts"
+    functions: [startStream, applyRoyaltyTier, playTrack, transitionSessionStatus, expireTrackPlayBatch, processCancellationRefund]
+
+detection:
+  - ruleId: MU-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-12T00:00:00+09:00"
+    notes: "tier.active_sessions >= limit (UPPERCASE fallback MAX_CONCURRENT_SESSIONS_PER_TIER, Path A)"
+  - ruleId: MU-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-12T00:00:00+09:00"
+    notes: "contract.fee_used + fee >= royaltyPayoutLimit (Path B, limit keyword)"
+  - ruleId: MU-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-12T00:00:00+09:00"
+    notes: "db.transaction() — track_plays INSERT + playback_sessions UPDATE + royalty_payouts INSERT"
+  - ruleId: MU-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-12T00:00:00+09:00"
+    notes: "pending → confirmed → playing → paused → completed (+ abort)"
+  - ruleId: MU-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-12T00:00:00+09:00"
+    notes: "batch: expire 갱신 (AS-005/FS-005/CS-005/PK-005/GY-005/VT-005 40번째 재사용)"
+  - ruleId: MU-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-12T00:00:00+09:00"
+    notes: "db.transaction() — cancellation_refund_records INSERT + cancellation_refunds INSERT + cancellation_refund_records UPDATE"

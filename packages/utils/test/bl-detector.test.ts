@@ -677,7 +677,7 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 260 detectors (Sprint 317 F483 — lpon-payment BL-013/016/017/018/019 ABSENCE markers, 100% coverage 마일스톤)", () => {
+  it("exposes 308 detectors (세션 300 F509 — music streaming 51번째 도메인 +6 detectors, 52 Sprint 연속 정점 도전)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AG-001",
       "AG-002",
@@ -884,6 +884,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "MR-004",
       "MR-005",
       "MR-006",
+      "MU-001",
+      "MU-002",
+      "MU-003",
+      "MU-004",
+      "MU-005",
+      "MU-006",
       "P-001",
       "P-002",
       "P-003",
@@ -1117,6 +1123,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["AS-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["AS-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["AS-006"]).toBeDefined();
+  });
+
+  it("MU-001~MU-006 registered (세션 300 F509 — music streaming 51번째 도메인, 40번째 신규 산업, 52 Sprint 연속 정점 도전, 거울 변환 4회차)", () => {
+    expect(BL_DETECTOR_REGISTRY["MU-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["MU-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["MU-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["MU-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["MU-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["MU-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -4752,6 +4767,105 @@ function retireSatelliteBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["AS-006"]!(src, "aerospace.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+// F509 (세션 300) — music streaming domain MU-001~006 via withRuleId (52 Sprint 연속 정점 도전)
+// 거울 변환 4회차 (carsharing → fastfood → aerospace → music). 디지털 콘텐츠 도메인 신규.
+describe("music streaming domain — MU-001~006 via withRuleId (세션 300 F509)", () => {
+  it("MU-001 PRESENCE — active_sessions >= MAX_CONCURRENT_SESSIONS_PER_TIER threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "music.ts",
+      `const MAX_CONCURRENT_SESSIONS_PER_TIER = 50;
+function startStream(db, streamingTierId, contractId) {
+  const tier = db.prepare("SELECT active_sessions, total_capacity FROM streaming_tiers WHERE id = ?").get(streamingTierId);
+  const limit = tier.total_capacity ?? MAX_CONCURRENT_SESSIONS_PER_TIER;
+  if (tier.active_sessions >= limit) {
+    throw new MusicError('E422-STREAMING-TIER-CAPACITY-EXCEEDED', 'Streaming tier is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MU-001"]!(src, "music.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("MU-002 PRESENCE — fee_used + fee >= royaltyPayoutLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "music.ts",
+      `function applyRoyaltyTier(db, artistId, contractId, fee) {
+  const contract = db.prepare("SELECT fee_used, fee_limit FROM royalty_contracts WHERE id = ? AND artist_id = ? LIMIT 1").get(contractId, artistId);
+  const royaltyPayoutLimit = contract.fee_limit;
+  if (contract.fee_used + fee >= royaltyPayoutLimit) {
+    throw new MusicError('E422-ROYALTY-PAYOUT-LIMIT-EXCEEDED', 'Royalty payout quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MU-002"]!(src, "music.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("MU-003 PRESENCE — db.transaction() in playTrack (atomic track_plays+playback_sessions+royalty_payouts INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "music.ts",
+      `function playTrack(db, streamingTierId, sessionId, trackIsrc, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO track_plays (id, streaming_tier_id, session_id, track_isrc, status, played_at) VALUES (?, ?, ?, ?, 'playing', ?)").run(trackPlayId, streamingTierId, sessionId, trackIsrc, playedAt);
+    db.prepare("UPDATE playback_sessions SET status = 'playing', track_play_id = ?, royalty_payout_id = ? WHERE id = ?").run(trackPlayId, royaltyPayoutId, sessionId);
+    db.prepare("INSERT INTO royalty_payouts (id, session_id, track_play_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(royaltyPayoutId, sessionId, trackPlayId, amount, playedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MU-003"]!(src, "music.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("MU-004 PRESENCE — status comparison + 'confirmed'/'playing'/'paused'/'completed' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "music.ts",
+      `function transitionSessionStatus(db, sessionId, newStatus) {
+  const session = db.prepare("SELECT status FROM playback_sessions WHERE id = ?").get(sessionId);
+  if (session.status === 'pending') throw new MusicError("E409-SESSION", "Invalid transition", 409);
+  db.prepare("UPDATE playback_sessions SET status = 'confirmed' WHERE id = ?").run(sessionId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MU-004"]!(src, "music.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("MU-005 PRESENCE — batch expire update in expireTrackPlayBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "music.ts",
+      `function transitionSessionStatus(db, sessionId, newStatus) {
+  const session = db.prepare("SELECT status FROM playback_sessions WHERE id = ?").get(sessionId);
+  if (session.status === 'pending') throw new MusicError("E409-SESSION", "Invalid", 409);
+  db.prepare("UPDATE playback_sessions SET status = 'confirmed' WHERE id = ?").run(sessionId);
+}
+function expireTrackPlayBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM track_plays WHERE status = 'completed' AND played_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE track_plays SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MU-005"]!(src, "music.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("MU-006 PRESENCE — db.transaction() in processCancellationRefund (atomic cancellation_refund_records+cancellation_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "music.ts",
+      `function processCancellationRefund(db, subscriberId, trackPlayId, subscriptionCost, refundRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO cancellation_refund_records (id, subscriber_id, track_play_id, subscription_cost, refund_rate, refund_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(cancellationRefundId, subscriberId, trackPlayId, subscriptionCost, refundRate, refundAmount);
+    db.prepare("INSERT INTO cancellation_refunds (id, cancellation_refund_id, subscriber_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, cancellationRefundId, subscriberId, refundAmount, refundedAt);
+    db.prepare("UPDATE cancellation_refund_records SET status = 'refunded' WHERE id = ?").run(cancellationRefundId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MU-006"]!(src, "music.ts");
     expect(markers).toHaveLength(0);
   });
 });

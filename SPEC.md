@@ -1366,12 +1366,19 @@
 > **메타**: (a) **F493 분리 권고 일괄 완결 효율** — 사전 등록 시 1-2건 추정이었으나 영역 분리 충돌 0건 확인 후 4건 일괄 진입 가능 판정. (b) **3-layer 분리 명시화 가치** — CfRole(인증)/UserRole(관리)/Role(권한) 3 SSOT 분리 + 매핑 함수가 SoC 명확. (c) **SPEC §10 SSOT 신설 패턴** — PRD docx 갱신 대신 SPEC 신설로 in-repo SSOT 분리, 차기 도메인(예: organizationSchema)도 동일 패턴 적용 가능.
 - [x] F510 ✅ **DONE** (F493 분리 권고 4건 일괄 RBAC 마이그레이션, **P2**, Sprint 338, ✅ DONE 세션 300 2026-05-12 Master inline ~1.5h Match 100%): F-NEW-A rbac.ts helper SSOT(types) + utils re-export + 단위 test 13 (rbac.test.ts 27 PASS) + F-NEW-B AuthContext usePermission hook + RoleBasedGate 컴포넌트 + F-NEW-C UserRole JSDoc + F-NEW-D SPEC §10 RBAC Roles 신설 (6 sub-sections). F-NEW-E svc-* CF Access JWT validate (~3h) 별도 Phase 3 후속.
 
-**Sprint 339 (F490 — Secret rotation 자동화 7-worker 일괄 확장, 📋 PLANNED 세션 300 Sprint 할당 2026-05-12, Master inline ~3h):**
-> **배경**: 세션 295 F490 사전 등록 후 5 세션 미진입 (Pipeline 우선순위 밀림 — 신규 산업 + LLM eval + drift cleanup). 본 Sprint에서 Sprint 번호 정식 할당 + 진입.
-> **목표**: scripts/secret-sync-svc-skill.sh 패턴 → 7 worker × 3종 secret × 3 env = 최대 63건 일괄 rotation 자동화. ~/.secrets/ 정본 + verify 패턴 (실 API path) 포함.
-> **DoD**: scripts/secret-sync-all-workers.sh (또는 동등 도구) 신설 + 7 worker × 3 secret × 3 env 일괄 rotation dry-run + 최소 1 worker production verify + reports/sprint-339-secret-rotation-2026-05-12.md + Match ≥ 90%.
-> **의존성**: ~/.secrets/ 3 정본 파일 존재 + CLOUDFLARE_API_TOKEN 권한.
-> **메타**: Worker Secret Store env-scoped divergence (S246+S260+S268 누적) 패턴 보호 본격화. F490 → Sprint 339 binding (세션 295 사전 등록 항목 활성화).
+**Sprint 339 (F490 — Secret rotation 자동화 7-worker 일괄 확장 (scope 축소 dry-run only), ✅ DONE 세션 300 Master inline ~1h Match 100% 2026-05-12):**
+> **결과**: ✅ DONE — Master inline ~1h, Match 100%. **scope 축소 (사용자 결정 S300 AskUserQuestion)** — 자동화 스크립트 + dry-run only 완결. 실 production rotation은 차기 세션 3-step 절차 (단일 worker 검증 → dry-run → 전체 적용) deferred.
+> **산출**: scripts/secret-sync-all-workers.sh (~210 lines) 신설 + reports/sprint-339-secret-rotation-2026-05-12.md (AIF-RPRT-122).
+> **핵심 기능**:
+> - Worker × Secret 매핑: 7 worker별 사용 secret 명시 (LLM 사용 5 워커 = 3 secret / 비 LLM 2 워커 = INTERNAL_API_SECRET만)
+> - real HOME 자동 감지: `getent passwd $USER` + `AX_TARGET_HOME` / `SECRETS_DIR` env var override (CLAUDE.md `.claude-work` 환경 대응 패턴)
+> - 정본 파일 검증: chmod 600 + size + CLOUDFLARE_AI_GATEWAY_URL full path 형식 (`/openrouter/v1/chat/completions` suffix)
+> - dry-run / --apply 분리: --apply 시 사용자 confirm prompt (실 production rotation 안전성)
+> **dry-run 실측**: 7 worker 디렉토리 ✅ + 정본 3 파일 ✅ (chmod 600 + size 64/73/110) + **30건 실행 계획** (svc-ingestion 2 + svc-extraction 6 + svc-policy 6 + svc-ontology 6 + svc-skill 6 + svc-queue-router 2 + svc-mcp-server 2 = 30 ops × 2 env).
+> **DoD 6/6 PASS**: scripts/secret-sync-all-workers.sh 신설 ✅ + real HOME 자동 감지 ✅ + dry-run 30건 실행 계획 + 정본 검증 PASS ✅ + --apply 모드 + confirm prompt ✅ + 차기 세션 3-step 절차 명시 ✅ + reports MD (AIF-RPRT-122) 작성 ✅ + Match 100%.
+> **의존성**: ~/.secrets/ 3 정본 파일 ✅ (검증 PASS, real HOME `/home/sinclair/.secrets`).
+> **메타**: (a) **scope 축소 결정 가치** — 사전 등록 ~3h 추정 vs scope 축소 ~1h, 신중성 확보 + 세션 시간 제약 대응. (b) **real HOME 자동 감지 패턴 정착** — `.claude-work` HOME 환경 차이 대응 표준 패턴. (c) **Worker × Secret 매핑 정밀화** — fs 점검으로 작업량 42 → 30 (-29% 효율).
+- [x] F490 ✅ **DONE** (Secret rotation 자동화 7-worker 일괄 확장 — scope 축소 dry-run only, **P2**, Sprint 339, ✅ DONE 세션 300 2026-05-12 Master inline ~1h Match 100%): scripts/secret-sync-all-workers.sh ~210 lines + real HOME 자동 감지(getent) + Worker×Secret 매핑(LLM 5 × 3 + 비 LLM 2 × 1 = 30 ops) + --apply confirm prompt + dry-run 30건 검증 PASS + reports MD AIF-RPRT-122 + 차기 세션 3-step 실 rotation 절차 명시. **실 production rotation은 차기 세션 신중 진행** (단일 검증 → dry-run → 전체 적용).
 
 **Sprint 미정 사전 F-item 등록 (세션 295 사전 등록, 차기 Master inline 또는 별도 Sprint):**
 - [x] F488 ✅ **DONE** (Gym 헬스장 매장 GY — 35번째 신규 산업 / 46번째 도메인, **P2**, 세션 295 Master inline ~30분 Match 100%): gym.ts 306 lines (6 함수 + GymError) + spec-container 9 files (provenance + rules/gym-rules.md + runbooks/GY-001~006.md + tests/GY-001.yaml) + DOMAIN_MAP 46번째 entry (sourceCodeStatus="present") + parser GY prefix 추가 (BL_ID_PATTERN) + REGISTRY GY-001~006 6 entries (Threshold × 2 + Atomic × 2 + Status × 2, withRuleId × 6) + utils tests **392 PASS** (+8 vs 384) + typecheck PASS (직접 tsc 우회, S337 함정 회피) + detect-bl **278/278 = 100.0%** 유지 (46 containers, 35번째 신규 산업 0 ABSENCE) + PT+FT+GY 스포츠/헬스 3-클러스터 형성. **🏆 35 산업 연속 0 ABSENCE 정점 유지** + **withRuleId 47 Sprint 연속 정점** (S264~S278+S283~S319+S295). **메타**: rules/development-workflow.md S283 Sprint 사전 등록 audit 적용 결과 FT는 Sprint 312/F478에 이미 등록됨 발견 → GY 단독 prefix로 재결정 (audit 패턴 재현). Master inline 18회 연속 회피 패턴 유지 (S253~S320+S295).

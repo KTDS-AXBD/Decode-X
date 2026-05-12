@@ -955,6 +955,27 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processCancellationRefund",
     ],
   },
+  {
+    container: "shipping",
+    rulesPath: `${SPEC_CONTAINER_BASE}/shipping/rules/shipping-rules.md`,
+    // 세션 301 (F511): Shipping 합성 도메인 — 52번째 도메인 (해운/선적 산업, 41번째 신규 산업).
+    // SH-001~SH-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 53 Sprint 연속 정점 도전 (S264~S278+S283~S319+S295~S301).
+    // 41번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT+TM+VT+GY+PK+CS+FS+AS+MU+SH).
+    // 거울 변환 5회차 (carsharing → fastfood → aerospace → music → shipping) — LG+SH 국제무역 클러스터 신규 형성.
+    // 6 BLs 균형 패턴 42번째 정착. 🏆 52번째 도메인 마일스톤 (S262 5 → S301 52, 10.4배 확장).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/shipping.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/shipping/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "bookVoyage",
+      "applyFreightTier",
+      "loadCargo",
+      "transitionBookingStatus",
+      "expireCargoLoadBatch",
+      "processDemurrageRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

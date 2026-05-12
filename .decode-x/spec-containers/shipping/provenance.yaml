@@ -1,0 +1,52 @@
+---
+# Provenance — SHP-001
+# 52번째 도메인 — Shipping 합성 도메인 PoC (41번째 신규 산업)
+
+skillId: SHP-001
+extractedAt: "2026-05-12T00:00:00+09:00"
+extractedBy: "Decode-X 세션 301 F511 — withRuleId 재사용 52번째 도메인 (Shipping 해운/선적 산업, 41번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/shipping/rules/shipping-rules.md"
+    section: "Shipping 합성 비즈니스 룰 — SH-001~SH-006"
+    businessRules: [SH-001, SH-002, SH-003, SH-004, SH-005, SH-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 해운/선적(Shipping) 산업 일반화 PoC. 컨테이너슬롯한도/운임수수료한도/화물적재atomic/항해예약상태전환/만료화물일괄/체선료환불atomic 추상화. 52번째 도메인 + 41번째 신규 산업 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT+TM+VT+GY+PK+CS+FS+AS+MU+SH). detector 신뢰도 누적 활용. 🏆 53 Sprint 연속 정점 도전. 거울 변환 5회차 (carsharing → fastfood → aerospace → music → shipping). LG(logistics) + SH(shipping) 국제무역 클러스터 신규 형성."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/shipping.ts"
+    functions: [bookVoyage, applyFreightTier, loadCargo, transitionBookingStatus, expireCargoLoadBatch, processDemurrageRefund]
+
+detection:
+  - ruleId: SH-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-12T00:00:00+09:00"
+    notes: "vessel.active_bookings >= limit (UPPERCASE fallback MAX_CONCURRENT_BOOKINGS_PER_VESSEL, Path A)"
+  - ruleId: SH-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-12T00:00:00+09:00"
+    notes: "contract.fee_used + fee >= freightPaymentLimit (Path B, limit keyword)"
+  - ruleId: SH-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-12T00:00:00+09:00"
+    notes: "db.transaction() — cargo_loads INSERT + voyage_bookings UPDATE + freight_payments INSERT"
+  - ruleId: SH-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-12T00:00:00+09:00"
+    notes: "booked → confirmed → loading → departed → arrived (+ abort)"
+  - ruleId: SH-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-12T00:00:00+09:00"
+    notes: "batch: expire 갱신 (MU-005/AS-005/FS-005/CS-005/PK-005/GY-005/VT-005 41번째 재사용)"
+  - ruleId: SH-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-12T00:00:00+09:00"
+    notes: "db.transaction() — demurrage_refund_records INSERT + demurrage_refunds INSERT + demurrage_refund_records UPDATE"

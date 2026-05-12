@@ -1,0 +1,97 @@
+# Test scenarios — Shipping domain SH-001~SH-006
+# 세션 301 F511 — Shipping 해운/선적 합성 도메인
+
+scenarios:
+  - id: SH-001-PASS
+    rule: SH-001
+    description: "정원 내 항해 예약 — 성공"
+    input: { active_bookings: 100, total_capacity: 200 }
+    expected: PASS
+
+  - id: SH-001-FAIL
+    rule: SH-001
+    description: "선박 슬롯 정원 초과 — E422-VESSEL-CAPACITY-EXCEEDED"
+    input: { active_bookings: 200, total_capacity: 200 }
+    expected: FAIL
+    error: E422-VESSEL-CAPACITY-EXCEEDED
+
+  - id: SH-002-PASS
+    rule: SH-002
+    description: "운임 수수료 한도 내 사용 — 성공"
+    input: { fee_used: 200000, fee: 150000, freightPaymentLimit: 500000 }
+    expected: PASS
+
+  - id: SH-002-FAIL
+    rule: SH-002
+    description: "운임 수수료 한도 초과 — E422-FREIGHT-PAYMENT-LIMIT-EXCEEDED"
+    input: { fee_used: 450000, fee: 60000, freightPaymentLimit: 500000 }
+    expected: FAIL
+    error: E422-FREIGHT-PAYMENT-LIMIT-EXCEEDED
+
+  - id: SH-003-PASS
+    rule: SH-003
+    description: "confirmed 예약 화물 적재 atomic — 성공"
+    input: { booking_status: confirmed }
+    expected: PASS
+    side_effects:
+      - cargo_loads INSERT (status='loading')
+      - voyage_bookings UPDATE (status='loading')
+      - freight_payments INSERT (status='paid')
+
+  - id: SH-003-FAIL
+    rule: SH-003
+    description: "non-confirmed 예약 적재 — E404-BOOKING"
+    input: { booking_status: booked }
+    expected: FAIL
+    error: E404-BOOKING
+
+  - id: SH-004-PASS
+    rule: SH-004
+    description: "정상 예약 상태 전환 (booked → confirmed)"
+    input: { current_status: booked, new_status: confirmed }
+    expected: PASS
+
+  - id: SH-004-FAIL
+    rule: SH-004
+    description: "비정상 예약 상태 전환 (booked → arrived)"
+    input: { current_status: booked, new_status: arrived }
+    expected: FAIL
+    error: E409-BOOKING
+
+  - id: SH-005-PASS
+    rule: SH-005
+    description: "arrived 화물 일괄 만료 마킹"
+    input:
+      cargo_loads:
+        - { id: cl-1, status: arrived, loaded_at: "2026-05-10T12:00:00Z" }
+        - { id: cl-2, status: arrived, loaded_at: "2026-05-10T12:30:00Z" }
+      now: "2026-05-11T00:00:00Z"
+    expected: PASS
+    output: { expiredCount: 2, expiredIds: [cl-1, cl-2] }
+
+  - id: SH-005-EMPTY
+    rule: SH-005
+    description: "만료 대상 없음 — expiredCount=0"
+    input:
+      cargo_loads: []
+      now: "2026-05-11T00:00:00Z"
+    expected: PASS
+    output: { expiredCount: 0, expiredIds: [] }
+
+  - id: SH-006-PASS
+    rule: SH-006
+    description: "arrived 화물 체선료 환불 atomic — 성공"
+    input: { cargo_load_status: arrived, freight_cost: 100000, refund_rate: 0.6 }
+    expected: PASS
+    side_effects:
+      - demurrage_refund_records INSERT (status='calculated')
+      - demurrage_refunds INSERT (status='refunded')
+      - demurrage_refund_records UPDATE (status='refunded')
+    output: { refundAmount: 60000.0 }
+
+  - id: SH-006-FAIL
+    rule: SH-006
+    description: "non-arrived 화물 환불 시도 — E404-ARRIVED-CARGO"
+    input: { cargo_load_status: loading, freight_cost: 100000, refund_rate: 0.6 }
+    expected: FAIL
+    error: E404-ARRIVED-CARGO

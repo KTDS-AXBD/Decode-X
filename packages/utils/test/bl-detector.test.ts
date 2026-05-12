@@ -939,6 +939,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "SB-004",
       "SB-005",
       "SB-006",
+      "SH-001",
+      "SH-002",
+      "SH-003",
+      "SH-004",
+      "SH-005",
+      "SH-006",
       "SP-001",
       "SP-002",
       "SP-003",
@@ -1132,6 +1138,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["MU-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["MU-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["MU-006"]).toBeDefined();
+  });
+
+  it("SH-001~SH-006 registered (세션 301 F511 — shipping 52번째 도메인, 41번째 신규 산업, 53 Sprint 연속 정점 도전, 거울 변환 5회차, LG+SH 국제무역 클러스터)", () => {
+    expect(BL_DETECTOR_REGISTRY["SH-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["SH-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["SH-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["SH-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["SH-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["SH-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -4866,6 +4881,106 @@ function expireTrackPlayBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["MU-006"]!(src, "music.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+// F511 (세션 301) — shipping domain SH-001~006 via withRuleId (53 Sprint 연속 정점 도전)
+// 거울 변환 5회차 (carsharing → fastfood → aerospace → music → shipping). LG+SH 국제무역 클러스터 신규 형성.
+// 🏆 52번째 도메인 마일스톤 (S262 5 → S301 52, 10.4배 확장).
+describe("shipping domain — SH-001~006 via withRuleId (세션 301 F511)", () => {
+  it("SH-001 PRESENCE — active_bookings >= MAX_CONCURRENT_BOOKINGS_PER_VESSEL threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "shipping.ts",
+      `const MAX_CONCURRENT_BOOKINGS_PER_VESSEL = 200;
+function bookVoyage(db, vesselId, contractId) {
+  const vessel = db.prepare("SELECT active_bookings, total_capacity FROM vessels WHERE id = ?").get(vesselId);
+  const limit = vessel.total_capacity ?? MAX_CONCURRENT_BOOKINGS_PER_VESSEL;
+  if (vessel.active_bookings >= limit) {
+    throw new ShippingError('E422-VESSEL-CAPACITY-EXCEEDED', 'Vessel is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SH-001"]!(src, "shipping.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("SH-002 PRESENCE — fee_used + fee >= freightPaymentLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "shipping.ts",
+      `function applyFreightTier(db, shipperId, contractId, fee) {
+  const contract = db.prepare("SELECT fee_used, fee_limit FROM freight_contracts WHERE id = ? AND shipper_id = ? LIMIT 1").get(contractId, shipperId);
+  const freightPaymentLimit = contract.fee_limit;
+  if (contract.fee_used + fee >= freightPaymentLimit) {
+    throw new ShippingError('E422-FREIGHT-PAYMENT-LIMIT-EXCEEDED', 'Freight payment quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SH-002"]!(src, "shipping.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("SH-003 PRESENCE — db.transaction() in loadCargo (atomic cargo_loads+voyage_bookings+freight_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "shipping.ts",
+      `function loadCargo(db, vesselId, bookingId, containerNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO cargo_loads (id, vessel_id, booking_id, container_no, status, loaded_at) VALUES (?, ?, ?, ?, 'loading', ?)").run(cargoLoadId, vesselId, bookingId, containerNo, loadedAt);
+    db.prepare("UPDATE voyage_bookings SET status = 'loading', cargo_load_id = ?, freight_payment_id = ? WHERE id = ?").run(cargoLoadId, freightPaymentId, bookingId);
+    db.prepare("INSERT INTO freight_payments (id, booking_id, cargo_load_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(freightPaymentId, bookingId, cargoLoadId, amount, loadedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SH-003"]!(src, "shipping.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("SH-004 PRESENCE — status comparison + 'confirmed'/'loading'/'departed'/'arrived' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "shipping.ts",
+      `function transitionBookingStatus(db, bookingId, newStatus) {
+  const booking = db.prepare("SELECT status FROM voyage_bookings WHERE id = ?").get(bookingId);
+  if (booking.status === 'booked') throw new ShippingError("E409-BOOKING", "Invalid transition", 409);
+  db.prepare("UPDATE voyage_bookings SET status = 'confirmed' WHERE id = ?").run(bookingId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SH-004"]!(src, "shipping.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("SH-005 PRESENCE — batch expire update in expireCargoLoadBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "shipping.ts",
+      `function transitionBookingStatus(db, bookingId, newStatus) {
+  const booking = db.prepare("SELECT status FROM voyage_bookings WHERE id = ?").get(bookingId);
+  if (booking.status === 'booked') throw new ShippingError("E409-BOOKING", "Invalid", 409);
+  db.prepare("UPDATE voyage_bookings SET status = 'confirmed' WHERE id = ?").run(bookingId);
+}
+function expireCargoLoadBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM cargo_loads WHERE status = 'arrived' AND loaded_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE cargo_loads SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SH-005"]!(src, "shipping.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("SH-006 PRESENCE — db.transaction() in processDemurrageRefund (atomic demurrage_refund_records+demurrage_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "shipping.ts",
+      `function processDemurrageRefund(db, shipperId, cargoLoadId, freightCost, refundRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO demurrage_refund_records (id, shipper_id, cargo_load_id, freight_cost, refund_rate, refund_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(demurrageRefundId, shipperId, cargoLoadId, freightCost, refundRate, refundAmount);
+    db.prepare("INSERT INTO demurrage_refunds (id, demurrage_refund_id, shipper_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, demurrageRefundId, shipperId, refundAmount, refundedAt);
+    db.prepare("UPDATE demurrage_refund_records SET status = 'refunded' WHERE id = ?").run(demurrageRefundId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SH-006"]!(src, "shipping.ts");
     expect(markers).toHaveLength(0);
   });
 });

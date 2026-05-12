@@ -1249,6 +1249,17 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "MU-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "MU-004"),
   "MU-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "MU-005"),
   "MU-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "MU-006"),
+
+  // F511 (세션 301) — Shipping 합성 도메인 (52번째 도메인, 해운/선적 산업, 41번째 신규 산업)
+  // 거울 변환 5회차 (carsharing → fastfood → aerospace → music → shipping). 53 Sprint 연속 정점 도전 (S264~S278+S283~S319+S295~S301).
+  // LG+SH 국제무역 클러스터 신규 (LG 물류 + SH 해운 분리). withRuleId 재사용 52번째 도메인.
+  // 🏆 52번째 도메인 마일스톤 (S262 5 → S301 52, 10.4배 확장).
+  "SH-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "SH-001"),
+  "SH-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "SH-002"),
+  "SH-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "SH-003"),
+  "SH-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "SH-004"),
+  "SH-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "SH-005"),
+  "SH-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "SH-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

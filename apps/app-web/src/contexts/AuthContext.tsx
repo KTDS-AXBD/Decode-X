@@ -1,11 +1,13 @@
 // F370 + F389: CF Access JWT 기반 인증 컨텍스트
 // DEMO_USERS 제거 — CF Access 인증 이후 /auth/me API로 D1 users 역할 조회
+// F-NEW-B (S300 F510): usePermission hook + types 매핑 helper 통합
 
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import type React from "react";
 import { getCfJwtFromCookie } from "@/lib/auth";
 import { setAuthUser } from "@/api/auth-store";
 import type { CfUser } from "@/api/auth-store";
+import { hasPermissionForCfRole, type Resource, type Action } from "@ai-foundry/types";
 
 // Match the convention used by every other api module (api/analysis.ts, api/skill.ts, ...).
 // "/api" is relative — production hits worker.ts /api/* → Gateway proxy (F409),
@@ -132,4 +134,22 @@ export function useAuth() {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
+}
+
+/**
+ * F-NEW-B (S300 F510): CfUser role 기반 권한 hook.
+ *
+ * `@ai-foundry/types/rbac` SSOT 매핑(F-NEW-A)을 사용하여 현 사용자가 resource/action 권한을
+ * 보유하는지 boolean 반환. 미인증 또는 미로드 상태는 false.
+ *
+ * **사용처**: RoleBasedGate 컴포넌트, 조건부 버튼/메뉴 렌더링.
+ *
+ * @example
+ * const canDelete = usePermission("document", "delete");
+ * if (canDelete) return <DeleteButton />;
+ */
+export function usePermission(resource: Resource, action: Action): boolean {
+  const { user } = useAuth();
+  if (!user) return false;
+  return hasPermissionForCfRole(user.role, resource, action);
 }

@@ -1353,13 +1353,18 @@
 > **메타**: withRuleId 52 Sprint 연속 정점 (S264~S278+S283~S319+S295~S300). Master inline 29회 연속 회피 패턴 유지 (S253~S336+S300). **S283 audit 5회차 적중** (Beauty pre-existing 발견) — 사전 등록 시 prefix만 점검하고 도메인 이름 fs 실측 누락한 경우의 cost 실증, 재결정 5분으로 회복. **TD 클로징 패턴 인식 확장** — Beauty audit fix는 "fix-by-redirect" (다른 도메인 선택), Sprint 336 TD-60는 "fix-by-threshold-lowering", TD-64는 "fix-by-normalization".
 - [x] F509 ✅ **DONE** (MU Music streaming 51번째 도메인 — 40번째 신규 산업 + 🏆 withRuleId 52 Sprint 연속 정점 + 디지털 콘텐츠 도메인 신규, **P3**, Sprint 337, ✅ DONE 세션 300 2026-05-12 Master inline ~40분 Match 100%): music.ts 280 lines (6 함수 + MusicError) + spec-container 9 files + DOMAIN_MAP 51번째 + parser MU prefix + REGISTRY MU-001~006 (withRuleId × 6) + utils 423 → 430 PASS (+7) + typecheck 직접 tsc 우회 PASS + detect-bl 302 → 308/308 = 100% 유지 (51 containers) + 40 신규 산업 연속 0 ABSENCE + 거울 변환 4회차 (carsharing → fastfood → aerospace → music) + 디지털 콘텐츠 도메인 신규. **🏆 withRuleId 52 Sprint 연속 정점 도달**. S283 audit 5회차 적중 (Beauty pre-existing 발견 후 재결정).
 
-**Sprint 338 (F510 — F497/F498 RBAC 후속 코드 마이그레이션 일부 (F493 분리 권고 1-2건), 📋 PLANNED 세션 300 사전 등록 2026-05-12, Master inline ~1-2h):**
-> **배경**: S296 F493 분리 권고 5 F-item 중 F497/F498 RBAC 후속이 미진입 상태. F493 docs-only 결정 패턴 정착 (의사결정 vs 코드 마이그 분리). 본 Sprint = F497/F498 중 우선순위 1-2건 진입.
-> **목표**: F497 또는 F498 우선순위 1건 RBAC inline 패턴 적용 + (선택) 2건 동시 진입 if 영역 분리 가능.
-> **DoD**: RBAC 코드 마이그레이션 N건 + unit test PASS + typecheck PASS + Match ≥ 90% + reports/sprint-338-rbac-migration-2026-05-12.md.
-> **의존성**: F493 ✅ DONE 분리 결정.
-> **메타**: F493 분리 후속 1차 진입. 영역 분리 진단 후 1건 vs 2건 결정 (Sprint 시작 시점 fs audit).
-- [ ] F510 📋 **PLANNED** (F497/F498 RBAC 후속 코드 마이그레이션 일부, **P2**, Sprint 338, 세션 300 사전 등록 2026-05-12, Master inline ~1-2h): F493 docs-only 결정 후속 5건 중 1-2건 RBAC inline 패턴 적용. 사전 fs audit 후 영역 분리 진단으로 N 결정.
+**Sprint 338 (F510 — F493 분리 권고 4건 일괄 RBAC 마이그레이션 (F-NEW-A/B/C/D), ✅ DONE 세션 300 Master inline ~1.5h Match 100% 2026-05-12):**
+> **결과**: ✅ DONE — Master inline ~1.5h, Match 100%. **F493 분리 권고 5건 중 4건 일괄 완결** (F-NEW-A rbac.ts helper + F-NEW-B AuthContext+RoleBasedGate + F-NEW-C UserRole docs + F-NEW-D SPEC §10 신설). F-NEW-E (svc-* CF Access JWT validate, ~3h)만 별도 Sprint deferred (Phase 3 후속).
+> **사용자 결정 (AskUserQuestion, S300)**: 5 후보 중 4건 multiSelect — F-NEW-A (helper) + F-NEW-B (UI Gate) + F-NEW-C (UserRole docs) + F-NEW-D (PRD §18 갱신).
+> **변경 코드**:
+> - **F-NEW-A**: `packages/types/src/rbac.ts` `CfRole` type + `mapCfRoleToRbacRoles()` + `hasPermissionForCfRole()` 함수 (frontend/backend 공통 SSOT) + `packages/utils/src/rbac.ts` re-export + `checkPermissionForCfRole()` (403 Response variant) + unit test 13 (rbac.test.ts 14→27).
+> - **F-NEW-B**: `apps/app-web/src/contexts/AuthContext.tsx` `usePermission(resource, action): boolean` hook 신설 + `apps/app-web/src/components/auth/RoleBasedGate.tsx` 컴포넌트 신설 (조건부 렌더링 + fallback prop).
+> - **F-NEW-C**: `packages/types/src/users.ts` UserRoleSchema에 JSDoc 추가 — guest 의도적 축소 명시 + 3-layer 분리 원칙 명시 + 차기 대안 deferred.
+> - **F-NEW-D**: `SPEC.md` §10 RBAC Roles 신설 (3-layer 분리 / CfRole 4 / 매핑 / 권한 매트릭스 / 사용 패턴 / 변경 이력 6 sub-sections, PRD §18 외부 docx 갱신 대체).
+> **DoD 9/9 PASS**: F-NEW-A rbac.ts helper SSOT(types) ✅ + utils re-export ✅ + unit test 27 PASS (+13) ✅ + F-NEW-B usePermission hook + RoleBasedGate ✅ + F-NEW-C UserRole JSDoc ✅ + F-NEW-D SPEC §10 신설 (6 sub-sections) ✅ + utils typecheck PASS ✅ + types typecheck PASS ✅ + app-web typecheck PASS ✅ + Match 100% ✅.
+> **의존성**: F493 ✅ DONE (S296 AIF-ANLS-119 매핑 테이블 적용).
+> **메타**: (a) **F493 분리 권고 일괄 완결 효율** — 사전 등록 시 1-2건 추정이었으나 영역 분리 충돌 0건 확인 후 4건 일괄 진입 가능 판정. (b) **3-layer 분리 명시화 가치** — CfRole(인증)/UserRole(관리)/Role(권한) 3 SSOT 분리 + 매핑 함수가 SoC 명확. (c) **SPEC §10 SSOT 신설 패턴** — PRD docx 갱신 대신 SPEC 신설로 in-repo SSOT 분리, 차기 도메인(예: organizationSchema)도 동일 패턴 적용 가능.
+- [x] F510 ✅ **DONE** (F493 분리 권고 4건 일괄 RBAC 마이그레이션, **P2**, Sprint 338, ✅ DONE 세션 300 2026-05-12 Master inline ~1.5h Match 100%): F-NEW-A rbac.ts helper SSOT(types) + utils re-export + 단위 test 13 (rbac.test.ts 27 PASS) + F-NEW-B AuthContext usePermission hook + RoleBasedGate 컴포넌트 + F-NEW-C UserRole JSDoc + F-NEW-D SPEC §10 RBAC Roles 신설 (6 sub-sections). F-NEW-E svc-* CF Access JWT validate (~3h) 별도 Phase 3 후속.
 
 **Sprint 339 (F490 — Secret rotation 자동화 7-worker 일괄 확장, 📋 PLANNED 세션 300 Sprint 할당 2026-05-12, Master inline ~3h):**
 > **배경**: 세션 295 F490 사전 등록 후 5 세션 미진입 (Pipeline 우선순위 밀림 — 신규 산업 + LLM eval + drift cleanup). 본 Sprint에서 Sprint 번호 정식 할당 + 진입.
@@ -1833,3 +1838,84 @@
 - 2026-04-20 (세션 217): **Phase 2 착수 체크리스트 인터뷰 완료 — Sprint 배치 재정의** (6→8 Sprint). (1) Sprint 211 = FX-SPEC-002 v1.1 append → **FX-SPEC-003 Decode-X Handoff Contract 신규 발행**으로 전환 (v1.0 PlumbBridge 계약 불변, 역할 분리). (2) Sprint 212 Java AST = **javaparser (JVM) 확정** — Worker 직접 실행 불가 → offline CLI/Node wrapper 사전 파싱 방식. (3) Sprint 213 ERWin = **경로 A (SQL DDL) 단독 확정** — 경로 B 보류, lpon-charge `0001_init.sql` 소스 기반. (4) Sprint 214 = **214a(예산+구매) ∥ 214b(결제+환불) ∥ 214c(선물+정산) 3분할** — 병렬도 향상, match-rate 안정. 결제 Fill(214b)은 Sprint 215 E2E 선행. (5) Sprint 215 = Foundry-X 신규 엔드포인트 **불요** — 기존 `POST /prototype-jobs` (F353, Sprint 159) 매핑 어댑터로 범위 축소. 예상 소요 4.5h→5.5h (+30분, 3분할 오버헤드). Sprint 211 착수 준비 완료.
 - 2026-04-20 (세션 217): **AIF-REQ-035 Phase 2 본 개발 ✅ 완주** — Sprint 211~216 Batch 1~4 전항 merged. 주요 커밋: 211(`82302ec`) + Foundry-X mirror(`bef719fd`) → 212(`10fca6a`) → 213(`ec9ea72`) → 214c(`231e011`) → 214a(`e4cabe4`) → 214b(`ebd838b`) → 215(`18022c8`) → 216(`0947a92`). Phase 2 종합 Gap Analysis(`docs/03-analysis/features/phase-2-pipeline.analysis.md`, `71e8447`): Phase 전체 Match **95.6%** (자가보고 99.7% -4.1%p drift), PRD M-1~M-8 평균 92.5% (6/8 완전 + 2/8 PARTIAL), **MVP §5.2 5/5 달성**, 종합 판정 PASS. **"Foundry-X 핸드오프 E2E 첫 사례" 최우선 목표 달성** — LPON 결제 round-trip 91.7% (11/12) 입증. TC-REFUND-002 실패 = BL-024 SOURCE_MISSING 자동 검출 = Source-First 정책 성과 proof. 신규 TD 9건 등록 (TD-20~28): TD-24/25 P1, TD-22/23 P2, TD-20/21/26/27/28 P3. Autopilot 안정성 37.5%(3/8 자체 완결), 나머지 5건은 Master 수동 복구(`.sprint-context` 병렬 충돌 + pr-lookup hang 패턴).
 - 2026-04-21 (세션 218): **AIF-REQ-035 Phase 3 본 개발 PRD Ready** — `/ax:req-interview` 5파트 인터뷰(interview-log.md) → prd-v1(10,885자) → Round 1 외부 AI 3사 74/100(3 Conditional, 77건 actionable) → apply 17건 반영 prd-v2(17,420자, TD-14 응답 잘림 수동 복구) → Round 2 77/100(3 Conditional, 66건 actionable, +3점) → Ambiguity 0.122 Ready(Brownfield 가중치) → Phase 1 선례(R2 68/Amb 0.15) + Phase 2 선례(R2 74/Amb 0.120) 기반 착수 정당화. **체질 유지**: Source-First, Foundry-X 역할 분담, 1인 체제, LPON+Tier-A 6서비스. **변경/확장**: 목표 frame "E2E 첫 사례" → "정량 증거로 반복 가능성 입증", Must 압축(3h), Should 확장(6종), KPI 이동(Match % → 증거 수 + 자동 점수). **Phase 2 미완 반입**: M-3 DIVERGENCE(→M-1) + M-6 Foundry-X Production E2E(→M-2) + Sprint 202 AgentResume(→S-2). **Out-of-scope**: 타 도메인 확장, 외부 파일럿. **Cross-repo**: Foundry-X repo 수정 포함 허용. §6 Phase 8 신설 + F354~F361(8건) 등록 + Sprint 218~221+ 배정. §8 TD-20~28 9건 drift 보정 완료. Phase 3 PRD: `docs/req-interview/decode-x-v1.3-phase-3/prd-final.md` v1.2 (§11 정당화 appendix 포함). 비용 ~$0.06, 총 소요 약 40분.
+
+---
+
+## 10) RBAC Roles (Decode-X 4 Role SSOT)
+
+> **F-NEW-D (S300 F510, AIF-ANLS-119 §6 후속)** — F493 분리 권고 PRD §18 갱신을 SPEC §10 신설로 대체.
+> Decode-X CLAUDE.md 패턴(SSOT 분리)에 따라 RBAC layer 결정 + 매핑 + 매트릭스를 SPEC에 명시.
+> 참조: `docs/03-analysis/features/sprint-324-rbac-domain-decision.analysis.md` (AIF-ANLS-119, S296 F493).
+
+### 10.1 3-Layer 분리 원칙
+
+| Layer | 타입 | 위치 | 용도 |
+|-------|------|------|------|
+| **인증** (Authentication) | `CfRole` 4-tuple | `apps/app-web/src/api/auth-store.ts` + CF Access JWT | 사용자 = 누구인가 |
+| **관리** (Administration) | `UserRole` 3-tuple | `packages/types/src/users.ts` | Admin UI 관리 가능 범위 |
+| **권한** (Authorization) | `Role` 6-tuple | `packages/types/src/rbac.ts` | Resource × Action 권한 매트릭스 |
+
+각 layer는 독립적 SSOT를 가지며, 매핑은 함수 helper로 표현 (코드 중복 없음).
+
+### 10.2 CfRole 4 Role (Production SSOT)
+
+| CfRole | 도메인 직무 | 활용 시나리오 |
+|--------|-------------|---------------|
+| `executive` | 임원 / 본부장 | 진행 현황 리포트, KPI 대시보드 |
+| `engineer` | 분석가/리뷰어/개발자 통합 | 파이프라인 운영, 정책 검토, Skill 통합 (인격 통합 운영) |
+| `admin` | 운영 관리자 | User CRUD, 시스템 설정, audit log |
+| `guest` | 외부 게스트 | demo / 영업 / 외부 협력사 (읽기 전용) |
+
+### 10.3 CfRole → rbac.Role 매핑 (`mapCfRoleToRbacRoles`)
+
+| CfRole | 매핑된 rbac.Role | 근거 |
+|--------|------------------|------|
+| `executive` | `[Executive, Client]` | 임원 대시보드 + 외부 클라이언트 뷰 통합 |
+| `engineer` | `[Developer, Analyst, Reviewer]` | 1인 체제에서 3개 직무 통합 운영 |
+| `admin` | `[Admin, Executive, Developer]` | 관리자는 임원 + 개발자 권한 포괄 |
+| `guest` | `[Client]` | 읽기 전용 |
+
+### 10.4 권한 매트릭스 요약 (`PERMISSIONS` Record)
+
+| Resource | CfRole 권한 |
+|----------|-------------|
+| `document` | `engineer`: CRUD+upload+download / `admin`: 전체 / `executive`: read / `guest`: read |
+| `extraction` | `engineer`: read+execute / `admin`: 전체 / `executive`: read |
+| `policy` | `engineer`: read+approve+reject+update (Reviewer) / `admin`: 전체 |
+| `skill` | `engineer`: read+download / `admin`: 전체 / `executive`: read+download |
+| `user` | `admin`: 전체 (CfRole 중 유일) |
+| `audit` | `admin`: CR / 나머지: read |
+
+상세 매트릭스: `packages/types/src/rbac.ts` `PERMISSIONS` Record.
+
+### 10.5 사용 패턴
+
+**Backend (svc-* / utils)**:
+```typescript
+import { checkPermissionForCfRole } from "@ai-foundry/utils";
+
+const denied = checkPermissionForCfRole(user.role, "document", "delete");
+if (denied) return denied; // 403 Response
+```
+
+**Frontend (app-web)**:
+```tsx
+import { usePermission } from "@/contexts/AuthContext";
+import { RoleBasedGate } from "@/components/auth/RoleBasedGate";
+
+// Hook 사용
+const canDelete = usePermission("document", "delete");
+
+// 조건부 렌더링
+<RoleBasedGate resource="policy" action="approve" fallback={<ReadOnlyBadge />}>
+  <ApprovePolicyForm />
+</RoleBasedGate>
+```
+
+### 10.6 변경 이력
+
+- **2026-04-21 (S229 F389)**: CF Access JWT 통합 — DEMO_USERS 폐기, CfUser 도입
+- **2026-04-22 (S229 F401)**: VITE_DEMO_MODE + ?demo=1 bypass — E2E 환경 분리
+- **2026-05-11 (S295 F491)**: e2e auth-me-response 7-role string union → CfUser['role'] 4 relative import (TD-41 fix-forward)
+- **2026-05-12 (S296 F493)**: 3 모델 불일치 발견 + CfUser 4 role SSOT 결정 docs (AIF-ANLS-119)
+- **2026-05-12 (S300 F510)**: F-NEW-A `mapCfRoleToRbacRoles` + `hasPermissionForCfRole` helper SSOT(types) + utils re-export + F-NEW-B `usePermission` hook + `RoleBasedGate` 컴포넌트 + F-NEW-C UserRole JSDoc + F-NEW-D SPEC §10 신설

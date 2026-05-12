@@ -1,5 +1,11 @@
 import { describe, it, expect, vi } from "vitest";
-import { extractRbacContext, checkPermission } from "../rbac.js";
+import {
+  extractRbacContext,
+  checkPermission,
+  mapCfRoleToRbacRoles,
+  checkPermissionForCfRole,
+  hasPermissionForCfRole,
+} from "../rbac.js";
 import { logAuditLocal } from "../audit.js";
 
 // ── extractRbacContext ──────────────────────────────────────────
@@ -105,6 +111,70 @@ describe("checkPermission", () => {
     const result = checkPermission("Analyst", "document", "delete");
     expect(result).not.toBeNull();
     expect(result!.status).toBe(403);
+  });
+});
+
+// ── F-NEW-A (S300 F510): CfUser → rbac.Role 매핑 helper (F493 분리 권고) ──
+
+describe("mapCfRoleToRbacRoles (F-NEW-A)", () => {
+  it("executive maps to [Executive, Client]", () => {
+    expect(mapCfRoleToRbacRoles("executive")).toEqual(["Executive", "Client"]);
+  });
+
+  it("engineer maps to [Developer, Analyst, Reviewer]", () => {
+    expect(mapCfRoleToRbacRoles("engineer")).toEqual(["Developer", "Analyst", "Reviewer"]);
+  });
+
+  it("admin maps to [Admin, Executive, Developer]", () => {
+    expect(mapCfRoleToRbacRoles("admin")).toEqual(["Admin", "Executive", "Developer"]);
+  });
+
+  it("guest maps to [Client]", () => {
+    expect(mapCfRoleToRbacRoles("guest")).toEqual(["Client"]);
+  });
+});
+
+describe("checkPermissionForCfRole (F-NEW-A)", () => {
+  it("admin can delete documents (Admin role)", () => {
+    expect(checkPermissionForCfRole("admin", "document", "delete")).toBeNull();
+  });
+
+  it("engineer can read documents (Analyst/Developer/Reviewer all read)", () => {
+    expect(checkPermissionForCfRole("engineer", "document", "read")).toBeNull();
+  });
+
+  it("engineer can approve policies (Reviewer in mapped roles)", () => {
+    expect(checkPermissionForCfRole("engineer", "policy", "approve")).toBeNull();
+  });
+
+  it("guest cannot delete documents (Client read-only)", () => {
+    const result = checkPermissionForCfRole("guest", "document", "delete");
+    expect(result).not.toBeNull();
+    expect(result!.status).toBe(403);
+  });
+
+  it("executive can download skills (Executive role)", () => {
+    expect(checkPermissionForCfRole("executive", "skill", "download")).toBeNull();
+  });
+
+  it("guest cannot upload documents", () => {
+    const result = checkPermissionForCfRole("guest", "document", "upload");
+    expect(result).not.toBeNull();
+    expect(result!.status).toBe(403);
+  });
+});
+
+describe("hasPermissionForCfRole (F-NEW-A — boolean variant for UI gates)", () => {
+  it("returns true when any mapped role has permission", () => {
+    expect(hasPermissionForCfRole("engineer", "policy", "approve")).toBe(true);
+  });
+
+  it("returns false when no mapped role has permission", () => {
+    expect(hasPermissionForCfRole("guest", "document", "delete")).toBe(false);
+  });
+
+  it("admin has near-universal permission (delete)", () => {
+    expect(hasPermissionForCfRole("admin", "user", "delete")).toBe(true);
   });
 });
 

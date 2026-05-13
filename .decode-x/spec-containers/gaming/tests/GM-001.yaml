@@ -1,0 +1,62 @@
+# Test scenarios — Gaming domain GM-001~GM-006
+# 세션 304 후속 F523 — Gaming 게임 합성 도메인
+
+scenarios:
+  - id: GM-001-PASS
+    rule: GM-001
+    description: "정원 내 게임 출시 — 성공"
+    input: { active_live_games: 100, total_capacity: 250 }
+    expected: PASS
+
+  - id: GM-001-FAIL
+    rule: GM-001
+    description: "스튜디오 라이브 정원 초과 — E422-STUDIO-CAPACITY-EXCEEDED"
+    input: { active_live_games: 250, total_capacity: 250 }
+    expected: FAIL
+    error: E422-STUDIO-CAPACITY-EXCEEDED
+
+  - id: GM-002-PASS
+    rule: GM-002
+    description: "인앱 결제 한도 내 사용 — 성공"
+    input: { fee_used: 1000, fee_limit: 5000, fee: 500 }
+    expected: PASS
+
+  - id: GM-002-FAIL
+    rule: GM-002
+    description: "인앱 결제 한도 초과 — E422-IN-APP-PAYMENT-LIMIT-EXCEEDED"
+    input: { fee_used: 4800, fee_limit: 5000, fee: 300 }
+    expected: FAIL
+    error: E422-IN-APP-PAYMENT-LIMIT-EXCEEDED
+
+  - id: GM-003-PASS
+    rule: GM-003
+    description: "published 상태 launch 세션 atomic — 성공"
+    input: { launch_status: published }
+    expected: PASS
+
+  - id: GM-004-PASS
+    rule: GM-004
+    description: "registered → published 전환 허용"
+    input: { previous: registered, next: published }
+    expected: PASS
+
+  - id: GM-004-FAIL
+    rule: GM-004
+    description: "retired → registered 역행 차단 — E409-LAUNCH"
+    input: { previous: retired, next: registered }
+    expected: FAIL
+    error: E409-LAUNCH
+
+  - id: GM-005-PASS
+    rule: GM-005
+    description: "retired 게임 세션 batch expire — 대상 1건"
+    input: { sessions: [{ status: retired, started_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: GM-006-PASS
+    rule: GM-006
+    description: "banned game session 환불 atomic — 성공"
+    input: { session_status: banned, purchase_cost: 1000, refund_rate: 0.3 }
+    expected: PASS
+    expectedRefundAmount: 300

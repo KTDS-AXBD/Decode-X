@@ -1039,6 +1039,27 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processChargebackRefund",
     ],
   },
+  {
+    container: "gaming",
+    rulesPath: `${SPEC_CONTAINER_BASE}/gaming/rules/gaming-rules.md`,
+    // 세션 304 후속 (F523): Gaming 합성 도메인 — 56번째 도메인 (게임 산업, 45번째 신규 산업).
+    // GM-001~GM-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 57 Sprint 연속 정점 도전 (S264~S278+S283~S319+S295~S304).
+    // 45번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT+TM+VT+GY+PK+CS+FS+AS+MU+SH+PB+TX+AD+GM).
+    // 거울 변환 9회차 (carsharing → fastfood → aerospace → music → shipping → publishing → textile → advertising → gaming) — MU+PB+AD+GM 디지털 콘텐츠 4-클러스터 확장.
+    // 6 BLs 균형 패턴 46번째 정착. 🏆 56번째 도메인 마일스톤 (S262 5 → S304 56, 11.2배 확장).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/gaming.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/gaming/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "launchGame",
+      "applyInAppPurchase",
+      "processGameSession",
+      "transitionGameStatus",
+      "expireRetiredGameBatch",
+      "processRefundClaim",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

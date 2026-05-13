@@ -1,0 +1,52 @@
+---
+# Provenance — GAM-001
+# 56번째 도메인 — Gaming 합성 도메인 PoC (45번째 신규 산업)
+
+skillId: GAM-001
+extractedAt: "2026-05-13T00:00:00+09:00"
+extractedBy: "Decode-X 세션 304 후속 F523 — withRuleId 재사용 56번째 도메인 (Gaming 게임 산업, 45번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/gaming/rules/gaming-rules.md"
+    section: "Gaming 합성 비즈니스 룰 — GM-001~GM-006"
+    businessRules: [GM-001, GM-002, GM-003, GM-004, GM-005, GM-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 게임(Gaming) 산업 일반화 PoC. 스튜디오라이브한도/인앱결제한도/세션batchatomic/게임상태전환/만료게임일괄/환불atomic 추상화. 56번째 도메인 + 45번째 신규 산업. detector 신뢰도 누적 활용. 🏆 57 Sprint 연속 정점 도전. 거울 변환 9회차 (carsharing → fastfood → aerospace → music → shipping → publishing → textile → advertising → gaming). MU(음악 스트리밍) + PB(출판 IP) + AD(광고 캠페인) + GM(게임 라이브) 디지털 콘텐츠 4-클러스터 확장 형성."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/gaming.ts"
+    functions: [launchGame, applyInAppPurchase, processGameSession, transitionGameStatus, expireRetiredGameBatch, processRefundClaim]
+
+detection:
+  - ruleId: GM-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-13T00:00:00+09:00"
+    notes: "studio.active_live_games >= limit (UPPERCASE fallback MAX_CONCURRENT_LIVE_GAMES_PER_STUDIO, Path A)"
+  - ruleId: GM-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-13T00:00:00+09:00"
+    notes: "contract.fee_used + fee >= inAppPaymentLimit (Path B, limit keyword)"
+  - ruleId: GM-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-13T00:00:00+09:00"
+    notes: "db.transaction() — game_sessions INSERT + game_launches UPDATE + store_payments INSERT"
+  - ruleId: GM-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-13T00:00:00+09:00"
+    notes: "registered → published → live → maintained → retired (+ banned)"
+  - ruleId: GM-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-13T00:00:00+09:00"
+    notes: "batch: expire 갱신 (SH-005/MU-005/PB-005/TX-005/AD-005 45번째 재사용)"
+  - ruleId: GM-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-13T00:00:00+09:00"
+    notes: "db.transaction() — refund_claim_records INSERT + refund_claims INSERT + refund_claim_records UPDATE"

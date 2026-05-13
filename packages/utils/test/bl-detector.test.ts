@@ -824,6 +824,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "FT-004",
       "FT-005",
       "FT-006",
+      "GM-001",
+      "GM-002",
+      "GM-003",
+      "GM-004",
+      "GM-005",
+      "GM-006",
       "GV-001",
       "GV-002",
       "GV-003",
@@ -1192,6 +1198,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["AD-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["AD-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["AD-006"]).toBeDefined();
+  });
+
+  it("GM-001~GM-006 registered (세션 304 후속 F523 — gaming 56번째 도메인, 45번째 신규 산업, 57 Sprint 연속 정점 도전, 거울 변환 9회차, MU+PB+AD+GM 디지털 콘텐츠 4-클러스터 확장)", () => {
+    expect(BL_DETECTOR_REGISTRY["GM-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["GM-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["GM-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["GM-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["GM-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["GM-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -5326,6 +5341,106 @@ function expireEndedCampaignBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["AD-006"]!(src, "advertising.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+// F523 (세션 304 후속) — gaming domain GM-001~006 via withRuleId (57 Sprint 연속 정점 도전)
+// 거울 변환 9회차 (carsharing → fastfood → aerospace → music → shipping → publishing → textile → advertising → gaming).
+// MU+PB+AD+GM 디지털 콘텐츠 4-클러스터 확장. 🏆 56번째 도메인 마일스톤 (S262 5 → S304 56, 11.2배 확장).
+describe("gaming domain — GM-001~006 via withRuleId (세션 304 후속 F523)", () => {
+  it("GM-001 PRESENCE — active_live_games >= MAX_CONCURRENT_LIVE_GAMES_PER_STUDIO threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "gaming.ts",
+      `const MAX_CONCURRENT_LIVE_GAMES_PER_STUDIO = 250;
+function launchGame(db, studioId, contractId) {
+  const studio = db.prepare("SELECT active_live_games, total_capacity FROM studios WHERE id = ?").get(studioId);
+  const limit = studio.total_capacity ?? MAX_CONCURRENT_LIVE_GAMES_PER_STUDIO;
+  if (studio.active_live_games >= limit) {
+    throw new GamingError('E422-STUDIO-CAPACITY-EXCEEDED', 'Studio is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GM-001"]!(src, "gaming.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("GM-002 PRESENCE — fee_used + fee >= inAppPaymentLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "gaming.ts",
+      `function applyInAppPurchase(db, playerId, contractId, fee) {
+  const contract = db.prepare("SELECT fee_used, fee_limit FROM store_contracts WHERE id = ? AND player_id = ? LIMIT 1").get(contractId, playerId);
+  const inAppPaymentLimit = contract.fee_limit;
+  if (contract.fee_used + fee >= inAppPaymentLimit) {
+    throw new GamingError('E422-IN-APP-PAYMENT-LIMIT-EXCEEDED', 'In-app payment quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GM-002"]!(src, "gaming.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("GM-003 PRESENCE — db.transaction() in processGameSession (atomic game_sessions+game_launches+store_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "gaming.ts",
+      `function processGameSession(db, studioId, launchId, matchNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO game_sessions (id, studio_id, launch_id, match_no, status, started_at) VALUES (?, ?, ?, ?, 'live', ?)").run(gameSessionId, studioId, launchId, matchNo, startedAt);
+    db.prepare("UPDATE game_launches SET status = 'live', game_session_id = ?, store_payment_id = ? WHERE id = ?").run(gameSessionId, storePaymentId, launchId);
+    db.prepare("INSERT INTO store_payments (id, launch_id, game_session_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(storePaymentId, launchId, gameSessionId, amount, startedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GM-003"]!(src, "gaming.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("GM-004 PRESENCE — status comparison + 'published'/'live'/'maintained'/'retired' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "gaming.ts",
+      `function transitionGameStatus(db, launchId, newStatus) {
+  const launch = db.prepare("SELECT status FROM game_launches WHERE id = ?").get(launchId);
+  if (launch.status === 'registered') throw new GamingError("E409-LAUNCH", "Invalid transition", 409);
+  db.prepare("UPDATE game_launches SET status = 'published' WHERE id = ?").run(launchId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GM-004"]!(src, "gaming.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("GM-005 PRESENCE — batch expire update in expireRetiredGameBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "gaming.ts",
+      `function transitionGameStatus(db, launchId, newStatus) {
+  const launch = db.prepare("SELECT status FROM game_launches WHERE id = ?").get(launchId);
+  if (launch.status === 'registered') throw new GamingError("E409-LAUNCH", "Invalid", 409);
+  db.prepare("UPDATE game_launches SET status = 'published' WHERE id = ?").run(launchId);
+}
+function expireRetiredGameBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM game_sessions WHERE status = 'retired' AND started_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE game_sessions SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GM-005"]!(src, "gaming.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("GM-006 PRESENCE — db.transaction() in processRefundClaim (atomic refund_claim_records+refund_claims INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "gaming.ts",
+      `function processRefundClaim(db, playerId, gameSessionId, purchaseCost, refundRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO refund_claim_records (id, player_id, game_session_id, purchase_cost, refund_rate, refund_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(refundClaimId, playerId, gameSessionId, purchaseCost, refundRate, refundAmount);
+    db.prepare("INSERT INTO refund_claims (id, refund_claim_id, player_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, refundClaimId, playerId, refundAmount, refundedAt);
+    db.prepare("UPDATE refund_claim_records SET status = 'refunded' WHERE id = ?").run(refundClaimId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GM-006"]!(src, "gaming.ts");
     expect(markers).toHaveLength(0);
   });
 });

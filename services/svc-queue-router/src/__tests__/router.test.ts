@@ -155,18 +155,23 @@ describe("svc-queue-router fetch handler", () => {
     expect(body.environment).toBe("test");
   });
 
-  it("GET / returns default response", async () => {
+  it("GET / requires CF Access JWT (F514 — Sprint 343)", async () => {
+    // F514 적용 후: /health 외 외부 라우트는 CF Access JWT 필수.
+    // svc-queue-router는 internal pipeline event bus라 외부 GET / 접근은 항상 401.
     const res = await worker.fetch(new Request("https://internal/"), env);
-    expect(res.status).toBe(200);
-    const text = await res.text();
-    expect(text).toContain("svc-queue-router");
+    expect(res.status).toBe(401);
+    const body = (await res.json()) as { success: boolean; error: { code: string; message: string } };
+    expect(body.success).toBe(false);
+    expect(body.error.code).toBe("UNAUTHORIZED");
+    expect(body.error.message).toContain("CF Access JWT");
   });
 
-  it("GET /unknown returns 200 with default message", async () => {
+  it("GET /unknown requires CF Access JWT (F514 — Sprint 343)", async () => {
     const res = await worker.fetch(new Request("https://internal/unknown"), env);
-    expect(res.status).toBe(200);
-    const text = await res.text();
-    expect(text).toContain("svc-queue-router");
+    expect(res.status).toBe(401);
+    const body = (await res.json()) as { success: boolean; error: { code: string; message: string } };
+    expect(body.success).toBe(false);
+    expect(body.error.code).toBe("UNAUTHORIZED");
   });
 });
 

@@ -243,11 +243,17 @@ Phase 1 ✅ → 2 ✅ → 3 ✅ → 4 ✅ → **5 ✅** (MSA 재조정 완료). 
 **Rotation 표준 절차** (3종 secret 예시: `INTERNAL_API_SECRET` / `OPENROUTER_API_KEY` / `CLOUDFLARE_AI_GATEWAY_URL`):
 1. **Default env put** (HTTP traffic 우선): `wrangler secret put X` (--env 없음, 또는 `--name <name>`)
 2. **Production env put** (Queue consumer): `wrangler secret put X --env production`
-3. **Staging env put** (선택): `wrangler secret put X --env staging`
+3. **Staging env put** (필수, 세션 303 follow-up 정착): `wrangler secret put X --env staging` — 3-env(default+production+staging) 정합 확보
 4. **Verify**: 실 API path 호출 (예: `/skills/{id}/ai-ready/evaluate`) HTTP 200 + LLM 응답 검증 — `/health`로는 부족
 5. **Queue path verify** (Queue consumer 있는 worker): batch endpoint 호출 → D1 raw rationale 확인 (HTML 응답 ≠ secret 정상 매칭)
 
-**자동화**: 3종 secret 정본은 `~/.secrets/` 정본 파일로 관리(`chmod 600`). 일괄 rotation은 `scripts/secret-sync-svc-skill.sh` (F422 도입).
+**자동화 (F520 Sprint 348 정착, 2026-05-13)**: 3종 secret 정본은 `~/.secrets/` 정본 파일로 관리(`chmod 600`). 7-worker 전체 일괄 rotation은 `scripts/secret-sync-all-workers-v2.sh` (F515 Sprint 342 도입, F520 Sprint 348 운영 정착). 사용 예:
+- 전체 dry-run: `bash scripts/secret-sync-all-workers-v2.sh`
+- 3-env 정합 dry-run: `bash scripts/secret-sync-all-workers-v2.sh --include-staging`
+- 실 적용 (--apply 후 확인): `bash scripts/secret-sync-all-workers-v2.sh --include-staging --apply`
+- 단일 worker만: `bash scripts/secret-sync-all-workers-v2.sh --worker svc-ingestion --apply`
+
+> 본 v2 스크립트는 wrangler 의존 제거 (Cloudflare REST API 직접 호출) — bkit shell wrapper stdin 차단 + wrangler 4.80.0 `secret bulk` fetch failed 자체 버그 우회. `~/.secrets/` 정본 파일 chmod 600 필수.
 
 **Validation URL 형식**: `CLOUDFLARE_AI_GATEWAY_URL`은 base path가 아닌 full chat-completions path 필수: `https://gateway.ai.cloudflare.com/v1/<acct>/<gateway>/openrouter/v1/chat/completions`. base path만 있으면 HTML index 반환 → silent fail (S246 + S260).
 

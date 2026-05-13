@@ -897,6 +897,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "P-005",
       "P-006",
       "P-007",
+      "PB-001",
+      "PB-002",
+      "PB-003",
+      "PB-004",
+      "PB-005",
+      "PB-006",
       "PH-001",
       "PH-002",
       "PH-003",
@@ -1147,6 +1153,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["SH-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["SH-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["SH-006"]).toBeDefined();
+  });
+
+  it("PB-001~PB-006 registered (세션 304 F518 — publishing 53번째 도메인, 42번째 신규 산업, 54 Sprint 연속 정점 도전, 거울 변환 6회차, MU+PB 디지털 콘텐츠 클러스터 확장)", () => {
+    expect(BL_DETECTOR_REGISTRY["PB-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PB-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PB-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PB-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PB-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PB-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -4981,6 +4996,106 @@ function expireCargoLoadBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["SH-006"]!(src, "shipping.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+// F518 (세션 304) — publishing domain PB-001~006 via withRuleId (54 Sprint 연속 정점 도전)
+// 거울 변환 6회차 (carsharing → fastfood → aerospace → music → shipping → publishing).
+// MU+PB 디지털 콘텐츠 클러스터 확장 형성. 🏆 53번째 도메인 마일스톤 (S262 5 → S304 53, 10.6배 확장).
+describe("publishing domain — PB-001~006 via withRuleId (세션 304 F518)", () => {
+  it("PB-001 PRESENCE — active_volumes >= MAX_CONCURRENT_VOLUMES_PER_IMPRINT threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "publishing.ts",
+      `const MAX_CONCURRENT_VOLUMES_PER_IMPRINT = 500;
+function registerVolume(db, imprintId, contractId) {
+  const imprint = db.prepare("SELECT active_volumes, total_capacity FROM imprints WHERE id = ?").get(imprintId);
+  const limit = imprint.total_capacity ?? MAX_CONCURRENT_VOLUMES_PER_IMPRINT;
+  if (imprint.active_volumes >= limit) {
+    throw new PublishingError('E422-IMPRINT-VOLUME-EXCEEDED', 'Imprint is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PB-001"]!(src, "publishing.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("PB-002 PRESENCE — fee_used + fee >= royaltyPaymentLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "publishing.ts",
+      `function applyRoyaltyTier(db, authorId, contractId, fee) {
+  const contract = db.prepare("SELECT fee_used, fee_limit FROM royalty_contracts WHERE id = ? AND author_id = ? LIMIT 1").get(contractId, authorId);
+  const royaltyPaymentLimit = contract.fee_limit;
+  if (contract.fee_used + fee >= royaltyPaymentLimit) {
+    throw new PublishingError('E422-ROYALTY-PAYMENT-LIMIT-EXCEEDED', 'Royalty payment quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PB-002"]!(src, "publishing.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("PB-003 PRESENCE — db.transaction() in processPrintBatch (atomic print_batches+volume_registrations+royalty_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "publishing.ts",
+      `function processPrintBatch(db, imprintId, registrationId, batchNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO print_batches (id, imprint_id, registration_id, batch_no, status, printed_at) VALUES (?, ?, ?, ?, 'printed', ?)").run(printBatchId, imprintId, registrationId, batchNo, printedAt);
+    db.prepare("UPDATE volume_registrations SET status = 'printed', print_batch_id = ?, royalty_payment_id = ? WHERE id = ?").run(printBatchId, royaltyPaymentId, registrationId);
+    db.prepare("INSERT INTO royalty_payments (id, registration_id, print_batch_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(royaltyPaymentId, registrationId, printBatchId, amount, printedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PB-003"]!(src, "publishing.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("PB-004 PRESENCE — status comparison + 'edited'/'printed'/'distributed'/'sold' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "publishing.ts",
+      `function transitionRegistrationStatus(db, registrationId, newStatus) {
+  const registration = db.prepare("SELECT status FROM volume_registrations WHERE id = ?").get(registrationId);
+  if (registration.status === 'registered') throw new PublishingError("E409-REGISTRATION", "Invalid transition", 409);
+  db.prepare("UPDATE volume_registrations SET status = 'edited' WHERE id = ?").run(registrationId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PB-004"]!(src, "publishing.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("PB-005 PRESENCE — batch expire update in expirePrintBatchInventory (file context)", () => {
+    const src = parseTypeScriptSource(
+      "publishing.ts",
+      `function transitionRegistrationStatus(db, registrationId, newStatus) {
+  const registration = db.prepare("SELECT status FROM volume_registrations WHERE id = ?").get(registrationId);
+  if (registration.status === 'registered') throw new PublishingError("E409-REGISTRATION", "Invalid", 409);
+  db.prepare("UPDATE volume_registrations SET status = 'edited' WHERE id = ?").run(registrationId);
+}
+function expirePrintBatchInventory(db, now) {
+  const candidates = db.prepare("SELECT id FROM print_batches WHERE status = 'distributed' AND printed_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE print_batches SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PB-005"]!(src, "publishing.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("PB-006 PRESENCE — db.transaction() in processRoyaltyRefund (atomic royalty_refund_records+royalty_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "publishing.ts",
+      `function processRoyaltyRefund(db, authorId, printBatchId, royaltyCost, refundRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO royalty_refund_records (id, author_id, print_batch_id, royalty_cost, refund_rate, refund_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(royaltyRefundId, authorId, printBatchId, royaltyCost, refundRate, refundAmount);
+    db.prepare("INSERT INTO royalty_refunds (id, royalty_refund_id, author_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, royaltyRefundId, authorId, refundAmount, refundedAt);
+    db.prepare("UPDATE royalty_refund_records SET status = 'refunded' WHERE id = ?").run(royaltyRefundId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PB-006"]!(src, "publishing.ts");
     expect(markers).toHaveLength(0);
   });
 });

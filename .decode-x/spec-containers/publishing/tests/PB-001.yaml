@@ -1,0 +1,62 @@
+# Test scenarios — Publishing domain PB-001~PB-006
+# 세션 304 F518 — Publishing 출판 합성 도메인
+
+scenarios:
+  - id: PB-001-PASS
+    rule: PB-001
+    description: "정원 내 볼륨 등록 — 성공"
+    input: { active_volumes: 200, total_capacity: 500 }
+    expected: PASS
+
+  - id: PB-001-FAIL
+    rule: PB-001
+    description: "임프린트 볼륨 정원 초과 — E422-IMPRINT-VOLUME-EXCEEDED"
+    input: { active_volumes: 500, total_capacity: 500 }
+    expected: FAIL
+    error: E422-IMPRINT-VOLUME-EXCEEDED
+
+  - id: PB-002-PASS
+    rule: PB-002
+    description: "저작권료 한도 내 사용 — 성공"
+    input: { fee_used: 1000, fee_limit: 5000, fee: 500 }
+    expected: PASS
+
+  - id: PB-002-FAIL
+    rule: PB-002
+    description: "저작권료 한도 초과 — E422-ROYALTY-PAYMENT-LIMIT-EXCEEDED"
+    input: { fee_used: 4800, fee_limit: 5000, fee: 300 }
+    expected: FAIL
+    error: E422-ROYALTY-PAYMENT-LIMIT-EXCEEDED
+
+  - id: PB-003-PASS
+    rule: PB-003
+    description: "edited 상태 registration 인쇄 batch atomic — 성공"
+    input: { registration_status: edited }
+    expected: PASS
+
+  - id: PB-004-PASS
+    rule: PB-004
+    description: "registered → edited 전환 허용"
+    input: { previous: registered, next: edited }
+    expected: PASS
+
+  - id: PB-004-FAIL
+    rule: PB-004
+    description: "sold → edited 역행 차단 — E409-REGISTRATION"
+    input: { previous: sold, next: edited }
+    expected: FAIL
+    error: E409-REGISTRATION
+
+  - id: PB-005-PASS
+    rule: PB-005
+    description: "distributed 인쇄 batch batch expire — 대상 1건"
+    input: { batches: [{ status: distributed, printed_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: PB-006-PASS
+    rule: PB-006
+    description: "returned print batch 저작권료 환불 atomic — 성공"
+    input: { batch_status: returned, royalty_cost: 1000, refund_rate: 0.3 }
+    expected: PASS
+    expectedRefundAmount: 300

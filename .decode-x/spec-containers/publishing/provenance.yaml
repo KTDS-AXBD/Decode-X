@@ -1,0 +1,52 @@
+---
+# Provenance — PUB-001
+# 53번째 도메인 — Publishing 합성 도메인 PoC (42번째 신규 산업)
+
+skillId: PUB-001
+extractedAt: "2026-05-13T00:00:00+09:00"
+extractedBy: "Decode-X 세션 304 F518 — withRuleId 재사용 53번째 도메인 (Publishing 출판 산업, 42번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/publishing/rules/publishing-rules.md"
+    section: "Publishing 합성 비즈니스 룰 — PB-001~PB-006"
+    businessRules: [PB-001, PB-002, PB-003, PB-004, PB-005, PB-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 출판(Publishing) 산업 일반화 PoC. 임프린트볼륨한도/저작권료한도/인쇄batchatomic/배포상태전환/만료재고일괄/저작권환불atomic 추상화. 53번째 도메인 + 42번째 신규 산업 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT+TM+VT+GY+PK+CS+FS+AS+MU+SH+PB). detector 신뢰도 누적 활용. 🏆 54 Sprint 연속 정점 도전. 거울 변환 6회차 (carsharing → fastfood → aerospace → music → shipping → publishing). MU(음악 스트리밍) + PB(출판 IP) 디지털 콘텐츠 클러스터 확장 형성."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/publishing.ts"
+    functions: [registerVolume, applyRoyaltyTier, processPrintBatch, transitionRegistrationStatus, expirePrintBatchInventory, processRoyaltyRefund]
+
+detection:
+  - ruleId: PB-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-13T00:00:00+09:00"
+    notes: "imprint.active_volumes >= limit (UPPERCASE fallback MAX_CONCURRENT_VOLUMES_PER_IMPRINT, Path A)"
+  - ruleId: PB-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-13T00:00:00+09:00"
+    notes: "contract.fee_used + fee >= royaltyPaymentLimit (Path B, limit keyword)"
+  - ruleId: PB-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-13T00:00:00+09:00"
+    notes: "db.transaction() — print_batches INSERT + volume_registrations UPDATE + royalty_payments INSERT"
+  - ruleId: PB-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-13T00:00:00+09:00"
+    notes: "registered → edited → printed → distributed → sold (+ returned)"
+  - ruleId: PB-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-13T00:00:00+09:00"
+    notes: "batch: expire 갱신 (SH-005/MU-005/AS-005/FS-005/CS-005/PK-005/GY-005/VT-005 42번째 재사용)"
+  - ruleId: PB-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-13T00:00:00+09:00"
+    notes: "db.transaction() — royalty_refund_records INSERT + royalty_refunds INSERT + royalty_refund_records UPDATE"

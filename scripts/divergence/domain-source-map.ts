@@ -976,6 +976,27 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processDemurrageRefund",
     ],
   },
+  {
+    container: "publishing",
+    rulesPath: `${SPEC_CONTAINER_BASE}/publishing/rules/publishing-rules.md`,
+    // 세션 304 (F518): Publishing 합성 도메인 — 53번째 도메인 (출판 산업, 42번째 신규 산업).
+    // PB-001~PB-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 54 Sprint 연속 정점 도전 (S264~S278+S283~S319+S295~S301+S304).
+    // 42번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT+TM+VT+GY+PK+CS+FS+AS+MU+SH+PB).
+    // 거울 변환 6회차 (carsharing → fastfood → aerospace → music → shipping → publishing) — MU+PB 디지털 콘텐츠 클러스터 확장 형성.
+    // 6 BLs 균형 패턴 43번째 정착. 🏆 53번째 도메인 마일스톤 (S262 5 → S304 53, 10.6배 확장).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/publishing.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/publishing/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "registerVolume",
+      "applyRoyaltyTier",
+      "processPrintBatch",
+      "transitionRegistrationStatus",
+      "expirePrintBatchInventory",
+      "processRoyaltyRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

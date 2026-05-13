@@ -1260,6 +1260,15 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "SH-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "SH-004"),
   "SH-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "SH-005"),
   "SH-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "SH-006"),
+  // 세션 304 (F518): Publishing 합성 도메인 53번째 (42번째 신규 산업, 출판 IP).
+  // MU+PB 디지털 콘텐츠 클러스터 확장 (MU 음악 스트리밍 + PB 출판 IP).
+  // withRuleId 재사용 53번째 도메인. 🏆 53번째 도메인 마일스톤 (S262 5 → S304 53, 10.6배 확장).
+  "PB-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "PB-001"),
+  "PB-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "PB-002"),
+  "PB-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "PB-003"),
+  "PB-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PB-004"),
+  "PB-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PB-005"),
+  "PB-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "PB-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

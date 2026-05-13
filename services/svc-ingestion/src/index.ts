@@ -1,4 +1,4 @@
-import { createLogger, ok, unauthorized, notFound, badRequest, verifyInternalSecret, errFromUnknown, extractRbacContext, checkPermission, logAuditLocal } from "@ai-foundry/utils";
+import { createLogger, ok, unauthorized, notFound, badRequest, verifyInternalSecret, requireCfAccessJwt, errFromUnknown, extractRbacContext, checkPermission, logAuditLocal } from "@ai-foundry/utils";
 import { initJavaParserWorkers } from "@ai-foundry/utils/java-parsing/loader-workers";
 import type { DocumentUploadedEvent } from "@ai-foundry/types";
 import type { Env } from "./env.js";
@@ -24,6 +24,12 @@ export default {
     // Health check — no auth required
     if (method === "GET" && path === "/health") {
       return handleHealth();
+    }
+
+    // External routes: CF Access JWT required
+    if (!path.startsWith("/internal/")) {
+      const jwtDenied = requireCfAccessJwt(request);
+      if (jwtDenied) return jwtDenied;
     }
 
     // All other routes require inter-service secret

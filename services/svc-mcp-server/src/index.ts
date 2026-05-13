@@ -14,7 +14,7 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
-import { createLogger, timingSafeCompare } from "@ai-foundry/utils";
+import { createLogger, timingSafeCompare, requireCfAccessJwt } from "@ai-foundry/utils";
 import { z } from "zod";
 import type { Env } from "./env.js";
 import { handleAgentRun, handleAgentResume } from "./routes/agent.js";
@@ -685,7 +685,7 @@ export default {
       return new Response(null, { status: 204, headers: corsHeaders() });
     }
 
-    // Health check
+    // Health check — no auth required
     if (method === "GET" && path === "/health") {
       return new Response(
         JSON.stringify({ status: "ok", service: env.SERVICE_NAME }),
@@ -698,6 +698,10 @@ export default {
         },
       );
     }
+
+    // External routes: CF Access JWT required
+    const jwtDenied = requireCfAccessJwt(request);
+    if (jwtDenied) return jwtDenied;
 
     // AG-UI Agent endpoints
     if (method === "POST" && path === "/agent/run") {

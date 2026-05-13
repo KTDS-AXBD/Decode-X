@@ -3,42 +3,15 @@
 // CF Access injects Cf-Access-Jwt-Assertion header; no app-level OAuth logic.
 
 import type { Env } from "../env.js";
-import { unauthorized } from "@ai-foundry/utils";
-
-interface CfJwtPayload {
-  email: string;
-  name?: string;
-  sub: string;
-  exp: number;
-}
-
-function decodeCfJwt(token: string): CfJwtPayload | null {
-  try {
-    const parts = token.split(".");
-    if (parts.length !== 3 || parts[1] === undefined) return null;
-    const pad = 4 - (parts[1].length % 4);
-    const b64 = parts[1].replace(/-/g, "+").replace(/_/g, "/") + (pad === 4 ? "" : "=".repeat(pad));
-    return JSON.parse(atob(b64)) as CfJwtPayload;
-  } catch {
-    return null;
-  }
-}
+import { unauthorized, extractCfAccessJwtClaims } from "@ai-foundry/utils";
 
 export async function handleGetMe(request: Request, env: Env): Promise<Response> {
-  const jwtToken = request.headers.get("Cf-Access-Jwt-Assertion");
-  if (!jwtToken) {
-    return unauthorized("CF Access JWT required");
-  }
-
-  const claims = decodeCfJwt(jwtToken);
+  const claims = extractCfAccessJwtClaims(request);
   if (!claims?.email) {
-    return unauthorized("Invalid JWT claims");
+    return unauthorized("CF Access JWT required or expired");
   }
 
   const now = Math.floor(Date.now() / 1000);
-  if (claims.exp < now) {
-    return unauthorized("JWT expired");
-  }
 
   const existing = await env.DB_SKILL
     .prepare("SELECT email, primary_role, status FROM users WHERE email = ?")

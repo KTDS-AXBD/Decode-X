@@ -9,7 +9,7 @@
  * Results are written to DB_EXTRACTION and forwarded to svc-policy via the pipeline queue.
  */
 
-import { createLogger, unauthorized, verifyInternalSecret, errFromUnknown, notFound, ok, extractRbacContext, checkPermission, logAuditLocal } from "@ai-foundry/utils";
+import { createLogger, unauthorized, verifyInternalSecret, requireCfAccessJwt, errFromUnknown, notFound, ok, extractRbacContext, checkPermission, logAuditLocal } from "@ai-foundry/utils";
 import type { Env } from "./env.js";
 import { handleExtract } from "./routes/extract.js";
 import { handleAnalysisRoutes } from "./routes/analysis.js";
@@ -36,6 +36,12 @@ export default {
         JSON.stringify({ status: "ok", service: env.SERVICE_NAME }),
         { status: 200, headers: { "Content-Type": "application/json" } },
       );
+    }
+
+    // External routes: CF Access JWT required
+    if (!path.startsWith("/internal/")) {
+      const jwtDenied = requireCfAccessJwt(request);
+      if (jwtDenied) return jwtDenied;
     }
 
     // All other routes require inter-service secret

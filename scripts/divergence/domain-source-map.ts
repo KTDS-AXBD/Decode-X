@@ -1060,6 +1060,27 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processRefundClaim",
     ],
   },
+  {
+    container: "video",
+    rulesPath: `${SPEC_CONTAINER_BASE}/video/rules/video-rules.md`,
+    // 세션 305 (F524): Video 합성 도메인 — 57번째 도메인 (영상 산업, 46번째 신규 산업).
+    // VD-001~VD-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 58 Sprint 연속 정점 도전 (S264~S278+S283~S319+S295~S305).
+    // 46번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT+TM+VT+GY+PK+CS+FS+AS+MU+SH+PB+TX+AD+GM+VD).
+    // 거울 변환 10회차 (carsharing → fastfood → aerospace → music → shipping → publishing → textile → advertising → gaming → video) — MU+PB+AD+GM+VD 디지털 콘텐츠 5-클러스터 확장.
+    // 6 BLs 균형 패턴 47번째 정착. 🏆 57번째 도메인 마일스톤 (S262 5 → S305 57, 11.4배 확장).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/video.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/video/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "publishVideo",
+      "applyViewLimit",
+      "processStream",
+      "transitionVideoStatus",
+      "expireRetiredVideoBatch",
+      "processRefundClaim",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

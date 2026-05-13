@@ -1005,6 +1005,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "V-004",
       "V-005",
       "V-006",
+      "VD-001",
+      "VD-002",
+      "VD-003",
+      "VD-004",
+      "VD-005",
+      "VD-006",
       "VT-001",
       "VT-002",
       "VT-003",
@@ -1207,6 +1213,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["GM-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["GM-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["GM-006"]).toBeDefined();
+  });
+
+  it("VD-001~VD-006 registered (세션 305 F524 — video 57번째 도메인, 46번째 신규 산업, 58 Sprint 연속 정점 도전, 거울 변환 10회차, MU+PB+AD+GM+VD 디지털 콘텐츠 5-클러스터 확장)", () => {
+    expect(BL_DETECTOR_REGISTRY["VD-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["VD-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["VD-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["VD-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["VD-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["VD-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -5441,6 +5456,106 @@ function expireRetiredGameBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["GM-006"]!(src, "gaming.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+// F524 (세션 305) — video domain VD-001~006 via withRuleId (58 Sprint 연속 정점 도전)
+// 거울 변환 10회차 (carsharing → fastfood → aerospace → music → shipping → publishing → textile → advertising → gaming → video).
+// MU+PB+AD+GM+VD 디지털 콘텐츠 5-클러스터 확장. 🏆 57번째 도메인 마일스톤 (S262 5 → S305 57, 11.4배 확장).
+describe("video domain — VD-001~006 via withRuleId (세션 305 F524)", () => {
+  it("VD-001 PRESENCE — active_published_videos >= MAX_CONCURRENT_PUBLISHED_VIDEOS_PER_CHANNEL threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "video.ts",
+      `const MAX_CONCURRENT_PUBLISHED_VIDEOS_PER_CHANNEL = 1000;
+function publishVideo(db, channelId, contractId) {
+  const channel = db.prepare("SELECT active_published_videos, total_capacity FROM channels WHERE id = ?").get(channelId);
+  const limit = channel.total_capacity ?? MAX_CONCURRENT_PUBLISHED_VIDEOS_PER_CHANNEL;
+  if (channel.active_published_videos >= limit) {
+    throw new VideoError('E422-CHANNEL-CAPACITY-EXCEEDED', 'Channel is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["VD-001"]!(src, "video.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("VD-002 PRESENCE — view_used + views >= dailyViewLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "video.ts",
+      `function applyViewLimit(db, viewerId, contractId, views) {
+  const contract = db.prepare("SELECT view_used, view_limit FROM ad_contracts WHERE id = ? AND viewer_id = ? LIMIT 1").get(contractId, viewerId);
+  const dailyViewLimit = contract.view_limit;
+  if (contract.view_used + views >= dailyViewLimit) {
+    throw new VideoError('E422-DAILY-VIEW-LIMIT-EXCEEDED', 'Daily view quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["VD-002"]!(src, "video.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("VD-003 PRESENCE — db.transaction() in processStream (atomic video_streams+video_publishes+ad_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "video.ts",
+      `function processStream(db, channelId, publishId, streamNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO video_streams (id, channel_id, publish_id, stream_no, status, started_at) VALUES (?, ?, ?, ?, 'live', ?)").run(videoStreamId, channelId, publishId, streamNo, startedAt);
+    db.prepare("UPDATE video_publishes SET status = 'published', video_stream_id = ?, ad_payment_id = ? WHERE id = ?").run(videoStreamId, adPaymentId, publishId);
+    db.prepare("INSERT INTO ad_payments (id, publish_id, video_stream_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(adPaymentId, publishId, videoStreamId, amount, startedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["VD-003"]!(src, "video.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("VD-004 PRESENCE — status comparison + 'encoded'/'published'/'unlisted'/'retired' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "video.ts",
+      `function transitionVideoStatus(db, publishId, newStatus) {
+  const publish = db.prepare("SELECT status FROM video_publishes WHERE id = ?").get(publishId);
+  if (publish.status === 'uploaded') throw new VideoError("E409-PUBLISH", "Invalid transition", 409);
+  db.prepare("UPDATE video_publishes SET status = 'encoded' WHERE id = ?").run(publishId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["VD-004"]!(src, "video.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("VD-005 PRESENCE — batch expire update in expireRetiredVideoBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "video.ts",
+      `function transitionVideoStatus(db, publishId, newStatus) {
+  const publish = db.prepare("SELECT status FROM video_publishes WHERE id = ?").get(publishId);
+  if (publish.status === 'uploaded') throw new VideoError("E409-PUBLISH", "Invalid", 409);
+  db.prepare("UPDATE video_publishes SET status = 'encoded' WHERE id = ?").run(publishId);
+}
+function expireRetiredVideoBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM video_streams WHERE status = 'retired' AND started_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE video_streams SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["VD-005"]!(src, "video.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("VD-006 PRESENCE — db.transaction() in processRefundClaim (atomic reward_clawback_records+reward_clawbacks INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "video.ts",
+      `function processRefundClaim(db, viewerId, videoStreamId, rewardCost, clawbackRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO reward_clawback_records (id, viewer_id, video_stream_id, reward_cost, clawback_rate, clawback_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(clawbackRecordId, viewerId, videoStreamId, rewardCost, clawbackRate, clawbackAmount);
+    db.prepare("INSERT INTO reward_clawbacks (id, clawback_record_id, viewer_id, amount, status, clawed_back_at) VALUES (?, ?, ?, ?, 'clawed_back', ?)").run(clawbackId, clawbackRecordId, viewerId, clawbackAmount, clawedBackAt);
+    db.prepare("UPDATE reward_clawback_records SET status = 'clawed_back' WHERE id = ?").run(clawbackRecordId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["VD-006"]!(src, "video.ts");
     expect(markers).toHaveLength(0);
   });
 });

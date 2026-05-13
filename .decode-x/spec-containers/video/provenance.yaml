@@ -1,0 +1,52 @@
+---
+# Provenance — VID-001
+# 57번째 도메인 — Video 합성 도메인 PoC (46번째 신규 산업)
+
+skillId: VID-001
+extractedAt: "2026-05-14T00:00:00+09:00"
+extractedBy: "Decode-X 세션 305 F524 — withRuleId 재사용 57번째 도메인 (Video 영상 산업, 46번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/video/rules/video-rules.md"
+    section: "Video 합성 비즈니스 룰 — VD-001~VD-006"
+    businessRules: [VD-001, VD-002, VD-003, VD-004, VD-005, VD-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 영상(Video) 산업 일반화 PoC. 채널publish한도/시청자view한도/스트림batchatomic/영상상태전환/만료영상일괄/리워드회수atomic 추상화. 57번째 도메인 + 46번째 신규 산업. detector 신뢰도 누적 활용. 🏆 58 Sprint 연속 정점 도전. 거울 변환 10회차 (carsharing → fastfood → aerospace → music → shipping → publishing → textile → advertising → gaming → video). MU(음악 스트리밍) + PB(출판 IP) + AD(광고 캠페인) + GM(게임 라이브) + VD(영상 스트리밍) 디지털 콘텐츠 5-클러스터 확장 형성."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/video.ts"
+    functions: [publishVideo, applyViewLimit, processStream, transitionVideoStatus, expireRetiredVideoBatch, processRefundClaim]
+
+detection:
+  - ruleId: VD-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "channel.active_published_videos >= limit (UPPERCASE fallback MAX_CONCURRENT_PUBLISHED_VIDEOS_PER_CHANNEL, Path A)"
+  - ruleId: VD-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "contract.view_used + views >= dailyViewLimit (Path B, limit keyword)"
+  - ruleId: VD-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "db.transaction() — video_streams INSERT + video_publishes UPDATE + ad_payments INSERT"
+  - ruleId: VD-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "uploaded → encoded → published → unlisted → retired (+ banned)"
+  - ruleId: VD-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "batch: expire 갱신 (GM-005/AD-005/TX-005/PB-005 46번째 재사용)"
+  - ruleId: VD-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "db.transaction() — reward_clawback_records INSERT + reward_clawbacks INSERT + reward_clawback_records UPDATE"

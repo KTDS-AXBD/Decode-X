@@ -60,7 +60,8 @@ import type { BLRule } from "@ai-foundry/types";
 // F506 (세션 299): AS prefix 추가 (aerospace 합성 도메인, 50번째 — 항공우주 산업, 39번째 신규). TR+AV+CS+AS 항공/운송 4-클러스터 확장. 51 Sprint 연속 정점 도전. 🏆 50번째 도메인 마일스톤 (S262 5 → S299 50, 10배 확장).
 // F509 (세션 300): MU prefix 추가 (music 합성 도메인, 51번째 — 음악 스트리밍 산업, 40번째 신규). 디지털 콘텐츠 도메인. 52 Sprint 연속 정점 도전. 거울 변환 4회차 (carsharing → fastfood → aerospace → music).
 // F511 (세션 301): SH prefix 추가 (shipping 합성 도메인, 52번째 — 해운/선적 산업, 41번째 신규). LG+SH 국제무역 클러스터 신규 형성 (LG 물류 + SH 해운 분리). 53 Sprint 연속 정점 도전. 거울 변환 5회차 (carsharing → fastfood → aerospace → music → shipping). 🏆 52번째 도메인 마일스톤 (S262 5 → S301 52, 10.4배 확장).
-const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|BK|BT|LP|AD|AS|CC|CH|CS|DV|SB|SH|SP|IN|HC|ED|RE|LG|HO|TM|TR|MF|RT|EN|GM|GV|TC|MD|PH|AG|CN|MR|TS|AV|MN|DF|FS|FT|GY|MU|PB|PK|TX|WL|PT|PR|VT|P|V)-[A-Z]?\d{1,3}$/;
+// F524 (세션 305): VD prefix 추가 (video 합성 도메인, 57번째 — 영상 산업, 46번째 신규). MU+PB+AD+GM+VD 디지털 콘텐츠 5-클러스터 확장 (음악 + 출판 + 광고 + 게임 + 영상). 58 Sprint 연속 정점 도전. 거울 변환 10회차 (carsharing → fastfood → aerospace → music → shipping → publishing → textile → advertising → gaming → video). 🏆 57번째 도메인 마일스톤 (S262 5 → S305 57, 11.4배 확장).
+const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|BK|BT|LP|AD|AS|CC|CH|CS|DV|SB|SH|SP|IN|HC|ED|RE|LG|HO|TM|TR|MF|RT|EN|GM|GV|TC|MD|PH|AG|CN|MR|TS|AV|MN|DF|FS|FT|GY|MU|PB|PK|TX|VD|WL|PT|PR|VT|P|V)-[A-Z]?\d{1,3}$/;
 const HEADER_PATTERN =
   /\|\s*ID\s*\|\s*condition[^|]*\|\s*criteria[^|]*\|\s*outcome[^|]*\|\s*exception[^|]*\|/i;
 const SEPARATOR_PATTERN = /^\s*\|[\s:|-]+\|\s*$/;

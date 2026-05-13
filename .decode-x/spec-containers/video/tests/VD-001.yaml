@@ -1,0 +1,62 @@
+# Test scenarios — Video domain VD-001~VD-006
+# 세션 305 F524 — Video 영상 합성 도메인
+
+scenarios:
+  - id: VD-001-PASS
+    rule: VD-001
+    description: "정원 내 영상 publish — 성공"
+    input: { active_published_videos: 400, total_capacity: 1000 }
+    expected: PASS
+
+  - id: VD-001-FAIL
+    rule: VD-001
+    description: "채널 publish 정원 초과 — E422-CHANNEL-CAPACITY-EXCEEDED"
+    input: { active_published_videos: 1000, total_capacity: 1000 }
+    expected: FAIL
+    error: E422-CHANNEL-CAPACITY-EXCEEDED
+
+  - id: VD-002-PASS
+    rule: VD-002
+    description: "일일 view 한도 내 사용 — 성공"
+    input: { view_used: 50, view_limit: 200, views: 10 }
+    expected: PASS
+
+  - id: VD-002-FAIL
+    rule: VD-002
+    description: "일일 view 한도 초과 — E422-DAILY-VIEW-LIMIT-EXCEEDED"
+    input: { view_used: 195, view_limit: 200, views: 10 }
+    expected: FAIL
+    error: E422-DAILY-VIEW-LIMIT-EXCEEDED
+
+  - id: VD-003-PASS
+    rule: VD-003
+    description: "encoded 상태 publish 스트림 atomic — 성공"
+    input: { publish_status: encoded }
+    expected: PASS
+
+  - id: VD-004-PASS
+    rule: VD-004
+    description: "uploaded → encoded 전환 허용"
+    input: { previous: uploaded, next: encoded }
+    expected: PASS
+
+  - id: VD-004-FAIL
+    rule: VD-004
+    description: "retired → uploaded 역행 차단 — E409-PUBLISH"
+    input: { previous: retired, next: uploaded }
+    expected: FAIL
+    error: E409-PUBLISH
+
+  - id: VD-005-PASS
+    rule: VD-005
+    description: "retired 영상 스트림 batch expire — 대상 1건"
+    input: { streams: [{ status: retired, started_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: VD-006-PASS
+    rule: VD-006
+    description: "banned video stream 리워드 회수 atomic — 성공"
+    input: { stream_status: banned, reward_cost: 1000, clawback_rate: 0.5 }
+    expected: PASS
+    expectedClawbackAmount: 500

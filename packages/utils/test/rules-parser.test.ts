@@ -183,6 +183,16 @@ describe("rules-parser — parseRulesMarkdown", () => {
     expect(rules.map((r) => r.id)).toEqual(["FS-001", "FS-006"]);
   });
 
+  it("matches video VD-NNN prefix (세션 305 F524, 46번째 신규 산업, MU+PB+AD+GM+VD 디지털 콘텐츠 5-클러스터)", () => {
+    const md = `| ID | condition | criteria | outcome | exception |
+|----|-----------|----------|---------|-----------|
+| VD-001 | a | b | c | d |
+| VD-006 | a | b | c | d |
+`;
+    const rules = parseRulesMarkdown(md);
+    expect(rules.map((r) => r.id)).toEqual(["VD-001", "VD-006"]);
+  });
+
   it("rejects invalid prefix patterns (BL- without digits, BL-A only)", () => {
     const md = `| ID | condition | criteria | outcome | exception |
 |----|-----------|----------|---------|-----------|

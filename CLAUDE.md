@@ -134,10 +134,10 @@ Stage 5: Skill Packaging + 반제품 생성
 - Queue Router — pipeline event bus, fan-out to stages
 - `SVC-11` MCP Server — Streamable HTTP, Skill tools for Claude Desktop
 
-**분리됨 (AI Foundry 포털로 이관):**
-- ~~SVC-06 LLM Router~~ → `packages/utils/src/llm-client.ts` HTTP REST로 대체
-- ~~SVC-07 Security~~ → `packages/utils/src/rbac.ts` inline RBAC로 대체
-- ~~SVC-08 Governance~~ / ~~SVC-09 Notification~~ / ~~SVC-10 Analytics~~ → 포털 서비스로 이관
+**분리 및 디렉토리 정리 완료 (AI Foundry 포털 이관, 2026-05-13 services/ 잔재 제거):**
+- ~~SVC-06 LLM Router~~ → `packages/utils/src/llm-client.ts` + OpenRouter direct (CF AI Gateway 경유, TD-44 RESOLVED Sprint 232 F402 + Sprint 276 F442)
+- ~~SVC-07 Security~~ → `packages/utils/src/rbac.ts` inline RBAC + `packages/utils/src/audit.ts` lightweight audit
+- ~~SVC-08 Governance~~ / ~~SVC-09 Notification~~ / ~~SVC-10 Analytics~~ → 포털 서비스로 이관 (서비스 binding 0건, src/ 0건, services/ 디렉토리 제거 완료)
 
 ### Infrastructure (Cloudflare-native)
 - **Compute**: Workers (7 SVCs) + Durable Objects (HITL session state)
@@ -148,11 +148,11 @@ Stage 5: Skill Packaging + 반제품 생성
 - **Auth**: Cloudflare Access (Zero Trust, SSO with KT DS IdP)
 - **Graph DB**: Neo4j Aura (Free → Pro as needed)
 
-### LLM Tier Routing (via llm-client.ts HTTP REST → 외부 svc-llm-router)
+### LLM Tier Routing (via llm-client.ts HTTP REST → OpenRouter CF AI Gateway, TD-44)
 - **Tier 1** (Opus): complexity score > 0.7 — Stage 3 policy inference
 - **Tier 2** (Sonnet/Haiku): complexity 0.4–0.7 / < 0.4 — Stages 2, 4, 5
 - **Tier 3** (Workers AI): embeddings, classification, similarity
-- **호출 방식**: `callLlm()` from `@ai-foundry/utils/llm-client` — HTTP REST to external LLM Router Worker
+- **호출 방식**: `callLlm()` from `@ai-foundry/utils/llm-client` — HTTP REST to OpenRouter via Cloudflare AI Gateway (svc-llm-router decommissioned Sprint 232 F402)
 
 ### Skill Package Output Format
 - File: `.skill.json` (JSON Schema Draft 2020-12), stored in R2 `skill-packages/`

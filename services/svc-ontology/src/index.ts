@@ -15,6 +15,7 @@ import {
   createLogger,
   unauthorized,
   verifyInternalSecret,
+  requireCfAccessJwt,
   errFromUnknown,
   extractRbacContext,
   checkPermission,
@@ -120,6 +121,12 @@ export default {
     // Neo4j diagnostic — no auth, but masks sensitive info
     if (method === "GET" && path === "/neo4j/health") {
       return await handleNeo4jHealth(env);
+    }
+
+    // External routes: CF Access JWT required
+    if (!path.startsWith("/internal/")) {
+      const jwtDenied = requireCfAccessJwt(request);
+      if (jwtDenied) return jwtDenied;
     }
 
     // All other routes require inter-service secret

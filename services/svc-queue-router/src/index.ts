@@ -10,7 +10,7 @@
  */
 
 import { PipelineEventSchema } from "@ai-foundry/types";
-import { createLogger } from "@ai-foundry/utils";
+import { createLogger, requireCfAccessJwt } from "@ai-foundry/utils";
 
 interface Env {
   INTERNAL_API_SECRET: string;
@@ -81,15 +81,20 @@ function getTargets(type: EventType, env: Env): NamedTarget[] {
 }
 
 export default {
-  async fetch(_req: Request, env: Env): Promise<Response> {
+  async fetch(_req: Request, _env: Env): Promise<Response> {
     const url = new URL(_req.url);
     if (url.pathname === "/health") {
       return Response.json({
         status: "ok",
         service: "svc-queue-router",
-        environment: env.ENVIRONMENT ?? "unknown",
+        environment: _env.ENVIRONMENT ?? "unknown",
       });
     }
+
+    // External routes: CF Access JWT required
+    const jwtDenied = requireCfAccessJwt(_req);
+    if (jwtDenied) return jwtDenied;
+
     return new Response("svc-queue-router — pipeline event bus", { status: 200 });
   },
 

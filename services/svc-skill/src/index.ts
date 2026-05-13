@@ -17,6 +17,7 @@ import {
   createLogger,
   unauthorized,
   verifyInternalSecret,
+  requireCfAccessJwt,
   errFromUnknown,
   extractRbacContext,
   checkPermission,
@@ -83,8 +84,15 @@ export default {
     }
 
     // F370: GET /auth/me — CF Access JWT → D1 users upsert → role response
+    // (JWT validation is performed inside handleGetMe via extractCfAccessJwtClaims)
     if (method === "GET" && path === "/auth/me") {
       return handleGetMe(request, env);
+    }
+
+    // External routes: CF Access JWT required
+    if (!path.startsWith("/internal/")) {
+      const jwtDenied = requireCfAccessJwt(request);
+      if (jwtDenied) return jwtDenied;
     }
 
     // All other routes require inter-service secret

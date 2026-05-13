@@ -12,7 +12,7 @@
  * Receives queue events via POST /internal/queue-event from svc-queue-router.
  */
 
-import { createLogger, unauthorized, verifyInternalSecret, errFromUnknown, extractRbacContext, checkPermission, logAuditLocal } from "@ai-foundry/utils";
+import { createLogger, unauthorized, verifyInternalSecret, requireCfAccessJwt, errFromUnknown, extractRbacContext, checkPermission, logAuditLocal } from "@ai-foundry/utils";
 import type { Env } from "./env.js";
 import { handleInferPolicies, handleListPolicies, handleGetPolicy } from "./routes/policies.js";
 import { handleApprovePolicy, handleModifyPolicy, handleRejectPolicy, handleGetSession, handleListExpiredSessions, handleCleanupExpiredSessions, handleBulkApprovePolicy } from "./routes/hitl.js";
@@ -37,6 +37,12 @@ export default {
         JSON.stringify({ status: "ok", service: env.SERVICE_NAME }),
         { status: 200, headers: { "Content-Type": "application/json" } },
       );
+    }
+
+    // External routes: CF Access JWT required
+    if (!path.startsWith("/internal/")) {
+      const jwtDenied = requireCfAccessJwt(request);
+      if (jwtDenied) return jwtDenied;
     }
 
     // All other routes require inter-service secret

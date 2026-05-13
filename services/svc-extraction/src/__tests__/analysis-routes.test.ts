@@ -1,6 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Env } from "../env.js";
 
+// F514: CF Access JWT bypass for tests (production은 CF edge에서 검증)
+vi.mock("@ai-foundry/utils", async () => {
+  const actual = await vi.importActual<typeof import("@ai-foundry/utils")>("@ai-foundry/utils");
+  return { ...actual, requireCfAccessJwt: () => null };
+});
+
 // ── Mock LLM caller ──────────────────────────────────────────────
 
 vi.mock("../llm/caller.js", () => ({

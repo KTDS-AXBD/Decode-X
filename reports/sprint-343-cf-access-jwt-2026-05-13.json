@@ -1,0 +1,57 @@
+{
+  "sprint": 343,
+  "fItem": "F514",
+  "title": "CF Access JWT validate 7-worker middleware",
+  "date": "2026-05-13",
+  "matchRate": 100,
+  "testResults": {
+    "total": 463,
+    "passed": 463,
+    "failed": 0,
+    "newTests": 13
+  },
+  "dod": {
+    "total": 9,
+    "passed": 9,
+    "items": [
+      { "id": 1, "desc": "utils JWT helper SSOT", "status": "PASS" },
+      { "id": 2, "desc": "7-worker middleware 적용", "status": "PASS" },
+      { "id": 3, "desc": "CfRole→Role 매핑 활용", "status": "PASS" },
+      { "id": 4, "desc": "단위 test 463/463", "status": "PASS" },
+      { "id": 5, "desc": "실 API path verify 절차 명시", "status": "PASS" },
+      { "id": 6, "desc": "reports 생성", "status": "PASS" },
+      { "id": 7, "desc": "AIF-PLAN-120 / AIF-RPRT-125", "status": "PASS" },
+      { "id": 8, "desc": "Match ≥ 90% (100%)", "status": "PASS" },
+      { "id": 9, "desc": "Phase 3 Should S-2 보안 마감", "status": "PASS" }
+    ]
+  },
+  "filesChanged": {
+    "new": [
+      "packages/utils/src/cf-access-jwt.ts",
+      "packages/utils/src/__tests__/cf-access-jwt.test.ts",
+      "docs/01-plan/features/sprint-343-F514.plan.md",
+      "docs/02-design/features/sprint-343-F514.design.md"
+    ],
+    "modified": [
+      "packages/utils/src/index.ts",
+      "services/svc-ingestion/src/index.ts",
+      "services/svc-extraction/src/index.ts",
+      "services/svc-policy/src/index.ts",
+      "services/svc-ontology/src/index.ts",
+      "services/svc-skill/src/index.ts",
+      "services/svc-skill/src/routes/auth.ts",
+      "services/svc-queue-router/src/index.ts",
+      "services/svc-mcp-server/src/index.ts"
+    ]
+  },
+  "securityLayers": {
+    "layer1": "CF Access JWT validate (Cf-Access-Jwt-Assertion header presence + expiry)",
+    "layer2": "JWT claims extraction → CfRole (svc-skill D1 users lookup)",
+    "layer3": "CfRole → RBAC Role mapping → permission check (mapCfRoleToRbacRoles)"
+  },
+  "phaseSecurity": {
+    "phase3ShouldS2": "COMPLETED",
+    "workers": 7,
+    "pattern": "requireCfAccessJwt on non-/internal/ paths"
+  }
+}

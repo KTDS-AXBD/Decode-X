@@ -239,7 +239,8 @@ for ENTRY in "${WORKER_SECRETS[@]}"; do
         -d "$BODY" \
         "$URL")
 
-      if [[ "$HTTP_CODE" == "200" ]]; then
+      # CF API REST PUT semantics (RFC 9110 idempotent): 200 = update, 201 = Created (신규)
+      if [[ "$HTTP_CODE" =~ ^(200|201)$ ]]; then
         echo "  ✅ ${SECRET_NAME} → ${ENV_NAME} (worker=${WORKER_ID}, HTTP ${HTTP_CODE})"
         SUCCESS=$((SUCCESS + 1))
       else

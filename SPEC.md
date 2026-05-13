@@ -1413,7 +1413,7 @@
 > **DoD 9개**: utils JWT validate helper SSOT + 7-worker middleware 적용 + CfRole→Role 매핑 활용 + 단위 test + 실 API path verify + reports/sprint-343-cf-access-jwt-2026-05-12.{md,json} + Plan/Report (AIF-PLAN-047/AIF-RPRT-047) + Match ≥ 90% + Phase 3 Should S-2 보안 마감.
 > **의존성**: F510 ✅ DONE (S300 SPEC §10 RBAC SSOT) + CfRole 4 + Role 5 매핑 함수.
 > **메타**: (a) **Phase 3 Should S-2 보안 마감** — F510 F-NEW-D RBAC SSOT (S300) → F514 JWT validate enforcement, (b) **3-layer 분리 활용** — CfRole 4 인증 → JWT claim 추출 → Role 권한 매트릭스 enforcement, (c) **AIF-REQ-035 Phase 3 잔여 보안 마감** (F510 RBAC SSOT 후속 보안 layer).
-- [ ] F514 📋 **PLANNED** (F-NEW-E svc-* CF Access JWT validate 7-worker, **P1**, Sprint 343, 세션 301 사전 등록 2026-05-12 Master inline ~3h): utils JWT helper + 7-worker middleware + CfRole 매핑 활용 + 단위 test + 실 API verify + reports + Phase 3 Should S-2 보안 마감.
+- [ ] F514 🔧 **IN_PROGRESS** (F-NEW-E svc-* CF Access JWT validate 7-worker, **P1**, Sprint 343, 세션 303 시동 2026-05-13 WT autopilot ~3h): utils JWT helper + 7-worker middleware + CfRole 매핑 활용 + 단위 test + 실 API verify + reports + Phase 3 Should S-2 보안 마감.
 
 **Sprint 344 (F516 — F490 후속 A 잔여 28 ops 전체 sync, 📋 PLANNED 세션 303 사전 등록 차기 Master inline ~30분 2026-05-13):**
 > **목표**: Sprint 342 F515 산출 `scripts/secret-sync-all-workers-v2.sh`를 잔여 28 ops에 일괄 적용. Sprint 341 F512 svc-ingestion 2 ops(default+production env) 완료 후속 — 6 worker(svc-extraction/policy/ontology/skill/queue-router/mcp-server) × 3 secret × 2 env ≒ 28 ops 잔여. **동일 secret 값 재배포** (실 rotation 아님, sync 정합화 단계).

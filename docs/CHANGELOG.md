@@ -13,6 +13,22 @@ author: Sinclair Seo
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 303 (2026-05-13) — `/ax:todo plan` Pipeline 3 Sprint (A 차기 분리 + B/C 완결) **🔐 F490 운영 2단계 완결 + 🎯 영역 분리 검증 + 🎯 Worker Secret Store 6회차 적용 + ⚠️ Sprint 343 JWT middleware 부수효과 발견**
+
+`/ax:todo plan` Pipeline 사전 등록 3건(A F514 + B F516 + C F517) + Sprint Pipeline 병렬 모드 선택 + B/C 형태 결정(A WT autopilot + B/C Master inline 순차). 사용자 결정 4종(AskUserQuestion): (1) 작업 3건 multiSelect (A+B+C, D/E 차기 분리), (2) Sprint Pipeline 병렬 실행 모드, (3) B/C 운영성 분리 (A WT + B/C Master inline 순차), (4) F517 rotation scope 축소 (INTERNAL_API_SECRET only, 외부 secret 2종 후속 분리), (5) Sprint 343 fail 후 Master 직접 fix 결정. 누적 7 commits (`c79c0cb` 사전 등록 + `a16c499` F514 IN_PROGRESS + `a869730` F516 DONE + `88ab2ab` F517 IN_PROGRESS + `63605ac` F517 DONE + `6a0d7d4` F514 fix + `?` 세션 종료).
+
+**Sprint 343 F514 🟡 PARTIAL — 차기 세션 분리** (PR #88 OPEN, CI 3회 FAILURE): packages/utils/src/cf-access-jwt.ts SSOT helper + 7-worker entry middleware 적용 + svc-skill/routes/auth.ts inline → utils 교체 + AIF-PLAN-120/AIF-RPRT-125 docs. **WT autopilot 2회 fix 시도 + Master fix(`6a0d7d4` svc-queue-router router.test.ts GET / 401 expectation) 1회 시도** 후에도 CI 추가 fail — **svc-mcp-server 다수 test (10+건) 동일 부수효과 미해소** (POST /mcp/org/LPON initialize/tools/list/tools/call/`accepts *** auth` 등 MCP endpoint JWT middleware 적용 후 기존 test 미수정). 차기 세션 7-worker test 전수 일괄 fix ~30-60분 분리.
+
+**Sprint 344 F516 ✅ DONE — F490 후속 A 잔여 28 ops 전체 sync** (Master inline ~6분 Match 100%): scripts/secret-sync-all-workers-v2.sh (Sprint 342 F515 산출) 30 ops 일괄 PUT — HTTP 200 update 27 + HTTP 201 신규 생성 3 (svc-extraction/policy/ontology-production OPENROUTER_API_KEY 최초 적용) + 실 실패 0. **7-worker /health 7/7 HTTP 200** (5초 propagation 후). **HTTP 201 오분류 잔재 발견** — v2 스크립트 200만 success 처리 (TD 후보 P3 ~5분 1줄 regex fix). DoD 6/6 PASS. AIF-RPRT-048.
+
+**Sprint 345 F517 ✅ DONE — F490 후속 B 진짜 secret rotation** (Master inline ~10분 Match 100%, scope 축소 INTERNAL_API_SECRET only): `openssl rand -hex 32` 신규 64자 hex 생성 + 정본 백업(.backup-20260513-141125 chmod 600) + 정본 갱신 + v2 스크립트 --apply 30/30 PUT 성공 (14 진짜 rotation + 16 idempotent). **Cross-service auth chain verify 완결** (CLAUDE.md "Worker Secret Store" §Rotation 5번 표준 절차): public 접근 HTTP 401 "Missing or invalid X-Internal-Secret" 정상 차단 + 신규 INTERNAL_API_SECRET 헤더 `/skills?org=LPON&limit=1` HTTP 200 + LPON **894 skills total** 응답 (cross-service auth 동작 입증). DoD 8/8 PASS. OPENROUTER/CF_AI_GW는 외부 발급/URL이라 후속 분리. AIF-RPRT-049.
+
+**🏆 마일스톤**: 🔐 F490 진짜 rotation 운영 단계 도달 (sync→rotation 2단계 분리 가치 실증) + 🎯 rules/development-workflow.md "Worker Secret Store env-scoped divergence" 6회차 적용 (S246→S260→S341→S342→S344→S345) + 🎯 영역 분리 검증 — A 코드 변경(JWT middleware) vs C secret PUT 충돌 0건 (병행 진행 가능 입증) + Master inline **34회 연속 회피 패턴 유지** (S253~S345).
+
+**메타 학습 4종**: (a) **F490 후속 sync→rotation 2단계 분리 가치** — B(동일 값 재배포 운영 영향 0) → C(새 값 rotation 정합화) 분리로 운영 리스크 격리, B 회귀 trivial(redeploy) vs C 회귀 정본 갱신 필수. (b) **Cross-service auth chain verify의 강제 가치** — /health만으로는 부족, batch endpoint LLM 응답 검증 필수 (CLAUDE.md 메모와 일치). (c) **JWT middleware 부수효과 패턴 인식** — F514 7-worker entry middleware 적용이 기존 test fixture 전수 영향 (router/MCP/internal 라우트 모두). 차기 동종 작업은 사전 grep으로 영향 test 식별 + 일괄 mock JWT 헤더 표준화 필수. (d) **WT autopilot 신뢰도 한계** — 동일 패턴 fix 2회 연속 미해소(svc-queue-router → svc-mcp-server) 시 Master 직접 fix 또는 차기 세션 분리 권장 (rules/development-workflow.md "Autopilot Production Smoke Test" 변종 — autopilot scope 추정의 한계).
+
+차기: **Sprint 343 7-worker test 전수 fix** (svc-mcp-server + 기타 ~30-60분, 신규 세션 또는 본 sprint/343 branch에서 fix-forward) / **OpenRouter API key dashboard rotation** (~5분, 별도 후속) / **Staging env secret sync** (`--include-staging` ~5분) / **v2 스크립트 HTTP 201 success 1줄 fix** (P3 TD).
+
 ### 세션 302 (2026-05-13) — `/ax:daily-check` + TD-44 후속 services/ 5개 잔재 정리 + CLAUDE.md MSA 동기화 **🧹 운영성 cleanup + 📐 3-axis verify 패턴 정착**
 
 **작업 요약**: 직전 세션 301 종결 직후 운영성 cleanup 세션. `/ax:daily-check` full 모드 실행 → svc-llm-router .wrangler/.turbo 잔재 발견 → 점검 결과 TD-44 (Sprint 232 F402 + Sprint 276 F442 RESOLVED) 후 services/ 디렉토리 shell만 남은 상태 확인 → 사용자 결정(AskUserQuestion) "전체 디렉토리 제거" 선택 → 동일 패턴 4개 (svc-analytics/svc-governance/svc-notification/svc-security)도 일괄 정리 → CLAUDE.md MSA 섹션 동기화. F-item 없음 (운영성 작업).

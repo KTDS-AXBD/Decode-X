@@ -1,0 +1,52 @@
+---
+# Provenance — TXT-001
+# 54번째 도메인 — Textile 합성 도메인 PoC (43번째 신규 산업)
+
+skillId: TXT-001
+extractedAt: "2026-05-13T00:00:00+09:00"
+extractedBy: "Decode-X 세션 304 후속 F521 — withRuleId 재사용 54번째 도메인 (Textile 방직/섬유 산업, 43번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/textile/rules/textile-rules.md"
+    section: "Textile 합성 비즈니스 룰 — TX-001~TX-006"
+    businessRules: [TX-001, TX-002, TX-003, TX-004, TX-005, TX-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 방직/섬유(Textile) 산업 일반화 PoC. 직조batch한도/염료수수료한도/염색batchatomic/발주상태전환/만료재고일괄/반품환불atomic 추상화. 54번째 도메인 + 43번째 신규 산업 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT+TM+VT+GY+PK+CS+FS+AS+MU+SH+PB+TX). detector 신뢰도 누적 활용. 🏆 55 Sprint 연속 정점 도전. 거울 변환 7회차 (carsharing → fastfood → aerospace → music → shipping → publishing → textile). MF(제조 일반) + TX(섬유 특화) 제조 클러스터 확장 형성."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/textile.ts"
+    functions: [startWeavingBatch, applyDyeFeeTier, processFabricBatch, transitionOrderStatus, expireRejectedFabricBatch, processReturnRefund]
+
+detection:
+  - ruleId: TX-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-13T00:00:00+09:00"
+    notes: "mill.active_batches >= limit (UPPERCASE fallback MAX_CONCURRENT_BATCHES_PER_MILL, Path A)"
+  - ruleId: TX-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-13T00:00:00+09:00"
+    notes: "contract.fee_used + fee >= dyeFeePaymentLimit (Path B, limit keyword)"
+  - ruleId: TX-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-13T00:00:00+09:00"
+    notes: "db.transaction() — fabric_batches INSERT + fabric_orders UPDATE + dye_payments INSERT"
+  - ruleId: TX-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-13T00:00:00+09:00"
+    notes: "ordered → woven → dyed → qc → shipped (+ rejected)"
+  - ruleId: TX-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-13T00:00:00+09:00"
+    notes: "batch: expire 갱신 (SH-005/MU-005/PB-005 43번째 재사용)"
+  - ruleId: TX-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-13T00:00:00+09:00"
+    notes: "db.transaction() — return_refund_records INSERT + return_refunds INSERT + return_refund_records UPDATE"

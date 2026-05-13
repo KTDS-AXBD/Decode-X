@@ -1,0 +1,62 @@
+# Test scenarios — Textile domain TX-001~TX-006
+# 세션 304 후속 F521 — Textile 방직/섬유 합성 도메인
+
+scenarios:
+  - id: TX-001-PASS
+    rule: TX-001
+    description: "정원 내 직조 batch — 성공"
+    input: { active_batches: 100, total_capacity: 300 }
+    expected: PASS
+
+  - id: TX-001-FAIL
+    rule: TX-001
+    description: "방직 공장 정원 초과 — E422-MILL-CAPACITY-EXCEEDED"
+    input: { active_batches: 300, total_capacity: 300 }
+    expected: FAIL
+    error: E422-MILL-CAPACITY-EXCEEDED
+
+  - id: TX-002-PASS
+    rule: TX-002
+    description: "염료 수수료 한도 내 사용 — 성공"
+    input: { fee_used: 1000, fee_limit: 5000, fee: 500 }
+    expected: PASS
+
+  - id: TX-002-FAIL
+    rule: TX-002
+    description: "염료 수수료 한도 초과 — E422-DYE-FEE-PAYMENT-LIMIT-EXCEEDED"
+    input: { fee_used: 4800, fee_limit: 5000, fee: 300 }
+    expected: FAIL
+    error: E422-DYE-FEE-PAYMENT-LIMIT-EXCEEDED
+
+  - id: TX-003-PASS
+    rule: TX-003
+    description: "woven 상태 order 염색 batch atomic — 성공"
+    input: { order_status: woven }
+    expected: PASS
+
+  - id: TX-004-PASS
+    rule: TX-004
+    description: "ordered → woven 전환 허용"
+    input: { previous: ordered, next: woven }
+    expected: PASS
+
+  - id: TX-004-FAIL
+    rule: TX-004
+    description: "shipped → woven 역행 차단 — E409-ORDER"
+    input: { previous: shipped, next: woven }
+    expected: FAIL
+    error: E409-ORDER
+
+  - id: TX-005-PASS
+    rule: TX-005
+    description: "rejected fabric batch batch expire — 대상 1건"
+    input: { batches: [{ status: rejected, woven_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: TX-006-PASS
+    rule: TX-006
+    description: "rejected fabric batch 반품 환불 atomic — 성공"
+    input: { batch_status: rejected, fabric_cost: 1000, refund_rate: 0.3 }
+    expected: PASS
+    expectedRefundAmount: 300

@@ -1269,6 +1269,15 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "PB-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PB-004"),
   "PB-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PB-005"),
   "PB-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "PB-006"),
+  // 세션 304 후속 (F521): Textile 합성 도메인 54번째 (43번째 신규 산업, 방직/섬유).
+  // MF+TX 제조 클러스터 확장 (MF 제조 일반 + TX 섬유 특화).
+  // withRuleId 재사용 54번째 도메인. 🏆 54번째 도메인 마일스톤 (S262 5 → S304 54, 10.8배 확장).
+  "TX-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "TX-001"),
+  "TX-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "TX-002"),
+  "TX-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "TX-003"),
+  "TX-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "TX-004"),
+  "TX-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "TX-005"),
+  "TX-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "TX-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

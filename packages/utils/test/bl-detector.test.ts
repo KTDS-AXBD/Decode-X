@@ -981,6 +981,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "TS-004",
       "TS-005",
       "TS-006",
+      "TX-001",
+      "TX-002",
+      "TX-003",
+      "TX-004",
+      "TX-005",
+      "TX-006",
       "V-001",
       "V-002",
       "V-003",
@@ -1162,6 +1168,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["PB-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["PB-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["PB-006"]).toBeDefined();
+  });
+
+  it("TX-001~TX-006 registered (세션 304 후속 F521 — textile 54번째 도메인, 43번째 신규 산업, 55 Sprint 연속 정점 도전, 거울 변환 7회차, MF+TX 제조 클러스터 확장)", () => {
+    expect(BL_DETECTOR_REGISTRY["TX-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["TX-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["TX-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["TX-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["TX-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["TX-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -5096,6 +5111,106 @@ function expirePrintBatchInventory(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["PB-006"]!(src, "publishing.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+// F521 (세션 304 후속) — textile domain TX-001~006 via withRuleId (55 Sprint 연속 정점 도전)
+// 거울 변환 7회차 (carsharing → fastfood → aerospace → music → shipping → publishing → textile).
+// MF+TX 제조 클러스터 확장 형성. 🏆 54번째 도메인 마일스톤 (S262 5 → S304 54, 10.8배 확장).
+describe("textile domain — TX-001~006 via withRuleId (세션 304 후속 F521)", () => {
+  it("TX-001 PRESENCE — active_batches >= MAX_CONCURRENT_BATCHES_PER_MILL threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "textile.ts",
+      `const MAX_CONCURRENT_BATCHES_PER_MILL = 300;
+function startWeavingBatch(db, millId, contractId) {
+  const mill = db.prepare("SELECT active_batches, total_capacity FROM mills WHERE id = ?").get(millId);
+  const limit = mill.total_capacity ?? MAX_CONCURRENT_BATCHES_PER_MILL;
+  if (mill.active_batches >= limit) {
+    throw new TextileError('E422-MILL-CAPACITY-EXCEEDED', 'Mill is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TX-001"]!(src, "textile.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("TX-002 PRESENCE — fee_used + fee >= dyeFeePaymentLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "textile.ts",
+      `function applyDyeFeeTier(db, buyerId, contractId, fee) {
+  const contract = db.prepare("SELECT fee_used, fee_limit FROM dye_contracts WHERE id = ? AND buyer_id = ? LIMIT 1").get(contractId, buyerId);
+  const dyeFeePaymentLimit = contract.fee_limit;
+  if (contract.fee_used + fee >= dyeFeePaymentLimit) {
+    throw new TextileError('E422-DYE-FEE-PAYMENT-LIMIT-EXCEEDED', 'Dye fee payment quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TX-002"]!(src, "textile.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("TX-003 PRESENCE — db.transaction() in processFabricBatch (atomic fabric_batches+fabric_orders+dye_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "textile.ts",
+      `function processFabricBatch(db, millId, orderId, boltNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO fabric_batches (id, mill_id, order_id, bolt_no, status, woven_at) VALUES (?, ?, ?, ?, 'dyed', ?)").run(fabricBatchId, millId, orderId, boltNo, wovenAt);
+    db.prepare("UPDATE fabric_orders SET status = 'dyed', fabric_batch_id = ?, dye_payment_id = ? WHERE id = ?").run(fabricBatchId, dyePaymentId, orderId);
+    db.prepare("INSERT INTO dye_payments (id, order_id, fabric_batch_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(dyePaymentId, orderId, fabricBatchId, amount, wovenAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TX-003"]!(src, "textile.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("TX-004 PRESENCE — status comparison + 'woven'/'dyed'/'qc'/'shipped' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "textile.ts",
+      `function transitionOrderStatus(db, orderId, newStatus) {
+  const order = db.prepare("SELECT status FROM fabric_orders WHERE id = ?").get(orderId);
+  if (order.status === 'ordered') throw new TextileError("E409-ORDER", "Invalid transition", 409);
+  db.prepare("UPDATE fabric_orders SET status = 'woven' WHERE id = ?").run(orderId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TX-004"]!(src, "textile.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("TX-005 PRESENCE — batch expire update in expireRejectedFabricBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "textile.ts",
+      `function transitionOrderStatus(db, orderId, newStatus) {
+  const order = db.prepare("SELECT status FROM fabric_orders WHERE id = ?").get(orderId);
+  if (order.status === 'ordered') throw new TextileError("E409-ORDER", "Invalid", 409);
+  db.prepare("UPDATE fabric_orders SET status = 'woven' WHERE id = ?").run(orderId);
+}
+function expireRejectedFabricBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM fabric_batches WHERE status = 'rejected' AND woven_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE fabric_batches SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TX-005"]!(src, "textile.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("TX-006 PRESENCE — db.transaction() in processReturnRefund (atomic return_refund_records+return_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "textile.ts",
+      `function processReturnRefund(db, buyerId, fabricBatchId, fabricCost, refundRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO return_refund_records (id, buyer_id, fabric_batch_id, fabric_cost, refund_rate, refund_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(returnRefundId, buyerId, fabricBatchId, fabricCost, refundRate, refundAmount);
+    db.prepare("INSERT INTO return_refunds (id, return_refund_id, buyer_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, returnRefundId, buyerId, refundAmount, refundedAt);
+    db.prepare("UPDATE return_refund_records SET status = 'refunded' WHERE id = ?").run(returnRefundId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TX-006"]!(src, "textile.ts");
     expect(markers).toHaveLength(0);
   });
 });

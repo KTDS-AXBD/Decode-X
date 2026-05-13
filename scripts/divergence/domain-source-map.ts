@@ -997,6 +997,27 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processRoyaltyRefund",
     ],
   },
+  {
+    container: "textile",
+    rulesPath: `${SPEC_CONTAINER_BASE}/textile/rules/textile-rules.md`,
+    // 세션 304 후속 (F521): Textile 합성 도메인 — 54번째 도메인 (방직/섬유 산업, 43번째 신규 산업).
+    // TX-001~TX-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 55 Sprint 연속 정점 도전 (S264~S278+S283~S319+S295~S304).
+    // 43번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT+TM+VT+GY+PK+CS+FS+AS+MU+SH+PB+TX).
+    // 거울 변환 7회차 (carsharing → fastfood → aerospace → music → shipping → publishing → textile) — MF+TX 제조 클러스터 확장 형성.
+    // 6 BLs 균형 패턴 44번째 정착. 🏆 54번째 도메인 마일스톤 (S262 5 → S304 54, 10.8배 확장).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/textile.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/textile/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "startWeavingBatch",
+      "applyDyeFeeTier",
+      "processFabricBatch",
+      "transitionOrderStatus",
+      "expireRejectedFabricBatch",
+      "processReturnRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

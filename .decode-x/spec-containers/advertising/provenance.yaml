@@ -1,0 +1,52 @@
+---
+# Provenance — ADV-001
+# 55번째 도메인 — Advertising 합성 도메인 PoC (44번째 신규 산업)
+
+skillId: ADV-001
+extractedAt: "2026-05-13T00:00:00+09:00"
+extractedBy: "Decode-X 세션 304 후속 F522 — withRuleId 재사용 55번째 도메인 (Advertising 광고 산업, 44번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/advertising/rules/advertising-rules.md"
+    section: "Advertising 합성 비즈니스 룰 — AD-001~AD-006"
+    businessRules: [AD-001, AD-002, AD-003, AD-004, AD-005, AD-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 광고(Advertising) 산업 일반화 PoC. 에이전시캠페인한도/미디어수수료한도/노출batchatomic/캠페인상태전환/만료캠페인일괄/환불atomic 추상화. 55번째 도메인 + 44번째 신규 산업. detector 신뢰도 누적 활용. 🏆 56 Sprint 연속 정점 도전. 거울 변환 8회차 (carsharing → fastfood → aerospace → music → shipping → publishing → textile → advertising). MU(음악 스트리밍) + PB(출판 IP) + AD(광고 캠페인) 디지털 콘텐츠 3-클러스터 확장 형성."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/advertising.ts"
+    functions: [bookCampaign, applyMediaFeeTier, processImpressionBatch, transitionCampaignStatus, expireEndedCampaignBatch, processChargebackRefund]
+
+detection:
+  - ruleId: AD-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-13T00:00:00+09:00"
+    notes: "agency.active_campaigns >= limit (UPPERCASE fallback MAX_CONCURRENT_CAMPAIGNS_PER_AGENCY, Path A)"
+  - ruleId: AD-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-13T00:00:00+09:00"
+    notes: "contract.fee_used + fee >= mediaFeePaymentLimit (Path B, limit keyword)"
+  - ruleId: AD-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-13T00:00:00+09:00"
+    notes: "db.transaction() — impression_batches INSERT + campaign_bookings UPDATE + media_payments INSERT"
+  - ruleId: AD-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-13T00:00:00+09:00"
+    notes: "proposed → approved → live → paused → ended (+ canceled)"
+  - ruleId: AD-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-13T00:00:00+09:00"
+    notes: "batch: expire 갱신 (SH-005/MU-005/PB-005/TX-005 44번째 재사용)"
+  - ruleId: AD-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-13T00:00:00+09:00"
+    notes: "db.transaction() — chargeback_refund_records INSERT + chargeback_refunds INSERT + chargeback_refund_records UPDATE"

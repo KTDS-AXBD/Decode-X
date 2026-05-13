@@ -1018,6 +1018,27 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processReturnRefund",
     ],
   },
+  {
+    container: "advertising",
+    rulesPath: `${SPEC_CONTAINER_BASE}/advertising/rules/advertising-rules.md`,
+    // 세션 304 후속 (F522): Advertising 합성 도메인 — 55번째 도메인 (광고 산업, 44번째 신규 산업).
+    // AD-001~AD-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 56 Sprint 연속 정점 도전 (S264~S278+S283~S319+S295~S304).
+    // 44번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT+TM+VT+GY+PK+CS+FS+AS+MU+SH+PB+TX+AD).
+    // 거울 변환 8회차 (carsharing → fastfood → aerospace → music → shipping → publishing → textile → advertising) — MU+PB+AD 디지털 콘텐츠 3-클러스터 확장.
+    // 6 BLs 균형 패턴 45번째 정착. 🏆 55번째 도메인 마일스톤 (S262 5 → S304 55, 11배 확장).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/advertising.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/advertising/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "bookCampaign",
+      "applyMediaFeeTier",
+      "processImpressionBatch",
+      "transitionCampaignStatus",
+      "expireEndedCampaignBatch",
+      "processChargebackRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

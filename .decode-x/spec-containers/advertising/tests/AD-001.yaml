@@ -1,0 +1,62 @@
+# Test scenarios — Advertising domain AD-001~AD-006
+# 세션 304 후속 F522 — Advertising 광고 합성 도메인
+
+scenarios:
+  - id: AD-001-PASS
+    rule: AD-001
+    description: "정원 내 캠페인 예약 — 성공"
+    input: { active_campaigns: 200, total_capacity: 400 }
+    expected: PASS
+
+  - id: AD-001-FAIL
+    rule: AD-001
+    description: "에이전시 캠페인 정원 초과 — E422-AGENCY-CAPACITY-EXCEEDED"
+    input: { active_campaigns: 400, total_capacity: 400 }
+    expected: FAIL
+    error: E422-AGENCY-CAPACITY-EXCEEDED
+
+  - id: AD-002-PASS
+    rule: AD-002
+    description: "미디어 수수료 한도 내 사용 — 성공"
+    input: { fee_used: 1000, fee_limit: 5000, fee: 500 }
+    expected: PASS
+
+  - id: AD-002-FAIL
+    rule: AD-002
+    description: "미디어 수수료 한도 초과 — E422-MEDIA-FEE-PAYMENT-LIMIT-EXCEEDED"
+    input: { fee_used: 4800, fee_limit: 5000, fee: 300 }
+    expected: FAIL
+    error: E422-MEDIA-FEE-PAYMENT-LIMIT-EXCEEDED
+
+  - id: AD-003-PASS
+    rule: AD-003
+    description: "approved 상태 booking 노출 batch atomic — 성공"
+    input: { booking_status: approved }
+    expected: PASS
+
+  - id: AD-004-PASS
+    rule: AD-004
+    description: "proposed → approved 전환 허용"
+    input: { previous: proposed, next: approved }
+    expected: PASS
+
+  - id: AD-004-FAIL
+    rule: AD-004
+    description: "ended → proposed 역행 차단 — E409-BOOKING"
+    input: { previous: ended, next: proposed }
+    expected: FAIL
+    error: E409-BOOKING
+
+  - id: AD-005-PASS
+    rule: AD-005
+    description: "ended 캠페인 batch batch expire — 대상 1건"
+    input: { batches: [{ status: ended, served_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: AD-006-PASS
+    rule: AD-006
+    description: "canceled impression batch 환불 atomic — 성공"
+    input: { batch_status: canceled, media_cost: 1000, refund_rate: 0.3 }
+    expected: PASS
+    expectedRefundAmount: 300

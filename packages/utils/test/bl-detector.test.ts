@@ -679,6 +679,12 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 describe("BL_DETECTOR_REGISTRY", () => {
   it("exposes 308 detectors (세션 300 F509 — music streaming 51번째 도메인 +6 detectors, 52 Sprint 연속 정점 도전)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
+      "AD-001",
+      "AD-002",
+      "AD-003",
+      "AD-004",
+      "AD-005",
+      "AD-006",
       "AG-001",
       "AG-002",
       "AG-003",
@@ -1177,6 +1183,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["TX-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["TX-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["TX-006"]).toBeDefined();
+  });
+
+  it("AD-001~AD-006 registered (세션 304 후속 F522 — advertising 55번째 도메인, 44번째 신규 산업, 56 Sprint 연속 정점 도전, 거울 변환 8회차, MU+PB+AD 디지털 콘텐츠 3-클러스터 확장)", () => {
+    expect(BL_DETECTOR_REGISTRY["AD-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AD-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AD-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AD-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AD-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AD-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -5211,6 +5226,106 @@ function expireRejectedFabricBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["TX-006"]!(src, "textile.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+// F522 (세션 304 후속) — advertising domain AD-001~006 via withRuleId (56 Sprint 연속 정점 도전)
+// 거울 변환 8회차 (carsharing → fastfood → aerospace → music → shipping → publishing → textile → advertising).
+// MU+PB+AD 디지털 콘텐츠 3-클러스터 확장. 🏆 55번째 도메인 마일스톤 (S262 5 → S304 55, 11배 확장).
+describe("advertising domain — AD-001~006 via withRuleId (세션 304 후속 F522)", () => {
+  it("AD-001 PRESENCE — active_campaigns >= MAX_CONCURRENT_CAMPAIGNS_PER_AGENCY threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "advertising.ts",
+      `const MAX_CONCURRENT_CAMPAIGNS_PER_AGENCY = 400;
+function bookCampaign(db, agencyId, contractId) {
+  const agency = db.prepare("SELECT active_campaigns, total_capacity FROM agencies WHERE id = ?").get(agencyId);
+  const limit = agency.total_capacity ?? MAX_CONCURRENT_CAMPAIGNS_PER_AGENCY;
+  if (agency.active_campaigns >= limit) {
+    throw new AdvertisingError('E422-AGENCY-CAPACITY-EXCEEDED', 'Agency is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AD-001"]!(src, "advertising.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("AD-002 PRESENCE — fee_used + fee >= mediaFeePaymentLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "advertising.ts",
+      `function applyMediaFeeTier(db, advertiserId, contractId, fee) {
+  const contract = db.prepare("SELECT fee_used, fee_limit FROM media_contracts WHERE id = ? AND advertiser_id = ? LIMIT 1").get(contractId, advertiserId);
+  const mediaFeePaymentLimit = contract.fee_limit;
+  if (contract.fee_used + fee >= mediaFeePaymentLimit) {
+    throw new AdvertisingError('E422-MEDIA-FEE-PAYMENT-LIMIT-EXCEEDED', 'Media fee payment quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AD-002"]!(src, "advertising.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("AD-003 PRESENCE — db.transaction() in processImpressionBatch (atomic impression_batches+campaign_bookings+media_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "advertising.ts",
+      `function processImpressionBatch(db, agencyId, bookingId, slotNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO impression_batches (id, agency_id, booking_id, slot_no, status, served_at) VALUES (?, ?, ?, ?, 'live', ?)").run(impressionBatchId, agencyId, bookingId, slotNo, servedAt);
+    db.prepare("UPDATE campaign_bookings SET status = 'live', impression_batch_id = ?, media_payment_id = ? WHERE id = ?").run(impressionBatchId, mediaPaymentId, bookingId);
+    db.prepare("INSERT INTO media_payments (id, booking_id, impression_batch_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(mediaPaymentId, bookingId, impressionBatchId, amount, servedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AD-003"]!(src, "advertising.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("AD-004 PRESENCE — status comparison + 'approved'/'live'/'paused'/'ended' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "advertising.ts",
+      `function transitionCampaignStatus(db, bookingId, newStatus) {
+  const booking = db.prepare("SELECT status FROM campaign_bookings WHERE id = ?").get(bookingId);
+  if (booking.status === 'proposed') throw new AdvertisingError("E409-BOOKING", "Invalid transition", 409);
+  db.prepare("UPDATE campaign_bookings SET status = 'approved' WHERE id = ?").run(bookingId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AD-004"]!(src, "advertising.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("AD-005 PRESENCE — batch expire update in expireEndedCampaignBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "advertising.ts",
+      `function transitionCampaignStatus(db, bookingId, newStatus) {
+  const booking = db.prepare("SELECT status FROM campaign_bookings WHERE id = ?").get(bookingId);
+  if (booking.status === 'proposed') throw new AdvertisingError("E409-BOOKING", "Invalid", 409);
+  db.prepare("UPDATE campaign_bookings SET status = 'approved' WHERE id = ?").run(bookingId);
+}
+function expireEndedCampaignBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM impression_batches WHERE status = 'ended' AND served_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE impression_batches SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AD-005"]!(src, "advertising.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("AD-006 PRESENCE — db.transaction() in processChargebackRefund (atomic chargeback_refund_records+chargeback_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "advertising.ts",
+      `function processChargebackRefund(db, advertiserId, impressionBatchId, mediaCost, refundRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO chargeback_refund_records (id, advertiser_id, impression_batch_id, media_cost, refund_rate, refund_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(chargebackRefundId, advertiserId, impressionBatchId, mediaCost, refundRate, refundAmount);
+    db.prepare("INSERT INTO chargeback_refunds (id, chargeback_refund_id, advertiser_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, chargebackRefundId, advertiserId, refundAmount, refundedAt);
+    db.prepare("UPDATE chargeback_refund_records SET status = 'refunded' WHERE id = ?").run(chargebackRefundId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AD-006"]!(src, "advertising.ts");
     expect(markers).toHaveLength(0);
   });
 });

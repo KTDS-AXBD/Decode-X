@@ -1420,7 +1420,7 @@
 > **DoD 6개**: 잔여 28 ops 전 worker × 3 secret × 2 env(default+production) CF API REST PUT HTTP 200 idempotent 입증 + reports/sprint-344-secret-sync-rest-28-ops-2026-05-13.{md,json} + Plan/Report (AIF-PLAN-048/AIF-RPRT-048) + Match ≥ 90% + 코드 변경 0건 (운영 only) + Sprint 종결 시 ~/.secrets/ 정본 보존.
 > **의존성**: F515 ✅ DONE (Sprint 342 secret-sync-all-workers-v2.sh CF API REST 패치).
 > **메타**: (a) **B/C 분리 가치** — 동일 값 sync(B) → 새 값 rotation(C) 2단계로 운영 리스크 분리, (b) **rules/development-workflow.md "Worker Secret Store env-scoped divergence"** (S246+S260 누적) 보호 — default env + production env 양쪽 동기 필수.
-- [ ] F516 📋 **PLANNED** (F490 후속 A 잔여 28 ops 전체 sync, **P2**, Sprint 344, 세션 303 사전 등록 2026-05-13 Master inline ~30분): 6 worker × 3 secret × 2 env CF API REST PUT 일괄 sync, 코드 변경 0건.
+- [x] F516 ✅ **DONE** (F490 후속 A 잔여 28 ops 전체 sync, **P2**, Sprint 344, 세션 303 Master inline ~6분 Match 100% 2026-05-13): 30 ops CF API REST PUT 전체 성공 (HTTP 200 update 27 + HTTP 201 신규 생성 3, 실 실패 0) + 7-worker /health × 7 HTTP 200 verify ✅ + DoD 6/6 PASS + 정본 3종 chmod 600 보존. **HTTP 201 오분류 잔재 발견** (verify_secret_exists에서 200만 success → 201도 success 처리 필요, 1줄 fix TD 후보). **rules/development-workflow.md "Worker Secret Store env-scoped divergence" 5회차 적용** (S246→S260→S341→S342→S303). AIF-RPRT-048.
 
 **Sprint 345 (F517 — F490 후속 B 진짜 secret rotation, 📋 PLANNED 세션 303 사전 등록 차기 Master inline ~1h 2026-05-13):**
 > **목표**: openssl rand -hex 32로 신규 INTERNAL_API_SECRET + OPENROUTER_API_KEY + CLOUDFLARE_AI_GATEWAY_URL 3종 생성 + 7-worker × 3 env 일괄 적용 + ~/.secrets/ 정본 갱신. F490 진짜 rotation 운영 단계 도달. **A(Sprint 343) merged 후 진행** — 운영 리스크 분리 (코드 변경과 secret 변경 동시 배포 회피).

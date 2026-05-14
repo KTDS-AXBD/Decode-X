@@ -758,6 +758,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "BP-003",
       "BP-004",
       "BP-005",
+      "BR-001",
+      "BR-002",
+      "BR-003",
+      "BR-004",
+      "BR-005",
+      "BR-006",
       "BT-001",
       "BT-002",
       "BT-003",
@@ -1252,6 +1258,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["NW-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["NW-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["NW-006"]).toBeDefined();
+  });
+
+  it("BR-001~BR-006 registered (세션 305 후속3 F528 — broadcast 60번째 도메인, 49번째 신규 산업, 🏆 60 Sprint round 마일스톤, 61 Sprint 연속 정점 도전, 거울 변환 13회차, MU+PB+AD+GM+VD+SM+NW+BR 디지털 콘텐츠 8-클러스터 확장)", () => {
+    expect(BL_DETECTOR_REGISTRY["BR-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BR-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BR-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BR-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BR-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BR-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -5786,6 +5801,106 @@ function expireRetractedArticleBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["NW-006"]!(src, "news.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+// F528 (세션 305 후속3) — broadcast domain BR-001~006 via withRuleId (🏆 60 Sprint round 마일스톤, 61 Sprint 연속 정점 도전)
+// 거울 변환 13회차 (carsharing → ... → news → broadcast).
+// MU+PB+AD+GM+VD+SM+NW+BR 디지털 콘텐츠 8-클러스터 확장. 🏆 60번째 도메인 마일스톤 (S262 5 → S305+++ 60, 12배 확장).
+describe("broadcast domain — BR-001~006 via withRuleId (세션 305 후속3 F528, 🏆 60 Sprint round 마일스톤)", () => {
+  it("BR-001 PRESENCE — active_broadcasts >= MAX_CONCURRENT_ACTIVE_BROADCASTS_PER_STATION threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "broadcast.ts",
+      `const MAX_CONCURRENT_ACTIVE_BROADCASTS_PER_STATION = 24;
+function scheduleBroadcast(db, stationId, contractId) {
+  const station = db.prepare("SELECT active_broadcasts, total_capacity FROM stations WHERE id = ?").get(stationId);
+  const limit = station.total_capacity ?? MAX_CONCURRENT_ACTIVE_BROADCASTS_PER_STATION;
+  if (station.active_broadcasts >= limit) {
+    throw new BroadcastError('E422-STATION-CAPACITY-EXCEEDED', 'Station is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["BR-001"]!(src, "broadcast.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("BR-002 PRESENCE — viewership_used + viewership >= dailyViewershipLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "broadcast.ts",
+      `function applyViewershipLimit(db, sponsorId, contractId, viewership) {
+  const contract = db.prepare("SELECT viewership_used, viewership_limit FROM sponsor_contracts WHERE id = ? AND sponsor_id = ? LIMIT 1").get(contractId, sponsorId);
+  const dailyViewershipLimit = contract.viewership_limit;
+  if (contract.viewership_used + viewership >= dailyViewershipLimit) {
+    throw new BroadcastError('E422-DAILY-VIEWERSHIP-LIMIT-EXCEEDED', 'Daily viewership quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["BR-002"]!(src, "broadcast.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("BR-003 PRESENCE — db.transaction() in processAiring (atomic airings+broadcast_schedules+sponsor_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "broadcast.ts",
+      `function processAiring(db, stationId, scheduleId, airingNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO airings (id, station_id, schedule_id, airing_no, status, started_at) VALUES (?, ?, ?, ?, 'live', ?)").run(airingId, stationId, scheduleId, airingNo, startedAt);
+    db.prepare("UPDATE broadcast_schedules SET status = 'airing', airing_id = ?, sponsor_payment_id = ? WHERE id = ?").run(airingId, sponsorPaymentId, scheduleId);
+    db.prepare("INSERT INTO sponsor_payments (id, schedule_id, airing_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(sponsorPaymentId, scheduleId, airingId, amount, startedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["BR-003"]!(src, "broadcast.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("BR-004 PRESENCE — status comparison + 'airing'/'updated'/'archived'/'preempted'/'cancelled' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "broadcast.ts",
+      `function transitionBroadcastStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM broadcast_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new BroadcastError("E409-SCHEDULE", "Invalid transition", 409);
+  db.prepare("UPDATE broadcast_schedules SET status = 'airing' WHERE id = ?").run(scheduleId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["BR-004"]!(src, "broadcast.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("BR-005 PRESENCE — batch expire update in expirePreemptedBroadcastBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "broadcast.ts",
+      `function transitionBroadcastStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM broadcast_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new BroadcastError("E409-SCHEDULE", "Invalid", 409);
+  db.prepare("UPDATE broadcast_schedules SET status = 'airing' WHERE id = ?").run(scheduleId);
+}
+function expirePreemptedBroadcastBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM airings WHERE status = 'preempted' AND started_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE airings SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["BR-005"]!(src, "broadcast.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("BR-006 PRESENCE — db.transaction() in processSponsorRefund (atomic sponsor_refund_records+sponsor_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "broadcast.ts",
+      `function processSponsorRefund(db, sponsorId, airingId, sponsorCost, refundRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO sponsor_refund_records (id, sponsor_id, airing_id, sponsor_cost, refund_rate, refund_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(refundRecordId, sponsorId, airingId, sponsorCost, refundRate, refundAmount);
+    db.prepare("INSERT INTO sponsor_refunds (id, refund_record_id, sponsor_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, refundRecordId, sponsorId, refundAmount, refundedAt);
+    db.prepare("UPDATE sponsor_refund_records SET status = 'refunded' WHERE id = ?").run(refundRecordId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["BR-006"]!(src, "broadcast.ts");
     expect(markers).toHaveLength(0);
   });
 });

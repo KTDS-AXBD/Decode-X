@@ -1,0 +1,62 @@
+# Test scenarios — Broadcast domain BR-001~BR-006
+# 세션 305 후속3 F528 — Broadcast 방송 합성 도메인 (🏆 60 Sprint round 마일스톤)
+
+scenarios:
+  - id: BR-001-PASS
+    rule: BR-001
+    description: "정원 내 broadcast schedule — 성공"
+    input: { active_broadcasts: 10, total_capacity: 24 }
+    expected: PASS
+
+  - id: BR-001-FAIL
+    rule: BR-001
+    description: "방송국 broadcast 정원 초과 — E422-STATION-CAPACITY-EXCEEDED"
+    input: { active_broadcasts: 24, total_capacity: 24 }
+    expected: FAIL
+    error: E422-STATION-CAPACITY-EXCEEDED
+
+  - id: BR-002-PASS
+    rule: BR-002
+    description: "일일 viewership 한도 내 사용 — 성공"
+    input: { viewership_used: 50000, viewership_limit: 200000, viewership: 30000 }
+    expected: PASS
+
+  - id: BR-002-FAIL
+    rule: BR-002
+    description: "일일 viewership 한도 초과 — E422-DAILY-VIEWERSHIP-LIMIT-EXCEEDED"
+    input: { viewership_used: 190000, viewership_limit: 200000, viewership: 15000 }
+    expected: FAIL
+    error: E422-DAILY-VIEWERSHIP-LIMIT-EXCEEDED
+
+  - id: BR-003-PASS
+    rule: BR-003
+    description: "scheduled 상태 송출 atomic — 성공"
+    input: { schedule_status: scheduled }
+    expected: PASS
+
+  - id: BR-004-PASS
+    rule: BR-004
+    description: "scheduled → airing 전환 허용"
+    input: { previous: scheduled, next: airing }
+    expected: PASS
+
+  - id: BR-004-FAIL
+    rule: BR-004
+    description: "cancelled → scheduled 역행 차단 — E409-SCHEDULE"
+    input: { previous: cancelled, next: scheduled }
+    expected: FAIL
+    error: E409-SCHEDULE
+
+  - id: BR-005-PASS
+    rule: BR-005
+    description: "preempted broadcast 송출 batch expire — 대상 1건"
+    input: { airings: [{ status: preempted, started_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: BR-006-PASS
+    rule: BR-006
+    description: "preempted airing sponsor 환불 atomic — 성공"
+    input: { airing_status: preempted, sponsor_cost: 5000, refund_rate: 0.5 }
+    expected: PASS
+    expectedRefundAmount: 2500

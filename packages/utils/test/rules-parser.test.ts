@@ -213,6 +213,16 @@ describe("rules-parser — parseRulesMarkdown", () => {
     expect(rules.map((r) => r.id)).toEqual(["NW-001", "NW-006"]);
   });
 
+  it("matches broadcast BR-NNN prefix (세션 305 후속3 F528, 49번째 신규 산업, 🏆 60 Sprint round 마일스톤, MU+PB+AD+GM+VD+SM+NW+BR 디지털 콘텐츠 8-클러스터)", () => {
+    const md = `| ID | condition | criteria | outcome | exception |
+|----|-----------|----------|---------|-----------|
+| BR-001 | a | b | c | d |
+| BR-006 | a | b | c | d |
+`;
+    const rules = parseRulesMarkdown(md);
+    expect(rules.map((r) => r.id)).toEqual(["BR-001", "BR-006"]);
+  });
+
   it("rejects invalid prefix patterns (BL- without digits, BL-A only)", () => {
     const md = `| ID | condition | criteria | outcome | exception |
 |----|-----------|----------|---------|-----------|

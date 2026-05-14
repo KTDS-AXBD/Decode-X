@@ -1,0 +1,52 @@
+---
+# Provenance — BCT-001
+# 60번째 도메인 — Broadcast 합성 도메인 PoC (49번째 신규 산업, 🏆 60 Sprint round 마일스톤)
+
+skillId: BCT-001
+extractedAt: "2026-05-14T00:00:00+09:00"
+extractedBy: "Decode-X 세션 305 후속3 F528 — withRuleId 재사용 60번째 도메인 (Broadcast 방송 산업, 49번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/broadcast/rules/broadcast-rules.md"
+    section: "Broadcast 합성 비즈니스 룰 — BR-001~BR-006"
+    businessRules: [BR-001, BR-002, BR-003, BR-004, BR-005, BR-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 방송(Broadcast) 산업 일반화 PoC. 방송국broadcast한도/viewershipdaily한도/송출batchatomic/broadcast상태전환/만료broadcast일괄/sponsor환불atomic 추상화. 60번째 도메인 + 49번째 신규 산업. 🏆 60 Sprint round 마일스톤 동시 달성. 61 Sprint 연속 정점 도전. 거울 변환 13회차 (carsharing → fastfood → aerospace → music → shipping → publishing → textile → advertising → gaming → video → socialmedia → news → broadcast). MU+PB+AD+GM+VD+SM+NW+BR 디지털 콘텐츠 8-클러스터 확장 형성 (실시간 편성 방송 추가)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/broadcast.ts"
+    functions: [scheduleBroadcast, applyViewershipLimit, processAiring, transitionBroadcastStatus, expirePreemptedBroadcastBatch, processSponsorRefund]
+
+detection:
+  - ruleId: BR-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "station.active_broadcasts >= limit (UPPERCASE fallback MAX_CONCURRENT_ACTIVE_BROADCASTS_PER_STATION, Path A)"
+  - ruleId: BR-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "contract.viewership_used + viewership >= dailyViewershipLimit (Path B, limit keyword)"
+  - ruleId: BR-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "db.transaction() — airings INSERT + broadcast_schedules UPDATE + sponsor_payments INSERT"
+  - ruleId: BR-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "scheduled → airing → updated → archived / preempted / cancelled"
+  - ruleId: BR-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "batch: expire 갱신 (NW-005/SM-005/VD-005/GM-005/AD-005/TX-005/PB-005 49번째 재사용)"
+  - ruleId: BR-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "db.transaction() — sponsor_refund_records INSERT + sponsor_refunds INSERT + sponsor_refund_records UPDATE"

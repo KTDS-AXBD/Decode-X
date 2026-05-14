@@ -1123,6 +1123,27 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processSubscriptionRefund",
     ],
   },
+  {
+    container: "broadcast",
+    rulesPath: `${SPEC_CONTAINER_BASE}/broadcast/rules/broadcast-rules.md`,
+    // 세션 305 후속3 (F528): Broadcast 합성 도메인 — 60번째 도메인 (방송 산업, 49번째 신규 산업). 🏆 60 Sprint round 마일스톤.
+    // BR-001~BR-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 61 Sprint 연속 정점 도전 (S264~S305+++).
+    // 49번째 신규 산업 도메인 (...+VD+SM+NW+BR).
+    // 거울 변환 13회차 (carsharing → ... → news → broadcast) — MU+PB+AD+GM+VD+SM+NW+BR 디지털 콘텐츠 8-클러스터 확장 (실시간 편성 방송 추가).
+    // 6 BLs 균형 패턴 50번째 정착. 🏆 60번째 도메인 마일스톤 (S262 5 → S305+++ 60, 12배 확장) + 🏆 60 Sprint round 마일스톤.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/broadcast.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/broadcast/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "scheduleBroadcast",
+      "applyViewershipLimit",
+      "processAiring",
+      "transitionBroadcastStatus",
+      "expirePreemptedBroadcastBatch",
+      "processSponsorRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

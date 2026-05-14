@@ -223,6 +223,16 @@ describe("rules-parser — parseRulesMarkdown", () => {
     expect(rules.map((r) => r.id)).toEqual(["BR-001", "BR-006"]);
   });
 
+  it("matches esports ER-NNN prefix (세션 305 후속4 F529, 50번째 신규 산업, 🏆🏆 50 신규 산업 round 마일스톤, MU+PB+AD+GM+VD+SM+NW+BR+ER 디지털 콘텐츠 9-클러스터)", () => {
+    const md = `| ID | condition | criteria | outcome | exception |
+|----|-----------|----------|---------|-----------|
+| ER-001 | a | b | c | d |
+| ER-006 | a | b | c | d |
+`;
+    const rules = parseRulesMarkdown(md);
+    expect(rules.map((r) => r.id)).toEqual(["ER-001", "ER-006"]);
+  });
+
   it("rejects invalid prefix patterns (BL- without digits, BL-A only)", () => {
     const md = `| ID | condition | criteria | outcome | exception |
 |----|-----------|----------|---------|-----------|

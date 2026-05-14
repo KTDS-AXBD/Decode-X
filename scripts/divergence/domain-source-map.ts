@@ -1144,6 +1144,27 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processSponsorRefund",
     ],
   },
+  {
+    container: "esports",
+    rulesPath: `${SPEC_CONTAINER_BASE}/esports/rules/esports-rules.md`,
+    // 세션 305 후속4 (F529): Esports 합성 도메인 — 61번째 도메인 (이스포츠 산업, 50번째 신규 산업). 🏆🏆 50 신규 산업 round 마일스톤.
+    // ER-001~ER-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 62 Sprint 연속 정점 도전 (S264~S305++++).
+    // 50번째 신규 산업 도메인 (...+VD+SM+NW+BR+ER).
+    // 거울 변환 14회차 (carsharing → ... → broadcast → esports) — MU+PB+AD+GM+VD+SM+NW+BR+ER 디지털 콘텐츠 9-클러스터 확장 + GM/SM 융합 모델.
+    // 6 BLs 균형 패턴 51번째 정착. 🏆 61번째 도메인 마일스톤 (S262 5 → S305++++ 61, 12.2배 확장) + 🏆🏆 50 신규 산업 round 마일스톤.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/esports.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/esports/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "registerTournament",
+      "applyPrizeLimit",
+      "processMatch",
+      "transitionTournamentStatus",
+      "expireForfeitedMatchBatch",
+      "processPrizeClawback",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

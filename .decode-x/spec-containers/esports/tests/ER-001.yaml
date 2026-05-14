@@ -1,0 +1,62 @@
+# Test scenarios — Esports domain ER-001~ER-006
+# 세션 305 후속4 F529 — Esports 이스포츠 합성 도메인 (🏆🏆 50 신규 산업 round 마일스톤)
+
+scenarios:
+  - id: ER-001-PASS
+    rule: ER-001
+    description: "정원 내 tournament 등록 — 성공"
+    input: { active_tournaments: 8, total_capacity: 16 }
+    expected: PASS
+
+  - id: ER-001-FAIL
+    rule: ER-001
+    description: "조직위 tournament 정원 초과 — E422-ORGANIZER-CAPACITY-EXCEEDED"
+    input: { active_tournaments: 16, total_capacity: 16 }
+    expected: FAIL
+    error: E422-ORGANIZER-CAPACITY-EXCEEDED
+
+  - id: ER-002-PASS
+    rule: ER-002
+    description: "일일 prize 한도 내 수령 — 성공"
+    input: { prize_earned: 50000, prize_limit: 200000, prize: 30000 }
+    expected: PASS
+
+  - id: ER-002-FAIL
+    rule: ER-002
+    description: "일일 prize 한도 초과 — E422-DAILY-PRIZE-LIMIT-EXCEEDED"
+    input: { prize_earned: 190000, prize_limit: 200000, prize: 15000 }
+    expected: FAIL
+    error: E422-DAILY-PRIZE-LIMIT-EXCEEDED
+
+  - id: ER-003-PASS
+    rule: ER-003
+    description: "registered 상태 match atomic — 성공"
+    input: { schedule_status: registered }
+    expected: PASS
+
+  - id: ER-004-PASS
+    rule: ER-004
+    description: "announced → registered 전환 허용"
+    input: { previous: announced, next: registered }
+    expected: PASS
+
+  - id: ER-004-FAIL
+    rule: ER-004
+    description: "completed → announced 역행 차단 — E409-SCHEDULE"
+    input: { previous: completed, next: announced }
+    expected: FAIL
+    error: E409-SCHEDULE
+
+  - id: ER-005-PASS
+    rule: ER-005
+    description: "forfeited match batch expire — 대상 1건"
+    input: { matches: [{ status: forfeited, started_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: ER-006-PASS
+    rule: ER-006
+    description: "forfeited match prize 회수 atomic — 성공"
+    input: { match_status: forfeited, prize_cost: 5000, clawback_rate: 1.0 }
+    expected: PASS
+    expectedClawbackAmount: 5000

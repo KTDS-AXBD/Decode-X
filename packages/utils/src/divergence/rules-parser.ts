@@ -64,7 +64,8 @@ import type { BLRule } from "@ai-foundry/types";
 // F526 (세션 305 후속): SM prefix 추가 (socialmedia 합성 도메인, 58번째 — 소셜미디어 산업, 47번째 신규). MU+PB+AD+GM+VD+SM 디지털 콘텐츠 6-클러스터 확장 (영상→소셜미디어 UGC + 크리에이터 수익 모델). 59 Sprint 연속 정점 도전. 거울 변환 11회차 (carsharing → fastfood → aerospace → music → shipping → publishing → textile → advertising → gaming → video → socialmedia). 🏆 58번째 도메인 마일스톤 (S262 5 → S305+ 58, 11.6배 확장).
 // F527 (세션 305 후속2): NW prefix 추가 (news 합성 도메인, 59번째 — 뉴스 산업, 48번째 신규). MU+PB+AD+GM+VD+SM+NW 디지털 콘텐츠 7-클러스터 확장 (구독 미디어 + 신디케이션 모델). 60 Sprint 연속 정점 도전. 거울 변환 12회차 (carsharing → fastfood → aerospace → music → shipping → publishing → textile → advertising → gaming → video → socialmedia → news). 🏆 59번째 도메인 마일스톤 (S262 5 → S305++ 59, 11.8배 확장).
 // F528 (세션 305 후속3): BR prefix 추가 (broadcast 합성 도메인, 60번째 — 방송 산업, 49번째 신규). MU+PB+AD+GM+VD+SM+NW+BR 디지털 콘텐츠 8-클러스터 확장 (실시간 편성 방송 추가). 61 Sprint 연속 정점 도전. 거울 변환 13회차 (carsharing → ... → news → broadcast). 🏆 60번째 도메인 마일스톤 (S262 5 → S305+++ 60, 12배 확장) + 🏆 60 Sprint round 마일스톤.
-const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|BK|BR|BT|LP|AD|AS|CC|CH|CS|DV|SB|SH|SP|IN|HC|ED|RE|LG|HO|TM|TR|MF|RT|EN|GM|GV|TC|MD|PH|AG|CN|MR|TS|AV|MN|DF|FS|FT|GY|MU|NW|PB|PK|TX|VD|SM|WL|PT|PR|VT|P|V)-[A-Z]?\d{1,3}$/;
+// F529 (세션 305 후속4): ER prefix 추가 (esports 합성 도메인, 61번째 — 이스포츠 산업, 50번째 신규). MU+PB+AD+GM+VD+SM+NW+BR+ER 디지털 콘텐츠 9-클러스터 확장 + GM/SM 융합 모델. 62 Sprint 연속 정점 도전. 거울 변환 14회차 (carsharing → ... → broadcast → esports). 🏆 61번째 도메인 마일스톤 (S262 5 → S305++++ 61, 12.2배 확장) + 🏆🏆 50 신규 산업 round 마일스톤.
+const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|BK|BR|BT|LP|AD|AS|CC|CH|CS|DV|SB|SH|SP|IN|HC|ED|ER|RE|LG|HO|TM|TR|MF|RT|EN|GM|GV|TC|MD|PH|AG|CN|MR|TS|AV|MN|DF|FS|FT|GY|MU|NW|PB|PK|TX|VD|SM|WL|PT|PR|VT|P|V)-[A-Z]?\d{1,3}$/;
 const HEADER_PATTERN =
   /\|\s*ID\s*\|\s*condition[^|]*\|\s*criteria[^|]*\|\s*outcome[^|]*\|\s*exception[^|]*\|/i;
 const SEPARATOR_PATTERN = /^\s*\|[\s:|-]+\|\s*$/;

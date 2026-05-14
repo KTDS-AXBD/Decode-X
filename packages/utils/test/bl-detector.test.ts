@@ -818,6 +818,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "EN-004",
       "EN-005",
       "EN-006",
+      "ER-001",
+      "ER-002",
+      "ER-003",
+      "ER-004",
+      "ER-005",
+      "ER-006",
       "FS-001",
       "FS-002",
       "FS-003",
@@ -1267,6 +1273,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["BR-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["BR-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["BR-006"]).toBeDefined();
+  });
+
+  it("ER-001~ER-006 registered (세션 305 후속4 F529 — esports 61번째 도메인, 50번째 신규 산업, 🏆🏆 50 신규 산업 round 마일스톤, 62 Sprint 연속 정점 도전, 거울 변환 14회차, MU+PB+AD+GM+VD+SM+NW+BR+ER 디지털 콘텐츠 9-클러스터 확장)", () => {
+    expect(BL_DETECTOR_REGISTRY["ER-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["ER-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["ER-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["ER-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["ER-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["ER-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -5901,6 +5916,106 @@ function expirePreemptedBroadcastBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["BR-006"]!(src, "broadcast.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+// F529 (세션 305 후속4) — esports domain ER-001~006 via withRuleId (🏆🏆 50 신규 산업 round 마일스톤, 62 Sprint 연속 정점 도전)
+// 거울 변환 14회차 (carsharing → ... → broadcast → esports).
+// MU+PB+AD+GM+VD+SM+NW+BR+ER 디지털 콘텐츠 9-클러스터 확장 + GM/SM 융합 모델. 🏆 61번째 도메인 마일스톤 (S262 5 → S305++++ 61, 12.2배 확장).
+describe("esports domain — ER-001~006 via withRuleId (세션 305 후속4 F529, 🏆🏆 50 신규 산업 round 마일스톤)", () => {
+  it("ER-001 PRESENCE — active_tournaments >= MAX_CONCURRENT_ACTIVE_TOURNAMENTS_PER_ORGANIZER threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "esports.ts",
+      `const MAX_CONCURRENT_ACTIVE_TOURNAMENTS_PER_ORGANIZER = 16;
+function registerTournament(db, organizerId, contractId) {
+  const organizer = db.prepare("SELECT active_tournaments, total_capacity FROM organizers WHERE id = ?").get(organizerId);
+  const limit = organizer.total_capacity ?? MAX_CONCURRENT_ACTIVE_TOURNAMENTS_PER_ORGANIZER;
+  if (organizer.active_tournaments >= limit) {
+    throw new EsportsError('E422-ORGANIZER-CAPACITY-EXCEEDED', 'Organizer is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["ER-001"]!(src, "esports.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("ER-002 PRESENCE — prize_earned + prize >= dailyPrizeLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "esports.ts",
+      `function applyPrizeLimit(db, teamId, contractId, prize) {
+  const contract = db.prepare("SELECT prize_earned, prize_limit FROM team_contracts WHERE id = ? AND team_id = ? LIMIT 1").get(contractId, teamId);
+  const dailyPrizeLimit = contract.prize_limit;
+  if (contract.prize_earned + prize >= dailyPrizeLimit) {
+    throw new EsportsError('E422-DAILY-PRIZE-LIMIT-EXCEEDED', 'Daily prize quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["ER-002"]!(src, "esports.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("ER-003 PRESENCE — db.transaction() in processMatch (atomic matches+tournament_schedules+prize_distributions INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "esports.ts",
+      `function processMatch(db, organizerId, scheduleId, matchNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO matches (id, organizer_id, schedule_id, match_no, status, started_at) VALUES (?, ?, ?, ?, 'live', ?)").run(matchId, organizerId, scheduleId, matchNo, startedAt);
+    db.prepare("UPDATE tournament_schedules SET status = 'live', match_id = ?, prize_distribution_id = ? WHERE id = ?").run(matchId, prizeDistributionId, scheduleId);
+    db.prepare("INSERT INTO prize_distributions (id, schedule_id, match_id, amount, status, distributed_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(prizeDistributionId, scheduleId, matchId, amount, startedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["ER-003"]!(src, "esports.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("ER-004 PRESENCE — status comparison + 'registered'/'live'/'completed'/'forfeited' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "esports.ts",
+      `function transitionTournamentStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM tournament_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new EsportsError("E409-SCHEDULE", "Invalid transition", 409);
+  db.prepare("UPDATE tournament_schedules SET status = 'registered' WHERE id = ?").run(scheduleId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["ER-004"]!(src, "esports.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("ER-005 PRESENCE — batch expire update in expireForfeitedMatchBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "esports.ts",
+      `function transitionTournamentStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM tournament_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new EsportsError("E409-SCHEDULE", "Invalid", 409);
+  db.prepare("UPDATE tournament_schedules SET status = 'registered' WHERE id = ?").run(scheduleId);
+}
+function expireForfeitedMatchBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM matches WHERE status = 'forfeited' AND started_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE matches SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["ER-005"]!(src, "esports.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("ER-006 PRESENCE — db.transaction() in processPrizeClawback (atomic prize_clawback_records+prize_clawbacks INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "esports.ts",
+      `function processPrizeClawback(db, teamId, matchId, prizeCost, clawbackRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO prize_clawback_records (id, team_id, match_id, prize_cost, clawback_rate, clawback_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(clawbackRecordId, teamId, matchId, prizeCost, clawbackRate, clawbackAmount);
+    db.prepare("INSERT INTO prize_clawbacks (id, clawback_record_id, team_id, amount, status, clawed_back_at) VALUES (?, ?, ?, ?, 'clawed_back', ?)").run(clawbackId, clawbackRecordId, teamId, clawbackAmount, clawedBackAt);
+    db.prepare("UPDATE prize_clawback_records SET status = 'clawed_back' WHERE id = ?").run(clawbackRecordId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["ER-006"]!(src, "esports.ts");
     expect(markers).toHaveLength(0);
   });
 });

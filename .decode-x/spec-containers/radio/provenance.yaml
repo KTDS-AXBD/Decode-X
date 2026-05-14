@@ -1,0 +1,52 @@
+---
+# Provenance — RAD-001
+# 63번째 도메인 — Radio 합성 도메인 PoC (52번째 신규 산업, 🏆🏆 1세션 9 Sprint 신기록)
+
+skillId: RAD-001
+extractedAt: "2026-05-14T00:00:00+09:00"
+extractedBy: "Decode-X 세션 305 후속6 F531 — withRuleId 재사용 63번째 도메인 (Radio 라디오 산업, 52번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/radio/rules/radio-rules.md"
+    section: "Radio 합성 비즈니스 룰 — RA-001~RA-006"
+    businessRules: [RA-001, RA-002, RA-003, RA-004, RA-005, RA-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 라디오(Radio) 산업 일반화 PoC. 채널program한도/listenershipdaily한도/송출batchatomic/program상태전환/만료broadcast일괄/sponsor환불atomic 추상화. 63번째 도메인 + 52번째 신규 산업. 🏆🏆 1세션 9 Sprint 신기록. 64 Sprint 연속 정점 도전. 거울 변환 16회차 (carsharing → ... → podcast → radio). MU+PB+AD+GM+VD+SM+NW+BR+ER+PC+RA 디지털 콘텐츠 11-클러스터 확장 형성."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/radio.ts"
+    functions: [scheduleProgram, applyListenershipLimit, processBroadcast, transitionProgramStatus, expirePreemptedBroadcastBatch, processSponsorRefund]
+
+detection:
+  - ruleId: RA-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "channel.active_programs >= limit (UPPERCASE fallback MAX_CONCURRENT_ACTIVE_PROGRAMS_PER_CHANNEL, Path A)"
+  - ruleId: RA-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "contract.listenership_used + listenership >= dailyListenershipLimit (Path B, limit keyword)"
+  - ruleId: RA-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "db.transaction() — broadcasts INSERT + program_schedules UPDATE + sponsor_payments INSERT"
+  - ruleId: RA-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "scheduled → airing → updated → archived / preempted / cancelled"
+  - ruleId: RA-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "batch: expire 갱신 (PC-005/ER-005/BR-005/NW-005/SM-005/VD-005 52번째 재사용)"
+  - ruleId: RA-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "db.transaction() — sponsor_refund_records INSERT + sponsor_refunds INSERT + sponsor_refund_records UPDATE"

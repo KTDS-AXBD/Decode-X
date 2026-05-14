@@ -1184,6 +1184,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processListenerRefund",
     ],
   },
+  {
+    container: "radio",
+    rulesPath: `${SPEC_CONTAINER_BASE}/radio/rules/radio-rules.md`,
+    // 세션 305 후속6 (F531): Radio 합성 도메인 — 63번째 도메인 (라디오 산업, 52번째 신규 산업). 🏆🏆 1세션 9 Sprint 신기록.
+    // RA-001~RA-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 16회차 (carsharing → ... → podcast → radio) — MU+PB+AD+GM+VD+SM+NW+BR+ER+PC+RA 디지털 콘텐츠 11-클러스터 확장.
+    // 🏆 63번째 도메인 마일스톤 (S262 5 → S305++++++ 63, 12.6배 확장).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/radio.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/radio/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "scheduleProgram",
+      "applyListenershipLimit",
+      "processBroadcast",
+      "transitionProgramStatus",
+      "expirePreemptedBroadcastBatch",
+      "processSponsorRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

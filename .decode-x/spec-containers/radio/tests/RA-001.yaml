@@ -1,0 +1,62 @@
+# Test scenarios — Radio domain RA-001~RA-006
+# 세션 305 후속6 F531 — Radio 라디오 합성 도메인 (🏆🏆 1세션 9 Sprint 신기록)
+
+scenarios:
+  - id: RA-001-PASS
+    rule: RA-001
+    description: "정원 내 program schedule — 성공"
+    input: { active_programs: 30, total_capacity: 48 }
+    expected: PASS
+
+  - id: RA-001-FAIL
+    rule: RA-001
+    description: "채널 program 정원 초과 — E422-CHANNEL-CAPACITY-EXCEEDED"
+    input: { active_programs: 48, total_capacity: 48 }
+    expected: FAIL
+    error: E422-CHANNEL-CAPACITY-EXCEEDED
+
+  - id: RA-002-PASS
+    rule: RA-002
+    description: "일일 listenership 한도 내 사용 — 성공"
+    input: { listenership_used: 30000, listenership_limit: 100000, listenership: 20000 }
+    expected: PASS
+
+  - id: RA-002-FAIL
+    rule: RA-002
+    description: "일일 listenership 한도 초과 — E422-DAILY-LISTENERSHIP-LIMIT-EXCEEDED"
+    input: { listenership_used: 95000, listenership_limit: 100000, listenership: 10000 }
+    expected: FAIL
+    error: E422-DAILY-LISTENERSHIP-LIMIT-EXCEEDED
+
+  - id: RA-003-PASS
+    rule: RA-003
+    description: "scheduled 상태 송출 atomic — 성공"
+    input: { schedule_status: scheduled }
+    expected: PASS
+
+  - id: RA-004-PASS
+    rule: RA-004
+    description: "scheduled → airing 전환 허용"
+    input: { previous: scheduled, next: airing }
+    expected: PASS
+
+  - id: RA-004-FAIL
+    rule: RA-004
+    description: "cancelled → scheduled 역행 차단 — E409-SCHEDULE"
+    input: { previous: cancelled, next: scheduled }
+    expected: FAIL
+    error: E409-SCHEDULE
+
+  - id: RA-005-PASS
+    rule: RA-005
+    description: "preempted broadcast batch expire — 대상 1건"
+    input: { broadcasts: [{ status: preempted, started_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: RA-006-PASS
+    rule: RA-006
+    description: "preempted broadcast sponsor 환불 atomic — 성공"
+    input: { broadcast_status: preempted, sponsor_cost: 3000, refund_rate: 0.5 }
+    expected: PASS
+    expectedRefundAmount: 1500

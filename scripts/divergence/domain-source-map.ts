@@ -1165,6 +1165,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processPrizeClawback",
     ],
   },
+  {
+    container: "podcast",
+    rulesPath: `${SPEC_CONTAINER_BASE}/podcast/rules/podcast-rules.md`,
+    // 세션 305 후속5 (F530): Podcast 합성 도메인 — 62번째 도메인 (팟캐스트 산업, 51번째 신규 산업).
+    // PC-001~PC-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 15회차 (carsharing → ... → esports → podcast) — MU+PB+AD+GM+VD+SM+NW+BR+ER+PC 디지털 콘텐츠 10-클러스터 확장.
+    // 🏆 62번째 도메인 마일스톤 (S262 5 → S305+++++ 62, 12.4배 확장).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/podcast.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/podcast/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "publishEpisode",
+      "applyListenLimit",
+      "processDistribution",
+      "transitionEpisodeStatus",
+      "expireRemovedEpisodeBatch",
+      "processListenerRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

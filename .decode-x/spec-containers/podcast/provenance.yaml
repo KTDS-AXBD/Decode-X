@@ -1,0 +1,52 @@
+---
+# Provenance — PDC-001
+# 62번째 도메인 — Podcast 합성 도메인 PoC (51번째 신규 산업)
+
+skillId: PDC-001
+extractedAt: "2026-05-14T00:00:00+09:00"
+extractedBy: "Decode-X 세션 305 후속5 F530 — withRuleId 재사용 62번째 도메인 (Podcast 팟캐스트 산업, 51번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/podcast/rules/podcast-rules.md"
+    section: "Podcast 합성 비즈니스 룰 — PC-001~PC-006"
+    businessRules: [PC-001, PC-002, PC-003, PC-004, PC-005, PC-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 팟캐스트(Podcast) 산업 일반화 PoC. 호스트episode한도/청취자daily한도/배포batchatomic/episode상태전환/만료episode일괄/청취자환불atomic 추상화. 62번째 도메인 + 51번째 신규 산업. 63 Sprint 연속 정점 도전. 거울 변환 15회차 (carsharing → ... → esports → podcast). MU+PB+AD+GM+VD+SM+NW+BR+ER+PC 디지털 콘텐츠 10-클러스터 확장 형성 (오디오 콘텐츠 구독+광고 하이브리드 모델)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/podcast.ts"
+    functions: [publishEpisode, applyListenLimit, processDistribution, transitionEpisodeStatus, expireRemovedEpisodeBatch, processListenerRefund]
+
+detection:
+  - ruleId: PC-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "host.active_published_episodes >= limit (UPPERCASE fallback MAX_CONCURRENT_PUBLISHED_EPISODES_PER_HOST, Path A)"
+  - ruleId: PC-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "contract.listen_used + listens >= dailyListenLimit (Path B, limit keyword)"
+  - ruleId: PC-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "db.transaction() — episode_distributions INSERT + episode_publishes UPDATE + ad_insertions INSERT"
+  - ruleId: PC-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "recorded → edited → published → updated → archived / removed"
+  - ruleId: PC-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "batch: expire 갱신 (ER-005/BR-005/NW-005/SM-005/VD-005/GM-005 51번째 재사용)"
+  - ruleId: PC-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "db.transaction() — listener_refund_records INSERT + listener_refunds INSERT + listener_refund_records UPDATE"

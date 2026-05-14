@@ -1,0 +1,62 @@
+# Test scenarios — Podcast domain PC-001~PC-006
+# 세션 305 후속5 F530 — Podcast 팟캐스트 합성 도메인
+
+scenarios:
+  - id: PC-001-PASS
+    rule: PC-001
+    description: "정원 내 episode 발행 — 성공"
+    input: { active_published_episodes: 1000, total_capacity: 5000 }
+    expected: PASS
+
+  - id: PC-001-FAIL
+    rule: PC-001
+    description: "호스트 episode 정원 초과 — E422-HOST-CAPACITY-EXCEEDED"
+    input: { active_published_episodes: 5000, total_capacity: 5000 }
+    expected: FAIL
+    error: E422-HOST-CAPACITY-EXCEEDED
+
+  - id: PC-002-PASS
+    rule: PC-002
+    description: "일일 listen 한도 내 사용 — 성공"
+    input: { listen_used: 5, listen_limit: 20, listens: 3 }
+    expected: PASS
+
+  - id: PC-002-FAIL
+    rule: PC-002
+    description: "일일 listen 한도 초과 — E422-DAILY-LISTEN-LIMIT-EXCEEDED"
+    input: { listen_used: 18, listen_limit: 20, listens: 2 }
+    expected: FAIL
+    error: E422-DAILY-LISTEN-LIMIT-EXCEEDED
+
+  - id: PC-003-PASS
+    rule: PC-003
+    description: "edited 상태 episode 배포 atomic — 성공"
+    input: { publish_status: edited }
+    expected: PASS
+
+  - id: PC-004-PASS
+    rule: PC-004
+    description: "recorded → edited 전환 허용"
+    input: { previous: recorded, next: edited }
+    expected: PASS
+
+  - id: PC-004-FAIL
+    rule: PC-004
+    description: "removed → recorded 역행 차단 — E409-PUBLISH"
+    input: { previous: removed, next: recorded }
+    expected: FAIL
+    error: E409-PUBLISH
+
+  - id: PC-005-PASS
+    rule: PC-005
+    description: "removed episode 배포 batch expire — 대상 1건"
+    input: { distributions: [{ status: removed, started_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: PC-006-PASS
+    rule: PC-006
+    description: "removed distribution 청취자 환불 atomic — 성공"
+    input: { distribution_status: removed, subscription_cost: 500, refund_rate: 0.5 }
+    expected: PASS
+    expectedRefundAmount: 250

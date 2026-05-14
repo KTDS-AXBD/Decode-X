@@ -933,6 +933,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "PB-004",
       "PB-005",
       "PB-006",
+      "PC-001",
+      "PC-002",
+      "PC-003",
+      "PC-004",
+      "PC-005",
+      "PC-006",
       "PH-001",
       "PH-002",
       "PH-003",
@@ -1282,6 +1288,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["ER-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["ER-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["ER-006"]).toBeDefined();
+  });
+
+  it("PC-001~PC-006 registered (세션 305 후속5 F530 — podcast 62번째 도메인, 51번째 신규 산업, 63 Sprint 연속 정점 도전, 거울 변환 15회차, MU+PB+AD+GM+VD+SM+NW+BR+ER+PC 디지털 콘텐츠 10-클러스터 확장)", () => {
+    expect(BL_DETECTOR_REGISTRY["PC-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PC-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PC-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PC-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PC-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PC-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -6016,6 +6031,106 @@ function expireForfeitedMatchBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["ER-006"]!(src, "esports.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+// F530 (세션 305 후속5) — podcast domain PC-001~006 via withRuleId (63 Sprint 연속 정점 도전)
+// 거울 변환 15회차 (carsharing → ... → esports → podcast).
+// MU+PB+AD+GM+VD+SM+NW+BR+ER+PC 디지털 콘텐츠 10-클러스터 확장. 🏆 62번째 도메인 마일스톤.
+describe("podcast domain — PC-001~006 via withRuleId (세션 305 후속5 F530)", () => {
+  it("PC-001 PRESENCE — active_published_episodes >= MAX_CONCURRENT_PUBLISHED_EPISODES_PER_HOST threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "podcast.ts",
+      `const MAX_CONCURRENT_PUBLISHED_EPISODES_PER_HOST = 5000;
+function publishEpisode(db, hostId, contractId) {
+  const host = db.prepare("SELECT active_published_episodes, total_capacity FROM hosts WHERE id = ?").get(hostId);
+  const limit = host.total_capacity ?? MAX_CONCURRENT_PUBLISHED_EPISODES_PER_HOST;
+  if (host.active_published_episodes >= limit) {
+    throw new PodcastError('E422-HOST-CAPACITY-EXCEEDED', 'Host is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PC-001"]!(src, "podcast.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("PC-002 PRESENCE — listen_used + listens >= dailyListenLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "podcast.ts",
+      `function applyListenLimit(db, listenerId, contractId, listens) {
+  const contract = db.prepare("SELECT listen_used, listen_limit FROM listener_contracts WHERE id = ? AND listener_id = ? LIMIT 1").get(contractId, listenerId);
+  const dailyListenLimit = contract.listen_limit;
+  if (contract.listen_used + listens >= dailyListenLimit) {
+    throw new PodcastError('E422-DAILY-LISTEN-LIMIT-EXCEEDED', 'Daily listen quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PC-002"]!(src, "podcast.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("PC-003 PRESENCE — db.transaction() in processDistribution (atomic episode_distributions+episode_publishes+ad_insertions INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "podcast.ts",
+      `function processDistribution(db, hostId, publishId, distributionNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO episode_distributions (id, host_id, publish_id, distribution_no, status, started_at) VALUES (?, ?, ?, ?, 'live', ?)").run(episodeDistributionId, hostId, publishId, distributionNo, startedAt);
+    db.prepare("UPDATE episode_publishes SET status = 'published', episode_distribution_id = ?, ad_insertion_id = ? WHERE id = ?").run(episodeDistributionId, adInsertionId, publishId);
+    db.prepare("INSERT INTO ad_insertions (id, publish_id, episode_distribution_id, amount, status, inserted_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(adInsertionId, publishId, episodeDistributionId, amount, startedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PC-003"]!(src, "podcast.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("PC-004 PRESENCE — status comparison + 'edited'/'published'/'updated'/'archived' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "podcast.ts",
+      `function transitionEpisodeStatus(db, publishId, newStatus) {
+  const publish = db.prepare("SELECT status FROM episode_publishes WHERE id = ?").get(publishId);
+  if (publish.status === 'recorded') throw new PodcastError("E409-PUBLISH", "Invalid transition", 409);
+  db.prepare("UPDATE episode_publishes SET status = 'edited' WHERE id = ?").run(publishId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PC-004"]!(src, "podcast.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("PC-005 PRESENCE — batch expire update in expireRemovedEpisodeBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "podcast.ts",
+      `function transitionEpisodeStatus(db, publishId, newStatus) {
+  const publish = db.prepare("SELECT status FROM episode_publishes WHERE id = ?").get(publishId);
+  if (publish.status === 'recorded') throw new PodcastError("E409-PUBLISH", "Invalid", 409);
+  db.prepare("UPDATE episode_publishes SET status = 'edited' WHERE id = ?").run(publishId);
+}
+function expireRemovedEpisodeBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM episode_distributions WHERE status = 'removed' AND started_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE episode_distributions SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PC-005"]!(src, "podcast.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("PC-006 PRESENCE — db.transaction() in processListenerRefund (atomic listener_refund_records+listener_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "podcast.ts",
+      `function processListenerRefund(db, listenerId, episodeDistributionId, subscriptionCost, refundRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO listener_refund_records (id, listener_id, episode_distribution_id, subscription_cost, refund_rate, refund_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(refundRecordId, listenerId, episodeDistributionId, subscriptionCost, refundRate, refundAmount);
+    db.prepare("INSERT INTO listener_refunds (id, refund_record_id, listener_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, refundRecordId, listenerId, refundAmount, refundedAt);
+    db.prepare("UPDATE listener_refund_records SET status = 'refunded' WHERE id = ?").run(refundRecordId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PC-006"]!(src, "podcast.ts");
     expect(markers).toHaveLength(0);
   });
 });

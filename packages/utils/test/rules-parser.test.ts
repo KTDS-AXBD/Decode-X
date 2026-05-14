@@ -233,6 +233,16 @@ describe("rules-parser — parseRulesMarkdown", () => {
     expect(rules.map((r) => r.id)).toEqual(["ER-001", "ER-006"]);
   });
 
+  it("matches podcast PC-NNN prefix (세션 305 후속5 F530, 51번째 신규 산업, MU+PB+AD+GM+VD+SM+NW+BR+ER+PC 디지털 콘텐츠 10-클러스터)", () => {
+    const md = `| ID | condition | criteria | outcome | exception |
+|----|-----------|----------|---------|-----------|
+| PC-001 | a | b | c | d |
+| PC-006 | a | b | c | d |
+`;
+    const rules = parseRulesMarkdown(md);
+    expect(rules.map((r) => r.id)).toEqual(["PC-001", "PC-006"]);
+  });
+
   it("rejects invalid prefix patterns (BL- without digits, BL-A only)", () => {
     const md = `| ID | condition | criteria | outcome | exception |
 |----|-----------|----------|---------|-----------|

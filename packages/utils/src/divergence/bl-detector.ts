@@ -1341,6 +1341,15 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "ER-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "ER-004"),
   "ER-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "ER-005"),
   "ER-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "ER-006"),
+  // 세션 305 후속5 (F530): Podcast 합성 도메인 62번째 (51번째 신규 산업, 팟캐스트 오디오 콘텐츠).
+  // MU+PB+AD+GM+VD+SM+NW+BR+ER+PC 디지털 콘텐츠 10-클러스터 확장 (오디오 구독+광고 하이브리드).
+  // withRuleId 재사용 62번째 도메인. 🏆 62번째 도메인 마일스톤 (S262 5 → S305+++++ 62, 12.4배 확장).
+  "PC-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "PC-001"),
+  "PC-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "PC-002"),
+  "PC-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "PC-003"),
+  "PC-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PC-004"),
+  "PC-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PC-005"),
+  "PC-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "PC-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

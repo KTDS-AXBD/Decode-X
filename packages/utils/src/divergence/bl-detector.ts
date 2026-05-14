@@ -1305,6 +1305,15 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "VD-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "VD-004"),
   "VD-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "VD-005"),
   "VD-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "VD-006"),
+  // 세션 305 후속 (F526): SocialMedia 합성 도메인 58번째 (47번째 신규 산업, 소셜미디어 UGC).
+  // MU+PB+AD+GM+VD+SM 디지털 콘텐츠 6-클러스터 확장 (MU 음악 + PB 출판 + AD 광고 + GM 게임 + VD 영상 + SM 소셜미디어).
+  // withRuleId 재사용 58번째 도메인. 🏆 58번째 도메인 마일스톤 (S262 5 → S305+ 58, 11.6배 확장).
+  "SM-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "SM-001"),
+  "SM-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "SM-002"),
+  "SM-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "SM-003"),
+  "SM-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "SM-004"),
+  "SM-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "SM-005"),
+  "SM-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "SM-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

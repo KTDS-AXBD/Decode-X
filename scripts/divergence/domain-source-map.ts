@@ -1081,6 +1081,27 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processRefundClaim",
     ],
   },
+  {
+    container: "socialmedia",
+    rulesPath: `${SPEC_CONTAINER_BASE}/socialmedia/rules/socialmedia-rules.md`,
+    // 세션 305 후속 (F526): SocialMedia 합성 도메인 — 58번째 도메인 (소셜미디어 산업, 47번째 신규 산업).
+    // SM-001~SM-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 59 Sprint 연속 정점 도전 (S264~S278+S283~S319+S295~S305+).
+    // 47번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT+TM+VT+GY+PK+CS+FS+AS+MU+SH+PB+TX+AD+GM+VD+SM).
+    // 거울 변환 11회차 (carsharing → fastfood → aerospace → music → shipping → publishing → textile → advertising → gaming → video → socialmedia) — MU+PB+AD+GM+VD+SM 디지털 콘텐츠 6-클러스터 확장.
+    // 6 BLs 균형 패턴 48번째 정착. 🏆 58번째 도메인 마일스톤 (S262 5 → S305+ 58, 11.6배 확장).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/socialmedia.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/socialmedia/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "publishPost",
+      "applyMonetizationLimit",
+      "processFeedDistribution",
+      "transitionPostStatus",
+      "expireRemovedPostBatch",
+      "processCreatorClawback",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

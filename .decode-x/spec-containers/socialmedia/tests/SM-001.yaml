@@ -1,0 +1,62 @@
+# Test scenarios — SocialMedia domain SM-001~SM-006
+# 세션 305 후속 F526 — SocialMedia 소셜미디어 합성 도메인
+
+scenarios:
+  - id: SM-001-PASS
+    rule: SM-001
+    description: "정원 내 post 발행 — 성공"
+    input: { active_published_posts: 4000, total_capacity: 10000 }
+    expected: PASS
+
+  - id: SM-001-FAIL
+    rule: SM-001
+    description: "계정 post 정원 초과 — E422-ACCOUNT-CAPACITY-EXCEEDED"
+    input: { active_published_posts: 10000, total_capacity: 10000 }
+    expected: FAIL
+    error: E422-ACCOUNT-CAPACITY-EXCEEDED
+
+  - id: SM-002-PASS
+    rule: SM-002
+    description: "일일 monetization 한도 내 사용 — 성공"
+    input: { monetization_used: 100, monetization_limit: 500, earnings: 50 }
+    expected: PASS
+
+  - id: SM-002-FAIL
+    rule: SM-002
+    description: "일일 monetization 한도 초과 — E422-DAILY-MONETIZATION-LIMIT-EXCEEDED"
+    input: { monetization_used: 480, monetization_limit: 500, earnings: 25 }
+    expected: FAIL
+    error: E422-DAILY-MONETIZATION-LIMIT-EXCEEDED
+
+  - id: SM-003-PASS
+    rule: SM-003
+    description: "reviewed 상태 publish 피드 atomic — 성공"
+    input: { publish_status: reviewed }
+    expected: PASS
+
+  - id: SM-004-PASS
+    rule: SM-004
+    description: "draft → reviewed 전환 허용"
+    input: { previous: draft, next: reviewed }
+    expected: PASS
+
+  - id: SM-004-FAIL
+    rule: SM-004
+    description: "removed → draft 역행 차단 — E409-PUBLISH"
+    input: { previous: removed, next: draft }
+    expected: FAIL
+    error: E409-PUBLISH
+
+  - id: SM-005-PASS
+    rule: SM-005
+    description: "removed post 피드 batch expire — 대상 1건"
+    input: { feeds: [{ status: removed, started_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: SM-006-PASS
+    rule: SM-006
+    description: "removed post feed 크리에이터 payout 회수 atomic — 성공"
+    input: { feed_status: removed, payout_cost: 1000, clawback_rate: 0.7 }
+    expected: PASS
+    expectedClawbackAmount: 700

@@ -1,0 +1,52 @@
+---
+# Provenance — SMD-001
+# 58번째 도메인 — SocialMedia 합성 도메인 PoC (47번째 신규 산업)
+
+skillId: SMD-001
+extractedAt: "2026-05-14T00:00:00+09:00"
+extractedBy: "Decode-X 세션 305 후속 F526 — withRuleId 재사용 58번째 도메인 (SocialMedia 소셜미디어 산업, 47번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/socialmedia/rules/socialmedia-rules.md"
+    section: "SocialMedia 합성 비즈니스 룰 — SM-001~SM-006"
+    businessRules: [SM-001, SM-002, SM-003, SM-004, SM-005, SM-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 소셜미디어(SocialMedia) 산업 일반화 PoC. 계정post한도/일일monetization한도/피드batchatomic/post상태전환/만료post일괄/크리에이터payout회수atomic 추상화. 58번째 도메인 + 47번째 신규 산업. detector 신뢰도 누적 활용. 🏆 59 Sprint 연속 정점 도전. 거울 변환 11회차 (carsharing → fastfood → aerospace → music → shipping → publishing → textile → advertising → gaming → video → socialmedia). MU(음악) + PB(출판) + AD(광고) + GM(게임) + VD(영상) + SM(소셜미디어) 디지털 콘텐츠 6-클러스터 확장 형성 (UGC + 크리에이터 수익 모델 추가)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/socialmedia.ts"
+    functions: [publishPost, applyMonetizationLimit, processFeedDistribution, transitionPostStatus, expireRemovedPostBatch, processCreatorClawback]
+
+detection:
+  - ruleId: SM-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "account.active_published_posts >= limit (UPPERCASE fallback MAX_CONCURRENT_ACTIVE_POSTS_PER_ACCOUNT, Path A)"
+  - ruleId: SM-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "contract.monetization_used + earnings >= dailyMonetizationLimit (Path B, limit keyword)"
+  - ruleId: SM-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "db.transaction() — post_feeds INSERT + post_publishes UPDATE + ad_distributions INSERT"
+  - ruleId: SM-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "draft → reviewed → published → restricted → archived / reported → removed"
+  - ruleId: SM-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "batch: expire 갱신 (VD-005/GM-005/AD-005/TX-005/PB-005 47번째 재사용)"
+  - ruleId: SM-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "db.transaction() — creator_payout_clawback_records INSERT + creator_payout_clawbacks INSERT + creator_payout_clawback_records UPDATE"

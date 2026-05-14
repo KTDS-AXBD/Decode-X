@@ -963,6 +963,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "SH-004",
       "SH-005",
       "SH-006",
+      "SM-001",
+      "SM-002",
+      "SM-003",
+      "SM-004",
+      "SM-005",
+      "SM-006",
       "SP-001",
       "SP-002",
       "SP-003",
@@ -1222,6 +1228,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["VD-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["VD-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["VD-006"]).toBeDefined();
+  });
+
+  it("SM-001~SM-006 registered (세션 305 후속 F526 — socialmedia 58번째 도메인, 47번째 신규 산업, 59 Sprint 연속 정점 도전, 거울 변환 11회차, MU+PB+AD+GM+VD+SM 디지털 콘텐츠 6-클러스터 확장)", () => {
+    expect(BL_DETECTOR_REGISTRY["SM-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["SM-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["SM-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["SM-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["SM-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["SM-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -5556,6 +5571,106 @@ function expireRetiredVideoBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["VD-006"]!(src, "video.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+// F526 (세션 305 후속) — socialmedia domain SM-001~006 via withRuleId (59 Sprint 연속 정점 도전)
+// 거울 변환 11회차 (carsharing → fastfood → aerospace → music → shipping → publishing → textile → advertising → gaming → video → socialmedia).
+// MU+PB+AD+GM+VD+SM 디지털 콘텐츠 6-클러스터 확장. 🏆 58번째 도메인 마일스톤 (S262 5 → S305+ 58, 11.6배 확장).
+describe("socialmedia domain — SM-001~006 via withRuleId (세션 305 후속 F526)", () => {
+  it("SM-001 PRESENCE — active_published_posts >= MAX_CONCURRENT_ACTIVE_POSTS_PER_ACCOUNT threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "socialmedia.ts",
+      `const MAX_CONCURRENT_ACTIVE_POSTS_PER_ACCOUNT = 10000;
+function publishPost(db, accountId, contractId) {
+  const account = db.prepare("SELECT active_published_posts, total_capacity FROM accounts WHERE id = ?").get(accountId);
+  const limit = account.total_capacity ?? MAX_CONCURRENT_ACTIVE_POSTS_PER_ACCOUNT;
+  if (account.active_published_posts >= limit) {
+    throw new SocialMediaError('E422-ACCOUNT-CAPACITY-EXCEEDED', 'Account is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SM-001"]!(src, "socialmedia.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("SM-002 PRESENCE — monetization_used + earnings >= dailyMonetizationLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "socialmedia.ts",
+      `function applyMonetizationLimit(db, creatorId, contractId, earnings) {
+  const contract = db.prepare("SELECT monetization_used, monetization_limit FROM monetization_contracts WHERE id = ? AND creator_id = ? LIMIT 1").get(contractId, creatorId);
+  const dailyMonetizationLimit = contract.monetization_limit;
+  if (contract.monetization_used + earnings >= dailyMonetizationLimit) {
+    throw new SocialMediaError('E422-DAILY-MONETIZATION-LIMIT-EXCEEDED', 'Daily monetization quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SM-002"]!(src, "socialmedia.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("SM-003 PRESENCE — db.transaction() in processFeedDistribution (atomic post_feeds+post_publishes+ad_distributions INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "socialmedia.ts",
+      `function processFeedDistribution(db, accountId, publishId, feedNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO post_feeds (id, account_id, publish_id, feed_no, status, started_at) VALUES (?, ?, ?, ?, 'live', ?)").run(postFeedId, accountId, publishId, feedNo, startedAt);
+    db.prepare("UPDATE post_publishes SET status = 'published', post_feed_id = ?, ad_distribution_id = ? WHERE id = ?").run(postFeedId, adDistributionId, publishId);
+    db.prepare("INSERT INTO ad_distributions (id, publish_id, post_feed_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(adDistributionId, publishId, postFeedId, amount, startedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SM-003"]!(src, "socialmedia.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("SM-004 PRESENCE — status comparison + 'reviewed'/'published'/'restricted'/'archived' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "socialmedia.ts",
+      `function transitionPostStatus(db, publishId, newStatus) {
+  const publish = db.prepare("SELECT status FROM post_publishes WHERE id = ?").get(publishId);
+  if (publish.status === 'draft') throw new SocialMediaError("E409-PUBLISH", "Invalid transition", 409);
+  db.prepare("UPDATE post_publishes SET status = 'reviewed' WHERE id = ?").run(publishId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SM-004"]!(src, "socialmedia.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("SM-005 PRESENCE — batch expire update in expireRemovedPostBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "socialmedia.ts",
+      `function transitionPostStatus(db, publishId, newStatus) {
+  const publish = db.prepare("SELECT status FROM post_publishes WHERE id = ?").get(publishId);
+  if (publish.status === 'draft') throw new SocialMediaError("E409-PUBLISH", "Invalid", 409);
+  db.prepare("UPDATE post_publishes SET status = 'reviewed' WHERE id = ?").run(publishId);
+}
+function expireRemovedPostBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM post_feeds WHERE status = 'removed' AND started_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE post_feeds SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SM-005"]!(src, "socialmedia.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("SM-006 PRESENCE — db.transaction() in processCreatorClawback (atomic creator_payout_clawback_records+creator_payout_clawbacks INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "socialmedia.ts",
+      `function processCreatorClawback(db, creatorId, postFeedId, payoutCost, clawbackRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO creator_payout_clawback_records (id, creator_id, post_feed_id, payout_cost, clawback_rate, clawback_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(clawbackRecordId, creatorId, postFeedId, payoutCost, clawbackRate, clawbackAmount);
+    db.prepare("INSERT INTO creator_payout_clawbacks (id, clawback_record_id, creator_id, amount, status, clawed_back_at) VALUES (?, ?, ?, ?, 'clawed_back', ?)").run(clawbackId, clawbackRecordId, creatorId, clawbackAmount, clawedBackAt);
+    db.prepare("UPDATE creator_payout_clawback_records SET status = 'clawed_back' WHERE id = ?").run(clawbackRecordId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SM-006"]!(src, "socialmedia.ts");
     expect(markers).toHaveLength(0);
   });
 });

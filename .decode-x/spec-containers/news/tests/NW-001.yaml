@@ -1,0 +1,62 @@
+# Test scenarios — News domain NW-001~NW-006
+# 세션 305 후속2 F527 — News 뉴스 합성 도메인
+
+scenarios:
+  - id: NW-001-PASS
+    rule: NW-001
+    description: "정원 내 article 발행 — 성공"
+    input: { active_published_articles: 20000, total_capacity: 50000 }
+    expected: PASS
+
+  - id: NW-001-FAIL
+    rule: NW-001
+    description: "퍼블리셔 article 정원 초과 — E422-PUBLISHER-CAPACITY-EXCEEDED"
+    input: { active_published_articles: 50000, total_capacity: 50000 }
+    expected: FAIL
+    error: E422-PUBLISHER-CAPACITY-EXCEEDED
+
+  - id: NW-002-PASS
+    rule: NW-002
+    description: "일일 article 한도 내 사용 — 성공"
+    input: { article_used: 10, article_limit: 20, articles: 3 }
+    expected: PASS
+
+  - id: NW-002-FAIL
+    rule: NW-002
+    description: "일일 article 한도 초과 — E422-DAILY-ARTICLE-LIMIT-EXCEEDED"
+    input: { article_used: 18, article_limit: 20, articles: 2 }
+    expected: FAIL
+    error: E422-DAILY-ARTICLE-LIMIT-EXCEEDED
+
+  - id: NW-003-PASS
+    rule: NW-003
+    description: "edited 상태 publish 신디케이션 atomic — 성공"
+    input: { publish_status: edited }
+    expected: PASS
+
+  - id: NW-004-PASS
+    rule: NW-004
+    description: "drafted → edited 전환 허용"
+    input: { previous: drafted, next: edited }
+    expected: PASS
+
+  - id: NW-004-FAIL
+    rule: NW-004
+    description: "retracted → drafted 역행 차단 — E409-PUBLISH"
+    input: { previous: retracted, next: drafted }
+    expected: FAIL
+    error: E409-PUBLISH
+
+  - id: NW-005-PASS
+    rule: NW-005
+    description: "retracted article 신디케이션 batch expire — 대상 1건"
+    input: { syndications: [{ status: retracted, started_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: NW-006-PASS
+    rule: NW-006
+    description: "retracted article 구독료 환불 atomic — 성공"
+    input: { syndication_status: retracted, subscription_cost: 1000, refund_rate: 0.5 }
+    expected: PASS
+    expectedRefundAmount: 500

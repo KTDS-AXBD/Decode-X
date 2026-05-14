@@ -1102,6 +1102,27 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processCreatorClawback",
     ],
   },
+  {
+    container: "news",
+    rulesPath: `${SPEC_CONTAINER_BASE}/news/rules/news-rules.md`,
+    // 세션 305 후속2 (F527): News 합성 도메인 — 59번째 도메인 (뉴스 산업, 48번째 신규 산업).
+    // NW-001~NW-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 신규 detector 0개 — withRuleId 재사용 60 Sprint 연속 정점 도전 (S264~S305++).
+    // 48번째 신규 산업 도메인 (CC+DV+SB+IN+HC+ED+RE+LG+HO+TR+MF+RT+EN+GV+TC+BK+MD+PH+AG+CN+MR+TS+AV+MN+DF+SP+CH+WL+PT+PR+FT+BT+TM+VT+GY+PK+CS+FS+AS+MU+SH+PB+TX+AD+GM+VD+SM+NW).
+    // 거울 변환 12회차 (carsharing → fastfood → aerospace → music → shipping → publishing → textile → advertising → gaming → video → socialmedia → news) — MU+PB+AD+GM+VD+SM+NW 디지털 콘텐츠 7-클러스터 확장.
+    // 6 BLs 균형 패턴 49번째 정착. 🏆 59번째 도메인 마일스톤 (S262 5 → S305++ 59, 11.8배 확장).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/news.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/news/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "publishArticle",
+      "applyArticleQuotaLimit",
+      "processSyndication",
+      "transitionArticleStatus",
+      "expireRetractedArticleBatch",
+      "processSubscriptionRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

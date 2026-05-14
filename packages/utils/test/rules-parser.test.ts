@@ -203,6 +203,16 @@ describe("rules-parser — parseRulesMarkdown", () => {
     expect(rules.map((r) => r.id)).toEqual(["SM-001", "SM-006"]);
   });
 
+  it("matches news NW-NNN prefix (세션 305 후속2 F527, 48번째 신규 산업, MU+PB+AD+GM+VD+SM+NW 디지털 콘텐츠 7-클러스터)", () => {
+    const md = `| ID | condition | criteria | outcome | exception |
+|----|-----------|----------|---------|-----------|
+| NW-001 | a | b | c | d |
+| NW-006 | a | b | c | d |
+`;
+    const rules = parseRulesMarkdown(md);
+    expect(rules.map((r) => r.id)).toEqual(["NW-001", "NW-006"]);
+  });
+
   it("rejects invalid prefix patterns (BL- without digits, BL-A only)", () => {
     const md = `| ID | condition | criteria | outcome | exception |
 |----|-----------|----------|---------|-----------|

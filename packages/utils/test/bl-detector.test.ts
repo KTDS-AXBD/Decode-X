@@ -902,6 +902,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "MU-004",
       "MU-005",
       "MU-006",
+      "NW-001",
+      "NW-002",
+      "NW-003",
+      "NW-004",
+      "NW-005",
+      "NW-006",
       "P-001",
       "P-002",
       "P-003",
@@ -1237,6 +1243,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["SM-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["SM-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["SM-006"]).toBeDefined();
+  });
+
+  it("NW-001~NW-006 registered (세션 305 후속2 F527 — news 59번째 도메인, 48번째 신규 산업, 60 Sprint 연속 정점 도전, 거울 변환 12회차, MU+PB+AD+GM+VD+SM+NW 디지털 콘텐츠 7-클러스터 확장)", () => {
+    expect(BL_DETECTOR_REGISTRY["NW-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["NW-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["NW-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["NW-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["NW-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["NW-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -5671,6 +5686,106 @@ function expireRemovedPostBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["SM-006"]!(src, "socialmedia.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+// F527 (세션 305 후속2) — news domain NW-001~006 via withRuleId (60 Sprint 연속 정점 도전)
+// 거울 변환 12회차 (carsharing → fastfood → aerospace → music → shipping → publishing → textile → advertising → gaming → video → socialmedia → news).
+// MU+PB+AD+GM+VD+SM+NW 디지털 콘텐츠 7-클러스터 확장. 🏆 59번째 도메인 마일스톤 (S262 5 → S305++ 59, 11.8배 확장).
+describe("news domain — NW-001~006 via withRuleId (세션 305 후속2 F527)", () => {
+  it("NW-001 PRESENCE — active_published_articles >= MAX_CONCURRENT_PUBLISHED_ARTICLES_PER_PUBLISHER threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "news.ts",
+      `const MAX_CONCURRENT_PUBLISHED_ARTICLES_PER_PUBLISHER = 50000;
+function publishArticle(db, publisherId, contractId) {
+  const publisher = db.prepare("SELECT active_published_articles, total_capacity FROM publishers WHERE id = ?").get(publisherId);
+  const limit = publisher.total_capacity ?? MAX_CONCURRENT_PUBLISHED_ARTICLES_PER_PUBLISHER;
+  if (publisher.active_published_articles >= limit) {
+    throw new NewsError('E422-PUBLISHER-CAPACITY-EXCEEDED', 'Publisher is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["NW-001"]!(src, "news.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("NW-002 PRESENCE — article_used + articles >= dailyArticleLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "news.ts",
+      `function applyArticleQuotaLimit(db, subscriberId, contractId, articles) {
+  const contract = db.prepare("SELECT article_used, article_limit FROM subscription_contracts WHERE id = ? AND subscriber_id = ? LIMIT 1").get(contractId, subscriberId);
+  const dailyArticleLimit = contract.article_limit;
+  if (contract.article_used + articles >= dailyArticleLimit) {
+    throw new NewsError('E422-DAILY-ARTICLE-LIMIT-EXCEEDED', 'Daily article quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["NW-002"]!(src, "news.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("NW-003 PRESENCE — db.transaction() in processSyndication (atomic article_syndications+article_publishes+subscription_charges INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "news.ts",
+      `function processSyndication(db, publisherId, publishId, syndicationNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO article_syndications (id, publisher_id, publish_id, syndication_no, status, started_at) VALUES (?, ?, ?, ?, 'live', ?)").run(articleSyndicationId, publisherId, publishId, syndicationNo, startedAt);
+    db.prepare("UPDATE article_publishes SET status = 'published', article_syndication_id = ?, subscription_charge_id = ? WHERE id = ?").run(articleSyndicationId, subscriptionChargeId, publishId);
+    db.prepare("INSERT INTO subscription_charges (id, publish_id, article_syndication_id, amount, status, charged_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(subscriptionChargeId, publishId, articleSyndicationId, amount, startedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["NW-003"]!(src, "news.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("NW-004 PRESENCE — status comparison + 'edited'/'published'/'updated'/'archived' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "news.ts",
+      `function transitionArticleStatus(db, publishId, newStatus) {
+  const publish = db.prepare("SELECT status FROM article_publishes WHERE id = ?").get(publishId);
+  if (publish.status === 'drafted') throw new NewsError("E409-PUBLISH", "Invalid transition", 409);
+  db.prepare("UPDATE article_publishes SET status = 'edited' WHERE id = ?").run(publishId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["NW-004"]!(src, "news.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("NW-005 PRESENCE — batch expire update in expireRetractedArticleBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "news.ts",
+      `function transitionArticleStatus(db, publishId, newStatus) {
+  const publish = db.prepare("SELECT status FROM article_publishes WHERE id = ?").get(publishId);
+  if (publish.status === 'drafted') throw new NewsError("E409-PUBLISH", "Invalid", 409);
+  db.prepare("UPDATE article_publishes SET status = 'edited' WHERE id = ?").run(publishId);
+}
+function expireRetractedArticleBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM article_syndications WHERE status = 'retracted' AND started_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE article_syndications SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["NW-005"]!(src, "news.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("NW-006 PRESENCE — db.transaction() in processSubscriptionRefund (atomic subscription_refund_records+subscription_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "news.ts",
+      `function processSubscriptionRefund(db, subscriberId, articleSyndicationId, subscriptionCost, refundRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO subscription_refund_records (id, subscriber_id, article_syndication_id, subscription_cost, refund_rate, refund_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(refundRecordId, subscriberId, articleSyndicationId, subscriptionCost, refundRate, refundAmount);
+    db.prepare("INSERT INTO subscription_refunds (id, refund_record_id, subscriber_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, refundRecordId, subscriberId, refundAmount, refundedAt);
+    db.prepare("UPDATE subscription_refund_records SET status = 'refunded' WHERE id = ?").run(refundRecordId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["NW-006"]!(src, "news.ts");
     expect(markers).toHaveLength(0);
   });
 });

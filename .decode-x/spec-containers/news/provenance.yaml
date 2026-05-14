@@ -1,0 +1,52 @@
+---
+# Provenance — NWS-001
+# 59번째 도메인 — News 합성 도메인 PoC (48번째 신규 산업)
+
+skillId: NWS-001
+extractedAt: "2026-05-14T00:00:00+09:00"
+extractedBy: "Decode-X 세션 305 후속2 F527 — withRuleId 재사용 59번째 도메인 (News 뉴스 산업, 48번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/news/rules/news-rules.md"
+    section: "News 합성 비즈니스 룰 — NW-001~NW-006"
+    businessRules: [NW-001, NW-002, NW-003, NW-004, NW-005, NW-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 뉴스(News) 산업 일반화 PoC. 퍼블리셔article한도/구독자daily한도/신디케이션batchatomic/article상태전환/만료article일괄/구독료환불atomic 추상화. 59번째 도메인 + 48번째 신규 산업. detector 신뢰도 누적 활용. 🏆 60 Sprint 연속 정점 도전. 거울 변환 12회차 (carsharing → fastfood → aerospace → music → shipping → publishing → textile → advertising → gaming → video → socialmedia → news). MU+PB+AD+GM+VD+SM+NW 디지털 콘텐츠 7-클러스터 확장 형성 (구독 미디어 + 신디케이션 모델 추가)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/news.ts"
+    functions: [publishArticle, applyArticleQuotaLimit, processSyndication, transitionArticleStatus, expireRetractedArticleBatch, processSubscriptionRefund]
+
+detection:
+  - ruleId: NW-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "publisher.active_published_articles >= limit (UPPERCASE fallback MAX_CONCURRENT_PUBLISHED_ARTICLES_PER_PUBLISHER, Path A)"
+  - ruleId: NW-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "contract.article_used + articles >= dailyArticleLimit (Path B, limit keyword)"
+  - ruleId: NW-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "db.transaction() — article_syndications INSERT + article_publishes UPDATE + subscription_charges INSERT"
+  - ruleId: NW-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "drafted → edited → published → updated → archived / retracted"
+  - ruleId: NW-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "batch: expire 갱신 (SM-005/VD-005/GM-005/AD-005/TX-005/PB-005 48번째 재사용)"
+  - ruleId: NW-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-14T00:00:00+09:00"
+    notes: "db.transaction() — subscription_refund_records INSERT + subscription_refunds INSERT + subscription_refund_records UPDATE"

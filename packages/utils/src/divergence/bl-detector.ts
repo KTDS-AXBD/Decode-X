@@ -1359,6 +1359,15 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "RA-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "RA-004"),
   "RA-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "RA-005"),
   "RA-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "RA-006"),
+  // 세션 306 (F532): Art 합성 도메인 64번째 (53번째 신규 산업, 예술/갤러리 시각 예술).
+  // MU+PB+AD+GM+VD+SM+NW+BR+ER+PC+RA+AR 디지털 콘텐츠 12-클러스터 확장 (시각 예술 / NFT 디지털 아트 확장 가능).
+  // withRuleId 재사용 64번째 도메인. 🏆 64번째 도메인 마일스톤 (S262 5 → S306 64, 12.8배 확장).
+  "AR-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "AR-001"),
+  "AR-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "AR-002"),
+  "AR-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "AR-003"),
+  "AR-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "AR-004"),
+  "AR-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "AR-005"),
+  "AR-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "AR-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

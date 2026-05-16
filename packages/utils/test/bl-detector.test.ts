@@ -691,6 +691,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "AG-004",
       "AG-005",
       "AG-006",
+      "AR-001",
+      "AR-002",
+      "AR-003",
+      "AR-004",
+      "AR-005",
+      "AR-006",
       "AS-001",
       "AS-002",
       "AS-003",
@@ -1312,6 +1318,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["RA-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["RA-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["RA-006"]).toBeDefined();
+  });
+
+  it("AR-001~AR-006 registered (세션 306 F532 — art 64번째 도메인, 53번째 신규 산업, 🏆 64번째 도메인 마일스톤, 65 Sprint 연속 정점 도전, 거울 변환 17회차, MU+PB+AD+GM+VD+SM+NW+BR+ER+PC+RA+AR 디지털 콘텐츠 12-클러스터 확장 — 시각 예술 / 갤러리 / NFT 디지털 아트 확장 가능)", () => {
+    expect(BL_DETECTOR_REGISTRY["AR-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AR-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AR-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AR-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AR-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AR-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -6246,6 +6261,106 @@ function expirePreemptedBroadcastBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["RA-006"]!(src, "radio.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+// F532 (세션 306) — art domain AR-001~006 via withRuleId (🏆 64번째 도메인 마일스톤, 65 Sprint 연속 정점 도전)
+// 거울 변환 17회차 (carsharing → ... → radio → art).
+// MU+PB+AD+GM+VD+SM+NW+BR+ER+PC+RA+AR 디지털 콘텐츠 12-클러스터 확장 (시각 예술 / NFT 디지털 아트 확장 가능).
+describe("art domain — AR-001~006 via withRuleId (세션 306 F532, 🏆 64번째 도메인 마일스톤)", () => {
+  it("AR-001 PRESENCE — active_artworks >= MAX_CONCURRENT_ACTIVE_ARTWORKS_PER_GALLERY threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "art.ts",
+      `const MAX_CONCURRENT_ACTIVE_ARTWORKS_PER_GALLERY = 60;
+function registerArtwork(db, galleryId, contractId) {
+  const gallery = db.prepare("SELECT active_artworks, total_capacity FROM galleries WHERE id = ?").get(galleryId);
+  const limit = gallery.total_capacity ?? MAX_CONCURRENT_ACTIVE_ARTWORKS_PER_GALLERY;
+  if (gallery.active_artworks >= limit) {
+    throw new ArtError('E422-GALLERY-CAPACITY-EXCEEDED', 'Gallery is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AR-001"]!(src, "art.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("AR-002 PRESENCE — acquisition_used + acquisition >= dailyAcquisitionLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "art.ts",
+      `function applyAcquisitionLimit(db, collectorId, contractId, acquisition) {
+  const contract = db.prepare("SELECT acquisition_used, acquisition_limit FROM collector_contracts WHERE id = ? AND collector_id = ? LIMIT 1").get(contractId, collectorId);
+  const dailyAcquisitionLimit = contract.acquisition_limit;
+  if (contract.acquisition_used + acquisition >= dailyAcquisitionLimit) {
+    throw new ArtError('E422-DAILY-ACQUISITION-LIMIT-EXCEEDED', 'Daily acquisition quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AR-002"]!(src, "art.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("AR-003 PRESENCE — db.transaction() in processArtworkTransaction (atomic artworks+exhibition_schedules+commission_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "art.ts",
+      `function processArtworkTransaction(db, galleryId, scheduleId, artworkNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO artworks (id, gallery_id, schedule_id, artwork_no, status, started_at) VALUES (?, ?, ?, ?, 'exhibited', ?)").run(artworkId, galleryId, scheduleId, artworkNo, startedAt);
+    db.prepare("UPDATE exhibition_schedules SET status = 'exhibited', artwork_id = ?, commission_payment_id = ? WHERE id = ?").run(artworkId, commissionPaymentId, scheduleId);
+    db.prepare("INSERT INTO commission_payments (id, schedule_id, artwork_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(commissionPaymentId, scheduleId, artworkId, amount, startedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AR-003"]!(src, "art.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("AR-004 PRESENCE — status comparison + 'exhibited'/'updated'/'archived'/'withdrawn'/'cancelled' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "art.ts",
+      `function transitionArtworkStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM exhibition_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new ArtError("E409-SCHEDULE", "Invalid transition", 409);
+  db.prepare("UPDATE exhibition_schedules SET status = 'exhibited' WHERE id = ?").run(scheduleId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AR-004"]!(src, "art.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("AR-005 PRESENCE — batch expire update in expireWithdrawnArtworkBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "art.ts",
+      `function transitionArtworkStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM exhibition_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new ArtError("E409-SCHEDULE", "Invalid", 409);
+  db.prepare("UPDATE exhibition_schedules SET status = 'exhibited' WHERE id = ?").run(scheduleId);
+}
+function expireWithdrawnArtworkBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM artworks WHERE status = 'withdrawn' AND started_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE artworks SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AR-005"]!(src, "art.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("AR-006 PRESENCE — db.transaction() in processCommissionRefund (atomic commission_refund_records+commission_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "art.ts",
+      `function processCommissionRefund(db, collectorId, artworkId, commissionCost, refundRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO commission_refund_records (id, collector_id, artwork_id, commission_cost, refund_rate, refund_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(refundRecordId, collectorId, artworkId, commissionCost, refundRate, refundAmount);
+    db.prepare("INSERT INTO commission_refunds (id, refund_record_id, collector_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, refundRecordId, collectorId, refundAmount, refundedAt);
+    db.prepare("UPDATE commission_refund_records SET status = 'refunded' WHERE id = ?").run(refundRecordId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AR-006"]!(src, "art.ts");
     expect(markers).toHaveLength(0);
   });
 });

@@ -1203,6 +1203,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processSponsorRefund",
     ],
   },
+  {
+    container: "art",
+    rulesPath: `${SPEC_CONTAINER_BASE}/art/rules/art-rules.md`,
+    // 세션 306 (F532): Art 합성 도메인 — 64번째 도메인 (예술/갤러리 산업, 53번째 신규 산업). 🏆 64번째 도메인 마일스톤.
+    // AR-001~AR-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 17회차 (carsharing → ... → radio → art) — MU+PB+AD+GM+VD+SM+NW+BR+ER+PC+RA+AR 디지털 콘텐츠 12-클러스터 확장 (시각 예술 / 갤러리 / NFT 디지털 아트 확장 가능).
+    // 🏆 64번째 도메인 마일스톤 (S262 5 → S306 64, 12.8배 확장).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/art.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/art/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "registerArtwork",
+      "applyAcquisitionLimit",
+      "processArtworkTransaction",
+      "transitionArtworkStatus",
+      "expireWithdrawnArtworkBatch",
+      "processCommissionRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

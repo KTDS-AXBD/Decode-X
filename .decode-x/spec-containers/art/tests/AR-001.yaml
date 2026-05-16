@@ -1,0 +1,62 @@
+# Test scenarios — Art domain AR-001~AR-006
+# 세션 306 F532 — Art 예술/갤러리 합성 도메인 (🏆 64번째 도메인 마일스톤)
+
+scenarios:
+  - id: AR-001-PASS
+    rule: AR-001
+    description: "정원 내 artwork 등록 — 성공"
+    input: { active_artworks: 40, total_capacity: 60 }
+    expected: PASS
+
+  - id: AR-001-FAIL
+    rule: AR-001
+    description: "갤러리 artwork 정원 초과 — E422-GALLERY-CAPACITY-EXCEEDED"
+    input: { active_artworks: 60, total_capacity: 60 }
+    expected: FAIL
+    error: E422-GALLERY-CAPACITY-EXCEEDED
+
+  - id: AR-002-PASS
+    rule: AR-002
+    description: "일일 acquisition 한도 내 사용 — 성공"
+    input: { acquisition_used: 3, acquisition_limit: 10, acquisition: 2 }
+    expected: PASS
+
+  - id: AR-002-FAIL
+    rule: AR-002
+    description: "일일 acquisition 한도 초과 — E422-DAILY-ACQUISITION-LIMIT-EXCEEDED"
+    input: { acquisition_used: 9, acquisition_limit: 10, acquisition: 1 }
+    expected: FAIL
+    error: E422-DAILY-ACQUISITION-LIMIT-EXCEEDED
+
+  - id: AR-003-PASS
+    rule: AR-003
+    description: "registered 상태 거래 atomic — 성공"
+    input: { schedule_status: registered }
+    expected: PASS
+
+  - id: AR-004-PASS
+    rule: AR-004
+    description: "registered → exhibited 전환 허용"
+    input: { previous: registered, next: exhibited }
+    expected: PASS
+
+  - id: AR-004-FAIL
+    rule: AR-004
+    description: "cancelled → registered 역행 차단 — E409-SCHEDULE"
+    input: { previous: cancelled, next: registered }
+    expected: FAIL
+    error: E409-SCHEDULE
+
+  - id: AR-005-PASS
+    rule: AR-005
+    description: "withdrawn artwork batch expire — 대상 1건"
+    input: { artworks: [{ status: withdrawn, started_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: AR-006-PASS
+    rule: AR-006
+    description: "withdrawn artwork commission 환불 atomic — 성공"
+    input: { artwork_status: withdrawn, commission_cost: 5000, refund_rate: 0.5 }
+    expected: PASS
+    expectedRefundAmount: 2500

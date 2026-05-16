@@ -1,0 +1,52 @@
+---
+# Provenance — ART-001
+# 64번째 도메인 — Art 합성 도메인 PoC (53번째 신규 산업, 🏆 64번째 도메인 마일스톤)
+
+skillId: ART-001
+extractedAt: "2026-05-16T00:00:00+09:00"
+extractedBy: "Decode-X 세션 306 F532 — withRuleId 재사용 64번째 도메인 (Art 예술/갤러리 산업, 53번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/art/rules/art-rules.md"
+    section: "Art 합성 비즈니스 룰 — AR-001~AR-006"
+    businessRules: [AR-001, AR-002, AR-003, AR-004, AR-005, AR-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 예술(Art)/갤러리 산업 일반화 PoC. 갤러리artwork한도/acquisitiondaily한도/거래batchatomic/artwork상태전환/만료withdrawnartwork일괄/commission환불atomic 추상화. 64번째 도메인 + 53번째 신규 산업. 🏆 64번째 도메인 마일스톤. 65 Sprint 연속 정점 도전. 거울 변환 17회차 (carsharing → ... → radio → art). MU+PB+AD+GM+VD+SM+NW+BR+ER+PC+RA+AR 디지털 콘텐츠 12-클러스터 확장 형성 (시각 예술 — NFT/디지털 아트 확장 가능)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/art.ts"
+    functions: [registerArtwork, applyAcquisitionLimit, processArtworkTransaction, transitionArtworkStatus, expireWithdrawnArtworkBatch, processCommissionRefund]
+
+detection:
+  - ruleId: AR-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "gallery.active_artworks >= limit (UPPERCASE fallback MAX_CONCURRENT_ACTIVE_ARTWORKS_PER_GALLERY, Path A)"
+  - ruleId: AR-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "contract.acquisition_used + acquisition >= dailyAcquisitionLimit (Path B, limit keyword)"
+  - ruleId: AR-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "db.transaction() — artworks INSERT + exhibition_schedules UPDATE + commission_payments INSERT"
+  - ruleId: AR-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "registered → exhibited → updated → archived / withdrawn / cancelled"
+  - ruleId: AR-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "batch: expire 갱신 (RA-005/PC-005/ER-005/BR-005/NW-005/SM-005/VD-005 53번째 재사용)"
+  - ruleId: AR-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "db.transaction() — commission_refund_records INSERT + commission_refunds INSERT + commission_refund_records UPDATE"

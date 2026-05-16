@@ -68,7 +68,8 @@ import type { BLRule } from "@ai-foundry/types";
 // F530 (세션 305 후속5): PC prefix 추가 (podcast 합성 도메인, 62번째 — 팟캐스트 산업, 51번째 신규). MU+PB+AD+GM+VD+SM+NW+BR+ER+PC 디지털 콘텐츠 10-클러스터 확장 (오디오 구독+광고 하이브리드). 63 Sprint 연속 정점 도전. 거울 변환 15회차 (carsharing → ... → esports → podcast). 🏆 62번째 도메인 마일스톤 (S262 5 → S305+++++ 62, 12.4배 확장).
 // F531 (세션 305 후속6): RA prefix 추가 (radio 합성 도메인, 63번째 — 라디오 산업, 52번째 신규). MU+PB+AD+GM+VD+SM+NW+BR+ER+PC+RA 디지털 콘텐츠 11-클러스터 확장. 64 Sprint 연속 정점 도전. 거울 변환 16회차 (carsharing → ... → podcast → radio). 🏆 63번째 도메인 마일스톤 (S262 5 → S305++++++ 63, 12.6배 확장) + 🏆🏆 1세션 9 Sprint 신기록.
 // F532 (세션 306): AR prefix 추가 (art 합성 도메인, 64번째 — 예술/갤러리 산업, 53번째 신규). MU+PB+AD+GM+VD+SM+NW+BR+ER+PC+RA+AR 디지털 콘텐츠 12-클러스터 확장 (시각 예술 / NFT 디지털 아트 확장 가능). 65 Sprint 연속 정점 도전. 거울 변환 17회차 (carsharing → ... → radio → art). 🏆 64번째 도메인 마일스톤 (S262 5 → S306 64, 12.8배 확장).
-const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|BK|BR|BT|LP|AD|AR|AS|CC|CH|CS|DV|SB|SH|SP|IN|HC|ED|ER|RA|RE|LG|HO|TM|TR|MF|RT|EN|GM|GV|TC|MD|PC|PH|AG|CN|MR|TS|AV|MN|DF|FS|FT|GY|MU|NW|PB|PK|TX|VD|SM|WL|PT|PR|VT|P|V)-[A-Z]?\d{1,3}$/;
+// F533 (세션 306 후속): GA prefix 추가 (gambling 합성 도메인, 65번째 — 카지노/베팅 산업, 54번째 신규). 🎮 GM+GA 게임엔터 2-클러스터 신규 형성 (게임 in-app purchase + 카지노/베팅 payout 통합 추상화). 66 Sprint 연속 정점 도전. 거울 변환 18회차 (carsharing → ... → art → gambling). 🏆 65번째 도메인 마일스톤 (S262 5 → S306 65, 13.0배 확장).
+const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|BK|BR|BT|LP|AD|AR|AS|CC|CH|CS|DV|SB|SH|SP|IN|HC|ED|ER|GA|RA|RE|LG|HO|TM|TR|MF|RT|EN|GM|GV|TC|MD|PC|PH|AG|CN|MR|TS|AV|MN|DF|FS|FT|GY|MU|NW|PB|PK|TX|VD|SM|WL|PT|PR|VT|P|V)-[A-Z]?\d{1,3}$/;
 const HEADER_PATTERN =
   /\|\s*ID\s*\|\s*condition[^|]*\|\s*criteria[^|]*\|\s*outcome[^|]*\|\s*exception[^|]*\|/i;
 const SEPARATOR_PATTERN = /^\s*\|[\s:|-]+\|\s*$/;

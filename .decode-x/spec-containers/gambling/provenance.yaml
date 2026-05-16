@@ -1,0 +1,52 @@
+---
+# Provenance — GAM-001
+# 65번째 도메인 — Gambling 합성 도메인 PoC (54번째 신규 산업, 🏆 65번째 도메인 마일스톤)
+
+skillId: GAM-001
+extractedAt: "2026-05-16T00:00:00+09:00"
+extractedBy: "Decode-X 세션 306 후속 F533 — withRuleId 재사용 65번째 도메인 (Gambling 카지노/베팅 산업, 54번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/gambling/rules/gambling-rules.md"
+    section: "Gambling 합성 비즈니스 룰 — GA-001~GA-006"
+    businessRules: [GA-001, GA-002, GA-003, GA-004, GA-005, GA-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 카지노/베팅(Gambling) 산업 일반화 PoC. 카지노bet한도/playerdailybet한도/정산batchatomic/bet상태전환/만료voidedbet일괄/wager환불atomic 추상화. 65번째 도메인 + 54번째 신규 산업. 🏆 65번째 도메인 마일스톤. 66 Sprint 연속 정점 도전. 거울 변환 18회차 (carsharing → ... → art → gambling). 🎮 GM+GA 게임엔터 2-클러스터 신규 형성 (게임 in-app purchase + 카지노/베팅 payout 통합 추상화)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/gambling.ts"
+    functions: [placeBet, applyBetLimit, processBetSettlement, transitionBetStatus, expireVoidedBetBatch, processWagerRefund]
+
+detection:
+  - ruleId: GA-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "casino.active_bets >= limit (UPPERCASE fallback MAX_CONCURRENT_ACTIVE_BETS_PER_CASINO, Path A)"
+  - ruleId: GA-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "contract.bet_used + bet >= dailyBetLimit (Path B, limit keyword)"
+  - ruleId: GA-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "db.transaction() — bets INSERT + game_schedules UPDATE + wager_payments INSERT"
+  - ruleId: GA-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "placed → active → updated → settled / voided / cancelled"
+  - ruleId: GA-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "batch: expire 갱신 (AR-005/RA-005/PC-005/ER-005/BR-005/NW-005/SM-005/VD-005 54번째 재사용)"
+  - ruleId: GA-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "db.transaction() — wager_refund_records INSERT + wager_refunds INSERT + wager_refund_records UPDATE"

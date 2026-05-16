@@ -842,6 +842,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "FT-004",
       "FT-005",
       "FT-006",
+      "GA-001",
+      "GA-002",
+      "GA-003",
+      "GA-004",
+      "GA-005",
+      "GA-006",
       "GM-001",
       "GM-002",
       "GM-003",
@@ -1327,6 +1333,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["AR-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["AR-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["AR-006"]).toBeDefined();
+  });
+
+  it("GA-001~GA-006 registered (세션 306 후속 F533 — gambling 65번째 도메인, 54번째 신규 산업, 🏆 65번째 도메인 마일스톤, 66 Sprint 연속 정점 도전, 거울 변환 18회차, 🎮 GM+GA 게임엔터 2-클러스터 신규 — 게임 in-app purchase + 카지노/베팅 payout 통합 추상화)", () => {
+    expect(BL_DETECTOR_REGISTRY["GA-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["GA-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["GA-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["GA-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["GA-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["GA-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -6361,6 +6376,106 @@ function expireWithdrawnArtworkBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["AR-006"]!(src, "art.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+// F533 (세션 306 후속) — gambling domain GA-001~006 via withRuleId (🏆 65번째 도메인 마일스톤, 66 Sprint 연속 정점 도전)
+// 거울 변환 18회차 (carsharing → ... → art → gambling).
+// 🎮 GM+GA 게임엔터 2-클러스터 신규 형성 (게임 in-app purchase + 카지노/베팅 payout 통합 추상화).
+describe("gambling domain — GA-001~006 via withRuleId (세션 306 후속 F533, 🏆 65번째 도메인 마일스톤)", () => {
+  it("GA-001 PRESENCE — active_bets >= MAX_CONCURRENT_ACTIVE_BETS_PER_CASINO threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "gambling.ts",
+      `const MAX_CONCURRENT_ACTIVE_BETS_PER_CASINO = 200;
+function placeBet(db, casinoId, contractId) {
+  const casino = db.prepare("SELECT active_bets, total_capacity FROM casinos WHERE id = ?").get(casinoId);
+  const limit = casino.total_capacity ?? MAX_CONCURRENT_ACTIVE_BETS_PER_CASINO;
+  if (casino.active_bets >= limit) {
+    throw new GamblingError('E422-CASINO-CAPACITY-EXCEEDED', 'Casino is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GA-001"]!(src, "gambling.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("GA-002 PRESENCE — bet_used + bet >= dailyBetLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "gambling.ts",
+      `function applyBetLimit(db, playerId, contractId, bet) {
+  const contract = db.prepare("SELECT bet_used, bet_limit FROM player_contracts WHERE id = ? AND player_id = ? LIMIT 1").get(contractId, playerId);
+  const dailyBetLimit = contract.bet_limit;
+  if (contract.bet_used + bet >= dailyBetLimit) {
+    throw new GamblingError('E422-DAILY-BET-LIMIT-EXCEEDED', 'Daily bet quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GA-002"]!(src, "gambling.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("GA-003 PRESENCE — db.transaction() in processBetSettlement (atomic bets+game_schedules+wager_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "gambling.ts",
+      `function processBetSettlement(db, casinoId, scheduleId, betNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO bets (id, casino_id, schedule_id, bet_no, status, started_at) VALUES (?, ?, ?, ?, 'active', ?)").run(betId, casinoId, scheduleId, betNo, startedAt);
+    db.prepare("UPDATE game_schedules SET status = 'active', bet_id = ?, wager_payment_id = ? WHERE id = ?").run(betId, wagerPaymentId, scheduleId);
+    db.prepare("INSERT INTO wager_payments (id, schedule_id, bet_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(wagerPaymentId, scheduleId, betId, amount, startedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GA-003"]!(src, "gambling.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("GA-004 PRESENCE — status comparison + 'active'/'updated'/'settled'/'voided'/'cancelled' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "gambling.ts",
+      `function transitionBetStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM game_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new GamblingError("E409-SCHEDULE", "Invalid transition", 409);
+  db.prepare("UPDATE game_schedules SET status = 'active' WHERE id = ?").run(scheduleId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GA-004"]!(src, "gambling.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("GA-005 PRESENCE — batch expire update in expireVoidedBetBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "gambling.ts",
+      `function transitionBetStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM game_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new GamblingError("E409-SCHEDULE", "Invalid", 409);
+  db.prepare("UPDATE game_schedules SET status = 'active' WHERE id = ?").run(scheduleId);
+}
+function expireVoidedBetBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM bets WHERE status = 'voided' AND started_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE bets SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GA-005"]!(src, "gambling.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("GA-006 PRESENCE — db.transaction() in processWagerRefund (atomic wager_refund_records+wager_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "gambling.ts",
+      `function processWagerRefund(db, playerId, betId, wagerAmount, refundRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO wager_refund_records (id, player_id, bet_id, wager_amount, refund_rate, refund_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(refundRecordId, playerId, betId, wagerAmount, refundRate, refundAmount);
+    db.prepare("INSERT INTO wager_refunds (id, refund_record_id, player_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, refundRecordId, playerId, refundAmount, refundedAt);
+    db.prepare("UPDATE wager_refund_records SET status = 'refunded' WHERE id = ?").run(refundRecordId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GA-006"]!(src, "gambling.ts");
     expect(markers).toHaveLength(0);
   });
 });

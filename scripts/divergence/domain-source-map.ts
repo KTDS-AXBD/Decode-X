@@ -1222,6 +1222,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processCommissionRefund",
     ],
   },
+  {
+    container: "gambling",
+    rulesPath: `${SPEC_CONTAINER_BASE}/gambling/rules/gambling-rules.md`,
+    // 세션 306 후속 (F533): Gambling 합성 도메인 — 65번째 도메인 (카지노/베팅 산업, 54번째 신규 산업). 🏆 65번째 도메인 마일스톤.
+    // GA-001~GA-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 18회차 (carsharing → ... → art → gambling) — 🎮 GM+GA 게임엔터 2-클러스터 신규 형성 (게임 in-app purchase + 카지노/베팅 payout 통합 추상화).
+    // 🏆 65번째 도메인 마일스톤 (S262 5 → S306 65, 13.0배 확장).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/gambling.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/gambling/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "placeBet",
+      "applyBetLimit",
+      "processBetSettlement",
+      "transitionBetStatus",
+      "expireVoidedBetBatch",
+      "processWagerRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

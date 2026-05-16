@@ -1368,6 +1368,15 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "AR-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "AR-004"),
   "AR-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "AR-005"),
   "AR-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "AR-006"),
+  // 세션 306 후속 (F533): Gambling 합성 도메인 65번째 (54번째 신규 산업, 카지노/베팅).
+  // 🎮 GM+GA 게임엔터 2-클러스터 신규 형성 (게임 in-app purchase + 카지노/베팅 payout 통합 추상화).
+  // withRuleId 재사용 65번째 도메인. 🏆 65번째 도메인 마일스톤 (S262 5 → S306 65, 13.0배 확장).
+  "GA-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "GA-001"),
+  "GA-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "GA-002"),
+  "GA-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "GA-003"),
+  "GA-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "GA-004"),
+  "GA-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "GA-005"),
+  "GA-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "GA-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

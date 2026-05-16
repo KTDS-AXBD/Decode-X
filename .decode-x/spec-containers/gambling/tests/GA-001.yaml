@@ -1,0 +1,62 @@
+# Test scenarios — Gambling domain GA-001~GA-006
+# 세션 306 후속 F533 — Gambling 카지노/베팅 합성 도메인 (🏆 65번째 도메인 마일스톤)
+
+scenarios:
+  - id: GA-001-PASS
+    rule: GA-001
+    description: "정원 내 bet 등록 — 성공"
+    input: { active_bets: 100, total_capacity: 200 }
+    expected: PASS
+
+  - id: GA-001-FAIL
+    rule: GA-001
+    description: "카지노 bet 정원 초과 — E422-CASINO-CAPACITY-EXCEEDED"
+    input: { active_bets: 200, total_capacity: 200 }
+    expected: FAIL
+    error: E422-CASINO-CAPACITY-EXCEEDED
+
+  - id: GA-002-PASS
+    rule: GA-002
+    description: "일일 bet 한도 내 사용 — 성공"
+    input: { bet_used: 300000, bet_limit: 1000000, bet: 200000 }
+    expected: PASS
+
+  - id: GA-002-FAIL
+    rule: GA-002
+    description: "일일 bet 한도 초과 — E422-DAILY-BET-LIMIT-EXCEEDED"
+    input: { bet_used: 950000, bet_limit: 1000000, bet: 100000 }
+    expected: FAIL
+    error: E422-DAILY-BET-LIMIT-EXCEEDED
+
+  - id: GA-003-PASS
+    rule: GA-003
+    description: "placed 상태 정산 atomic — 성공"
+    input: { schedule_status: placed }
+    expected: PASS
+
+  - id: GA-004-PASS
+    rule: GA-004
+    description: "placed → active 전환 허용"
+    input: { previous: placed, next: active }
+    expected: PASS
+
+  - id: GA-004-FAIL
+    rule: GA-004
+    description: "cancelled → placed 역행 차단 — E409-SCHEDULE"
+    input: { previous: cancelled, next: placed }
+    expected: FAIL
+    error: E409-SCHEDULE
+
+  - id: GA-005-PASS
+    rule: GA-005
+    description: "voided bet batch expire — 대상 1건"
+    input: { bets: [{ status: voided, started_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: GA-006-PASS
+    rule: GA-006
+    description: "voided bet wager 환불 atomic — 성공"
+    input: { bet_status: voided, wager_amount: 10000, refund_rate: 0.5 }
+    expected: PASS
+    expectedRefundAmount: 5000

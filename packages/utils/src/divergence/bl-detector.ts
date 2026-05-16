@@ -1395,6 +1395,15 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "TH-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "TH-004"),
   "TH-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "TH-005"),
   "TH-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "TH-006"),
+  // 세션 306 후속4 (F536): Skiing 합성 도메인 68번째 (57번째 신규 산업, 스키 리조트).
+  // 🏔️ SP+SK 스포츠 레저 2-클러스터 신규 형성 (피트니스/스포츠 + 윈터 레저 통합 추상화).
+  // withRuleId 재사용 68번째 도메인. 🏆 68번째 도메인 마일스톤 (S262 5 → S306 68, 13.6배 확장).
+  "SK-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "SK-001"),
+  "SK-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "SK-002"),
+  "SK-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "SK-003"),
+  "SK-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "SK-004"),
+  "SK-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "SK-005"),
+  "SK-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "SK-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

@@ -1011,6 +1011,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "SH-004",
       "SH-005",
       "SH-006",
+      "SK-001",
+      "SK-002",
+      "SK-003",
+      "SK-004",
+      "SK-005",
+      "SK-006",
       "SM-001",
       "SM-002",
       "SM-003",
@@ -1372,6 +1378,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["TH-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["TH-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["TH-006"]).toBeDefined();
+  });
+
+  it("SK-001~SK-006 registered (세션 306 후속4 F536 — skiing 68번째 도메인, 57번째 신규 산업, 🏆 68번째 도메인 마일스톤, 69 Sprint 연속 정점 도전, 거울 변환 21회차, 🏔️ SP+SK 스포츠 레저 2-클러스터 신규 — 피트니스/스포츠 + 윈터 레저 통합 추상화)", () => {
+    expect(BL_DETECTOR_REGISTRY["SK-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["SK-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["SK-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["SK-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["SK-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["SK-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -6706,6 +6721,106 @@ function expireWithdrawnSeatBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["TH-006"]!(src, "theater.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+// F536 (세션 306 후속4) — skiing domain SK-001~006 via withRuleId (🏆 68번째 도메인 마일스톤, 69 Sprint 연속 정점 도전)
+// 거울 변환 21회차 (carsharing → ... → theater → skiing).
+// 🏔️ SP+SK 스포츠 레저 2-클러스터 신규 형성 (피트니스/스포츠 + 윈터 레저 통합 추상화).
+describe("skiing domain — SK-001~006 via withRuleId (세션 306 후속4 F536, 🏆 68번째 도메인 마일스톤)", () => {
+  it("SK-001 PRESENCE — active_passes >= MAX_CONCURRENT_ACTIVE_PASSES_PER_RESORT threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "skiing.ts",
+      `const MAX_CONCURRENT_ACTIVE_PASSES_PER_RESORT = 8000;
+function reservePass(db, resortId, contractId) {
+  const resort = db.prepare("SELECT active_passes, total_capacity FROM resorts WHERE id = ?").get(resortId);
+  const limit = resort.total_capacity ?? MAX_CONCURRENT_ACTIVE_PASSES_PER_RESORT;
+  if (resort.active_passes >= limit) {
+    throw new SkiingError('E422-RESORT-CAPACITY-EXCEEDED', 'Resort is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SK-001"]!(src, "skiing.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("SK-002 PRESENCE — ride_used + ride >= dailyRideLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "skiing.ts",
+      `function applyRideLimit(db, skierId, contractId, ride) {
+  const contract = db.prepare("SELECT ride_used, ride_limit FROM skier_contracts WHERE id = ? AND skier_id = ? LIMIT 1").get(contractId, skierId);
+  const dailyRideLimit = contract.ride_limit;
+  if (contract.ride_used + ride >= dailyRideLimit) {
+    throw new SkiingError('E422-DAILY-RIDE-LIMIT-EXCEEDED', 'Daily ride quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SK-002"]!(src, "skiing.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("SK-003 PRESENCE — db.transaction() in processLiftBoarding (atomic passes+lift_schedules+pass_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "skiing.ts",
+      `function processLiftBoarding(db, resortId, scheduleId, passNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO passes (id, resort_id, schedule_id, pass_no, status, started_at) VALUES (?, ?, ?, ?, 'boarded', ?)").run(passId, resortId, scheduleId, passNo, startedAt);
+    db.prepare("UPDATE lift_schedules SET status = 'boarded', pass_id = ?, pass_payment_id = ? WHERE id = ?").run(passId, passPaymentId, scheduleId);
+    db.prepare("INSERT INTO pass_payments (id, schedule_id, pass_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(passPaymentId, scheduleId, passId, amount, startedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SK-003"]!(src, "skiing.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("SK-004 PRESENCE — status comparison + 'boarded'/'updated'/'completed'/'suspended'/'cancelled' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "skiing.ts",
+      `function transitionPassStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM lift_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new SkiingError("E409-SCHEDULE", "Invalid transition", 409);
+  db.prepare("UPDATE lift_schedules SET status = 'boarded' WHERE id = ?").run(scheduleId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SK-004"]!(src, "skiing.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("SK-005 PRESENCE — batch expire update in expireSuspendedPassBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "skiing.ts",
+      `function transitionPassStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM lift_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new SkiingError("E409-SCHEDULE", "Invalid", 409);
+  db.prepare("UPDATE lift_schedules SET status = 'boarded' WHERE id = ?").run(scheduleId);
+}
+function expireSuspendedPassBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM passes WHERE status = 'suspended' AND started_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE passes SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SK-005"]!(src, "skiing.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("SK-006 PRESENCE — db.transaction() in processSlopeRefund (atomic pass_refund_records+pass_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "skiing.ts",
+      `function processSlopeRefund(db, skierId, passId, passCost, refundRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO pass_refund_records (id, skier_id, pass_id, pass_cost, refund_rate, refund_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(refundRecordId, skierId, passId, passCost, refundRate, refundAmount);
+    db.prepare("INSERT INTO pass_refunds (id, refund_record_id, skier_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, refundRecordId, skierId, refundAmount, refundedAt);
+    db.prepare("UPDATE pass_refund_records SET status = 'refunded' WHERE id = ?").run(refundRecordId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SK-006"]!(src, "skiing.ts");
     expect(markers).toHaveLength(0);
   });
 });

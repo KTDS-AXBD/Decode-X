@@ -1,0 +1,52 @@
+---
+# Provenance — SKI-001
+# 68번째 도메인 — Skiing 합성 도메인 PoC (57번째 신규 산업, 🏆 68번째 도메인 마일스톤)
+
+skillId: SKI-001
+extractedAt: "2026-05-16T00:00:00+09:00"
+extractedBy: "Decode-X 세션 306 후속4 F536 — withRuleId 재사용 68번째 도메인 (Skiing 스키 리조트 산업, 57번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/skiing/rules/skiing-rules.md"
+    section: "Skiing 합성 비즈니스 룰 — SK-001~SK-006"
+    businessRules: [SK-001, SK-002, SK-003, SK-004, SK-005, SK-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 스키 리조트(Skiing) 산업 일반화 PoC. 리조트pass한도/skierdailyride한도/탑승batchatomic/pass상태전환/만료suspendedpass일괄/slope환불atomic 추상화. 68번째 도메인 + 57번째 신규 산업. 🏆 68번째 도메인 마일스톤. 69 Sprint 연속 정점 도전. 거울 변환 21회차 (carsharing → ... → theater → skiing). 🏔️ SP+SK 스포츠 레저 2-클러스터 신규 형성 (피트니스/스포츠 + 윈터 레저 통합 추상화)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/skiing.ts"
+    functions: [reservePass, applyRideLimit, processLiftBoarding, transitionPassStatus, expireSuspendedPassBatch, processSlopeRefund]
+
+detection:
+  - ruleId: SK-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "resort.active_passes >= limit (UPPERCASE fallback MAX_CONCURRENT_ACTIVE_PASSES_PER_RESORT, Path A)"
+  - ruleId: SK-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "contract.ride_used + ride >= dailyRideLimit (Path B, limit keyword)"
+  - ruleId: SK-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "db.transaction() — passes INSERT + lift_schedules UPDATE + pass_payments INSERT"
+  - ruleId: SK-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "reserved → boarded → updated → completed / suspended / cancelled"
+  - ruleId: SK-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "batch: expire 갱신 (TH-005/AM-005/GA-005/AR-005/RA-005/PC-005/ER-005/BR-005/NW-005/SM-005/VD-005 57번째 재사용)"
+  - ruleId: SK-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "db.transaction() — pass_refund_records INSERT + pass_refunds INSERT + pass_refund_records UPDATE"

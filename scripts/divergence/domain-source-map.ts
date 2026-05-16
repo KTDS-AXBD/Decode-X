@@ -1279,6 +1279,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processShowRefund",
     ],
   },
+  {
+    container: "skiing",
+    rulesPath: `${SPEC_CONTAINER_BASE}/skiing/rules/skiing-rules.md`,
+    // 세션 306 후속4 (F536): Skiing 합성 도메인 — 68번째 도메인 (스키 리조트 산업, 57번째 신규 산업). 🏆 68번째 도메인 마일스톤.
+    // SK-001~SK-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 21회차 (carsharing → ... → theater → skiing) — 🏔️ SP+SK 스포츠 레저 2-클러스터 신규 형성 (피트니스/스포츠 + 윈터 레저 통합 추상화).
+    // 🏆 68번째 도메인 마일스톤 (S262 5 → S306 68, 13.6배 확장).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/skiing.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/skiing/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "reservePass",
+      "applyRideLimit",
+      "processLiftBoarding",
+      "transitionPassStatus",
+      "expireSuspendedPassBatch",
+      "processSlopeRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

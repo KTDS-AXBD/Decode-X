@@ -1,0 +1,62 @@
+# Test scenarios — Skiing domain SK-001~SK-006
+# 세션 306 후속4 F536 — Skiing 스키 리조트 합성 도메인 (🏆 68번째 도메인 마일스톤)
+
+scenarios:
+  - id: SK-001-PASS
+    rule: SK-001
+    description: "정원 내 pass 예약 — 성공"
+    input: { active_passes: 5000, total_capacity: 8000 }
+    expected: PASS
+
+  - id: SK-001-FAIL
+    rule: SK-001
+    description: "리조트 pass 정원 초과 — E422-RESORT-CAPACITY-EXCEEDED"
+    input: { active_passes: 8000, total_capacity: 8000 }
+    expected: FAIL
+    error: E422-RESORT-CAPACITY-EXCEEDED
+
+  - id: SK-002-PASS
+    rule: SK-002
+    description: "일일 ride 한도 내 사용 — 성공"
+    input: { ride_used: 15, ride_limit: 50, ride: 10 }
+    expected: PASS
+
+  - id: SK-002-FAIL
+    rule: SK-002
+    description: "일일 ride 한도 초과 — E422-DAILY-RIDE-LIMIT-EXCEEDED"
+    input: { ride_used: 48, ride_limit: 50, ride: 2 }
+    expected: FAIL
+    error: E422-DAILY-RIDE-LIMIT-EXCEEDED
+
+  - id: SK-003-PASS
+    rule: SK-003
+    description: "reserved 상태 리프트 탑승 atomic — 성공"
+    input: { schedule_status: reserved }
+    expected: PASS
+
+  - id: SK-004-PASS
+    rule: SK-004
+    description: "reserved → boarded 전환 허용"
+    input: { previous: reserved, next: boarded }
+    expected: PASS
+
+  - id: SK-004-FAIL
+    rule: SK-004
+    description: "cancelled → reserved 역행 차단 — E409-SCHEDULE"
+    input: { previous: cancelled, next: reserved }
+    expected: FAIL
+    error: E409-SCHEDULE
+
+  - id: SK-005-PASS
+    rule: SK-005
+    description: "suspended pass batch expire — 대상 1건"
+    input: { passes: [{ status: suspended, started_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: SK-006-PASS
+    rule: SK-006
+    description: "suspended pass slope 환불 atomic — 성공"
+    input: { pass_status: suspended, pass_cost: 80000, refund_rate: 0.5 }
+    expected: PASS
+    expectedRefundAmount: 40000

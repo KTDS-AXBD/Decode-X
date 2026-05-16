@@ -1377,6 +1377,15 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "GA-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "GA-004"),
   "GA-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "GA-005"),
   "GA-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "GA-006"),
+  // 세션 306 후속2 (F534): Amusement 합성 도메인 66번째 (55번째 신규 산업, 놀이공원/테마파크).
+  // 🎢 오프라인 엔터테인먼트 신규 클러스터 출범 (디지털 12 + 게임엔터 2 + 오프라인 엔터 1 = 3 메타 카테고리).
+  // withRuleId 재사용 66번째 도메인. 🏆 66번째 도메인 마일스톤 (S262 5 → S306 66, 13.2배 확장).
+  "AM-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "AM-001"),
+  "AM-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "AM-002"),
+  "AM-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "AM-003"),
+  "AM-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "AM-004"),
+  "AM-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "AM-005"),
+  "AM-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "AM-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

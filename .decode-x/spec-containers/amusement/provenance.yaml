@@ -1,0 +1,52 @@
+---
+# Provenance — AMU-001
+# 66번째 도메인 — Amusement 합성 도메인 PoC (55번째 신규 산업, 🏆 66번째 도메인 마일스톤)
+
+skillId: AMU-001
+extractedAt: "2026-05-16T00:00:00+09:00"
+extractedBy: "Decode-X 세션 306 후속2 F534 — withRuleId 재사용 66번째 도메인 (Amusement 놀이공원/테마파크 산업, 55번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/amusement/rules/amusement-rules.md"
+    section: "Amusement 합성 비즈니스 룰 — AM-001~AM-006"
+    businessRules: [AM-001, AM-002, AM-003, AM-004, AM-005, AM-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 놀이공원/테마파크(Amusement) 산업 일반화 PoC. 파크ticket한도/visitordailyvisit한도/입장batchatomic/ticket상태전환/만료revokedticket일괄/ticket환불atomic 추상화. 66번째 도메인 + 55번째 신규 산업. 🏆 66번째 도메인 마일스톤. 67 Sprint 연속 정점 도전. 거울 변환 19회차 (carsharing → ... → gambling → amusement). 🎢 오프라인 엔터테인먼트 신규 클러스터 출범 (디지털 12 + 게임엔터 2 + 오프라인 엔터 1 = 3 메타 카테고리)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/amusement.ts"
+    functions: [reserveTicket, applyVisitLimit, processRideAdmission, transitionTicketStatus, expireRevokedTicketBatch, processTicketRefund]
+
+detection:
+  - ruleId: AM-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "park.active_tickets >= limit (UPPERCASE fallback MAX_CONCURRENT_ACTIVE_TICKETS_PER_PARK, Path A)"
+  - ruleId: AM-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "contract.visit_used + visit >= dailyVisitLimit (Path B, limit keyword)"
+  - ruleId: AM-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "db.transaction() — tickets INSERT + ride_schedules UPDATE + ticket_payments INSERT"
+  - ruleId: AM-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "reserved → admitted → updated → completed / revoked / cancelled"
+  - ruleId: AM-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "batch: expire 갱신 (GA-005/AR-005/RA-005/PC-005/ER-005/BR-005/NW-005/SM-005/VD-005 55번째 재사용)"
+  - ruleId: AM-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "db.transaction() — ticket_refund_records INSERT + ticket_refunds INSERT + ticket_refund_records UPDATE"

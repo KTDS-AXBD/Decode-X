@@ -691,6 +691,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "AG-004",
       "AG-005",
       "AG-006",
+      "AM-001",
+      "AM-002",
+      "AM-003",
+      "AM-004",
+      "AM-005",
+      "AM-006",
       "AR-001",
       "AR-002",
       "AR-003",
@@ -1342,6 +1348,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["GA-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["GA-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["GA-006"]).toBeDefined();
+  });
+
+  it("AM-001~AM-006 registered (세션 306 후속2 F534 — amusement 66번째 도메인, 55번째 신규 산업, 🏆 66번째 도메인 마일스톤, 67 Sprint 연속 정점 도전, 거울 변환 19회차, 🎢 오프라인 엔터테인먼트 신규 클러스터 출범 — 디지털 12 + 게임엔터 2 + 오프라인 엔터 1 = 3 메타 카테고리)", () => {
+    expect(BL_DETECTOR_REGISTRY["AM-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AM-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AM-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AM-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AM-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AM-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -6476,6 +6491,106 @@ function expireVoidedBetBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["GA-006"]!(src, "gambling.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+// F534 (세션 306 후속2) — amusement domain AM-001~006 via withRuleId (🏆 66번째 도메인 마일스톤, 67 Sprint 연속 정점 도전)
+// 거울 변환 19회차 (carsharing → ... → gambling → amusement).
+// 🎢 오프라인 엔터테인먼트 신규 클러스터 출범 (디지털 12 + 게임엔터 2 + 오프라인 엔터 1 = 3 메타 카테고리).
+describe("amusement domain — AM-001~006 via withRuleId (세션 306 후속2 F534, 🏆 66번째 도메인 마일스톤)", () => {
+  it("AM-001 PRESENCE — active_tickets >= MAX_CONCURRENT_ACTIVE_TICKETS_PER_PARK threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "amusement.ts",
+      `const MAX_CONCURRENT_ACTIVE_TICKETS_PER_PARK = 5000;
+function reserveTicket(db, parkId, contractId) {
+  const park = db.prepare("SELECT active_tickets, total_capacity FROM parks WHERE id = ?").get(parkId);
+  const limit = park.total_capacity ?? MAX_CONCURRENT_ACTIVE_TICKETS_PER_PARK;
+  if (park.active_tickets >= limit) {
+    throw new AmusementError('E422-PARK-CAPACITY-EXCEEDED', 'Park is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AM-001"]!(src, "amusement.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("AM-002 PRESENCE — visit_used + visit >= dailyVisitLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "amusement.ts",
+      `function applyVisitLimit(db, visitorId, contractId, visit) {
+  const contract = db.prepare("SELECT visit_used, visit_limit FROM visitor_contracts WHERE id = ? AND visitor_id = ? LIMIT 1").get(contractId, visitorId);
+  const dailyVisitLimit = contract.visit_limit;
+  if (contract.visit_used + visit >= dailyVisitLimit) {
+    throw new AmusementError('E422-DAILY-VISIT-LIMIT-EXCEEDED', 'Daily visit quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AM-002"]!(src, "amusement.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("AM-003 PRESENCE — db.transaction() in processRideAdmission (atomic tickets+ride_schedules+ticket_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "amusement.ts",
+      `function processRideAdmission(db, parkId, scheduleId, ticketNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO tickets (id, park_id, schedule_id, ticket_no, status, started_at) VALUES (?, ?, ?, ?, 'admitted', ?)").run(ticketId, parkId, scheduleId, ticketNo, startedAt);
+    db.prepare("UPDATE ride_schedules SET status = 'admitted', ticket_id = ?, ticket_payment_id = ? WHERE id = ?").run(ticketId, ticketPaymentId, scheduleId);
+    db.prepare("INSERT INTO ticket_payments (id, schedule_id, ticket_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(ticketPaymentId, scheduleId, ticketId, amount, startedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AM-003"]!(src, "amusement.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("AM-004 PRESENCE — status comparison + 'admitted'/'updated'/'completed'/'revoked'/'cancelled' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "amusement.ts",
+      `function transitionTicketStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM ride_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new AmusementError("E409-SCHEDULE", "Invalid transition", 409);
+  db.prepare("UPDATE ride_schedules SET status = 'admitted' WHERE id = ?").run(scheduleId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AM-004"]!(src, "amusement.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("AM-005 PRESENCE — batch expire update in expireRevokedTicketBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "amusement.ts",
+      `function transitionTicketStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM ride_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new AmusementError("E409-SCHEDULE", "Invalid", 409);
+  db.prepare("UPDATE ride_schedules SET status = 'admitted' WHERE id = ?").run(scheduleId);
+}
+function expireRevokedTicketBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM tickets WHERE status = 'revoked' AND started_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE tickets SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AM-005"]!(src, "amusement.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("AM-006 PRESENCE — db.transaction() in processTicketRefund (atomic ticket_refund_records+ticket_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "amusement.ts",
+      `function processTicketRefund(db, visitorId, ticketId, ticketCost, refundRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO ticket_refund_records (id, visitor_id, ticket_id, ticket_cost, refund_rate, refund_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(refundRecordId, visitorId, ticketId, ticketCost, refundRate, refundAmount);
+    db.prepare("INSERT INTO ticket_refunds (id, refund_record_id, visitor_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, refundRecordId, visitorId, refundAmount, refundedAt);
+    db.prepare("UPDATE ticket_refund_records SET status = 'refunded' WHERE id = ?").run(refundRecordId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AM-006"]!(src, "amusement.ts");
     expect(markers).toHaveLength(0);
   });
 });

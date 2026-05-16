@@ -1241,6 +1241,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processWagerRefund",
     ],
   },
+  {
+    container: "amusement",
+    rulesPath: `${SPEC_CONTAINER_BASE}/amusement/rules/amusement-rules.md`,
+    // 세션 306 후속2 (F534): Amusement 합성 도메인 — 66번째 도메인 (놀이공원/테마파크 산업, 55번째 신규 산업). 🏆 66번째 도메인 마일스톤.
+    // AM-001~AM-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 19회차 (carsharing → ... → gambling → amusement) — 🎢 오프라인 엔터테인먼트 신규 클러스터 출범 (디지털 12 + 게임엔터 2 + 오프라인 엔터 1 = 3 메타 카테고리).
+    // 🏆 66번째 도메인 마일스톤 (S262 5 → S306 66, 13.2배 확장).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/amusement.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/amusement/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "reserveTicket",
+      "applyVisitLimit",
+      "processRideAdmission",
+      "transitionTicketStatus",
+      "expireRevokedTicketBatch",
+      "processTicketRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

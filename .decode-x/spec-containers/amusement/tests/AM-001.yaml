@@ -1,0 +1,62 @@
+# Test scenarios — Amusement domain AM-001~AM-006
+# 세션 306 후속2 F534 — Amusement 놀이공원/테마파크 합성 도메인 (🏆 66번째 도메인 마일스톤)
+
+scenarios:
+  - id: AM-001-PASS
+    rule: AM-001
+    description: "정원 내 ticket 예약 — 성공"
+    input: { active_tickets: 3000, total_capacity: 5000 }
+    expected: PASS
+
+  - id: AM-001-FAIL
+    rule: AM-001
+    description: "파크 ticket 정원 초과 — E422-PARK-CAPACITY-EXCEEDED"
+    input: { active_tickets: 5000, total_capacity: 5000 }
+    expected: FAIL
+    error: E422-PARK-CAPACITY-EXCEEDED
+
+  - id: AM-002-PASS
+    rule: AM-002
+    description: "일일 visit 한도 내 사용 — 성공"
+    input: { visit_used: 2, visit_limit: 5, visit: 2 }
+    expected: PASS
+
+  - id: AM-002-FAIL
+    rule: AM-002
+    description: "일일 visit 한도 초과 — E422-DAILY-VISIT-LIMIT-EXCEEDED"
+    input: { visit_used: 4, visit_limit: 5, visit: 1 }
+    expected: FAIL
+    error: E422-DAILY-VISIT-LIMIT-EXCEEDED
+
+  - id: AM-003-PASS
+    rule: AM-003
+    description: "reserved 상태 입장 atomic — 성공"
+    input: { schedule_status: reserved }
+    expected: PASS
+
+  - id: AM-004-PASS
+    rule: AM-004
+    description: "reserved → admitted 전환 허용"
+    input: { previous: reserved, next: admitted }
+    expected: PASS
+
+  - id: AM-004-FAIL
+    rule: AM-004
+    description: "cancelled → reserved 역행 차단 — E409-SCHEDULE"
+    input: { previous: cancelled, next: reserved }
+    expected: FAIL
+    error: E409-SCHEDULE
+
+  - id: AM-005-PASS
+    rule: AM-005
+    description: "revoked ticket batch expire — 대상 1건"
+    input: { tickets: [{ status: revoked, started_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: AM-006-PASS
+    rule: AM-006
+    description: "revoked ticket 환불 atomic — 성공"
+    input: { ticket_status: revoked, ticket_cost: 50000, refund_rate: 0.5 }
+    expected: PASS
+    expectedRefundAmount: 25000

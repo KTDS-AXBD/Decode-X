@@ -1431,6 +1431,15 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "KP-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "KP-004"),
   "KP-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "KP-005"),
   "KP-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "KP-006"),
+  // 세션 306 후속8 (F540): Surfing 합성 도메인 72번째 (61번째 신규 산업, 서핑/해양 스포츠) 🏆🏆 1세션 9 Sprint 신기록 동률.
+  // 🏄 SP+SK+GF+SF 스포츠 레저 4-클러스터 확장 (피트니스/스포츠 + 윈터 레저 + 골프 + 서핑 통합 추상화 — 단일 클러스터 4 도메인 첫 사례).
+  // withRuleId 재사용 72번째 도메인. 🏆 72번째 도메인 마일스톤 (S262 5 → S306 72, 14.4배 확장).
+  "SF-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "SF-001"),
+  "SF-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "SF-002"),
+  "SF-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "SF-003"),
+  "SF-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "SF-004"),
+  "SF-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "SF-005"),
+  "SF-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "SF-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

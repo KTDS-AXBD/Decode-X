@@ -1355,6 +1355,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processConcertRefund",
     ],
   },
+  {
+    container: "surfing",
+    rulesPath: `${SPEC_CONTAINER_BASE}/surfing/rules/surfing-rules.md`,
+    // 세션 306 후속8 (F540): Surfing 합성 도메인 — 72번째 도메인 (서핑/해양 스포츠 산업, 61번째 신규 산업). 🏆🏆 1세션 9 Sprint 신기록 동률 도달.
+    // SF-001~SF-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 25회차 정점 round (carsharing → ... → kpop → surfing) — 🏄 SP+SK+GF+SF 스포츠 레저 4-클러스터 확장 (피트니스/스포츠 + 윈터 레저 + 골프 + 서핑 통합 추상화 — 단일 클러스터 4 도메인 첫 사례).
+    // 🏆 72번째 도메인 마일스톤 (S262 5 → S306 72, 14.4배 확장).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/surfing.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/surfing/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "reserveBoard",
+      "applySessionLimit",
+      "processSurfSession",
+      "transitionBoardStatus",
+      "expireSuspendedBoardBatch",
+      "processSessionRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

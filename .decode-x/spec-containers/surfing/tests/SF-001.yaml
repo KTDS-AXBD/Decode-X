@@ -1,0 +1,62 @@
+# Test scenarios — Surfing domain SF-001~SF-006
+# 세션 306 후속8 F540 — Surfing 서핑/해양 스포츠 합성 도메인 (🏆🏆 1세션 9 Sprint 신기록 동률 도달, 72번째 도메인)
+
+scenarios:
+  - id: SF-001-PASS
+    rule: SF-001
+    description: "정원 내 board 예약 — 성공"
+    input: { active_boards: 150, total_capacity: 300 }
+    expected: PASS
+
+  - id: SF-001-FAIL
+    rule: SF-001
+    description: "스팟 board 정원 초과 — E422-SPOT-CAPACITY-EXCEEDED"
+    input: { active_boards: 300, total_capacity: 300 }
+    expected: FAIL
+    error: E422-SPOT-CAPACITY-EXCEEDED
+
+  - id: SF-002-PASS
+    rule: SF-002
+    description: "일일 session 한도 내 사용 — 성공"
+    input: { session_used: 3, session_limit: 10, session: 5 }
+    expected: PASS
+
+  - id: SF-002-FAIL
+    rule: SF-002
+    description: "일일 session 한도 초과 — E422-DAILY-SESSION-LIMIT-EXCEEDED"
+    input: { session_used: 9, session_limit: 10, session: 1 }
+    expected: FAIL
+    error: E422-DAILY-SESSION-LIMIT-EXCEEDED
+
+  - id: SF-003-PASS
+    rule: SF-003
+    description: "reserved 상태 서핑 세션 시작 atomic — 성공"
+    input: { schedule_status: reserved }
+    expected: PASS
+
+  - id: SF-004-PASS
+    rule: SF-004
+    description: "reserved → riding 전환 허용"
+    input: { previous: reserved, next: riding }
+    expected: PASS
+
+  - id: SF-004-FAIL
+    rule: SF-004
+    description: "cancelled → reserved 역행 차단 — E409-SCHEDULE"
+    input: { previous: cancelled, next: reserved }
+    expected: FAIL
+    error: E409-SCHEDULE
+
+  - id: SF-005-PASS
+    rule: SF-005
+    description: "suspended board batch expire — 대상 1건"
+    input: { boards: [{ status: suspended, started_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: SF-006-PASS
+    rule: SF-006
+    description: "suspended board session 환불 atomic — 성공"
+    input: { board_status: suspended, board_cost: 80000, refund_rate: 0.5 }
+    expected: PASS
+    expectedRefundAmount: 40000

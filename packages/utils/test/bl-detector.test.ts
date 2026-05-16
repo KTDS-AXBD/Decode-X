@@ -1023,6 +1023,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "SB-004",
       "SB-005",
       "SB-006",
+      "SF-001",
+      "SF-002",
+      "SF-003",
+      "SF-004",
+      "SF-005",
+      "SF-006",
       "SH-001",
       "SH-002",
       "SH-003",
@@ -1432,6 +1438,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["KP-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["KP-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["KP-006"]).toBeDefined();
+  });
+
+  it("SF-001~SF-006 registered (세션 306 후속8 F540 — surfing 72번째 도메인, 61번째 신규 산업, 🏆🏆 1세션 9 Sprint 신기록 동률 도달, 73 Sprint 연속 정점 도전, 거울 변환 25회차 정점 round, 🏄 SP+SK+GF+SF 스포츠 레저 4-클러스터 확장 — 피트니스/스포츠 + 윈터 레저 + 골프 + 서핑 통합 추상화, 단일 클러스터 4 도메인 첫 사례)", () => {
+    expect(BL_DETECTOR_REGISTRY["SF-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["SF-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["SF-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["SF-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["SF-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["SF-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -7166,6 +7181,106 @@ function expirePostponedEntryBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["KP-006"]!(src, "kpop.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+// F540 (세션 306 후속8) — surfing domain SF-001~006 via withRuleId (🏆🏆 1세션 9 Sprint 신기록 동률 도달, 73 Sprint 연속 정점 도전)
+// 거울 변환 25회차 정점 round (carsharing → ... → kpop → surfing).
+// 🏄 SP+SK+GF+SF 스포츠 레저 4-클러스터 확장 (피트니스/스포츠 + 윈터 레저 + 골프 + 서핑 통합 추상화 — 단일 클러스터 4 도메인 첫 사례).
+describe("surfing domain — SF-001~006 via withRuleId (세션 306 후속8 F540, 🏆🏆 1세션 9 Sprint 신기록 동률 도달)", () => {
+  it("SF-001 PRESENCE — active_boards >= MAX_CONCURRENT_ACTIVE_BOARDS_PER_SPOT threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "surfing.ts",
+      `const MAX_CONCURRENT_ACTIVE_BOARDS_PER_SPOT = 300;
+function reserveBoard(db, spotId, contractId) {
+  const spot = db.prepare("SELECT active_boards, total_capacity FROM spots WHERE id = ?").get(spotId);
+  const limit = spot.total_capacity ?? MAX_CONCURRENT_ACTIVE_BOARDS_PER_SPOT;
+  if (spot.active_boards >= limit) {
+    throw new SurfingError('E422-SPOT-CAPACITY-EXCEEDED', 'Spot is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SF-001"]!(src, "surfing.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("SF-002 PRESENCE — session_used + session >= dailySessionLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "surfing.ts",
+      `function applySessionLimit(db, surferId, contractId, session) {
+  const contract = db.prepare("SELECT session_used, session_limit FROM surfer_contracts WHERE id = ? AND surfer_id = ? LIMIT 1").get(contractId, surferId);
+  const dailySessionLimit = contract.session_limit;
+  if (contract.session_used + session >= dailySessionLimit) {
+    throw new SurfingError('E422-DAILY-SESSION-LIMIT-EXCEEDED', 'Daily session quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SF-002"]!(src, "surfing.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("SF-003 PRESENCE — db.transaction() in processSurfSession (atomic boards+session_schedules+board_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "surfing.ts",
+      `function processSurfSession(db, spotId, scheduleId, boardNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO boards (id, spot_id, schedule_id, board_no, status, started_at) VALUES (?, ?, ?, ?, 'riding', ?)").run(boardId, spotId, scheduleId, boardNo, startedAt);
+    db.prepare("UPDATE session_schedules SET status = 'riding', board_id = ?, board_payment_id = ? WHERE id = ?").run(boardId, boardPaymentId, scheduleId);
+    db.prepare("INSERT INTO board_payments (id, schedule_id, board_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(boardPaymentId, scheduleId, boardId, amount, startedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SF-003"]!(src, "surfing.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("SF-004 PRESENCE — status comparison + 'riding'/'updated'/'finished'/'suspended'/'cancelled' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "surfing.ts",
+      `function transitionBoardStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM session_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new SurfingError("E409-SCHEDULE", "Invalid transition", 409);
+  db.prepare("UPDATE session_schedules SET status = 'riding' WHERE id = ?").run(scheduleId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SF-004"]!(src, "surfing.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("SF-005 PRESENCE — batch expire update in expireSuspendedBoardBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "surfing.ts",
+      `function transitionBoardStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM session_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new SurfingError("E409-SCHEDULE", "Invalid", 409);
+  db.prepare("UPDATE session_schedules SET status = 'riding' WHERE id = ?").run(scheduleId);
+}
+function expireSuspendedBoardBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM boards WHERE status = 'suspended' AND started_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE boards SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SF-005"]!(src, "surfing.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("SF-006 PRESENCE — db.transaction() in processSessionRefund (atomic board_refund_records+board_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "surfing.ts",
+      `function processSessionRefund(db, surferId, boardId, boardCost, refundRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO board_refund_records (id, surfer_id, board_id, board_cost, refund_rate, refund_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(refundRecordId, surferId, boardId, boardCost, refundRate, refundAmount);
+    db.prepare("INSERT INTO board_refunds (id, refund_record_id, surfer_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, refundRecordId, surferId, refundAmount, refundedAt);
+    db.prepare("UPDATE board_refund_records SET status = 'refunded' WHERE id = ?").run(refundRecordId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["SF-006"]!(src, "surfing.ts");
     expect(markers).toHaveLength(0);
   });
 });

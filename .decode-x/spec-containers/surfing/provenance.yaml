@@ -1,0 +1,52 @@
+---
+# Provenance — SRF-001
+# 72번째 도메인 — Surfing 합성 도메인 PoC (61번째 신규 산업, 🏆🏆 1세션 9 Sprint 신기록 동률 도달)
+
+skillId: SRF-001
+extractedAt: "2026-05-16T00:00:00+09:00"
+extractedBy: "Decode-X 세션 306 후속8 F540 — withRuleId 재사용 72번째 도메인 (Surfing 서핑/해양 스포츠 산업, 61번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/surfing/rules/surfing-rules.md"
+    section: "Surfing 합성 비즈니스 룰 — SF-001~SF-006"
+    businessRules: [SF-001, SF-002, SF-003, SF-004, SF-005, SF-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 서핑/해양 스포츠(Surfing) 산업 일반화 PoC. 스팟board한도/surferdailysession한도/세션batchatomic/board상태전환/만료suspendedboard일괄/session환불atomic 추상화. 72번째 도메인 + 61번째 신규 산업. 🏆🏆 1세션 9 Sprint 신기록 동률 도달. 73 Sprint 연속 정점 도전. 거울 변환 25회차 정점 round (carsharing → ... → kpop → surfing). 🏄 SP+SK+GF+SF 스포츠 레저 4-클러스터 확장 (피트니스/스포츠 + 윈터 레저 + 골프 + 서핑 통합 추상화 — 단일 클러스터 4 도메인 첫 사례)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/surfing.ts"
+    functions: [reserveBoard, applySessionLimit, processSurfSession, transitionBoardStatus, expireSuspendedBoardBatch, processSessionRefund]
+
+detection:
+  - ruleId: SF-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "spot.active_boards >= limit (UPPERCASE fallback MAX_CONCURRENT_ACTIVE_BOARDS_PER_SPOT, Path A)"
+  - ruleId: SF-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "contract.session_used + session >= dailySessionLimit (Path B, limit keyword)"
+  - ruleId: SF-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "db.transaction() — boards INSERT + session_schedules UPDATE + board_payments INSERT"
+  - ruleId: SF-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "reserved → riding → updated → finished / suspended / cancelled"
+  - ruleId: SF-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "batch: expire 갱신 (KP-005/GF-005/EX-005/SK-005/TH-005/AM-005/GA-005/AR-005/RA-005/PC-005/ER-005/BR-005/NW-005/SM-005/VD-005 61번째 재사용)"
+  - ruleId: SF-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "db.transaction() — board_refund_records INSERT + board_refunds INSERT + board_refund_records UPDATE"

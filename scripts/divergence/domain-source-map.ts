@@ -1260,6 +1260,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processTicketRefund",
     ],
   },
+  {
+    container: "theater",
+    rulesPath: `${SPEC_CONTAINER_BASE}/theater/rules/theater-rules.md`,
+    // 세션 306 후속3 (F535): Theater 합성 도메인 — 67번째 도메인 (영화관/극장/공연장 산업, 56번째 신규 산업). 🏆 67번째 도메인 마일스톤.
+    // TH-001~TH-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 20회차 정점 (carsharing → ... → amusement → theater) — 🎭 AM+TH 오프라인 엔터 2-클러스터 확장 (테마파크 입장권 + 극장 좌석권 통합 추상화).
+    // 🏆 67번째 도메인 마일스톤 (S262 5 → S306 67, 13.4배 확장).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/theater.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/theater/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "bookSeat",
+      "applyAttendanceLimit",
+      "processShowAdmission",
+      "transitionSeatStatus",
+      "expireWithdrawnSeatBatch",
+      "processShowRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

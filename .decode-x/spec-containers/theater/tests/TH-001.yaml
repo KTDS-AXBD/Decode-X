@@ -1,0 +1,62 @@
+# Test scenarios — Theater domain TH-001~TH-006
+# 세션 306 후속3 F535 — Theater 영화관/극장/공연장 합성 도메인 (🏆 67번째 도메인 마일스톤)
+
+scenarios:
+  - id: TH-001-PASS
+    rule: TH-001
+    description: "정원 내 seat 예매 — 성공"
+    input: { active_seats: 1500, total_capacity: 2000 }
+    expected: PASS
+
+  - id: TH-001-FAIL
+    rule: TH-001
+    description: "극장 seat 정원 초과 — E422-THEATER-CAPACITY-EXCEEDED"
+    input: { active_seats: 2000, total_capacity: 2000 }
+    expected: FAIL
+    error: E422-THEATER-CAPACITY-EXCEEDED
+
+  - id: TH-002-PASS
+    rule: TH-002
+    description: "일일 attendance 한도 내 사용 — 성공"
+    input: { attendance_used: 2, attendance_limit: 5, attendance: 2 }
+    expected: PASS
+
+  - id: TH-002-FAIL
+    rule: TH-002
+    description: "일일 attendance 한도 초과 — E422-DAILY-ATTENDANCE-LIMIT-EXCEEDED"
+    input: { attendance_used: 4, attendance_limit: 5, attendance: 1 }
+    expected: FAIL
+    error: E422-DAILY-ATTENDANCE-LIMIT-EXCEEDED
+
+  - id: TH-003-PASS
+    rule: TH-003
+    description: "booked 상태 공연 입장 atomic — 성공"
+    input: { schedule_status: booked }
+    expected: PASS
+
+  - id: TH-004-PASS
+    rule: TH-004
+    description: "booked → seated 전환 허용"
+    input: { previous: booked, next: seated }
+    expected: PASS
+
+  - id: TH-004-FAIL
+    rule: TH-004
+    description: "cancelled → booked 역행 차단 — E409-SCHEDULE"
+    input: { previous: cancelled, next: booked }
+    expected: FAIL
+    error: E409-SCHEDULE
+
+  - id: TH-005-PASS
+    rule: TH-005
+    description: "withdrawn seat batch expire — 대상 1건"
+    input: { seats: [{ status: withdrawn, started_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: TH-006-PASS
+    rule: TH-006
+    description: "withdrawn seat 환불 atomic — 성공"
+    input: { seat_status: withdrawn, seat_cost: 20000, refund_rate: 0.5 }
+    expected: PASS
+    expectedRefundAmount: 10000

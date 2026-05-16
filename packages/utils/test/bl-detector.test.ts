@@ -1029,6 +1029,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "TC-004",
       "TC-005",
       "TC-006",
+      "TH-001",
+      "TH-002",
+      "TH-003",
+      "TH-004",
+      "TH-005",
+      "TH-006",
       "TM-001",
       "TM-002",
       "TM-003",
@@ -1357,6 +1363,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["AM-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["AM-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["AM-006"]).toBeDefined();
+  });
+
+  it("TH-001~TH-006 registered (세션 306 후속3 F535 — theater 67번째 도메인, 56번째 신규 산업, 🏆 67번째 도메인 마일스톤, 68 Sprint 연속 정점 도전, 거울 변환 20회차 정점, 🎭 AM+TH 오프라인 엔터 2-클러스터 확장 — 테마파크 입장권 + 극장 좌석권 통합 추상화)", () => {
+    expect(BL_DETECTOR_REGISTRY["TH-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["TH-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["TH-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["TH-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["TH-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["TH-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -6591,6 +6606,106 @@ function expireRevokedTicketBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["AM-006"]!(src, "amusement.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+// F535 (세션 306 후속3) — theater domain TH-001~006 via withRuleId (🏆 67번째 도메인 마일스톤, 68 Sprint 연속 정점 도전)
+// 거울 변환 20회차 정점 (carsharing → ... → amusement → theater).
+// 🎭 AM+TH 오프라인 엔터 2-클러스터 확장 (테마파크 입장권 + 극장 좌석권 통합 추상화).
+describe("theater domain — TH-001~006 via withRuleId (세션 306 후속3 F535, 🏆 67번째 도메인 마일스톤)", () => {
+  it("TH-001 PRESENCE — active_seats >= MAX_CONCURRENT_ACTIVE_SEATS_PER_THEATER threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "theater.ts",
+      `const MAX_CONCURRENT_ACTIVE_SEATS_PER_THEATER = 2000;
+function bookSeat(db, theaterId, contractId) {
+  const theater = db.prepare("SELECT active_seats, total_capacity FROM theaters WHERE id = ?").get(theaterId);
+  const limit = theater.total_capacity ?? MAX_CONCURRENT_ACTIVE_SEATS_PER_THEATER;
+  if (theater.active_seats >= limit) {
+    throw new TheaterError('E422-THEATER-CAPACITY-EXCEEDED', 'Theater is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TH-001"]!(src, "theater.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("TH-002 PRESENCE — attendance_used + attendance >= dailyAttendanceLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "theater.ts",
+      `function applyAttendanceLimit(db, patronId, contractId, attendance) {
+  const contract = db.prepare("SELECT attendance_used, attendance_limit FROM patron_contracts WHERE id = ? AND patron_id = ? LIMIT 1").get(contractId, patronId);
+  const dailyAttendanceLimit = contract.attendance_limit;
+  if (contract.attendance_used + attendance >= dailyAttendanceLimit) {
+    throw new TheaterError('E422-DAILY-ATTENDANCE-LIMIT-EXCEEDED', 'Daily attendance quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TH-002"]!(src, "theater.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("TH-003 PRESENCE — db.transaction() in processShowAdmission (atomic seats+performance_schedules+seat_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "theater.ts",
+      `function processShowAdmission(db, theaterId, scheduleId, seatNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO seats (id, theater_id, schedule_id, seat_no, status, started_at) VALUES (?, ?, ?, ?, 'seated', ?)").run(seatId, theaterId, scheduleId, seatNo, startedAt);
+    db.prepare("UPDATE performance_schedules SET status = 'seated', seat_id = ?, seat_payment_id = ? WHERE id = ?").run(seatId, seatPaymentId, scheduleId);
+    db.prepare("INSERT INTO seat_payments (id, schedule_id, seat_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(seatPaymentId, scheduleId, seatId, amount, startedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TH-003"]!(src, "theater.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("TH-004 PRESENCE — status comparison + 'seated'/'updated'/'ended'/'withdrawn'/'cancelled' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "theater.ts",
+      `function transitionSeatStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM performance_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new TheaterError("E409-SCHEDULE", "Invalid transition", 409);
+  db.prepare("UPDATE performance_schedules SET status = 'seated' WHERE id = ?").run(scheduleId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TH-004"]!(src, "theater.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("TH-005 PRESENCE — batch expire update in expireWithdrawnSeatBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "theater.ts",
+      `function transitionSeatStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM performance_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new TheaterError("E409-SCHEDULE", "Invalid", 409);
+  db.prepare("UPDATE performance_schedules SET status = 'seated' WHERE id = ?").run(scheduleId);
+}
+function expireWithdrawnSeatBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM seats WHERE status = 'withdrawn' AND started_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE seats SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TH-005"]!(src, "theater.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("TH-006 PRESENCE — db.transaction() in processShowRefund (atomic seat_refund_records+seat_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "theater.ts",
+      `function processShowRefund(db, patronId, seatId, seatCost, refundRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO seat_refund_records (id, patron_id, seat_id, seat_cost, refund_rate, refund_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(refundRecordId, patronId, seatId, seatCost, refundRate, refundAmount);
+    db.prepare("INSERT INTO seat_refunds (id, refund_record_id, patron_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, refundRecordId, patronId, refundAmount, refundedAt);
+    db.prepare("UPDATE seat_refund_records SET status = 'refunded' WHERE id = ?").run(refundRecordId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["TH-006"]!(src, "theater.ts");
     expect(markers).toHaveLength(0);
   });
 });

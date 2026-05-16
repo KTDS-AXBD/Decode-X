@@ -1,0 +1,52 @@
+---
+# Provenance — THE-001
+# 67번째 도메인 — Theater 합성 도메인 PoC (56번째 신규 산업, 🏆 67번째 도메인 마일스톤)
+
+skillId: THE-001
+extractedAt: "2026-05-16T00:00:00+09:00"
+extractedBy: "Decode-X 세션 306 후속3 F535 — withRuleId 재사용 67번째 도메인 (Theater 영화관/극장/공연장 산업, 56번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/theater/rules/theater-rules.md"
+    section: "Theater 합성 비즈니스 룰 — TH-001~TH-006"
+    businessRules: [TH-001, TH-002, TH-003, TH-004, TH-005, TH-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 영화관/극장/공연장(Theater) 산업 일반화 PoC. 극장seat한도/patrondailyattendance한도/입장batchatomic/seat상태전환/만료withdrawnseat일괄/seat환불atomic 추상화. 67번째 도메인 + 56번째 신규 산업. 🏆 67번째 도메인 마일스톤. 68 Sprint 연속 정점 도전. 거울 변환 20회차 정점 (carsharing → ... → amusement → theater). 🎭 AM+TH 오프라인 엔터 2-클러스터 확장 (테마파크 입장권 + 극장 좌석권 통합 추상화)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/theater.ts"
+    functions: [bookSeat, applyAttendanceLimit, processShowAdmission, transitionSeatStatus, expireWithdrawnSeatBatch, processShowRefund]
+
+detection:
+  - ruleId: TH-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "theater.active_seats >= limit (UPPERCASE fallback MAX_CONCURRENT_ACTIVE_SEATS_PER_THEATER, Path A)"
+  - ruleId: TH-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "contract.attendance_used + attendance >= dailyAttendanceLimit (Path B, limit keyword)"
+  - ruleId: TH-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "db.transaction() — seats INSERT + performance_schedules UPDATE + seat_payments INSERT"
+  - ruleId: TH-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "booked → seated → updated → ended / withdrawn / cancelled"
+  - ruleId: TH-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "batch: expire 갱신 (AM-005/GA-005/AR-005/RA-005/PC-005/ER-005/BR-005/NW-005/SM-005/VD-005 56번째 재사용)"
+  - ruleId: TH-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "db.transaction() — seat_refund_records INSERT + seat_refunds INSERT + seat_refund_records UPDATE"

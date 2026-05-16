@@ -1422,6 +1422,15 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "GF-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "GF-004"),
   "GF-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "GF-005"),
   "GF-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "GF-006"),
+  // 세션 306 후속7 (F539): K-pop 합성 도메인 71번째 (60번째 신규 산업, 콘서트/팬미팅, 한국 특화).
+  // 🎤 AM+TH+KP 오프라인 엔터 3-클러스터 확장 (놀이공원 + 극장 + 콘서트 통합 추상화 — 단일 클러스터 3 도메인 두 번째 사례).
+  // withRuleId 재사용 71번째 도메인. 🏆 71번째 도메인 마일스톤 (S262 5 → S306 71, 14.2배 확장).
+  "KP-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "KP-001"),
+  "KP-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "KP-002"),
+  "KP-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "KP-003"),
+  "KP-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "KP-004"),
+  "KP-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "KP-005"),
+  "KP-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "KP-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

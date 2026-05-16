@@ -1,0 +1,62 @@
+# Test scenarios — K-pop domain KP-001~KP-006
+# 세션 306 후속7 F539 — K-pop 콘서트/팬미팅 합성 도메인 (🏆 71번째 도메인 마일스톤)
+
+scenarios:
+  - id: KP-001-PASS
+    rule: KP-001
+    description: "정원 내 ticket 예매 — 성공"
+    input: { active_entries: 30000, total_capacity: 50000 }
+    expected: PASS
+
+  - id: KP-001-FAIL
+    rule: KP-001
+    description: "아레나 entry 정원 초과 — E422-ARENA-CAPACITY-EXCEEDED"
+    input: { active_entries: 50000, total_capacity: 50000 }
+    expected: FAIL
+    error: E422-ARENA-CAPACITY-EXCEEDED
+
+  - id: KP-002-PASS
+    rule: KP-002
+    description: "일일 fan 한도 내 사용 — 성공"
+    input: { fan_used: 1, fan_limit: 4, entry: 2 }
+    expected: PASS
+
+  - id: KP-002-FAIL
+    rule: KP-002
+    description: "일일 fan 한도 초과 — E422-DAILY-FAN-LIMIT-EXCEEDED"
+    input: { fan_used: 3, fan_limit: 4, entry: 1 }
+    expected: FAIL
+    error: E422-DAILY-FAN-LIMIT-EXCEEDED
+
+  - id: KP-003-PASS
+    rule: KP-003
+    description: "booked 상태 콘서트 입장 atomic — 성공"
+    input: { schedule_status: booked }
+    expected: PASS
+
+  - id: KP-004-PASS
+    rule: KP-004
+    description: "booked → admitted 전환 허용"
+    input: { previous: booked, next: admitted }
+    expected: PASS
+
+  - id: KP-004-FAIL
+    rule: KP-004
+    description: "cancelled → booked 역행 차단 — E409-SCHEDULE"
+    input: { previous: cancelled, next: booked }
+    expected: FAIL
+    error: E409-SCHEDULE
+
+  - id: KP-005-PASS
+    rule: KP-005
+    description: "postponed entry batch expire — 대상 1건"
+    input: { entries: [{ status: postponed, started_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: KP-006-PASS
+    rule: KP-006
+    description: "postponed entry concert 환불 atomic — 성공"
+    input: { entry_status: postponed, entry_cost: 150000, refund_rate: 0.5 }
+    expected: PASS
+    expectedRefundAmount: 75000

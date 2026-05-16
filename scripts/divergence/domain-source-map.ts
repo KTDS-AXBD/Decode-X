@@ -1336,6 +1336,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processCourseRefund",
     ],
   },
+  {
+    container: "kpop",
+    rulesPath: `${SPEC_CONTAINER_BASE}/kpop/rules/kpop-rules.md`,
+    // 세션 306 후속7 (F539): K-pop 합성 도메인 — 71번째 도메인 (콘서트/팬미팅 산업, 60번째 신규 산업, 한국 특화). 🏆 71번째 도메인 마일스톤.
+    // KP-001~KP-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 24회차 (carsharing → ... → golf → kpop) — 🎤 AM+TH+KP 오프라인 엔터 3-클러스터 확장 (놀이공원 + 극장 + 콘서트 통합 추상화 — 단일 클러스터 3 도메인 두 번째 사례).
+    // 🏆 71번째 도메인 마일스톤 (S262 5 → S306 71, 14.2배 확장).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/kpop.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/kpop/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "bookTicket",
+      "applyFanLimit",
+      "processConcertAdmission",
+      "transitionEntryStatus",
+      "expirePostponedEntryBatch",
+      "processConcertRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

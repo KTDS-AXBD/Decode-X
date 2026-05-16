@@ -902,6 +902,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "IN-004",
       "IN-005",
       "IN-006",
+      "KP-001",
+      "KP-002",
+      "KP-003",
+      "KP-004",
+      "KP-005",
+      "KP-006",
       "LG-001",
       "LG-002",
       "LG-003",
@@ -1417,6 +1423,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["GF-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["GF-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["GF-006"]).toBeDefined();
+  });
+
+  it("KP-001~KP-006 registered (세션 306 후속7 F539 — kpop 71번째 도메인, 60번째 신규 산업, 한국 특화, 🏆 71번째 도메인 마일스톤, 72 Sprint 연속 정점 도전, 거울 변환 24회차, 🎤 AM+TH+KP 오프라인 엔터 3-클러스터 확장 — 놀이공원 + 극장 + 콘서트 통합 추상화, 단일 클러스터 3 도메인 두 번째 사례)", () => {
+    expect(BL_DETECTOR_REGISTRY["KP-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["KP-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["KP-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["KP-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["KP-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["KP-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -7051,6 +7066,106 @@ function expireSuspendedRoundBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["GF-006"]!(src, "golf.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+// F539 (세션 306 후속7) — kpop domain KP-001~006 via withRuleId (🏆 71번째 도메인 마일스톤, 72 Sprint 연속 정점 도전)
+// 거울 변환 24회차 (carsharing → ... → golf → kpop).
+// 🎤 AM+TH+KP 오프라인 엔터 3-클러스터 확장 (놀이공원 + 극장 + 콘서트 통합 추상화 — 단일 클러스터 3 도메인 두 번째 사례, 한국 특화).
+describe("kpop domain — KP-001~006 via withRuleId (세션 306 후속7 F539, 🏆 71번째 도메인 마일스톤)", () => {
+  it("KP-001 PRESENCE — active_entries >= MAX_CONCURRENT_ACTIVE_ENTRIES_PER_ARENA threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "kpop.ts",
+      `const MAX_CONCURRENT_ACTIVE_ENTRIES_PER_ARENA = 50000;
+function bookTicket(db, arenaId, contractId) {
+  const arena = db.prepare("SELECT active_entries, total_capacity FROM arenas WHERE id = ?").get(arenaId);
+  const limit = arena.total_capacity ?? MAX_CONCURRENT_ACTIVE_ENTRIES_PER_ARENA;
+  if (arena.active_entries >= limit) {
+    throw new KpopError('E422-ARENA-CAPACITY-EXCEEDED', 'Arena is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["KP-001"]!(src, "kpop.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("KP-002 PRESENCE — fan_used + entry >= dailyFanLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "kpop.ts",
+      `function applyFanLimit(db, fanId, contractId, entry) {
+  const contract = db.prepare("SELECT fan_used, fan_limit FROM fan_contracts WHERE id = ? AND fan_id = ? LIMIT 1").get(contractId, fanId);
+  const dailyFanLimit = contract.fan_limit;
+  if (contract.fan_used + entry >= dailyFanLimit) {
+    throw new KpopError('E422-DAILY-FAN-LIMIT-EXCEEDED', 'Daily fan quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["KP-002"]!(src, "kpop.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("KP-003 PRESENCE — db.transaction() in processConcertAdmission (atomic entries+concert_schedules+entry_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "kpop.ts",
+      `function processConcertAdmission(db, arenaId, scheduleId, entryNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO entries (id, arena_id, schedule_id, entry_no, status, started_at) VALUES (?, ?, ?, ?, 'admitted', ?)").run(entryId, arenaId, scheduleId, entryNo, startedAt);
+    db.prepare("UPDATE concert_schedules SET status = 'admitted', entry_id = ?, entry_payment_id = ? WHERE id = ?").run(entryId, entryPaymentId, scheduleId);
+    db.prepare("INSERT INTO entry_payments (id, schedule_id, entry_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(entryPaymentId, scheduleId, entryId, amount, startedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["KP-003"]!(src, "kpop.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("KP-004 PRESENCE — status comparison + 'admitted'/'updated'/'ended'/'postponed'/'cancelled' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "kpop.ts",
+      `function transitionEntryStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM concert_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new KpopError("E409-SCHEDULE", "Invalid transition", 409);
+  db.prepare("UPDATE concert_schedules SET status = 'admitted' WHERE id = ?").run(scheduleId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["KP-004"]!(src, "kpop.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("KP-005 PRESENCE — batch expire update in expirePostponedEntryBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "kpop.ts",
+      `function transitionEntryStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM concert_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new KpopError("E409-SCHEDULE", "Invalid", 409);
+  db.prepare("UPDATE concert_schedules SET status = 'admitted' WHERE id = ?").run(scheduleId);
+}
+function expirePostponedEntryBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM entries WHERE status = 'postponed' AND started_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE entries SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["KP-005"]!(src, "kpop.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("KP-006 PRESENCE — db.transaction() in processConcertRefund (atomic entry_refund_records+entry_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "kpop.ts",
+      `function processConcertRefund(db, fanId, entryId, entryCost, refundRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO entry_refund_records (id, fan_id, entry_id, entry_cost, refund_rate, refund_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(refundRecordId, fanId, entryId, entryCost, refundRate, refundAmount);
+    db.prepare("INSERT INTO entry_refunds (id, refund_record_id, fan_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, refundRecordId, fanId, refundAmount, refundedAt);
+    db.prepare("UPDATE entry_refund_records SET status = 'refunded' WHERE id = ?").run(refundRecordId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["KP-006"]!(src, "kpop.ts");
     expect(markers).toHaveLength(0);
   });
 });

@@ -1,0 +1,52 @@
+---
+# Provenance — KPP-001
+# 71번째 도메인 — K-pop 합성 도메인 PoC (60번째 신규 산업, 🏆 71번째 도메인 마일스톤)
+
+skillId: KPP-001
+extractedAt: "2026-05-16T00:00:00+09:00"
+extractedBy: "Decode-X 세션 306 후속7 F539 — withRuleId 재사용 71번째 도메인 (K-pop 콘서트/팬미팅 산업, 60번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/kpop/rules/kpop-rules.md"
+    section: "K-pop 합성 비즈니스 룰 — KP-001~KP-006"
+    businessRules: [KP-001, KP-002, KP-003, KP-004, KP-005, KP-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — K-pop 콘서트/팬미팅 산업 일반화 PoC (한국 특화). 아레나entry한도/fandailyentry한도/입장batchatomic/entry상태전환/만료postponedentry일괄/concert환불atomic 추상화. 71번째 도메인 + 60번째 신규 산업. 🏆 71번째 도메인 마일스톤. 72 Sprint 연속 정점 도전. 거울 변환 24회차 (carsharing → ... → golf → kpop). 🎤 AM+TH+KP 오프라인 엔터 3-클러스터 확장 (놀이공원 + 극장 + 콘서트 통합 추상화 — 단일 클러스터 3 도메인 두 번째 사례)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/kpop.ts"
+    functions: [bookTicket, applyFanLimit, processConcertAdmission, transitionEntryStatus, expirePostponedEntryBatch, processConcertRefund]
+
+detection:
+  - ruleId: KP-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "arena.active_entries >= limit (UPPERCASE fallback MAX_CONCURRENT_ACTIVE_ENTRIES_PER_ARENA, Path A)"
+  - ruleId: KP-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "contract.fan_used + entry >= dailyFanLimit (Path B, limit keyword)"
+  - ruleId: KP-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "db.transaction() — entries INSERT + concert_schedules UPDATE + entry_payments INSERT"
+  - ruleId: KP-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "booked → admitted → updated → ended / postponed / cancelled"
+  - ruleId: KP-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "batch: expire 갱신 (GF-005/EX-005/SK-005/TH-005/AM-005/GA-005/AR-005/RA-005/PC-005/ER-005/BR-005/NW-005/SM-005/VD-005 60번째 재사용)"
+  - ruleId: KP-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "db.transaction() — entry_refund_records INSERT + entry_refunds INSERT + entry_refund_records UPDATE"

@@ -1298,6 +1298,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processSlopeRefund",
     ],
   },
+  {
+    container: "exhibition",
+    rulesPath: `${SPEC_CONTAINER_BASE}/exhibition/rules/exhibition-rules.md`,
+    // 세션 306 후속5 (F537): Exhibition 합성 도메인 — 69번째 도메인 (박람회/컨벤션 산업, 58번째 신규 산업). 🏆 69번째 도메인 마일스톤.
+    // EX-001~EX-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 22회차 (carsharing → ... → skiing → exhibition) — 🎨 AR+EX 예술/전시 2-클러스터 신규 형성 (시각 예술 갤러리 + 박람회/컨벤션 부스 통합 추상화).
+    // 🏆 69번째 도메인 마일스톤 (S262 5 → S306 69, 13.8배 확장).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/exhibition.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/exhibition/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "bookBooth",
+      "applyVisitorLimit",
+      "processBoothOpening",
+      "transitionBoothStatus",
+      "expireWithdrawnAdmissionBatch",
+      "processBoothRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

@@ -1,0 +1,62 @@
+# Test scenarios — Exhibition domain EX-001~EX-006
+# 세션 306 후속5 F537 — Exhibition 박람회/컨벤션 합성 도메인 (🏆 69번째 도메인 마일스톤)
+
+scenarios:
+  - id: EX-001-PASS
+    rule: EX-001
+    description: "정원 내 booth 예약 — 성공"
+    input: { active_admissions: 6000, total_capacity: 10000 }
+    expected: PASS
+
+  - id: EX-001-FAIL
+    rule: EX-001
+    description: "venue admission 정원 초과 — E422-VENUE-CAPACITY-EXCEEDED"
+    input: { active_admissions: 10000, total_capacity: 10000 }
+    expected: FAIL
+    error: E422-VENUE-CAPACITY-EXCEEDED
+
+  - id: EX-002-PASS
+    rule: EX-002
+    description: "일일 visitor 한도 내 사용 — 성공"
+    input: { visitor_used: 300, visitor_limit: 1000, visitor: 200 }
+    expected: PASS
+
+  - id: EX-002-FAIL
+    rule: EX-002
+    description: "일일 visitor 한도 초과 — E422-DAILY-VISITOR-LIMIT-EXCEEDED"
+    input: { visitor_used: 950, visitor_limit: 1000, visitor: 100 }
+    expected: FAIL
+    error: E422-DAILY-VISITOR-LIMIT-EXCEEDED
+
+  - id: EX-003-PASS
+    rule: EX-003
+    description: "booked 상태 부스 개장 atomic — 성공"
+    input: { schedule_status: booked }
+    expected: PASS
+
+  - id: EX-004-PASS
+    rule: EX-004
+    description: "booked → exhibited 전환 허용"
+    input: { previous: booked, next: exhibited }
+    expected: PASS
+
+  - id: EX-004-FAIL
+    rule: EX-004
+    description: "cancelled → booked 역행 차단 — E409-SCHEDULE"
+    input: { previous: cancelled, next: booked }
+    expected: FAIL
+    error: E409-SCHEDULE
+
+  - id: EX-005-PASS
+    rule: EX-005
+    description: "withdrawn admission batch expire — 대상 1건"
+    input: { admissions: [{ status: withdrawn, started_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: EX-006-PASS
+    rule: EX-006
+    description: "withdrawn admission booth 환불 atomic — 성공"
+    input: { admission_status: withdrawn, booth_cost: 500000, refund_rate: 0.5 }
+    expected: PASS
+    expectedRefundAmount: 250000

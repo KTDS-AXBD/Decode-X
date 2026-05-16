@@ -836,6 +836,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "ER-004",
       "ER-005",
       "ER-006",
+      "EX-001",
+      "EX-002",
+      "EX-003",
+      "EX-004",
+      "EX-005",
+      "EX-006",
       "FS-001",
       "FS-002",
       "FS-003",
@@ -1387,6 +1393,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["SK-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["SK-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["SK-006"]).toBeDefined();
+  });
+
+  it("EX-001~EX-006 registered (세션 306 후속5 F537 — exhibition 69번째 도메인, 58번째 신규 산업, 🏆 69번째 도메인 마일스톤, 70 Sprint 연속 정점 round 마일스톤 도전, 거울 변환 22회차, 🎨 AR+EX 예술/전시 2-클러스터 신규 — 시각 예술 갤러리 + 박람회/컨벤션 부스 통합 추상화)", () => {
+    expect(BL_DETECTOR_REGISTRY["EX-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["EX-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["EX-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["EX-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["EX-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["EX-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -6821,6 +6836,106 @@ function expireSuspendedPassBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["SK-006"]!(src, "skiing.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+// F537 (세션 306 후속5) — exhibition domain EX-001~006 via withRuleId (🏆 69번째 도메인 마일스톤, 70 Sprint 연속 정점 round 마일스톤 도전)
+// 거울 변환 22회차 (carsharing → ... → skiing → exhibition).
+// 🎨 AR+EX 예술/전시 2-클러스터 신규 형성 (시각 예술 갤러리 + 박람회/컨벤션 부스 통합 추상화).
+describe("exhibition domain — EX-001~006 via withRuleId (세션 306 후속5 F537, 🏆 69번째 도메인 마일스톤)", () => {
+  it("EX-001 PRESENCE — active_admissions >= MAX_CONCURRENT_ACTIVE_ADMISSIONS_PER_VENUE threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "exhibition.ts",
+      `const MAX_CONCURRENT_ACTIVE_ADMISSIONS_PER_VENUE = 10000;
+function bookBooth(db, venueId, contractId) {
+  const venue = db.prepare("SELECT active_admissions, total_capacity FROM venues WHERE id = ?").get(venueId);
+  const limit = venue.total_capacity ?? MAX_CONCURRENT_ACTIVE_ADMISSIONS_PER_VENUE;
+  if (venue.active_admissions >= limit) {
+    throw new ExhibitionError('E422-VENUE-CAPACITY-EXCEEDED', 'Venue is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["EX-001"]!(src, "exhibition.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("EX-002 PRESENCE — visitor_used + visitor >= dailyVisitorLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "exhibition.ts",
+      `function applyVisitorLimit(db, exhibitorId, contractId, visitor) {
+  const contract = db.prepare("SELECT visitor_used, visitor_limit FROM exhibitor_contracts WHERE id = ? AND exhibitor_id = ? LIMIT 1").get(contractId, exhibitorId);
+  const dailyVisitorLimit = contract.visitor_limit;
+  if (contract.visitor_used + visitor >= dailyVisitorLimit) {
+    throw new ExhibitionError('E422-DAILY-VISITOR-LIMIT-EXCEEDED', 'Daily visitor quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["EX-002"]!(src, "exhibition.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("EX-003 PRESENCE — db.transaction() in processBoothOpening (atomic admissions+booth_schedules+booth_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "exhibition.ts",
+      `function processBoothOpening(db, venueId, scheduleId, admissionNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO admissions (id, venue_id, schedule_id, admission_no, status, started_at) VALUES (?, ?, ?, ?, 'exhibited', ?)").run(admissionId, venueId, scheduleId, admissionNo, startedAt);
+    db.prepare("UPDATE booth_schedules SET status = 'exhibited', admission_id = ?, booth_payment_id = ? WHERE id = ?").run(admissionId, boothPaymentId, scheduleId);
+    db.prepare("INSERT INTO booth_payments (id, schedule_id, admission_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(boothPaymentId, scheduleId, admissionId, amount, startedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["EX-003"]!(src, "exhibition.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("EX-004 PRESENCE — status comparison + 'exhibited'/'updated'/'closed'/'withdrawn'/'cancelled' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "exhibition.ts",
+      `function transitionBoothStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM booth_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new ExhibitionError("E409-SCHEDULE", "Invalid transition", 409);
+  db.prepare("UPDATE booth_schedules SET status = 'exhibited' WHERE id = ?").run(scheduleId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["EX-004"]!(src, "exhibition.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("EX-005 PRESENCE — batch expire update in expireWithdrawnAdmissionBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "exhibition.ts",
+      `function transitionBoothStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM booth_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new ExhibitionError("E409-SCHEDULE", "Invalid", 409);
+  db.prepare("UPDATE booth_schedules SET status = 'exhibited' WHERE id = ?").run(scheduleId);
+}
+function expireWithdrawnAdmissionBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM admissions WHERE status = 'withdrawn' AND started_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE admissions SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["EX-005"]!(src, "exhibition.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("EX-006 PRESENCE — db.transaction() in processBoothRefund (atomic admission_refund_records+admission_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "exhibition.ts",
+      `function processBoothRefund(db, exhibitorId, admissionId, boothCost, refundRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO admission_refund_records (id, exhibitor_id, admission_id, booth_cost, refund_rate, refund_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(refundRecordId, exhibitorId, admissionId, boothCost, refundRate, refundAmount);
+    db.prepare("INSERT INTO admission_refunds (id, refund_record_id, exhibitor_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, refundRecordId, exhibitorId, refundAmount, refundedAt);
+    db.prepare("UPDATE admission_refund_records SET status = 'refunded' WHERE id = ?").run(refundRecordId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["EX-006"]!(src, "exhibition.ts");
     expect(markers).toHaveLength(0);
   });
 });

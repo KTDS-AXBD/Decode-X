@@ -1404,6 +1404,15 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "SK-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "SK-004"),
   "SK-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "SK-005"),
   "SK-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "SK-006"),
+  // 세션 306 후속5 (F537): Exhibition 합성 도메인 69번째 (58번째 신규 산업, 박람회/컨벤션).
+  // 🎨 AR+EX 예술/전시 2-클러스터 신규 형성 (시각 예술 갤러리 + 박람회/컨벤션 부스 통합 추상화).
+  // withRuleId 재사용 69번째 도메인. 🏆 69번째 도메인 마일스톤 (S262 5 → S306 69, 13.8배 확장).
+  "EX-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "EX-001"),
+  "EX-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "EX-002"),
+  "EX-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "EX-003"),
+  "EX-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "EX-004"),
+  "EX-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "EX-005"),
+  "EX-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "EX-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

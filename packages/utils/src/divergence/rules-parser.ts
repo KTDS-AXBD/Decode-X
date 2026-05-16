@@ -72,7 +72,8 @@ import type { BLRule } from "@ai-foundry/types";
 // F534 (세션 306 후속2): AM prefix 추가 (amusement 합성 도메인, 66번째 — 놀이공원/테마파크 산업, 55번째 신규). 🎢 오프라인 엔터테인먼트 신규 클러스터 출범 (디지털 12 + 게임엔터 2 + 오프라인 엔터 1 = 3 메타 카테고리). 67 Sprint 연속 정점 도전. 거울 변환 19회차 (carsharing → ... → gambling → amusement). 🏆 66번째 도메인 마일스톤 (S262 5 → S306 66, 13.2배 확장).
 // F535 (세션 306 후속3): TH prefix 추가 (theater 합성 도메인, 67번째 — 영화관/극장/공연장 산업, 56번째 신규). 🎭 AM+TH 오프라인 엔터 2-클러스터 확장 (테마파크 입장권 + 극장 좌석권 통합 추상화). 68 Sprint 연속 정점 도전. 거울 변환 20회차 정점 round 마일스톤 (carsharing → ... → amusement → theater). 🏆 67번째 도메인 마일스톤 (S262 5 → S306 67, 13.4배 확장).
 // F536 (세션 306 후속4): SK prefix 추가 (skiing 합성 도메인, 68번째 — 스키 리조트 산업, 57번째 신규). 🏔️ SP+SK 스포츠 레저 2-클러스터 신규 형성 (피트니스/스포츠 + 윈터 레저 통합 추상화). 69 Sprint 연속 정점 도전. 거울 변환 21회차 (carsharing → ... → theater → skiing). 🏆 68번째 도메인 마일스톤 (S262 5 → S306 68, 13.6배 확장).
-const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|BK|BR|BT|LP|AD|AM|AR|AS|CC|CH|CS|DV|SB|SH|SK|SP|IN|HC|ED|ER|GA|RA|RE|LG|HO|TM|TH|TR|MF|RT|EN|GM|GV|TC|MD|PC|PH|AG|CN|MR|TS|AV|MN|DF|FS|FT|GY|MU|NW|PB|PK|TX|VD|SM|WL|PT|PR|VT|P|V)-[A-Z]?\d{1,3}$/;
+// F537 (세션 306 후속5): EX prefix 추가 (exhibition 합성 도메인, 69번째 — 박람회/컨벤션 산업, 58번째 신규). 🎨 AR+EX 예술/전시 2-클러스터 신규 형성 (시각 예술 갤러리 + 박람회/컨벤션 부스 통합 추상화). 70 Sprint 연속 정점 round 마일스톤 도전. 거울 변환 22회차 (carsharing → ... → skiing → exhibition). 🏆 69번째 도메인 마일스톤 (S262 5 → S306 69, 13.8배 확장).
+const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|BK|BR|BT|LP|AD|AM|AR|AS|CC|CH|CS|DV|SB|SH|SK|SP|IN|HC|ED|ER|EX|GA|RA|RE|LG|HO|TM|TH|TR|MF|RT|EN|GM|GV|TC|MD|PC|PH|AG|CN|MR|TS|AV|MN|DF|FS|FT|GY|MU|NW|PB|PK|TX|VD|SM|WL|PT|PR|VT|P|V)-[A-Z]?\d{1,3}$/;
 const HEADER_PATTERN =
   /\|\s*ID\s*\|\s*condition[^|]*\|\s*criteria[^|]*\|\s*outcome[^|]*\|\s*exception[^|]*\|/i;
 const SEPARATOR_PATTERN = /^\s*\|[\s:|-]+\|\s*$/;

@@ -1,0 +1,52 @@
+---
+# Provenance — GLF-001
+# 70번째 도메인 🏆🏆 round 마일스톤 — Golf 합성 도메인 PoC (59번째 신규 산업)
+
+skillId: GLF-001
+extractedAt: "2026-05-16T00:00:00+09:00"
+extractedBy: "Decode-X 세션 306 후속6 F538 — withRuleId 재사용 70번째 도메인 (Golf 골프장/필드 운영 산업, 59번째 신규) 🏆🏆 70번째 도메인 round 마일스톤"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/golf/rules/golf-rules.md"
+    section: "Golf 합성 비즈니스 룰 — GF-001~GF-006"
+    businessRules: [GF-001, GF-002, GF-003, GF-004, GF-005, GF-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 골프장/필드 운영(Golf) 산업 일반화 PoC. 코스round한도/memberdailyround한도/티오프batchatomic/round상태전환/만료suspendedround일괄/course환불atomic 추상화. 70번째 도메인 🏆🏆 round 마일스톤 + 59번째 신규 산업. 71 Sprint 연속 정점 도전. 거울 변환 23회차 (carsharing → ... → exhibition → golf). ⛳ SP+SK+GF 스포츠 레저 3-클러스터 확장 (피트니스/스포츠 + 윈터 레저 + 골프 통합 추상화 — 단일 클러스터 3 도메인 첫 사례)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/golf.ts"
+    functions: [reserveTeeTime, applyRoundLimit, processTeeOff, transitionRoundStatus, expireSuspendedRoundBatch, processCourseRefund]
+
+detection:
+  - ruleId: GF-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "course.active_rounds >= limit (UPPERCASE fallback MAX_CONCURRENT_ACTIVE_ROUNDS_PER_COURSE, Path A)"
+  - ruleId: GF-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "contract.round_used + round >= dailyRoundLimit (Path B, limit keyword)"
+  - ruleId: GF-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "db.transaction() — rounds INSERT + tee_schedules UPDATE + round_payments INSERT"
+  - ruleId: GF-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "reserved → teedoff → updated → finished / suspended / cancelled"
+  - ruleId: GF-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "batch: expire 갱신 (EX-005/SK-005/TH-005/AM-005/GA-005/AR-005/RA-005/PC-005/ER-005/BR-005/NW-005/SM-005/VD-005 59번째 재사용)"
+  - ruleId: GF-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "db.transaction() — round_refund_records INSERT + round_refunds INSERT + round_refund_records UPDATE"

@@ -860,6 +860,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "GA-004",
       "GA-005",
       "GA-006",
+      "GF-001",
+      "GF-002",
+      "GF-003",
+      "GF-004",
+      "GF-005",
+      "GF-006",
       "GM-001",
       "GM-002",
       "GM-003",
@@ -1402,6 +1408,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["EX-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["EX-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["EX-006"]).toBeDefined();
+  });
+
+  it("GF-001~GF-006 registered (세션 306 후속6 F538 — golf 70번째 도메인 🏆🏆 round 마일스톤, 59번째 신규 산업, 71 Sprint 연속 정점 도전, 거울 변환 23회차, ⛳ SP+SK+GF 스포츠 레저 3-클러스터 확장 — 피트니스/스포츠 + 윈터 레저 + 골프 통합 추상화, 단일 클러스터 3 도메인 첫 사례)", () => {
+    expect(BL_DETECTOR_REGISTRY["GF-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["GF-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["GF-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["GF-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["GF-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["GF-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -6936,6 +6951,106 @@ function expireWithdrawnAdmissionBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["EX-006"]!(src, "exhibition.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+// F538 (세션 306 후속6) — golf domain GF-001~006 via withRuleId (🏆🏆 70번째 도메인 round 마일스톤, 71 Sprint 연속 정점 도전)
+// 거울 변환 23회차 (carsharing → ... → exhibition → golf).
+// ⛳ SP+SK+GF 스포츠 레저 3-클러스터 확장 (피트니스/스포츠 + 윈터 레저 + 골프 통합 추상화 — 단일 클러스터 3 도메인 첫 사례).
+describe("golf domain — GF-001~006 via withRuleId (세션 306 후속6 F538, 🏆🏆 70번째 도메인 round 마일스톤)", () => {
+  it("GF-001 PRESENCE — active_rounds >= MAX_CONCURRENT_ACTIVE_ROUNDS_PER_COURSE threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "golf.ts",
+      `const MAX_CONCURRENT_ACTIVE_ROUNDS_PER_COURSE = 200;
+function reserveTeeTime(db, courseId, contractId) {
+  const course = db.prepare("SELECT active_rounds, total_capacity FROM courses WHERE id = ?").get(courseId);
+  const limit = course.total_capacity ?? MAX_CONCURRENT_ACTIVE_ROUNDS_PER_COURSE;
+  if (course.active_rounds >= limit) {
+    throw new GolfError('E422-COURSE-CAPACITY-EXCEEDED', 'Course is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GF-001"]!(src, "golf.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("GF-002 PRESENCE — round_used + round >= dailyRoundLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "golf.ts",
+      `function applyRoundLimit(db, memberId, contractId, round) {
+  const contract = db.prepare("SELECT round_used, round_limit FROM member_contracts WHERE id = ? AND member_id = ? LIMIT 1").get(contractId, memberId);
+  const dailyRoundLimit = contract.round_limit;
+  if (contract.round_used + round >= dailyRoundLimit) {
+    throw new GolfError('E422-DAILY-ROUND-LIMIT-EXCEEDED', 'Daily round quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GF-002"]!(src, "golf.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("GF-003 PRESENCE — db.transaction() in processTeeOff (atomic rounds+tee_schedules+round_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "golf.ts",
+      `function processTeeOff(db, courseId, scheduleId, roundNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO rounds (id, course_id, schedule_id, round_no, status, started_at) VALUES (?, ?, ?, ?, 'teedoff', ?)").run(roundId, courseId, scheduleId, roundNo, startedAt);
+    db.prepare("UPDATE tee_schedules SET status = 'teedoff', round_id = ?, round_payment_id = ? WHERE id = ?").run(roundId, roundPaymentId, scheduleId);
+    db.prepare("INSERT INTO round_payments (id, schedule_id, round_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(roundPaymentId, scheduleId, roundId, amount, startedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GF-003"]!(src, "golf.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("GF-004 PRESENCE — status comparison + 'teedoff'/'updated'/'finished'/'suspended'/'cancelled' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "golf.ts",
+      `function transitionRoundStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM tee_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new GolfError("E409-SCHEDULE", "Invalid transition", 409);
+  db.prepare("UPDATE tee_schedules SET status = 'teedoff' WHERE id = ?").run(scheduleId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GF-004"]!(src, "golf.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("GF-005 PRESENCE — batch expire update in expireSuspendedRoundBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "golf.ts",
+      `function transitionRoundStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM tee_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new GolfError("E409-SCHEDULE", "Invalid", 409);
+  db.prepare("UPDATE tee_schedules SET status = 'teedoff' WHERE id = ?").run(scheduleId);
+}
+function expireSuspendedRoundBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM rounds WHERE status = 'suspended' AND started_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE rounds SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GF-005"]!(src, "golf.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("GF-006 PRESENCE — db.transaction() in processCourseRefund (atomic round_refund_records+round_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "golf.ts",
+      `function processCourseRefund(db, memberId, roundId, roundCost, refundRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO round_refund_records (id, member_id, round_id, round_cost, refund_rate, refund_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(refundRecordId, memberId, roundId, roundCost, refundRate, refundAmount);
+    db.prepare("INSERT INTO round_refunds (id, refund_record_id, member_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, refundRecordId, memberId, refundAmount, refundedAt);
+    db.prepare("UPDATE round_refund_records SET status = 'refunded' WHERE id = ?").run(refundRecordId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GF-006"]!(src, "golf.ts");
     expect(markers).toHaveLength(0);
   });
 });

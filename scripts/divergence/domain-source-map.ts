@@ -1317,6 +1317,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processBoothRefund",
     ],
   },
+  {
+    container: "golf",
+    rulesPath: `${SPEC_CONTAINER_BASE}/golf/rules/golf-rules.md`,
+    // 세션 306 후속6 (F538): Golf 합성 도메인 — 70번째 도메인 🏆🏆 round 마일스톤 (골프장/필드 운영 산업, 59번째 신규 산업).
+    // GF-001~GF-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 23회차 (carsharing → ... → exhibition → golf) — ⛳ SP+SK+GF 스포츠 레저 3-클러스터 확장 (피트니스/스포츠 + 윈터 레저 + 골프 통합 추상화 — 단일 클러스터 3 도메인 첫 사례).
+    // 🏆🏆 70번째 도메인 round 마일스톤 (S262 5 → S306 70, 14.0배 확장).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/golf.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/golf/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "reserveTeeTime",
+      "applyRoundLimit",
+      "processTeeOff",
+      "transitionRoundStatus",
+      "expireSuspendedRoundBatch",
+      "processCourseRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

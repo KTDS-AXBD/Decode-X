@@ -1413,6 +1413,15 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "EX-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "EX-004"),
   "EX-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "EX-005"),
   "EX-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "EX-006"),
+  // 세션 306 후속6 (F538): Golf 합성 도메인 70번째 🏆🏆 round 마일스톤 (59번째 신규 산업, 골프장/필드 운영).
+  // ⛳ SP+SK+GF 스포츠 레저 3-클러스터 확장 (피트니스/스포츠 + 윈터 레저 + 골프 통합 추상화 — 단일 클러스터 3 도메인 첫 사례).
+  // withRuleId 재사용 70번째 도메인. 🏆🏆 70번째 도메인 round 마일스톤 (S262 5 → S306 70, 14.0배 확장).
+  "GF-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "GF-001"),
+  "GF-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "GF-002"),
+  "GF-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "GF-003"),
+  "GF-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "GF-004"),
+  "GF-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "GF-005"),
+  "GF-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "GF-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

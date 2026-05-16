@@ -1,0 +1,62 @@
+# Test scenarios — Golf domain GF-001~GF-006
+# 세션 306 후속6 F538 — Golf 골프장/필드 운영 합성 도메인 (🏆🏆 70번째 도메인 round 마일스톤)
+
+scenarios:
+  - id: GF-001-PASS
+    rule: GF-001
+    description: "정원 내 tee time 예약 — 성공"
+    input: { active_rounds: 100, total_capacity: 200 }
+    expected: PASS
+
+  - id: GF-001-FAIL
+    rule: GF-001
+    description: "코스 round 정원 초과 — E422-COURSE-CAPACITY-EXCEEDED"
+    input: { active_rounds: 200, total_capacity: 200 }
+    expected: FAIL
+    error: E422-COURSE-CAPACITY-EXCEEDED
+
+  - id: GF-002-PASS
+    rule: GF-002
+    description: "일일 round 한도 내 사용 — 성공"
+    input: { round_used: 1, round_limit: 3, round: 1 }
+    expected: PASS
+
+  - id: GF-002-FAIL
+    rule: GF-002
+    description: "일일 round 한도 초과 — E422-DAILY-ROUND-LIMIT-EXCEEDED"
+    input: { round_used: 2, round_limit: 3, round: 1 }
+    expected: FAIL
+    error: E422-DAILY-ROUND-LIMIT-EXCEEDED
+
+  - id: GF-003-PASS
+    rule: GF-003
+    description: "reserved 상태 티오프 atomic — 성공"
+    input: { schedule_status: reserved }
+    expected: PASS
+
+  - id: GF-004-PASS
+    rule: GF-004
+    description: "reserved → teedoff 전환 허용"
+    input: { previous: reserved, next: teedoff }
+    expected: PASS
+
+  - id: GF-004-FAIL
+    rule: GF-004
+    description: "cancelled → reserved 역행 차단 — E409-SCHEDULE"
+    input: { previous: cancelled, next: reserved }
+    expected: FAIL
+    error: E409-SCHEDULE
+
+  - id: GF-005-PASS
+    rule: GF-005
+    description: "suspended round batch expire — 대상 1건"
+    input: { rounds: [{ status: suspended, started_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: GF-006-PASS
+    rule: GF-006
+    description: "suspended round course 환불 atomic — 성공"
+    input: { round_status: suspended, round_cost: 200000, refund_rate: 0.5 }
+    expected: PASS
+    expectedRefundAmount: 100000

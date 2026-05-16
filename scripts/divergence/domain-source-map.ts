@@ -1374,6 +1374,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processSessionRefund",
     ],
   },
+  {
+    container: "aquarium",
+    rulesPath: `${SPEC_CONTAINER_BASE}/aquarium/rules/aquarium-rules.md`,
+    // 세션 306 후속9 (F541): Aquarium 합성 도메인 — 73번째 도메인 (수족관/해양생물 산업, 62번째 신규 산업). 🏆🏆🏆 1세션 10 Sprint 신기록 도전.
+    // AQ-001~AQ-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 26회차 (carsharing → ... → surfing → aquarium) — 🐠 AM+TH+KP+AQ 오프라인 엔터 4-클러스터 확장 (놀이공원 + 극장 + 콘서트 + 수족관 통합 추상화 — 단일 클러스터 4 도메인 두 번째 사례, 두 클러스터 동시 4 도메인 첫 사례).
+    // 🏆 73번째 도메인 마일스톤 (S262 5 → S306 73, 14.6배 확장).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/aquarium.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/aquarium/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "bookAdmit",
+      "applyTourLimit",
+      "processAdmitEntry",
+      "transitionAdmitStatus",
+      "expireClosedAdmitBatch",
+      "processTourRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

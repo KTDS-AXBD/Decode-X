@@ -1,0 +1,52 @@
+---
+# Provenance — AQU-001
+# 73번째 도메인 — Aquarium 합성 도메인 PoC (62번째 신규 산업, 🏆🏆🏆 1세션 10 Sprint 신기록 도전)
+
+skillId: AQU-001
+extractedAt: "2026-05-16T00:00:00+09:00"
+extractedBy: "Decode-X 세션 306 후속9 F541 — withRuleId 재사용 73번째 도메인 (Aquarium 수족관/해양생물 산업, 62번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/aquarium/rules/aquarium-rules.md"
+    section: "Aquarium 합성 비즈니스 룰 — AQ-001~AQ-006"
+    businessRules: [AQ-001, AQ-002, AQ-003, AQ-004, AQ-005, AQ-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 수족관/해양생물(Aquarium) 산업 일반화 PoC. 수족관admit한도/guestdailytour한도/입장batchatomic/admit상태전환/만료closedadmit일괄/tour환불atomic 추상화. 73번째 도메인 + 62번째 신규 산업. 🏆🏆🏆 1세션 10 Sprint 신기록 도전. 74 Sprint 연속 정점 도전. 거울 변환 26회차 (carsharing → ... → surfing → aquarium). 🐠 AM+TH+KP+AQ 오프라인 엔터 4-클러스터 확장 (놀이공원 + 극장 + 콘서트 + 수족관 통합 추상화 — 단일 클러스터 4 도메인 두 번째 사례, SP 4-클러스터에 이어 두 클러스터 동시 4 도메인 형성 마일스톤)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/aquarium.ts"
+    functions: [bookAdmit, applyTourLimit, processAdmitEntry, transitionAdmitStatus, expireClosedAdmitBatch, processTourRefund]
+
+detection:
+  - ruleId: AQ-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "aquarium.active_admits >= limit (UPPERCASE fallback MAX_CONCURRENT_ACTIVE_ADMITS_PER_AQUARIUM, Path A)"
+  - ruleId: AQ-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "contract.tour_used + tour >= dailyTourLimit (Path B, limit keyword)"
+  - ruleId: AQ-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "db.transaction() — admits INSERT + tour_schedules UPDATE + admit_payments INSERT"
+  - ruleId: AQ-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "reserved → toured → updated → ended / closed / cancelled"
+  - ruleId: AQ-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "batch: expire 갱신 (SF-005/KP-005/GF-005/EX-005/SK-005/TH-005/AM-005/GA-005/AR-005/RA-005/PC-005/ER-005/BR-005/NW-005/SM-005/VD-005 62번째 재사용)"
+  - ruleId: AQ-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-16T00:00:00+09:00"
+    notes: "db.transaction() — admit_refund_records INSERT + admit_refunds INSERT + admit_refund_records UPDATE"

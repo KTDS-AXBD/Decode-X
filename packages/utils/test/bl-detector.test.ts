@@ -697,6 +697,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "AM-004",
       "AM-005",
       "AM-006",
+      "AQ-001",
+      "AQ-002",
+      "AQ-003",
+      "AQ-004",
+      "AQ-005",
+      "AQ-006",
       "AR-001",
       "AR-002",
       "AR-003",
@@ -1447,6 +1453,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["SF-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["SF-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["SF-006"]).toBeDefined();
+  });
+
+  it("AQ-001~AQ-006 registered (세션 306 후속9 F541 — aquarium 73번째 도메인, 62번째 신규 산업, 🏆🏆🏆 1세션 10 Sprint 신기록 도전, 74 Sprint 연속 정점 도전, 거울 변환 26회차, 🐠 AM+TH+KP+AQ 오프라인 엔터 4-클러스터 확장 — 놀이공원 + 극장 + 콘서트 + 수족관 통합 추상화, 단일 클러스터 4 도메인 두 번째 사례)", () => {
+    expect(BL_DETECTOR_REGISTRY["AQ-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AQ-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AQ-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AQ-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AQ-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AQ-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -7281,6 +7296,106 @@ function expireSuspendedBoardBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["SF-006"]!(src, "surfing.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+// F541 (세션 306 후속9) — aquarium domain AQ-001~006 via withRuleId (🏆🏆🏆 1세션 10 Sprint 신기록 도전, 74 Sprint 연속 정점 도전)
+// 거울 변환 26회차 (carsharing → ... → surfing → aquarium).
+// 🐠 AM+TH+KP+AQ 오프라인 엔터 4-클러스터 확장 (놀이공원 + 극장 + 콘서트 + 수족관 통합 추상화 — 단일 클러스터 4 도메인 두 번째 사례, 두 클러스터 동시 4 도메인 첫 사례).
+describe("aquarium domain — AQ-001~006 via withRuleId (세션 306 후속9 F541, 🏆🏆🏆 1세션 10 Sprint 신기록 도전)", () => {
+  it("AQ-001 PRESENCE — active_admits >= MAX_CONCURRENT_ACTIVE_ADMITS_PER_AQUARIUM threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "aquarium.ts",
+      `const MAX_CONCURRENT_ACTIVE_ADMITS_PER_AQUARIUM = 8000;
+function bookAdmit(db, aquariumId, contractId) {
+  const aquarium = db.prepare("SELECT active_admits, total_capacity FROM aquariums WHERE id = ?").get(aquariumId);
+  const limit = aquarium.total_capacity ?? MAX_CONCURRENT_ACTIVE_ADMITS_PER_AQUARIUM;
+  if (aquarium.active_admits >= limit) {
+    throw new AquariumError('E422-AQUARIUM-CAPACITY-EXCEEDED', 'Aquarium is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AQ-001"]!(src, "aquarium.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("AQ-002 PRESENCE — tour_used + tour >= dailyTourLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "aquarium.ts",
+      `function applyTourLimit(db, guestId, contractId, tour) {
+  const contract = db.prepare("SELECT tour_used, tour_limit FROM guest_contracts WHERE id = ? AND guest_id = ? LIMIT 1").get(contractId, guestId);
+  const dailyTourLimit = contract.tour_limit;
+  if (contract.tour_used + tour >= dailyTourLimit) {
+    throw new AquariumError('E422-DAILY-TOUR-LIMIT-EXCEEDED', 'Daily tour quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AQ-002"]!(src, "aquarium.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("AQ-003 PRESENCE — db.transaction() in processAdmitEntry (atomic admits+tour_schedules+admit_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "aquarium.ts",
+      `function processAdmitEntry(db, aquariumId, scheduleId, admitNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO admits (id, aquarium_id, schedule_id, admit_no, status, started_at) VALUES (?, ?, ?, ?, 'toured', ?)").run(admitId, aquariumId, scheduleId, admitNo, startedAt);
+    db.prepare("UPDATE tour_schedules SET status = 'toured', admit_id = ?, admit_payment_id = ? WHERE id = ?").run(admitId, admitPaymentId, scheduleId);
+    db.prepare("INSERT INTO admit_payments (id, schedule_id, admit_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(admitPaymentId, scheduleId, admitId, amount, startedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AQ-003"]!(src, "aquarium.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("AQ-004 PRESENCE — status comparison + 'toured'/'updated'/'ended'/'closed'/'cancelled' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "aquarium.ts",
+      `function transitionAdmitStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM tour_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new AquariumError("E409-SCHEDULE", "Invalid transition", 409);
+  db.prepare("UPDATE tour_schedules SET status = 'toured' WHERE id = ?").run(scheduleId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AQ-004"]!(src, "aquarium.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("AQ-005 PRESENCE — batch expire update in expireClosedAdmitBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "aquarium.ts",
+      `function transitionAdmitStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM tour_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new AquariumError("E409-SCHEDULE", "Invalid", 409);
+  db.prepare("UPDATE tour_schedules SET status = 'toured' WHERE id = ?").run(scheduleId);
+}
+function expireClosedAdmitBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM admits WHERE status = 'closed' AND started_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE admits SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AQ-005"]!(src, "aquarium.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("AQ-006 PRESENCE — db.transaction() in processTourRefund (atomic admit_refund_records+admit_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "aquarium.ts",
+      `function processTourRefund(db, guestId, admitId, admitCost, refundRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO admit_refund_records (id, guest_id, admit_id, admit_cost, refund_rate, refund_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(refundRecordId, guestId, admitId, admitCost, refundRate, refundAmount);
+    db.prepare("INSERT INTO admit_refunds (id, refund_record_id, guest_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, refundRecordId, guestId, refundAmount, refundedAt);
+    db.prepare("UPDATE admit_refund_records SET status = 'refunded' WHERE id = ?").run(refundRecordId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["AQ-006"]!(src, "aquarium.ts");
     expect(markers).toHaveLength(0);
   });
 });

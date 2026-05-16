@@ -1440,6 +1440,15 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "SF-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "SF-004"),
   "SF-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "SF-005"),
   "SF-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "SF-006"),
+  // 세션 306 후속9 (F541): Aquarium 합성 도메인 73번째 (62번째 신규 산업, 수족관/해양생물) 🏆🏆🏆 1세션 10 Sprint 신기록 도전.
+  // 🐠 AM+TH+KP+AQ 오프라인 엔터 4-클러스터 확장 (놀이공원 + 극장 + 콘서트 + 수족관 통합 추상화 — 단일 클러스터 4 도메인 두 번째 사례, 두 클러스터 동시 4 도메인 첫 사례).
+  // withRuleId 재사용 73번째 도메인. 🏆 73번째 도메인 마일스톤 (S262 5 → S306 73, 14.6배 확장).
+  "AQ-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "AQ-001"),
+  "AQ-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "AQ-002"),
+  "AQ-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "AQ-003"),
+  "AQ-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "AQ-004"),
+  "AQ-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "AQ-005"),
+  "AQ-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "AQ-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

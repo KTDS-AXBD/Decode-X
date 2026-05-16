@@ -1,0 +1,62 @@
+# Test scenarios — Aquarium domain AQ-001~AQ-006
+# 세션 306 후속9 F541 — Aquarium 수족관/해양생물 합성 도메인 (🏆🏆🏆 1세션 10 Sprint 신기록 도전, 73번째 도메인)
+
+scenarios:
+  - id: AQ-001-PASS
+    rule: AQ-001
+    description: "정원 내 admit 예약 — 성공"
+    input: { active_admits: 5000, total_capacity: 8000 }
+    expected: PASS
+
+  - id: AQ-001-FAIL
+    rule: AQ-001
+    description: "수족관 admit 정원 초과 — E422-AQUARIUM-CAPACITY-EXCEEDED"
+    input: { active_admits: 8000, total_capacity: 8000 }
+    expected: FAIL
+    error: E422-AQUARIUM-CAPACITY-EXCEEDED
+
+  - id: AQ-002-PASS
+    rule: AQ-002
+    description: "일일 tour 한도 내 사용 — 성공"
+    input: { tour_used: 1, tour_limit: 3, tour: 1 }
+    expected: PASS
+
+  - id: AQ-002-FAIL
+    rule: AQ-002
+    description: "일일 tour 한도 초과 — E422-DAILY-TOUR-LIMIT-EXCEEDED"
+    input: { tour_used: 2, tour_limit: 3, tour: 1 }
+    expected: FAIL
+    error: E422-DAILY-TOUR-LIMIT-EXCEEDED
+
+  - id: AQ-003-PASS
+    rule: AQ-003
+    description: "reserved 상태 관람 입장 atomic — 성공"
+    input: { schedule_status: reserved }
+    expected: PASS
+
+  - id: AQ-004-PASS
+    rule: AQ-004
+    description: "reserved → toured 전환 허용"
+    input: { previous: reserved, next: toured }
+    expected: PASS
+
+  - id: AQ-004-FAIL
+    rule: AQ-004
+    description: "cancelled → reserved 역행 차단 — E409-SCHEDULE"
+    input: { previous: cancelled, next: reserved }
+    expected: FAIL
+    error: E409-SCHEDULE
+
+  - id: AQ-005-PASS
+    rule: AQ-005
+    description: "closed admit batch expire — 대상 1건"
+    input: { admits: [{ status: closed, started_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: AQ-006-PASS
+    rule: AQ-006
+    description: "closed admit tour 환불 atomic — 성공"
+    input: { admit_status: closed, admit_cost: 30000, refund_rate: 0.5 }
+    expected: PASS
+    expectedRefundAmount: 15000

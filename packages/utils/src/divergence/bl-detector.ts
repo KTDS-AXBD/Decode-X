@@ -1457,6 +1457,14 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "ZO-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "ZO-004"),
   "ZO-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "ZO-005"),
   "ZO-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "ZO-006"),
+  // 세션 307 후속 (F543): Museum 합성 도메인 75번째 (64번째 신규 산업, 박물관/미술관). 🏛️ AM+TH+KP+AQ+ZO+MS 오프라인 엔터 6-클러스터 확장 (단일 클러스터 6 도메인 첫 사례 마일스톤).
+  // withRuleId 재사용 75번째 도메인. 🏆🏆 75번째 도메인 15배 round 마일스톤 (S262 5 → S371 75, 15.0배 확장). Sprint WT autopilot 분리 작업 2회차.
+  "MS-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "MS-001"),
+  "MS-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "MS-002"),
+  "MS-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "MS-003"),
+  "MS-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "MS-004"),
+  "MS-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "MS-005"),
+  "MS-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "MS-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

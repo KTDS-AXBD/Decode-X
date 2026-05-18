@@ -1412,6 +1412,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processVisitRefund",
     ],
   },
+  {
+    container: "museum",
+    rulesPath: `${SPEC_CONTAINER_BASE}/museum/rules/museum-rules.md`,
+    // 세션 307 후속 (F543): Museum 합성 도메인 — 75번째 도메인 (박물관/미술관 산업, 64번째 신규 산업). Sprint WT autopilot 분리 작업 2회차.
+    // MS-001~MS-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 28회차 (carsharing → ... → zoo → museum) — 🏛️ AM+TH+KP+AQ+ZO+MS 오프라인 엔터 6-클러스터 확장 (놀이공원 + 극장 + 콘서트 + 수족관 + 동물원 + 박물관 통합 추상화 — 단일 클러스터 6 도메인 첫 사례 마일스톤).
+    // 🏆🏆 75번째 도메인 15배 round 마일스톤 (S262 5 → S371 75, 15.0배 확장).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/museum.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/museum/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "bookAdmission",
+      "applyGalleryLimit",
+      "processGalleryEntry",
+      "transitionGalleryStatus",
+      "expireClosedGalleryBatch",
+      "processAdmissionRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

@@ -1,0 +1,63 @@
+---
+# Test scenarios — Museum domain MS-001~MS-006
+# 세션 307 후속 F543 — Museum 박물관/미술관 합성 도메인 (🏛️ 단일 클러스터 6 도메인 첫 사례 마일스톤, 75번째 도메인)
+
+scenarios:
+  - id: MS-001-PASS
+    rule: MS-001
+    description: "정원 내 입장 예약 — 성공"
+    input: { active_visits: 2000, total_capacity: 5000 }
+    expected: PASS
+
+  - id: MS-001-FAIL
+    rule: MS-001
+    description: "박물관 입장 정원 초과 — E422-MUSEUM-CAPACITY-EXCEEDED"
+    input: { active_visits: 5000, total_capacity: 5000 }
+    expected: FAIL
+    error: E422-MUSEUM-CAPACITY-EXCEEDED
+
+  - id: MS-002-PASS
+    rule: MS-002
+    description: "일일 갤러리 한도 내 관람 — 성공"
+    input: { gallery_used: 1, gallery_limit: 3, galleries: 1 }
+    expected: PASS
+
+  - id: MS-002-FAIL
+    rule: MS-002
+    description: "일일 갤러리 한도 초과 — E422-DAILY-GALLERY-LIMIT-EXCEEDED"
+    input: { gallery_used: 2, gallery_limit: 3, galleries: 1 }
+    expected: FAIL
+    error: E422-DAILY-GALLERY-LIMIT-EXCEEDED
+
+  - id: MS-003-PASS
+    rule: MS-003
+    description: "reserved 상태 갤러리 입장 atomic — 성공"
+    input: { schedule_status: reserved }
+    expected: PASS
+
+  - id: MS-004-PASS
+    rule: MS-004
+    description: "reserved → visited 전환 허용"
+    input: { previous: reserved, next: visited }
+    expected: PASS
+
+  - id: MS-004-FAIL
+    rule: MS-004
+    description: "cancelled → reserved 역행 차단 — E409-SCHEDULE"
+    input: { previous: cancelled, next: reserved }
+    expected: FAIL
+    error: E409-SCHEDULE
+
+  - id: MS-005-PASS
+    rule: MS-005
+    description: "closed 관람 batch expire — 대상 1건"
+    input: { visits: [{ status: closed, started_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: MS-006-PASS
+    rule: MS-006
+    description: "closed 관람 환불 atomic — 성공"
+    input: { visit_status: closed, visit_cost: 15000, refund_rate: 0.5 }
+    expected: PASS
+    expectedRefundAmount: 7500

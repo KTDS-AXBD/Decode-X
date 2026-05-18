@@ -1,0 +1,52 @@
+---
+# Provenance — ZOO-001
+# 74번째 도메인 — Zoo 합성 도메인 PoC (63번째 신규 산업, 🦁 단일 클러스터 5 도메인 첫 사례 마일스톤)
+
+skillId: ZOO-001
+extractedAt: "2026-05-18T00:00:00+09:00"
+extractedBy: "Decode-X 세션 307 F542 — withRuleId 재사용 74번째 도메인 (Zoo 동물원 산업, 63번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/zoo/rules/zoo-rules.md"
+    section: "Zoo 합성 비즈니스 룰 — ZO-001~ZO-006"
+    businessRules: [ZO-001, ZO-002, ZO-003, ZO-004, ZO-005, ZO-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 동물원(Zoo) 산업 일반화 PoC. 동물원visit한도/visitordailyzone한도/입장batchatomic/visit상태전환/만료closedvisit일괄/visit환불atomic 추상화. 74번째 도메인 + 63번째 신규 산업. 🦁 단일 클러스터 5 도메인 첫 사례 마일스톤 (AM+TH+KP+AQ+ZO 오프라인 엔터 5-클러스터 확장). 75 Sprint 연속 정점 도전. 거울 변환 27회차 (carsharing → ... → aquarium → zoo). Sprint WT autopilot 분리 작업 (Master inline 57회 정점 후 분리 검증)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/zoo.ts"
+    functions: [bookVisit, applyZoneLimit, processExhibitEntry, transitionVisitStatus, expireClosedVisitBatch, processVisitRefund]
+
+detection:
+  - ruleId: ZO-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-18T00:00:00+09:00"
+    notes: "zoo.active_visits >= limit (UPPERCASE fallback MAX_CONCURRENT_ACTIVE_VISITS_PER_ZOO, Path A)"
+  - ruleId: ZO-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-18T00:00:00+09:00"
+    notes: "pass.zone_used + zone >= zoneLimit (Path B, limit keyword)"
+  - ruleId: ZO-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-18T00:00:00+09:00"
+    notes: "db.transaction() — zoo_visits INSERT + exhibit_schedules UPDATE + visit_payments INSERT"
+  - ruleId: ZO-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-18T00:00:00+09:00"
+    notes: "reserved → visited → updated → ended / closed / cancelled"
+  - ruleId: ZO-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-18T00:00:00+09:00"
+    notes: "batch: expire 갱신 (SF-005/KP-005/.../AQ-005 63번째 재사용)"
+  - ruleId: ZO-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-18T00:00:00+09:00"
+    notes: "db.transaction() — visit_refund_records INSERT + visit_refunds INSERT + visit_refund_records UPDATE"

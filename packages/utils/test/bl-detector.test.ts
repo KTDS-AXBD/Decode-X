@@ -677,7 +677,7 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 308 detectors (세션 300 F509 — music streaming 51번째 도메인 +6 detectors, 52 Sprint 연속 정점 도전)", () => {
+  it("exposes 314 detectors (세션 307 F542 — zoo 74번째 도메인 +6 detectors, 🦁 단일 클러스터 5 도메인 첫 사례 마일스톤)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AD-001",
       "AD-002",
@@ -1119,6 +1119,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "WL-004",
       "WL-005",
       "WL-006",
+      "ZO-001",
+      "ZO-002",
+      "ZO-003",
+      "ZO-004",
+      "ZO-005",
+      "ZO-006",
     ]);
   });
 
@@ -1462,6 +1468,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["AQ-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["AQ-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["AQ-006"]).toBeDefined();
+  });
+
+  it("ZO-001~ZO-006 registered (세션 307 F542 — zoo 74번째 도메인, 63번째 신규 산업, 🦁 AM+TH+KP+AQ+ZO 오프라인 엔터 5-클러스터 확장 — 단일 클러스터 5 도메인 첫 사례 마일스톤, 75 Sprint 연속 정점 도전, 거울 변환 27회차)", () => {
+    expect(BL_DETECTOR_REGISTRY["ZO-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["ZO-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["ZO-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["ZO-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["ZO-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["ZO-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -7396,6 +7411,103 @@ function expireClosedAdmitBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["AQ-006"]!(src, "aquarium.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+describe("zoo domain — ZO-001~006 via withRuleId (세션 307 F542, 🦁 단일 클러스터 5 도메인 첫 사례 마일스톤)", () => {
+  it("ZO-001 PRESENCE — active_visits >= MAX_CONCURRENT_ACTIVE_VISITS_PER_ZOO threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "zoo.ts",
+      `const MAX_CONCURRENT_ACTIVE_VISITS_PER_ZOO = 15000;
+function bookVisit(db, zooId, passId) {
+  const zoo = db.prepare("SELECT active_visits, total_capacity FROM zoos WHERE id = ?").get(zooId);
+  const limit = zoo.total_capacity ?? MAX_CONCURRENT_ACTIVE_VISITS_PER_ZOO;
+  if (zoo.active_visits >= limit) {
+    throw new ZooError('E422-ZOO-CAPACITY-EXCEEDED', 'Zoo is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["ZO-001"]!(src, "zoo.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("ZO-002 PRESENCE — zone_used + zone >= zoneLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "zoo.ts",
+      `function applyZoneLimit(db, visitorId, passId, zone) {
+  const pass = db.prepare("SELECT zone_used, zone_limit FROM visitor_passes WHERE id = ? AND visitor_id = ? LIMIT 1").get(passId, visitorId);
+  const zoneLimit = pass.zone_limit;
+  if (pass.zone_used + zone >= zoneLimit) {
+    throw new ZooError('E422-DAILY-ZONE-LIMIT-EXCEEDED', 'Daily zone quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["ZO-002"]!(src, "zoo.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("ZO-003 PRESENCE — db.transaction() in processExhibitEntry (atomic zoo_visits+exhibit_schedules+visit_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "zoo.ts",
+      `function processExhibitEntry(db, zooId, scheduleId, visitNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO zoo_visits (id, zoo_id, schedule_id, visit_no, status, started_at) VALUES (?, ?, ?, ?, 'visited', ?)").run(visitId, zooId, scheduleId, visitNo, startedAt);
+    db.prepare("UPDATE exhibit_schedules SET status = 'visited', visit_id = ?, payment_id = ? WHERE id = ?").run(visitId, visitPaymentId, scheduleId);
+    db.prepare("INSERT INTO visit_payments (id, schedule_id, visit_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(visitPaymentId, scheduleId, visitId, amount, startedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["ZO-003"]!(src, "zoo.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("ZO-004 PRESENCE — status comparison + 'visited'/'updated'/'ended'/'closed'/'cancelled' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "zoo.ts",
+      `function transitionVisitStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM exhibit_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new ZooError("E409-SCHEDULE", "Invalid transition", 409);
+  db.prepare("UPDATE exhibit_schedules SET status = 'visited' WHERE id = ?").run(scheduleId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["ZO-004"]!(src, "zoo.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("ZO-005 PRESENCE — batch expire update in expireClosedVisitBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "zoo.ts",
+      `function transitionVisitStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM exhibit_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new ZooError("E409-SCHEDULE", "Invalid", 409);
+  db.prepare("UPDATE exhibit_schedules SET status = 'visited' WHERE id = ?").run(scheduleId);
+}
+function expireClosedVisitBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM zoo_visits WHERE status = 'closed' AND started_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE zoo_visits SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["ZO-005"]!(src, "zoo.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("ZO-006 PRESENCE — db.transaction() in processVisitRefund (atomic visit_refund_records+visit_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "zoo.ts",
+      `function processVisitRefund(db, visitorId, visitId, visitCost, refundRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO visit_refund_records (id, visitor_id, visit_id, visit_cost, refund_rate, refund_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(refundRecordId, visitorId, visitId, visitCost, refundRate, refundAmount);
+    db.prepare("INSERT INTO visit_refunds (id, refund_record_id, visitor_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, refundRecordId, visitorId, refundAmount, refundedAt);
+    db.prepare("UPDATE visit_refund_records SET status = 'refunded' WHERE id = ?").run(refundRecordId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["ZO-006"]!(src, "zoo.ts");
     expect(markers).toHaveLength(0);
   });
 });

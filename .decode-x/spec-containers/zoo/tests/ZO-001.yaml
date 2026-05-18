@@ -1,0 +1,62 @@
+# Test scenarios — Zoo domain ZO-001~ZO-006
+# 세션 307 F542 — Zoo 동물원 합성 도메인 (🦁 단일 클러스터 5 도메인 첫 사례 마일스톤, 74번째 도메인)
+
+scenarios:
+  - id: ZO-001-PASS
+    rule: ZO-001
+    description: "정원 내 방문 예약 — 성공"
+    input: { active_visits: 8000, total_capacity: 15000 }
+    expected: PASS
+
+  - id: ZO-001-FAIL
+    rule: ZO-001
+    description: "동물원 방문 정원 초과 — E422-ZOO-CAPACITY-EXCEEDED"
+    input: { active_visits: 15000, total_capacity: 15000 }
+    expected: FAIL
+    error: E422-ZOO-CAPACITY-EXCEEDED
+
+  - id: ZO-002-PASS
+    rule: ZO-002
+    description: "일일 관람 구역 한도 내 사용 — 성공"
+    input: { zone_used: 1, zone_limit: 3, zone: 1 }
+    expected: PASS
+
+  - id: ZO-002-FAIL
+    rule: ZO-002
+    description: "일일 관람 구역 한도 초과 — E422-DAILY-ZONE-LIMIT-EXCEEDED"
+    input: { zone_used: 2, zone_limit: 3, zone: 1 }
+    expected: FAIL
+    error: E422-DAILY-ZONE-LIMIT-EXCEEDED
+
+  - id: ZO-003-PASS
+    rule: ZO-003
+    description: "reserved 상태 관람 입장 atomic — 성공"
+    input: { schedule_status: reserved }
+    expected: PASS
+
+  - id: ZO-004-PASS
+    rule: ZO-004
+    description: "reserved → visited 전환 허용"
+    input: { previous: reserved, next: visited }
+    expected: PASS
+
+  - id: ZO-004-FAIL
+    rule: ZO-004
+    description: "cancelled → reserved 역행 차단 — E409-SCHEDULE"
+    input: { previous: cancelled, next: reserved }
+    expected: FAIL
+    error: E409-SCHEDULE
+
+  - id: ZO-005-PASS
+    rule: ZO-005
+    description: "closed 방문 batch expire — 대상 1건"
+    input: { visits: [{ status: closed, started_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: ZO-006-PASS
+    rule: ZO-006
+    description: "closed 방문 환불 atomic — 성공"
+    input: { visit_status: closed, visit_cost: 25000, refund_rate: 0.5 }
+    expected: PASS
+    expectedRefundAmount: 12500

@@ -77,7 +77,8 @@ import type { BLRule } from "@ai-foundry/types";
 // F539 (세션 306 후속7): KP prefix 추가 (kpop 합성 도메인, 71번째 — 콘서트/팬미팅 산업, 60번째 신규, 한국 특화). 🎤 AM+TH+KP 오프라인 엔터 3-클러스터 확장 (놀이공원 + 극장 + 콘서트 통합 추상화 — 단일 클러스터 3 도메인 두 번째 사례). 72 Sprint 연속 정점 도전. 거울 변환 24회차 (carsharing → ... → golf → kpop). 🏆 71번째 도메인 마일스톤 (S262 5 → S306 71, 14.2배 확장).
 // F540 (세션 306 후속8): SF prefix 추가 (surfing 합성 도메인, 72번째 — 서핑/해양 스포츠 산업, 61번째 신규). 🏄 SP+SK+GF+SF 스포츠 레저 4-클러스터 확장 (피트니스/스포츠 + 윈터 레저 + 골프 + 서핑 통합 추상화 — 단일 클러스터 4 도메인 첫 사례). 73 Sprint 연속 정점 도전. 거울 변환 25회차 정점 round (carsharing → ... → kpop → surfing). 🏆🏆 1세션 9 Sprint 신기록 동률 도달 + 🏆 72번째 도메인 마일스톤 (S262 5 → S306 72, 14.4배 확장).
 // F541 (세션 306 후속9): AQ prefix 추가 (aquarium 합성 도메인, 73번째 — 수족관/해양생물 산업, 62번째 신규). 🐠 AM+TH+KP+AQ 오프라인 엔터 4-클러스터 확장 (놀이공원 + 극장 + 콘서트 + 수족관 통합 추상화 — 단일 클러스터 4 도메인 두 번째 사례, 두 클러스터 동시 4 도메인 첫 사례). 74 Sprint 연속 정점 도전. 거울 변환 26회차 (carsharing → ... → surfing → aquarium). 🏆🏆🏆 1세션 10 Sprint 신기록 도전 + 🏆 73번째 도메인 마일스톤 (S262 5 → S306 73, 14.6배 확장).
-const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|BK|BR|BT|LP|AD|AM|AQ|AR|AS|CC|CH|CS|DV|SB|SF|SH|SK|SP|IN|HC|ED|ER|EX|GA|GF|KP|RA|RE|LG|HO|TM|TH|TR|MF|RT|EN|GM|GV|TC|MD|PC|PH|AG|CN|MR|TS|AV|MN|DF|FS|FT|GY|MU|NW|PB|PK|TX|VD|SM|WL|PT|PR|VT|P|V)-[A-Z]?\d{1,3}$/;
+// F542 (세션 307): ZO prefix 추가 (zoo 합성 도메인, 74번째 — 동물원 산업, 63번째 신규). 🦁 AM+TH+KP+AQ+ZO 오프라인 엔터 5-클러스터 확장 (놀이공원 + 극장 + 콘서트 + 수족관 + 동물원 통합 추상화 — 단일 클러스터 5 도메인 첫 사례 마일스톤). 75 Sprint 연속 정점 도전. 거울 변환 27회차 (carsharing → ... → aquarium → zoo). Sprint WT autopilot 분리 작업. 🏆 74번째 도메인 마일스톤 (S262 5 → S370 74, 14.8배 확장).
+const BL_ID_PATTERN = /^(?:BL|BB|BP|BG|BS|BK|BR|BT|LP|AD|AM|AQ|AR|AS|CC|CH|CS|DV|SB|SF|SH|SK|SP|IN|HC|ED|ER|EX|GA|GF|KP|RA|RE|LG|HO|TM|TH|TR|MF|RT|EN|GM|GV|TC|MD|PC|PH|AG|CN|MR|TS|AV|MN|DF|FS|FT|GY|MU|NW|PB|PK|TX|VD|SM|WL|PT|PR|VT|ZO|P|V)-[A-Z]?\d{1,3}$/;
 const HEADER_PATTERN =
   /\|\s*ID\s*\|\s*condition[^|]*\|\s*criteria[^|]*\|\s*outcome[^|]*\|\s*exception[^|]*\|/i;
 const SEPARATOR_PATTERN = /^\s*\|[\s:|-]+\|\s*$/;

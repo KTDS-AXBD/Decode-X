@@ -13,6 +13,27 @@ author: Sinclair Seo
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 307 (2026-05-18) — 🏛️ Sprint 370 ZO Zoo MERGED + Sprint 371 MS Museum WT autopilot 진행 중 + 🦁 단일 클러스터 5 도메인 첫 사례 마일스톤 달성 + Sprint WT autopilot 분리 작업 검증 성공
+
+세션 307 시동 (`/ax:daily-check` → drift 보정 → `/ax:session-start /todo plan`). 세션 306 누적 효과로 SPEC §5 마지막 실측 갱신 누락 발견(63→73 4건 drift) → 세션 306 outer block prepend로 정합화 → `19a359f`.
+
+**Sprint 370 F542 ✅ DONE — ZO Zoo 74번째 도메인 / 63번째 신규 산업** (Sprint WT autopilot **~15분** Match 100%, PR #89 MERGED commit `929ddee`): zoo.ts 307 lines + 6 함수 (bookVisit / applyZoneLimit / processExhibitEntry / transitionVisitStatus / expireClosedVisitBatch / processVisitRefund + ZooError) + spec-container 9 files + DOMAIN_MAP 74번째 + parser ZO + REGISTRY ZO-001~006 (withRuleId × 6). 검증: utils 617→**624 PASS** (+7) / detect-bl 440→**446/446 = 100.0%** (74 containers, 63 신규 산업 0 ABSENCE). 🦁 AM+TH+KP+AQ+ZO 오프라인 엔터 5-클러스터 확장 — **단일 클러스터 5 도메인 첫 사례 마일스톤 달성** (S369 4 도메인 두 번째 사례 직후 자연 확장 경로).
+
+**Sprint 371 F543 📋 PLANNED → 🔧 IN_PROGRESS** — MS Museum 75번째 도메인 / 64번째 신규 산업 사전 등록 `8a091bb` + WT autopilot 시동 중 (Master 세션 종료 시점 STATUS=CREATED, signal 변화 Monitor `b3vvwnb7w`가 감지). 도전 마일스톤: 🏛️ AM+TH+KP+AQ+ZO+MS 오프라인 엔터 6-클러스터 **단일 클러스터 6 도메인 첫 사례** + 🏆 **75번째 도메인 = 15배 round 마일스톤**.
+
+**🏆 세션 307 종합 마일스톤 (Sprint 370 기준)**:
+- 🏆 **74번째 도메인** (S262 5 → S307 74, **14.8배 확장**)
+- 🦁 **단일 클러스터 5 도메인 첫 사례** (AM+TH+KP+AQ+ZO 오프라인 엔터 5-클러스터)
+- 🏆 withRuleId 75 Sprint 연속 정점 도달 (신기록)
+- 🏆 거울 변환 27회차
+- 🎯 **Sprint WT autopilot 분리 작업 검증 성공** — Master inline ~30분 대비 **~15분 Match 100% (2배 효율)** (S253~S369 Master inline 57회 연속 정점 이후 첫 분리 작업 성공)
+- 🎯 S283 사전 fs 실측 26회차 적중 (ZO/MS 4축 fs 실측 0건 확정)
+- 🎯 **S351 fix 영구 차단 효과 2차 검증** (.sprint-context 부재 — root cause 영구 해소)
+
+**별 이슈 (S351 deferred 재현)**: `bash -i -c "sprint 370/371"` 시 signal F_ITEMS 비어있음 → Master 표준 보정 (sed + .sprint-context cat heredoc) ~5분/Sprint 해소. bashrc `sprint()` 함수 awk pattern 또는 cwd 컨텍스트 문제 — 차기 진단 후보.
+
+**핵심 산출물**: 5 commits (drift `19a359f` + 사전 등록 `2014d48` + Sprint 370 merge `929ddee` + status 갱신 `3638a25` + Sprint 371 사전 등록 `8a091bb`) + WT 분리 작업 효율 ~2배 입증.
+
 ### 세션 306 (2026-05-16) — 🏆🏆🏆 1세션 10 Sprint 신기록 달성 + 73번째 도메인 + 4 메타 카테고리 체계 완결 + 단일 클러스터 4 도메인 2 사례 동시 형성
 
 세션 306 시동 (`/ax:session-start`, `/ax:todo plan`, "64~73번째 가자" 10회 연속 요청). **사용자 즉시 진행 연속 요청 10회 신기록** → **1세션 10 Sprint 신기록 달성** (직전 세션 305 9 Sprint 신기록 갱신). Master inline 10 Sprint × ~30분 Match 100% (총 ~5시간).

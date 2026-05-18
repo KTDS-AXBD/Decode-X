@@ -677,7 +677,7 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 314 detectors (세션 307 F542 — zoo 74번째 도메인 +6 detectors, 🦁 단일 클러스터 5 도메인 첫 사례 마일스톤)", () => {
+  it("exposes 320 detectors (세션 307 F543 — museum 75번째 도메인 +6 detectors, 🏛️ 단일 클러스터 6 도메인 첫 사례 마일스톤)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AD-001",
       "AD-002",
@@ -950,6 +950,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "MR-004",
       "MR-005",
       "MR-006",
+      "MS-001",
+      "MS-002",
+      "MS-003",
+      "MS-004",
+      "MS-005",
+      "MS-006",
       "MU-001",
       "MU-002",
       "MU-003",
@@ -1477,6 +1483,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["ZO-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["ZO-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["ZO-006"]).toBeDefined();
+  });
+
+  it("MS-001~MS-006 registered (세션 307 F543 — museum 75번째 도메인, 64번째 신규 산업, 🏛️ AM+TH+KP+AQ+ZO+MS 오프라인 엔터 6-클러스터 확장 — 단일 클러스터 6 도메인 첫 사례 마일스톤, 76 Sprint 연속 정점 도전, 거울 변환 28회차)", () => {
+    expect(BL_DETECTOR_REGISTRY["MS-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["MS-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["MS-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["MS-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["MS-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["MS-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -7508,6 +7523,103 @@ function expireClosedVisitBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["ZO-006"]!(src, "zoo.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+describe("museum domain — MS-001~006 via withRuleId (세션 307 F543, 🏛️ 단일 클러스터 6 도메인 첫 사례 마일스톤)", () => {
+  it("MS-001 PRESENCE — active_visits >= MAX_CONCURRENT_VISITORS_PER_MUSEUM threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "museum.ts",
+      `const MAX_CONCURRENT_VISITORS_PER_MUSEUM = 5000;
+function bookAdmission(db, museumId, passId) {
+  const museum = db.prepare("SELECT active_visits, total_capacity FROM museums WHERE id = ?").get(museumId);
+  const limit = museum.total_capacity ?? MAX_CONCURRENT_VISITORS_PER_MUSEUM;
+  if (museum.active_visits >= limit) {
+    throw new MuseumError('E422-MUSEUM-CAPACITY-EXCEEDED', 'Museum is at full capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MS-001"]!(src, "museum.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("MS-002 PRESENCE — gallery_used + galleries >= galleryLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "museum.ts",
+      `function applyGalleryLimit(db, memberId, cardId, galleries) {
+  const card = db.prepare("SELECT gallery_used, gallery_limit FROM member_cards WHERE id = ? AND member_id = ? LIMIT 1").get(cardId, memberId);
+  const galleryLimit = card.gallery_limit;
+  if (card.gallery_used + galleries >= galleryLimit) {
+    throw new MuseumError('E422-DAILY-GALLERY-LIMIT-EXCEEDED', 'Daily gallery quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MS-002"]!(src, "museum.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("MS-003 PRESENCE — db.transaction() in processGalleryEntry (atomic museum_visits+gallery_schedules+visit_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "museum.ts",
+      `function processGalleryEntry(db, museumId, scheduleId, visitNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO museum_visits (id, museum_id, schedule_id, visit_no, status, started_at) VALUES (?, ?, ?, ?, 'visited', ?)").run(visitId, museumId, scheduleId, visitNo, startedAt);
+    db.prepare("UPDATE gallery_schedules SET status = 'visited', visit_id = ?, payment_id = ? WHERE id = ?").run(visitId, visitPaymentId, scheduleId);
+    db.prepare("INSERT INTO visit_payments (id, schedule_id, visit_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(visitPaymentId, scheduleId, visitId, amount, startedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MS-003"]!(src, "museum.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("MS-004 PRESENCE — status comparison + 'visited'/'updated'/'ended'/'closed'/'cancelled' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "museum.ts",
+      `function transitionGalleryStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM gallery_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new MuseumError("E409-SCHEDULE", "Invalid transition", 409);
+  db.prepare("UPDATE gallery_schedules SET status = 'visited' WHERE id = ?").run(scheduleId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MS-004"]!(src, "museum.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("MS-005 PRESENCE — batch expire update in expireClosedGalleryBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "museum.ts",
+      `function transitionGalleryStatus(db, scheduleId, newStatus) {
+  const schedule = db.prepare("SELECT status FROM gallery_schedules WHERE id = ?").get(scheduleId);
+  if (schedule.status === 'cancelled') throw new MuseumError("E409-SCHEDULE", "Invalid", 409);
+  db.prepare("UPDATE gallery_schedules SET status = 'visited' WHERE id = ?").run(scheduleId);
+}
+function expireClosedGalleryBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM museum_visits WHERE status = 'closed' AND started_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE museum_visits SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MS-005"]!(src, "museum.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("MS-006 PRESENCE — db.transaction() in processAdmissionRefund (atomic visit_refund_records+visit_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "museum.ts",
+      `function processAdmissionRefund(db, memberId, visitId, visitCost, refundRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO visit_refund_records (id, member_id, visit_id, visit_cost, refund_rate, refund_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(refundRecordId, memberId, visitId, visitCost, refundRate, refundAmount);
+    db.prepare("INSERT INTO visit_refunds (id, refund_record_id, member_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, refundRecordId, memberId, refundAmount, refundedAt);
+    db.prepare("UPDATE visit_refund_records SET status = 'refunded' WHERE id = ?").run(refundRecordId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MS-006"]!(src, "museum.ts");
     expect(markers).toHaveLength(0);
   });
 });

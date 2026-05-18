@@ -1,0 +1,52 @@
+---
+# Provenance — MUSEUM-001
+# 75번째 도메인 — Museum 합성 도메인 PoC (64번째 신규 산업, 🏛️ 단일 클러스터 6 도메인 첫 사례 마일스톤)
+
+skillId: MUSEUM-001
+extractedAt: "2026-05-18T00:00:00+09:00"
+extractedBy: "Decode-X 세션 307 후속 F543 — withRuleId 재사용 75번째 도메인 (Museum 박물관/미술관 산업, 64번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/museum/rules/museum-rules.md"
+    section: "Museum 합성 비즈니스 룰 — MS-001~MS-006"
+    businessRules: [MS-001, MS-002, MS-003, MS-004, MS-005, MS-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 박물관/미술관(Museum) 산업 일반화 PoC. 박물관입장한도/회원일일갤러리한도/입장batchatomic/관람상태전환/만료closedvisit일괄/관람환불atomic 추상화. 75번째 도메인 + 64번째 신규 산업. 🏛️ 단일 클러스터 6 도메인 첫 사례 마일스톤 (AM+TH+KP+AQ+ZO+MS 오프라인 엔터 6-클러스터 확장). 76 Sprint 연속 정점 도전. 거울 변환 28회차 (carsharing → ... → zoo → museum). Sprint WT autopilot 분리 작업 2회차 (S370 1회차 ~15분 Match 100% 직후 효율 재검증). 🏆 75번째 도메인 15배 round 마일스톤 (S262 5 → S371 75, 15.0배 확장)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/museum.ts"
+    functions: [bookAdmission, applyGalleryLimit, processGalleryEntry, transitionGalleryStatus, expireClosedGalleryBatch, processAdmissionRefund]
+
+detection:
+  - ruleId: MS-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-18T00:00:00+09:00"
+    notes: "museum.active_visits >= limit (UPPERCASE fallback MAX_CONCURRENT_VISITORS_PER_MUSEUM, Path A)"
+  - ruleId: MS-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-18T00:00:00+09:00"
+    notes: "card.gallery_used + galleries >= galleryLimit (Path B, limit keyword)"
+  - ruleId: MS-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-18T00:00:00+09:00"
+    notes: "db.transaction() — museum_visits INSERT + gallery_schedules UPDATE + visit_payments INSERT"
+  - ruleId: MS-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-18T00:00:00+09:00"
+    notes: "reserved → visited → updated → ended / closed / cancelled"
+  - ruleId: MS-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-18T00:00:00+09:00"
+    notes: "batch: expire 갱신 (SF-005/KP-005/.../ZO-005 64번째 재사용)"
+  - ruleId: MS-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-18T00:00:00+09:00"
+    notes: "db.transaction() — visit_refund_records INSERT + visit_refunds INSERT + visit_refund_records UPDATE"

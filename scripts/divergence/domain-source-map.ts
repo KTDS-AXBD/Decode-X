@@ -1393,6 +1393,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processTourRefund",
     ],
   },
+  {
+    container: "zoo",
+    rulesPath: `${SPEC_CONTAINER_BASE}/zoo/rules/zoo-rules.md`,
+    // 세션 307 (F542): Zoo 합성 도메인 — 74번째 도메인 (동물원 산업, 63번째 신규 산업). Sprint WT autopilot 분리.
+    // ZO-001~ZO-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 27회차 (carsharing → ... → aquarium → zoo) — 🦁 AM+TH+KP+AQ+ZO 오프라인 엔터 5-클러스터 확장 (놀이공원 + 극장 + 콘서트 + 수족관 + 동물원 통합 추상화 — 단일 클러스터 5 도메인 첫 사례 마일스톤).
+    // 🏆 74번째 도메인 마일스톤 (S262 5 → S370 74, 14.8배 확장).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/zoo.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/zoo/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "bookVisit",
+      "applyZoneLimit",
+      "processExhibitEntry",
+      "transitionVisitStatus",
+      "expireClosedVisitBatch",
+      "processVisitRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

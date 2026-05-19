@@ -1545,6 +1545,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processObservationRefund",
     ],
   },
+  {
+    container: "planetarium",
+    rulesPath: `${SPEC_CONTAINER_BASE}/planetarium/rules/planetarium-rules.md`,
+    // 세션 308 (F550): Planetarium 합성 도메인 — 82번째 도메인 (천문관 산업, 71번째 신규 산업). Sprint WT autopilot 분리 작업 9회차 (DoD 5축 정착 검증).
+    // PL-001~PL-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 35회차 (carsharing → ... → observatory → planetarium) — 🔭 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL 오프라인 엔터 13-클러스터 확장 (단일 클러스터 13 도메인 첫 사례 + 9 Sprint 연속 첫 사례 마일스톤).
+    // PL 차별성: OB(천문대 실 천체 관측, 야간+기상 의존) vs PL(천문관 돔 영상 시뮬레이션, 낮/저녁 정기 상영 + 해설/VR 옵션 + 좌석 우선 예약). MV(영화관 일반 영화 상영)와 차별: PL은 천문 시뮬레이션 + 교육 콘텐츠 특화.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/planetarium.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/planetarium/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "bookSession",
+      "applyDomeSeatLimit",
+      "processDomeScreening",
+      "transitionSessionStatus",
+      "expireClosedSessionBatch",
+      "processSessionRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

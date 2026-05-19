@@ -1,103 +1,42 @@
-# Wedding Hall 합성 비즈니스 룰 — WB-001~WB-006
+# Spec Container — WEDDING-HALL-001 (예식장 합성 도메인)
 
-**도메인**: WB Wedding hall (예식장 산업, 73번째 신규 산업)
-**Sprint**: 381 | **F-item**: F553 | **Session**: 세션 309
-
----
-
-## WB-001: 예식장 동시 active ceremony 한도 검증
-
-**Rule**: 예식장별 동시 active ceremony 수가 `MAX_CONCURRENT_CEREMONIES_PER_HALL`을 초과하면 신규 예약 불가.
-
-```
-IF wedding_halls.active_ceremonies >= MAX_CONCURRENT_CEREMONIES_PER_HALL
-THEN throw WeddingHallError(E422-HALL-CEREMONY-LIMIT-EXCEEDED)
-```
-
-- ThresholdCheck (Path A: var-vs-UPPERCASE constant)
-- MAX_CONCURRENT_CEREMONIES_PER_HALL = 3 (예식장 홀 수 제한)
+**Skill ID**: WEDDING-HALL-001
+**Domain**: Wedding hall (예식장 산업 — 동시예식한도/hall한도/예식예약atomic/예식상태전환/closed예식일괄만료/예식환불atomic)
+**Source**: SYNTHETIC — 세션 309 F553, withRuleId 재사용 84번째 도메인 PoC (Convention 다음 산업, 73번째 신규) 💒 단일 클러스터 15 도메인 첫 사례 마일스톤 신기록 + 11 Sprint 연속 첫 사례 마일스톤 신기록
+**Version**: 1.0.1
+**Status**: active
 
 ---
 
-## WB-002: 회원 hall 예약 한도 검증
+## 비즈니스 룰 (WB-001 ~ WB-006)
 
-**Rule**: 회원의 당일 hall 예약 사용량이 멤버십 한도(`hallLimit`)를 초과하면 추가 예약 불가.
-
-```
-IF hall_memberships.hall_used + halls >= hallLimit
-THEN throw WeddingHallError(E422-HALL-LIMIT-EXCEEDED)
-```
-
-- ThresholdCheck (Path B: var-vs-var, `hallLimit` keyword)
-- 멤버십 유형별 한도: standard=1, premium=2, vip=3
-
----
-
-## WB-003: 예식 예약 atomic 트랜잭션
-
-**Rule**: 예식 예약 시 hall_schedules + wedding_ceremonies + ceremony_payments를 단일 트랜잭션으로 처리.
-
-```
-BEGIN TRANSACTION
-  INSERT INTO hall_schedules (schedule_id, hall_id, ceremony_id, slot_time, guest_count, ceremony_type)
-  UPDATE wedding_ceremonies SET status='ongoing', schedule_id=?, payment_id=? WHERE id=?
-  INSERT INTO ceremony_payments (payment_id, ceremony_id, schedule_id, amount, status='paid')
-COMMIT
-```
-
-- AtomicTransaction detector
-- reserved 상태 ceremony만 예약 가능
+| ID | condition (When) | criteria (If) | outcome (Then) | exception (Else) |
+|----|-----------------|---------------|----------------|-----------------|
+| WB-001 | 신규 ceremony 예약 요청 시 | `wedding_halls.active_ceremonies < max_concurrent_ceremonies` (UPPERCASE fallback MAX_CONCURRENT_CEREMONIES_PER_HALL) | ceremony 예약 허용 + wedding_halls.active_ceremonies 증가 | `E422-HALL-CEREMONY-LIMIT-EXCEEDED` |
+| WB-002 | 회원 hall 예약 요청 시 | `membership.hall_used + halls < hallLimit` (var-vs-var, `limit` keyword) | hall 한도 적용 + hall_used 증가 | `E422-HALL-LIMIT-EXCEEDED` |
+| WB-003 | 예식 예약 atomic 요청 시 | `wedding_ceremonies.status = 'reserved'` | atomic: hall_schedules INSERT + wedding_ceremonies UPDATE + ceremony_payments INSERT | `E404-CEREMONY` |
+| WB-004 | 예식 상태 전환 (reserved → ongoing → ended / closed / cancelled) | 허용 매트릭스 충족 | `wedding_ceremonies.status` UPDATE | `E404-CEREMONY`, `E409-CEREMONY` |
+| WB-005 | closed ceremony 일괄 만료 처리 | `wedding_ceremonies.status = 'closed'` AND `scheduled_at <= now` | `status='ended'` 일괄 UPDATE | 대상 없으면 expiredCount=0 |
+| WB-006 | 예식 환불 atomic 요청 시 | `wedding_ceremonies.status = 'cancelled'` | atomic: cancelled_fee_records INSERT + ceremony_refunds INSERT + cancelled_fee_records UPDATE (강한 계약금/위약금) | `E404-CANCELLED-CEREMONY` |
 
 ---
 
-## WB-004: 예식 상태 전환 규칙
+## 데이터 영향
 
-**Rule**: ceremony 상태 전환은 정의된 경로만 허용.
-
-```
-허용 전환:
-  reserved → ongoing      (예식 시작)
-  ongoing  → ended        (예식 정상 완료)
-  ongoing  → closed       (예식 조기 종료)
-  reserved → cancelled    (예약 취소)
-  ongoing  → cancelled    (진행 중 취소)
-
-금지 전환: 그 외 모든 경우 → E409-CEREMONY
-```
-
-- StatusTransition detector
+| 테이블 | 변경 | 트리거 |
+|--------|------|--------|
+| `wedding_halls` | active_ceremonies 증가 (WB-001) | reserveCeremony |
+| `wedding_ceremonies` | INSERT (WB-001), status 갱신 (WB-003/WB-004/WB-005) | reserveCeremony / processCeremonyBooking / transitionCeremonyStatus / expireClosedCeremonyBatch |
+| `hall_memberships` | hall_used 증가 (WB-002) | applyHallLimit |
+| `hall_schedules` | INSERT (WB-003) | processCeremonyBooking |
+| `ceremony_payments` | INSERT (WB-003) | processCeremonyBooking |
+| `cancelled_fee_records` | INSERT + status='refunded' (WB-006) | processCeremonyRefund |
+| `ceremony_refunds` | INSERT (WB-006) | processCeremonyRefund |
 
 ---
 
-## WB-005: closed ceremony 일괄 만료 처리
+## 임계값 / 상수
 
-**Rule**: status='closed'이고 scheduled_at이 현재 시각 이전인 ceremony를 일괄 'ended'로 전환.
-
-```
-UPDATE wedding_ceremonies
-SET status = 'ended'
-WHERE status = 'closed' AND scheduled_at <= NOW()
-```
-
-- StatusTransition detector (batch 패턴)
-- SF-005/KP-005/.../CV-005 73번째 도메인 동일 패턴 재사용
-
----
-
-## WB-006: 예식 환불 atomic 트랜잭션 (강한 계약금/위약금 모델)
-
-**Rule**: 취소된 예식 환불 시 위약금 계산 + cancelled_fee_records + ceremony_refunds를 단일 트랜잭션으로 처리.
-
-```
-cancellation_amount = ceremony_cost × cancellation_rate
-
-BEGIN TRANSACTION
-  INSERT INTO cancelled_fee_records (fee_record_id, member_id, ceremony_id, ceremony_cost, cancellation_rate, cancellation_amount, status='calculated')
-  INSERT INTO ceremony_refunds (refund_id, fee_record_id, member_id, amount, status='refunded')
-  UPDATE cancelled_fee_records SET status='refunded' WHERE id=fee_record_id
-COMMIT
-```
-
-- AtomicTransaction detector
-- cancelled 상태 ceremony만 환불 가능
-- 강한 계약금/위약금: 취소 시점별 차등 비율 적용 (예식 30일 전 10%, 7일 전 50%, 당일 100%)
+- `MAX_CONCURRENT_CEREMONIES_PER_HALL = 3` (WB-001 예식장별 동시 active ceremony 기본 한도 — 홀 수 기반)
+- hall 한도: standard=1, premium=2, vip=3 (멤버십 등급별)
+- 강한 계약금/위약금: 30일 전=10%, 7일 전=50%, 당일=100% 취소 수수료 (WB-006)

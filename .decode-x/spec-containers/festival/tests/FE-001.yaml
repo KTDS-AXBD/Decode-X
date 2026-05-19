@@ -1,0 +1,63 @@
+---
+# Test scenarios — Festival domain FE-001~FE-006
+# 세션 307 후속5 F547 — Festival 페스티벌 합성 도메인 (🎪 단일 클러스터 10 도메인 첫 사례 round 마일스톤, 79번째 도메인)
+
+scenarios:
+  - id: FE-001-PASS
+    rule: FE-001
+    description: "참가 한도 내 페스티벌 예약 — 성공"
+    input: { active_entries: 1000, total_capacity: 5000 }
+    expected: PASS
+
+  - id: FE-001-FAIL
+    rule: FE-001
+    description: "페스티벌 동시 참가 한도 초과 — E422-FESTIVAL-ENTRY-LIMIT-EXCEEDED"
+    input: { active_entries: 5000, total_capacity: 5000 }
+    expected: FAIL
+    error: E422-FESTIVAL-ENTRY-LIMIT-EXCEEDED
+
+  - id: FE-002-PASS
+    rule: FE-002
+    description: "일일 stage 한도 내 stage 요청 — 성공"
+    input: { stage_used: 2, stage_limit: 10, stages: 1 }
+    expected: PASS
+
+  - id: FE-002-FAIL
+    rule: FE-002
+    description: "일일 stage 한도 초과 — E422-DAILY-STAGE-LIMIT-EXCEEDED"
+    input: { stage_used: 9, stage_limit: 10, stages: 1 }
+    expected: FAIL
+    error: E422-DAILY-STAGE-LIMIT-EXCEEDED
+
+  - id: FE-003-PASS
+    rule: FE-003
+    description: "reserved 상태 stage 입장 atomic — 성공"
+    input: { entry_status: reserved }
+    expected: PASS
+
+  - id: FE-004-PASS
+    rule: FE-004
+    description: "reserved → entered 전환 허용"
+    input: { previous: reserved, next: entered }
+    expected: PASS
+
+  - id: FE-004-FAIL
+    rule: FE-004
+    description: "cancelled → reserved 역행 차단 — E409-ENTRY"
+    input: { previous: cancelled, next: reserved }
+    expected: FAIL
+    error: E409-ENTRY
+
+  - id: FE-005-PASS
+    rule: FE-005
+    description: "closed entry batch expire — 대상 1건"
+    input: { entries: [{ status: closed, scheduled_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: FE-006-PASS
+    rule: FE-006
+    description: "cancelled 참가 환불 atomic — 성공"
+    input: { entry_status: cancelled, entry_cost: 80000, cancellation_rate: 0.2 }
+    expected: PASS
+    expectedCancellationAmount: 16000

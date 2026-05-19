@@ -1,0 +1,52 @@
+---
+# Provenance — FESTIVAL-001
+# 79번째 도메인 — Festival 합성 도메인 PoC (68번째 신규 산업, 🎪 단일 클러스터 10 도메인 첫 사례 round 마일스톤)
+
+skillId: FESTIVAL-001
+extractedAt: "2026-05-19T00:00:00+09:00"
+extractedBy: "Decode-X 세션 307 후속5 F547 — withRuleId 재사용 79번째 도메인 (Festival 페스티벌 산업, 68번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/festival/rules/festival-rules.md"
+    section: "Festival 합성 비즈니스 룰 — FE-001~FE-006"
+    businessRules: [FE-001, FE-002, FE-003, FE-004, FE-005, FE-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 페스티벌(Festival) 산업 일반화 PoC. 동시참가한도/멤버일일stage한도/stage입장atomic/참가상태전환/closed참가일괄만료/참가환불atomic 추상화. 79번째 도메인 + 68번째 신규 산업. 🎪 단일 클러스터 10 도메인 첫 사례 round 마일스톤 (AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE 오프라인 엔터 10-클러스터 확장). 80 Sprint 연속 정점 round 마일스톤 도전. 거울 변환 32회차 (carsharing → ... → park → festival). Sprint WT autopilot 분리 작업 6회차 (DoD 명시 패턴 결정적 확립). FE 차별성: KP 콘서트와 분리 (FE는 페스티벌 = 다일정+멀티 stage+festival pass 모델, KP는 단일 콘서트 이벤트+좌석 티켓팅 모델)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/festival.ts"
+    functions: [reserveEntry, applyStageLimit, processStageEntry, transitionEntryStatus, expireClosedEntryBatch, processEntryRefund]
+
+detection:
+  - ruleId: FE-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "festival.active_entries >= limit (UPPERCASE fallback MAX_CONCURRENT_FESTIVAL_ENTRIES, Path A)"
+  - ruleId: FE-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "pass.stage_used + stages >= stageLimit (Path B, limit keyword)"
+  - ruleId: FE-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "db.transaction() — stage_schedules INSERT + festival_entries UPDATE + entry_payments INSERT"
+  - ruleId: FE-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "reserved → entered → exited → ended / closed / cancelled"
+  - ruleId: FE-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "batch: closed → ended 갱신 (SF-005/KP-005/.../PA-005 68번째 재사용)"
+  - ruleId: FE-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "db.transaction() — cancelled_fee_records INSERT + entry_refunds INSERT + cancelled_fee_records UPDATE"

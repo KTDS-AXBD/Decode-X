@@ -1488,6 +1488,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processVisitRefund",
     ],
   },
+  {
+    container: "festival",
+    rulesPath: `${SPEC_CONTAINER_BASE}/festival/rules/festival-rules.md`,
+    // 세션 307 후속5 (F547): Festival 합성 도메인 — 79번째 도메인 (페스티벌 산업, 68번째 신규 산업). Sprint WT autopilot 분리 작업 6회차.
+    // FE-001~FE-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 32회차 (carsharing → ... → park → festival) — 🎪 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE 오프라인 엔터 10-클러스터 확장 (단일 클러스터 10 도메인 첫 사례 round 마일스톤).
+    // 🏆 79번째 도메인 마일스톤 (S262 5 → S375 79, 15.8배 확장). FE 차별성: KP 콘서트와 분리 (다일정+멀티 stage+festival pass 모델).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/festival.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/festival/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "reserveEntry",
+      "applyStageLimit",
+      "processStageEntry",
+      "transitionEntryStatus",
+      "expireClosedEntryBatch",
+      "processEntryRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

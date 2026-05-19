@@ -1489,6 +1489,15 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "PA-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PA-004"),
   "PA-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PA-005"),
   "PA-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "PA-006"),
+  // Sprint 375 (F547) — festival 합성 도메인: 동시참가한도/stage한도/stage입장atomic/상태전환/batch만료/환불atomic
+  // 🎪 79번째 도메인 + 68번째 신규 산업. AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE 오프라인 엔터 10-클러스터 단일 클러스터 10 도메인 첫 사례 round 마일스톤.
+  // withRuleId 80 Sprint 연속 정점 round 마일스톤 도전. 거울 변환 32회차 (park → festival).
+  "FE-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "FE-001"),
+  "FE-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "FE-002"),
+  "FE-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "FE-003"),
+  "FE-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "FE-004"),
+  "FE-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "FE-005"),
+  "FE-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "FE-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

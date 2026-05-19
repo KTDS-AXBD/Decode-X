@@ -677,7 +677,7 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 338 detectors (세션 307 후속4 F546 — park 78번째 도메인 +6 detectors, 🌲 단일 클러스터 9 도메인 첫 사례 마일스톤)", () => {
+  it("exposes 344 detectors (세션 307 후속5 F547 — festival 79번째 도메인 +6 detectors, 🎪 단일 클러스터 10 도메인 첫 사례 round 마일스톤)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AD-001",
       "AD-002",
@@ -848,6 +848,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "EX-004",
       "EX-005",
       "EX-006",
+      "FE-001",
+      "FE-002",
+      "FE-003",
+      "FE-004",
+      "FE-005",
+      "FE-006",
       "FS-001",
       "FS-002",
       "FS-003",
@@ -1537,6 +1543,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["PA-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["PA-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["PA-006"]).toBeDefined();
+  });
+
+  it("FE-001~FE-006 registered (세션 307 후속5 F547 — festival 79번째 도메인, 68번째 신규 산업, 🎪 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE 오프라인 엔터 10-클러스터 확장 — 단일 클러스터 10 도메인 첫 사례 round 마일스톤, 80 Sprint 연속 정점 round 마일스톤 도전, 거울 변환 32회차)", () => {
+    expect(BL_DETECTOR_REGISTRY["FE-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["FE-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["FE-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["FE-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["FE-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["FE-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -7956,6 +7971,103 @@ function expireClosedVisitBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["PA-006"]!(src, "park.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+describe("festival domain — FE-001~006 via withRuleId (세션 307 후속5 F547, 🎪 단일 클러스터 10 도메인 첫 사례 round 마일스톤)", () => {
+  it("FE-001 PRESENCE — active_entries >= MAX_CONCURRENT_FESTIVAL_ENTRIES threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "festival.ts",
+      `const MAX_CONCURRENT_FESTIVAL_ENTRIES = 5000;
+function reserveEntry(db, festivalId, passId) {
+  const festival = db.prepare("SELECT active_entries, total_capacity FROM festivals WHERE id = ?").get(festivalId);
+  const limit = festival.total_capacity ?? MAX_CONCURRENT_FESTIVAL_ENTRIES;
+  if (festival.active_entries >= limit) {
+    throw new FestivalError('E422-FESTIVAL-ENTRY-LIMIT-EXCEEDED', 'Festival is at full entry capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["FE-001"]!(src, "festival.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("FE-002 PRESENCE — pass.stage_used + stages >= stageLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "festival.ts",
+      `function applyStageLimit(db, memberId, passId, stages) {
+  const pass = db.prepare("SELECT stage_used, stage_limit FROM festival_passes WHERE id = ? LIMIT 1").get(passId, memberId);
+  const stageLimit = pass.stage_limit;
+  if (pass.stage_used + stages >= stageLimit) {
+    throw new FestivalError('E422-DAILY-STAGE-LIMIT-EXCEEDED', 'Daily stage quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["FE-002"]!(src, "festival.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("FE-003 PRESENCE — db.transaction() in processStageEntry (atomic stage_schedules+festival_entries+entry_payments)", () => {
+    const src = parseTypeScriptSource(
+      "festival.ts",
+      `function processStageEntry(db, festivalId, entryId, stageNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO stage_schedules (id, festival_id, entry_id, stage_no, status, started_at) VALUES (?, ?, ?, ?, 'active', ?)").run(stageId, festivalId, entryId, stageNo, startedAt);
+    db.prepare("UPDATE festival_entries SET status = 'entered', stage_id = ?, payment_id = ? WHERE id = ?").run(stageId, entryPaymentId, entryId);
+    db.prepare("INSERT INTO entry_payments (id, entry_id, stage_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(entryPaymentId, entryId, stageId, amount, startedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["FE-003"]!(src, "festival.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("FE-004 PRESENCE — status transition matrix in transitionEntryStatus (reserved→entered→exited/ended/closed/cancelled)", () => {
+    const src = parseTypeScriptSource(
+      "festival.ts",
+      `function transitionEntryStatus(db, entryId, newStatus) {
+  const entry = db.prepare("SELECT status FROM festival_entries WHERE id = ?").get(entryId);
+  if (entry.status === 'cancelled') throw new FestivalError("E409-ENTRY", "Invalid transition", 409);
+  db.prepare("UPDATE festival_entries SET status = 'entered' WHERE id = ?").run(entryId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["FE-004"]!(src, "festival.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("FE-005 PRESENCE — batch expire update in expireClosedEntryBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "festival.ts",
+      `function transitionEntryStatus(db, entryId, newStatus) {
+  const entry = db.prepare("SELECT status FROM festival_entries WHERE id = ?").get(entryId);
+  if (entry.status === 'cancelled') throw new FestivalError("E409-ENTRY", "Invalid", 409);
+  db.prepare("UPDATE festival_entries SET status = 'entered' WHERE id = ?").run(entryId);
+}
+function expireClosedEntryBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM festival_entries WHERE status = 'closed' AND scheduled_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE festival_entries SET status = 'ended' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["FE-005"]!(src, "festival.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("FE-006 PRESENCE — db.transaction() in processEntryRefund (atomic cancelled_fee_records+entry_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "festival.ts",
+      `function processEntryRefund(db, memberId, entryId, entryCost, cancellationRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO cancelled_fee_records (id, member_id, entry_id, entry_cost, cancellation_rate, cancellation_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(feeRecordId, memberId, entryId, entryCost, cancellationRate, cancellationAmount);
+    db.prepare("INSERT INTO entry_refunds (id, fee_record_id, member_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, feeRecordId, memberId, cancellationAmount, refundedAt);
+    db.prepare("UPDATE cancelled_fee_records SET status = 'refunded' WHERE id = ?").run(feeRecordId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["FE-006"]!(src, "festival.ts");
     expect(markers).toHaveLength(0);
   });
 });

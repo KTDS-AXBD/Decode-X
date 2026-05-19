@@ -1525,6 +1525,15 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "PL-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PL-004"),
   "PL-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PL-005"),
   "PL-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "PL-006"),
+  // Sprint 380 (F552) — convention 합성 도메인: 세션동시한도/부스한도/부스등록atomic/세션상태전환/closed세션일괄만료/세션환불atomic
+  // ✏️ 83번째 도메인 + 72번째 신규 산업. AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV 오프라인 엔터 14-클러스터 단일 클러스터 14 도메인 첫 사례 신기록 도전 + 10 Sprint 연속 첫 사례 마일스톤 신기록 도전.
+  // withRuleId 84 Sprint 연속 정점 도전. 거울 변환 36회차 (planetarium → convention). DoD 6축 실감증 (domain-sprint-guard.yml 첫 실 작동).
+  "CV-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "CV-001"),
+  "CV-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "CV-002"),
+  "CV-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "CV-003"),
+  "CV-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "CV-004"),
+  "CV-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "CV-005"),
+  "CV-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "CV-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

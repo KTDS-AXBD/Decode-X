@@ -677,7 +677,7 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 362 detectors (세션 308 F550 — planetarium 82번째 도메인 +6 detectors, 🔭 단일 클러스터 13 도메인 첫 사례 마일스톤 도전 + 9 Sprint 연속 첫 사례 마일스톤 달성 경로)", () => {
+  it("exposes 368 detectors (세션 309 F552 — convention 83번째 도메인 +6 detectors, ✏️ 단일 클러스터 14 도메인 첫 사례 마일스톤 신기록 도전 + 10 Sprint 연속 첫 사례 마일스톤 신기록 도전)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AD-001",
       "AD-002",
@@ -812,6 +812,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "CS-004",
       "CS-005",
       "CS-006",
+      "CV-001",
+      "CV-002",
+      "CV-003",
+      "CV-004",
+      "CV-005",
+      "CV-006",
       "DF-001",
       "DF-002",
       "DF-003",
@@ -1597,6 +1603,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["PL-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["PL-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["PL-006"]).toBeDefined();
+  });
+
+  it("CV-001~CV-006 registered (세션 309 F552 — convention 83번째 도메인, 72번째 신규 산업, ✏️ AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV 오프라인 엔터 14-클러스터 확장 — 단일 클러스터 14 도메인 첫 사례 마일스톤 신기록 도전 + 10 Sprint 연속 첫 사례 마일스톤 신기록 도전, 84 Sprint 연속 정점 도전, 거울 변환 36회차, DoD 6축 실감증)", () => {
+    expect(BL_DETECTOR_REGISTRY["CV-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["CV-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["CV-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["CV-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["CV-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["CV-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -8599,5 +8614,121 @@ describe("DOMAIN_MAP observatory entry — F549 axis-e (DoD 5축 강화, S376 fa
     expect(mapping?.container).toBe("observatory");
     expect(mapping?.sourceCodeStatus).toBe("present");
     expect(mapping?.underImplTargets).toContain("reserveObservation");
+  });
+});
+
+describe("DOMAIN_MAP convention entry — F552 axis-e (DoD 5축 강화, 6축 CI Guard 실감증, S378 false claim 차단 계승)", () => {
+  it("findDomainMapping('convention') returns defined entry (83번째 도메인 DOMAIN_MAP 존재 검증)", async () => {
+    const { findDomainMapping } = await import("../../../scripts/divergence/domain-source-map.js");
+    const mapping = findDomainMapping("convention");
+    expect(mapping).toBeDefined();
+    expect(mapping?.container).toBe("convention");
+    expect(mapping?.sourceCodeStatus).toBe("present");
+    expect(mapping?.underImplTargets).toContain("reserveSession");
+  });
+});
+
+describe("convention domain — CV-001~006 via withRuleId (세션 309 F552, ✏️ 단일 클러스터 14 도메인 첫 사례 마일스톤 신기록 도전 + 10 Sprint 연속 첫 사례 마일스톤 신기록 도전, DoD 6축 실감증)", () => {
+  it("CV-001 PRESENCE — active_sessions >= MAX_CONCURRENT_SESSIONS_PER_CONVENTION threshold (UPPERCASE constant)", () => {
+    const src = `
+function reserveSession(db, conventionId, membershipId) {
+  const convention = db.prepare("SELECT active_sessions, max_concurrent_sessions FROM conventions WHERE id = ?").get(conventionId);
+  const limit = convention.max_concurrent_sessions ?? MAX_CONCURRENT_SESSIONS_PER_CONVENTION;
+  if (convention.active_sessions >= limit) {
+    throw new ConventionError('E422-CONVENTION-SESSION-LIMIT-EXCEEDED', \`Convention is at full session capacity\`, 422);
+  }
+  db.prepare("INSERT INTO convention_sessions (id, convention_id, membership_id) VALUES (?, ?, ?)").run(sessionId, conventionId, membershipId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["CV-001"]!(src, "convention.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("CV-001");
+  });
+
+  it("CV-002 PRESENCE — membership.booth_used + booths >= boothLimit (var-vs-var, limit keyword)", () => {
+    const src = `
+function applyBoothLimit(db, memberId, membershipId, booths) {
+  const membership = db.prepare("SELECT booth_used, booth_limit FROM convention_memberships WHERE id = ? LIMIT 1").get(membershipId, memberId);
+  const boothLimit = membership.booth_limit;
+  if (membership.booth_used + booths >= boothLimit) {
+    throw new ConventionError('E422-BOOTH-LIMIT-EXCEEDED', \`Booth quota exhausted\`, 422);
+  }
+  db.prepare("UPDATE convention_memberships SET booth_used = booth_used + ? WHERE id = ?").run(booths, membershipId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["CV-002"]!(src, "convention.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("CV-002");
+  });
+
+  it("CV-003 PRESENCE — db.transaction() in processBoothBooking (atomic booth_schedules+convention_sessions+session_payments)", () => {
+    const src = `
+function processBoothBooking(db, conventionId, sessionId, boothNo, sessionType, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO booth_schedules (id, convention_id, session_id, booth_no, session_type, status, started_at) VALUES (?, ?, ?, ?, ?, 'active', ?)").run(boothId, conventionId, sessionId, boothNo, sessionType, startedAt);
+    db.prepare("UPDATE convention_sessions SET status = 'ongoing', booth_id = ?, payment_id = ? WHERE id = ?").run(boothId, sessionPaymentId, sessionId);
+    db.prepare("INSERT INTO session_payments (id, session_id, booth_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(sessionPaymentId, sessionId, boothId, amount, startedAt);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["CV-003"]!(src, "convention.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("CV-003");
+  });
+
+  it("CV-004 PRESENCE — status transition matrix in transitionSessionStatus (reserved→ongoing→ended/closed/cancelled)", () => {
+    const src = `
+function transitionSessionStatus(db, sessionId, newStatus) {
+  const session = db.prepare("SELECT status FROM convention_sessions WHERE id = ?").get(sessionId);
+  const previousStatus = session.status;
+  const allowed =
+    (session.status === 'reserved' && newStatus === 'ongoing') ||
+    (session.status === 'ongoing' && newStatus === 'ended') ||
+    (session.status === 'ongoing' && newStatus === 'closed') ||
+    (session.status === 'reserved' && newStatus === 'cancelled') ||
+    (session.status === 'ongoing' && newStatus === 'cancelled');
+  db.prepare("UPDATE convention_sessions SET status = ? WHERE id = ?").run(newStatus, sessionId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["CV-004"]!(src, "convention.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("CV-004");
+  });
+
+  it("CV-005 PRESENCE — batch expire update in expireClosedSessionBatch (file context)", () => {
+    const src = `
+function transitionSessionStatus(db, sessionId, newStatus) {
+  const session = db.prepare("SELECT status FROM convention_sessions WHERE id = ?").get(sessionId);
+  const allowed = (session.status === 'reserved' && newStatus === 'ongoing');
+  db.prepare("UPDATE convention_sessions SET status = ? WHERE id = ?").run(newStatus, sessionId);
+}
+function expireClosedSessionBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM convention_sessions WHERE status = 'closed' AND scheduled_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE convention_sessions SET status = 'ended' WHERE id = ?").run(item.id);
+  }
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["CV-005"]!(src, "convention.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("CV-005");
+  });
+
+  it("CV-006 PRESENCE — db.transaction() in processSessionRefund (atomic cancelled_fee_records+session_refunds INSERT/UPDATE)", () => {
+    const src = `
+function processSessionRefund(db, memberId, sessionId, sessionCost, cancellationRate) {
+  const session = db.prepare("SELECT status FROM convention_sessions WHERE id = ? AND status = 'cancelled'").get(sessionId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO cancelled_fee_records (id, member_id, session_id, session_cost, cancellation_rate, cancellation_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(feeRecordId, memberId, sessionId, sessionCost, cancellationRate, cancellationAmount);
+    db.prepare("INSERT INTO session_refunds (id, fee_record_id, member_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, feeRecordId, memberId, cancellationAmount, refundedAt);
+    db.prepare("UPDATE cancelled_fee_records SET status = 'refunded' WHERE id = ?").run(feeRecordId);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["CV-006"]!(src, "convention.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("CV-006");
   });
 });

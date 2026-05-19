@@ -1,0 +1,63 @@
+---
+# Test scenarios — Movie domain MV-001~MV-006
+# 세션 307 후속2 F544 — Movie 영화관 합성 도메인 (🎬 단일 클러스터 7 도메인 첫 사례 마일스톤, 76번째 도메인)
+
+scenarios:
+  - id: MV-001-PASS
+    rule: MV-001
+    description: "상영 한도 내 좌석 예매 — 성공"
+    input: { active_screenings: 10, total_screening_capacity: 20 }
+    expected: PASS
+
+  - id: MV-001-FAIL
+    rule: MV-001
+    description: "영화관 동시 상영 한도 초과 — E422-THEATER-SCREENING-LIMIT-EXCEEDED"
+    input: { active_screenings: 20, total_screening_capacity: 20 }
+    expected: FAIL
+    error: E422-THEATER-SCREENING-LIMIT-EXCEEDED
+
+  - id: MV-002-PASS
+    rule: MV-002
+    description: "일일 티켓 한도 내 구매 — 성공"
+    input: { ticket_used: 1, ticket_limit: 3, tickets: 1 }
+    expected: PASS
+
+  - id: MV-002-FAIL
+    rule: MV-002
+    description: "일일 티켓 한도 초과 — E422-DAILY-TICKET-LIMIT-EXCEEDED"
+    input: { ticket_used: 2, ticket_limit: 3, tickets: 1 }
+    expected: FAIL
+    error: E422-DAILY-TICKET-LIMIT-EXCEEDED
+
+  - id: MV-003-PASS
+    rule: MV-003
+    description: "reserved 상태 좌석 입장 atomic — 성공"
+    input: { screening_status: reserved }
+    expected: PASS
+
+  - id: MV-004-PASS
+    rule: MV-004
+    description: "reserved → watched 전환 허용"
+    input: { previous: reserved, next: watched }
+    expected: PASS
+
+  - id: MV-004-FAIL
+    rule: MV-004
+    description: "cancelled → reserved 역행 차단 — E409-SCREENING"
+    input: { previous: cancelled, next: reserved }
+    expected: FAIL
+    error: E409-SCREENING
+
+  - id: MV-005-PASS
+    rule: MV-005
+    description: "closed 상영 batch expire — 대상 1건"
+    input: { visits: [{ status: closed, started_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: MV-006-PASS
+    rule: MV-006
+    description: "closed 상영 티켓 환불 atomic — 성공"
+    input: { visit_status: closed, ticket_cost: 15000, refund_rate: 0.5 }
+    expected: PASS
+    expectedRefundAmount: 7500

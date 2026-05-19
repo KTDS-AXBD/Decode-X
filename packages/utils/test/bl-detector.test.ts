@@ -677,7 +677,7 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 320 detectors (세션 307 F543 — museum 75번째 도메인 +6 detectors, 🏛️ 단일 클러스터 6 도메인 첫 사례 마일스톤)", () => {
+  it("exposes 326 detectors (세션 307 후속2 F544 — movie 76번째 도메인 +6 detectors, 🎬 단일 클러스터 7 도메인 첫 사례 마일스톤)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AD-001",
       "AD-002",
@@ -962,6 +962,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "MU-004",
       "MU-005",
       "MU-006",
+      "MV-001",
+      "MV-002",
+      "MV-003",
+      "MV-004",
+      "MV-005",
+      "MV-006",
       "NW-001",
       "NW-002",
       "NW-003",
@@ -1492,6 +1498,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["MS-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["MS-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["MS-006"]).toBeDefined();
+  });
+
+  it("MV-001~MV-006 registered (세션 307 후속2 F544 — movie 76번째 도메인, 65번째 신규 산업, 🎬 AM+TH+KP+AQ+ZO+MS+MV 오프라인 엔터 7-클러스터 확장 — 단일 클러스터 7 도메인 첫 사례 마일스톤, 77 Sprint 연속 정점 도전, 거울 변환 29회차)", () => {
+    expect(BL_DETECTOR_REGISTRY["MV-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["MV-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["MV-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["MV-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["MV-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["MV-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -7620,6 +7635,103 @@ function expireClosedGalleryBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["MS-006"]!(src, "museum.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+describe("movie domain — MV-001~006 via withRuleId (세션 307 후속2 F544, 🎬 단일 클러스터 7 도메인 첫 사례 마일스톤)", () => {
+  it("MV-001 PRESENCE — active_screenings >= MAX_CONCURRENT_SCREENINGS_PER_THEATER threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "movie.ts",
+      `const MAX_CONCURRENT_SCREENINGS_PER_THEATER = 20;
+function bookSeat(db, theaterId, passId) {
+  const theater = db.prepare("SELECT active_screenings, total_screening_capacity FROM theaters WHERE id = ?").get(theaterId);
+  const limit = theater.total_screening_capacity ?? MAX_CONCURRENT_SCREENINGS_PER_THEATER;
+  if (theater.active_screenings >= limit) {
+    throw new MovieError('E422-THEATER-SCREENING-LIMIT-EXCEEDED', 'Theater is at full screening capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MV-001"]!(src, "movie.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("MV-002 PRESENCE — ticket_used + tickets >= ticketLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "movie.ts",
+      `function applyTicketLimit(db, memberId, passId, tickets) {
+  const pass = db.prepare("SELECT ticket_used, ticket_limit FROM member_passes WHERE id = ? AND member_id = ? LIMIT 1").get(passId, memberId);
+  const ticketLimit = pass.ticket_limit;
+  if (pass.ticket_used + tickets >= ticketLimit) {
+    throw new MovieError('E422-DAILY-TICKET-LIMIT-EXCEEDED', 'Daily ticket quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MV-002"]!(src, "movie.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("MV-003 PRESENCE — db.transaction() in processSeatEntry (atomic theater_visits+screenings+ticket_payments INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "movie.ts",
+      `function processSeatEntry(db, theaterId, screeningId, visitNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO theater_visits (id, theater_id, screening_id, visit_no, status, started_at) VALUES (?, ?, ?, ?, 'watched', ?)").run(visitId, theaterId, screeningId, visitNo, startedAt);
+    db.prepare("UPDATE screenings SET status = 'watched', visit_id = ?, payment_id = ? WHERE id = ?").run(visitId, ticketPaymentId, screeningId);
+    db.prepare("INSERT INTO ticket_payments (id, screening_id, visit_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(ticketPaymentId, screeningId, visitId, amount, startedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MV-003"]!(src, "movie.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("MV-004 PRESENCE — status comparison + 'watched'/'ended'/'closed'/'cancelled' SQL assignment (status transition)", () => {
+    const src = parseTypeScriptSource(
+      "movie.ts",
+      `function transitionScreeningStatus(db, screeningId, newStatus) {
+  const screening = db.prepare("SELECT status FROM screenings WHERE id = ?").get(screeningId);
+  if (screening.status === 'cancelled') throw new MovieError("E409-SCREENING", "Invalid transition", 409);
+  db.prepare("UPDATE screenings SET status = 'watched' WHERE id = ?").run(screeningId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MV-004"]!(src, "movie.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("MV-005 PRESENCE — batch expire update in expireClosedScreeningBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "movie.ts",
+      `function transitionScreeningStatus(db, screeningId, newStatus) {
+  const screening = db.prepare("SELECT status FROM screenings WHERE id = ?").get(screeningId);
+  if (screening.status === 'cancelled') throw new MovieError("E409-SCREENING", "Invalid", 409);
+  db.prepare("UPDATE screenings SET status = 'watched' WHERE id = ?").run(screeningId);
+}
+function expireClosedScreeningBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM theater_visits WHERE status = 'closed' AND started_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE theater_visits SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MV-005"]!(src, "movie.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("MV-006 PRESENCE — db.transaction() in processTicketRefund (atomic ticket_refund_records+ticket_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "movie.ts",
+      `function processTicketRefund(db, memberId, visitId, ticketCost, refundRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO ticket_refund_records (id, member_id, visit_id, ticket_cost, refund_rate, refund_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(refundRecordId, memberId, visitId, ticketCost, refundRate, refundAmount);
+    db.prepare("INSERT INTO ticket_refunds (id, refund_record_id, member_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, refundRecordId, memberId, refundAmount, refundedAt);
+    db.prepare("UPDATE ticket_refund_records SET status = 'refunded' WHERE id = ?").run(refundRecordId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["MV-006"]!(src, "movie.ts");
     expect(markers).toHaveLength(0);
   });
 });

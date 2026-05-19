@@ -1431,6 +1431,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processAdmissionRefund",
     ],
   },
+  {
+    container: "movie",
+    rulesPath: `${SPEC_CONTAINER_BASE}/movie/rules/movie-rules.md`,
+    // 세션 307 후속2 (F544): Movie 합성 도메인 — 76번째 도메인 (영화관 산업, 65번째 신규 산업). Sprint WT autopilot 분리 작업 3회차.
+    // MV-001~MV-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 29회차 (carsharing → ... → museum → movie) — 🎬 AM+TH+KP+AQ+ZO+MS+MV 오프라인 엔터 7-클러스터 확장 (놀이공원 + 극장 + 콘서트 + 수족관 + 동물원 + 박물관 + 영화관 통합 추상화 — 단일 클러스터 7 도메인 첫 사례 마일스톤).
+    // 🏆 76번째 도메인 마일스톤 (S262 5 → S372 76, 15.2배 확장).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/movie.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/movie/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "bookSeat",
+      "applyTicketLimit",
+      "processSeatEntry",
+      "transitionScreeningStatus",
+      "expireClosedScreeningBatch",
+      "processTicketRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

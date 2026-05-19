@@ -1,0 +1,56 @@
+name: Domain Sprint Guard
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+jobs:
+  domain-map-check:
+    name: DOMAIN_MAP entry 검증 (신규 도메인 Sprint)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect new-domain Sprint via PR title
+        id: detect
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          if echo "$PR_TITLE" | grep -qE 'F[0-9]+.*([0-9]+번째 도메인|신규 산업|[0-9]+번째 산업)'; then
+            echo "match=true" >> $GITHUB_OUTPUT
+            echo "✅ 신규 도메인 Sprint 패턴 매칭"
+          else
+            echo "match=false" >> $GITHUB_OUTPUT
+            echo "⏭️ 신규 도메인 Sprint 아님 — skip"
+          fi
+
+      - name: Verify DOMAIN_MAP entry in diff
+        if: steps.detect.outputs.match == 'true'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          ADDED_CONTAINERS=$(git diff "origin/${BASE_REF}...HEAD" -- scripts/divergence/domain-source-map.ts \
+            | grep -cE '^\+\s*container:\s*"' || true)
+
+          echo "DOMAIN_MAP에 추가된 container entries: $ADDED_CONTAINERS"
+
+          if [ "$ADDED_CONTAINERS" -lt 1 ]; then
+            echo ""
+            echo "❌ DOMAIN_MAP entry 누락 — autopilot false claim 패턴 차단"
+            echo ""
+            echo "신규 도메인 Sprint PR이 감지되었으나,"
+            echo "scripts/divergence/domain-source-map.ts에 신규 container entry가 없습니다."
+            echo ""
+            echo "후속 조치:"
+            echo "  1. scripts/divergence/domain-source-map.ts에 신규 DOMAIN_MAP entry 추가"
+            echo "  2. commit + push 후 이 check 재실행"
+            echo ""
+            echo "참조: SPEC.md AIF-REQ-044 / CLAUDE.md ## Autopilot Guards"
+            exit 1
+          fi
+
+          echo "✅ DOMAIN_MAP entry 정상 추가 (+${ADDED_CONTAINERS} container(s))"

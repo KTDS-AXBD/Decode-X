@@ -1564,6 +1564,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processSessionRefund",
     ],
   },
+  {
+    container: "convention",
+    rulesPath: `${SPEC_CONTAINER_BASE}/convention/rules/convention-rules.md`,
+    // 세션 309 (F552): Convention 합성 도메인 — 83번째 도메인 (컨벤션 산업, 72번째 신규 산업). Sprint WT autopilot 분리 작업 10회차 (DoD 6축 실감증 — domain-sprint-guard.yml 첫 실 작동).
+    // CV-001~CV-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 36회차 (carsharing → ... → planetarium → convention) — ✏️ AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV 오프라인 엔터 14-클러스터 확장 (단일 클러스터 14 도메인 첫 사례 신기록 + 10 Sprint 연속 첫 사례 마일스톤 신기록 도전).
+    // CV 차별성: MS(정적 전시/갤러리 입장) vs EX(단기 박람회 부스 임대) vs CV(다중 트랙 회의/컨벤션 세션 + 부스 배정 + 등록자 운영). 동시 한도 200 (B2B 컨벤션 세션별 동시 진행).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/convention.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/convention/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "reserveSession",
+      "applyBoothLimit",
+      "processBoothBooking",
+      "transitionSessionStatus",
+      "expireClosedSessionBatch",
+      "processSessionRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

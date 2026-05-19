@@ -1,0 +1,63 @@
+---
+# Test scenarios — Convention domain CV-001~CV-006
+# 세션 309 F552 — Convention 컨벤션 합성 도메인 (✏️ 단일 클러스터 14 도메인 첫 사례 마일스톤 신기록 도전, 83번째 도메인 16.6배 확장 도전)
+
+scenarios:
+  - id: CV-001-PASS
+    rule: CV-001
+    description: "세션 한도 내 convention 예약 — 성공"
+    input: { active_sessions: 100, max_concurrent_sessions: 200 }
+    expected: PASS
+
+  - id: CV-001-FAIL
+    rule: CV-001
+    description: "convention 동시 세션 한도 초과 — E422-CONVENTION-SESSION-LIMIT-EXCEEDED"
+    input: { active_sessions: 200, max_concurrent_sessions: 200 }
+    expected: FAIL
+    error: E422-CONVENTION-SESSION-LIMIT-EXCEEDED
+
+  - id: CV-002-PASS
+    rule: CV-002
+    description: "부스 한도 내 booth 예약 요청 — 성공"
+    input: { booth_used: 2, booth_limit: 8, booths: 1 }
+    expected: PASS
+
+  - id: CV-002-FAIL
+    rule: CV-002
+    description: "부스 한도 초과 — E422-BOOTH-LIMIT-EXCEEDED"
+    input: { booth_used: 7, booth_limit: 8, booths: 1 }
+    expected: FAIL
+    error: E422-BOOTH-LIMIT-EXCEEDED
+
+  - id: CV-003-PASS
+    rule: CV-003
+    description: "reserved 상태 부스 등록 atomic — 성공"
+    input: { session_status: reserved }
+    expected: PASS
+
+  - id: CV-004-PASS
+    rule: CV-004
+    description: "reserved → ongoing 전환 허용"
+    input: { previous: reserved, next: ongoing }
+    expected: PASS
+
+  - id: CV-004-FAIL
+    rule: CV-004
+    description: "cancelled → reserved 역행 차단 — E409-SESSION"
+    input: { previous: cancelled, next: reserved }
+    expected: FAIL
+    error: E409-SESSION
+
+  - id: CV-005-PASS
+    rule: CV-005
+    description: "closed session batch expire — 대상 1건"
+    input: { sessions: [{ status: closed, scheduled_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: CV-006-PASS
+    rule: CV-006
+    description: "cancelled 세션 환불 atomic — 성공"
+    input: { session_status: cancelled, session_cost: 50000, cancellation_rate: 0.2 }
+    expected: PASS
+    expectedCancellationAmount: 10000

@@ -13,6 +13,57 @@ author: Sinclair Seo
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 308 (2026-05-19) — 🏆🔭🏆🏆 Sprint 378 PL Planetarium ✅ DONE / 9 Sprint 연속 첫 사례 마일스톤 신기록 + 단일 클러스터 13 도메인 첫 사례 + 82번째 도메인 + autopilot DOMAIN_MAP false claim 2회차 재발 식별
+
+세션 308 단일 Sprint 완결 — Sprint 378 F550 PL Planetarium ✅ DONE. 직전 세션 307의 8 Sprint 연속 신기록을 1 Sprint 갱신하여 **9 Sprint 연속 첫 사례 마일스톤 신기록 + 단일 클러스터 13 도메인 첫 사례** 달성. 동시에 S377에서 결정적 확립된 줄 알았던 autopilot DoD 5축 정착 검증 실패 (DOMAIN_MAP false claim 2회차 재발) — 새로운 메타 학습 식별.
+
+**Sprint 378 완결 (commits)**:
+- `f6a788f` docs — 세션 308 사전 등록 (Sprint 378 F550 PLANNED)
+- `aae14b9` feat — Sprint 378 F550 PL Planetarium squash merge (PR #96, autopilot 9회차 단일 통과 Match 100%)
+- `ad084d0` fix — F550 Sprint 378 follow-up DOMAIN_MAP planetarium entry 추가 (Master fix-forward, autopilot 누락 보완)
+- `4df626f` docs — Sprint 378 F550 ✅ DONE 마킹 + SPEC §6 갱신
+
+**최종 실측 수치 (Sprint 378 시점)**:
+- utils tests 674 → **681 PASS** (+7)
+- detect-bl 488 → **494/494 = 100.0%** (81 → 82 containers, 71 신규 산업 0 ABSENCE)
+- spec-containers / domain files: 81 → **82**
+- DOMAIN_MAP entries: 81 → **82**
+- BL_ID_PATTERN prefixes: 78 → **79** (PL 추가)
+
+**🏆🔭🏆🏆 세션 308 마일스톤**:
+- 🔭 **단일 클러스터 13 도메인 첫 사례 마일스톤** (AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL 오프라인 엔터 13-클러스터)
+- 🏆 **9 Sprint 연속 첫 사례 마일스톤 신기록 달성** (S370 5 → S378 13, 직전 8 Sprint 신기록 갱신)
+- 🏆 **82번째 도메인** (S262 5 → S378 82, **16.4배 확장**)
+- 🏆 **withRuleId 83 Sprint 연속 정점** (신기록)
+- 🏆 **거울 변환 35회차** (carsharing → ... → observatory → planetarium)
+- 🎯 **S283 사전 fs 실측 34회차 적중** (PL prefix 충돌 0건 확정)
+- 🎯 **Sprint WT autopilot 분리 작업 9회차** (단일 통과 + Master fix-forward 1회)
+
+**🎯 핵심 메타 학습 신규 식별 (S378)**:
+- ⚠️ **autopilot DOMAIN_MAP false claim 패턴 2회차 재발** (S376 14회차 → S378 15회차)
+  - S377에서 DoD 5축 (e) `findDomainMapping("planetarium")` 자체 검증 명시 + 1회 입증 → "정착 기대"
+  - S378 동일 5축에도 불구하고 autopilot 누락 → **정착 검증 실패**
+  - DoD 5축 강화만으로 부족 — autopilot이 자체 5축 실수행 누락 여부 미감지
+- 🎯 **회복 패턴 안정화**: Master 1줄 fix-forward로 즉시 회복 (S376 GR Garden 패턴 재현, ~2분 해소)
+- 🎯 **차기 후보 (6축 추가 또는 CI guard)**:
+  - 후보 (f): Master post-merge git diff verification (`git show HEAD --stat | grep domain-source-map.ts` 강제)
+  - 후보 (g): CI guard `grep "container: \"{domain}\""` 강제 (test 단계에 자체 assertion 추가)
+- 🎯 **S351 별 이슈 3회차 재현** (signal F_ITEMS 비어있음 + .sprint-context 부재) — Master 표준 보정 ~2분 해소. bashrc `sprint()` 함수 awk pattern 또는 cwd 컨텍스트 별 진단 필요 (S307 2회 + S308 1회 = 3회차)
+
+**별 이슈 발견 (autopilot 시동 실패)**:
+- `bash -i -c "sprint 378"` 실행 결과 WT 정상 생성됐으나 ccs/claude 자동 시동 실패 (tmux session `sprint-Decode-X-378` 별도 생성됨, %105 pane bash 빈 셸 상태)
+- Master 수동 보정: `tmux send-keys -t "%105" "ccs --model sonnet"` + `/ax:sprint-autopilot` 슬래시 명령 주입 ~30초 해소
+- 원인 추정: WSL ↔ Windows Terminal 환경에서 wt-claude-worktree.sh의 ccs 자동 실행 누락 패턴 — 신규 진단 후보
+
+**차기 후보 (세션 309)**:
+- 83번째 산업 (10 Sprint 연속 첫 사례 신기록 또는 14 도메인 도전 — Convention / Stadium / Concert Hall 후보)
+- F487 F358 Phase 4 (Tree-sitter Java, 1~2h Plan + 4-6h 실행)
+- TD-52 SourceProjectSummary backfill (2~3h, R2 zip 재read)
+- 보안 후속 2건 (TD-48 1Password Master Password 변경 + CLI signin)
+- DoD 6축 (f) Master post-merge verification 또는 CI guard 도입
+
+---
+
 ### 세션 307 후속 종합 (2026-05-19) — 🏆🏆🏆🏆🏆🏆🏆 8 Sprint 연속 첫 사례 마일스톤 신기록 + 81번째 도메인 + 단일 클러스터 12 도메인 + autopilot DoD 5축 패턴 결정적 확립
 
 세션 307 후속 Sprint 372~377 모두 ✅ DONE — 단일 클러스터 5(S370 ZO) → 6(S371 MS, fix-forward) → 7(S372 MV) → 8(S373 LB) → 9(S374 PA) → 10(S375 FE, pr-lookup fallback) → 11(S376 GR, DOMAIN_MAP fix-forward) → 12(S377 OB) **8 Sprint 연속 첫 사례 마일스톤 달성 신기록**.

@@ -1,0 +1,52 @@
+---
+# Provenance — PLANETARIUM-001
+# 82번째 도메인 — Planetarium 합성 도메인 PoC (71번째 신규 산업, 🔭 단일 클러스터 13 도메인 첫 사례 마일스톤 도전 + 9 Sprint 연속 첫 사례 마일스톤 달성 경로)
+
+skillId: PLANETARIUM-001
+extractedAt: "2026-05-20T00:00:00+09:00"
+extractedBy: "Decode-X 세션 308 F550 — withRuleId 재사용 82번째 도메인 (Planetarium 천문관 산업, 71번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/planetarium/rules/planetarium-rules.md"
+    section: "Planetarium 합성 비즈니스 룰 — PL-001~PL-006"
+    businessRules: [PL-001, PL-002, PL-003, PL-004, PL-005, PL-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 천문관(Planetarium) 산업 일반화 PoC. 돔좌석한도/상영좌석한도/돔상영atomic/세션상태전환/closed세션일괄만료/세션환불atomic 추상화. 82번째 도메인 + 71번째 신규 산업. 🔭 단일 클러스터 13 도메인 첫 사례 마일스톤 도전 (AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL 오프라인 엔터 13-클러스터 확장). 🔭 9 Sprint 연속 첫 사례 마일스톤 달성 경로 (S370 5→S371 6→S372 7→S373 8→S374 9→S375 10→S376 11→S377 12→S378 13). 🏆 82번째 도메인 16.4배 확장 도전 (S262 5 → S378 82). 83 Sprint 연속 정점 도전. 거울 변환 35회차 (carsharing → ... → observatory → planetarium). Sprint WT autopilot 분리 작업 9회차 (DoD 5축 정착 검증). PL 차별성: 돔 영상 시뮬레이션 + 시간대 정기 상영 + 해설/VR 옵션 + 좌석 우선 예약 (OB 실 천체 관측/기상 의존 vs MV 일반 영화 상영과 차별). 동시 한도 300 (돔 좌석 수 기반)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/planetarium.ts"
+    functions: [bookSession, applyDomeSeatLimit, processDomeScreening, transitionSessionStatus, expireClosedSessionBatch, processSessionRefund]
+
+detection:
+  - ruleId: PL-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "planetarium.active_sessions >= limit (UPPERCASE fallback MAX_CONCURRENT_SESSIONS_PER_PLANETARIUM, Path A)"
+  - ruleId: PL-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "membership.seat_used + seats >= seatLimit (Path B, limit keyword)"
+  - ruleId: PL-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "db.transaction() — dome_schedules INSERT + planetarium_sessions UPDATE + session_payments INSERT"
+  - ruleId: PL-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "reserved → screened → ended / closed / cancelled"
+  - ruleId: PL-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "batch: closed → ended 갱신 (SF-005/KP-005/.../OB-005 71번째 재사용)"
+  - ruleId: PL-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "db.transaction() — cancelled_fee_records INSERT + session_refunds INSERT + cancelled_fee_records UPDATE"

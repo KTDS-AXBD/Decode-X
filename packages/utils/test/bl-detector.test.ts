@@ -677,7 +677,7 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 356 detectors (세션 307 후속7 F549 — observatory 81번째 도메인 +6 detectors, 🔭 단일 클러스터 12 도메인 첫 사례 마일스톤 + 8 Sprint 연속 첫 사례 마일스톤)", () => {
+  it("exposes 362 detectors (세션 308 F550 — planetarium 82번째 도메인 +6 detectors, 🔭 단일 클러스터 13 도메인 첫 사례 마일스톤 도전 + 9 Sprint 연속 첫 사례 마일스톤 달성 경로)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AD-001",
       "AD-002",
@@ -1035,6 +1035,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "PK-004",
       "PK-005",
       "PK-006",
+      "PL-001",
+      "PL-002",
+      "PL-003",
+      "PL-004",
+      "PL-005",
+      "PL-006",
       "PR-001",
       "PR-002",
       "PR-003",
@@ -1582,6 +1588,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["OB-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["OB-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["OB-006"]).toBeDefined();
+  });
+
+  it("PL-001~PL-006 registered (세션 308 F550 — planetarium 82번째 도메인, 71번째 신규 산업, 🔭 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL 오프라인 엔터 13-클러스터 확장 도전 — 단일 클러스터 13 도메인 첫 사례 마일스톤 도전 + 9 Sprint 연속 첫 사례 마일스톤 달성 경로, 83 Sprint 연속 정점 도전, 거울 변환 35회차, DoD 5축 정착 검증)", () => {
+    expect(BL_DETECTOR_REGISTRY["PL-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PL-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PL-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PL-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PL-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PL-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -8292,6 +8307,103 @@ function expireClosedObservationBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["OB-006"]!(src, "observatory.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+describe("planetarium domain — PL-001~006 via withRuleId (세션 308 F550, 🔭 단일 클러스터 13 도메인 첫 사례 마일스톤 도전 + 9 Sprint 연속 첫 사례 마일스톤 달성 경로, DoD 5축 정착 검증)", () => {
+  it("PL-001 PRESENCE — active_sessions >= MAX_CONCURRENT_SESSIONS_PER_PLANETARIUM threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "planetarium.ts",
+      `const MAX_CONCURRENT_SESSIONS_PER_PLANETARIUM = 300;
+function bookSession(db, planetariumId, membershipId) {
+  const planetarium = db.prepare("SELECT active_sessions, max_concurrent_sessions FROM planetariums WHERE id = ?").get(planetariumId);
+  const limit = planetarium.max_concurrent_sessions ?? MAX_CONCURRENT_SESSIONS_PER_PLANETARIUM;
+  if (planetarium.active_sessions >= limit) {
+    throw new PlanetariumError('E422-PLANETARIUM-SESSION-LIMIT-EXCEEDED', 'Planetarium is at full session capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PL-001"]!(src, "planetarium.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("PL-002 PRESENCE — membership.seat_used + seats >= seatLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "planetarium.ts",
+      `function applyDomeSeatLimit(db, memberId, membershipId, seats) {
+  const membership = db.prepare("SELECT seat_used, seat_limit FROM planetarium_memberships WHERE id = ? LIMIT 1").get(membershipId, memberId);
+  const seatLimit = membership.seat_limit;
+  if (membership.seat_used + seats >= seatLimit) {
+    throw new PlanetariumError('E422-DOME-SEAT-LIMIT-EXCEEDED', 'Dome seat quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PL-002"]!(src, "planetarium.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("PL-003 PRESENCE — db.transaction() in processDomeScreening (atomic dome_schedules+planetarium_sessions+session_payments)", () => {
+    const src = parseTypeScriptSource(
+      "planetarium.ts",
+      `function processDomeScreening(db, planetariumId, sessionId, domeNo, programType, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO dome_schedules (id, planetarium_id, session_id, dome_no, program_type, status, started_at) VALUES (?, ?, ?, ?, ?, 'active', ?)").run(domeId, planetariumId, sessionId, domeNo, programType, startedAt);
+    db.prepare("UPDATE planetarium_sessions SET status = 'screened', dome_id = ?, payment_id = ? WHERE id = ?").run(domeId, sessionPaymentId, sessionId);
+    db.prepare("INSERT INTO session_payments (id, session_id, dome_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(sessionPaymentId, sessionId, domeId, amount, startedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PL-003"]!(src, "planetarium.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("PL-004 PRESENCE — status transition matrix in transitionSessionStatus (reserved→screened→ended/closed/cancelled)", () => {
+    const src = parseTypeScriptSource(
+      "planetarium.ts",
+      `function transitionSessionStatus(db, sessionId, newStatus) {
+  const session = db.prepare("SELECT status FROM planetarium_sessions WHERE id = ?").get(sessionId);
+  if (session.status === 'cancelled') throw new PlanetariumError("E409-SESSION", "Invalid transition", 409);
+  db.prepare("UPDATE planetarium_sessions SET status = 'screened' WHERE id = ?").run(sessionId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PL-004"]!(src, "planetarium.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("PL-005 PRESENCE — batch expire update in expireClosedSessionBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "planetarium.ts",
+      `function transitionSessionStatus(db, sessionId, newStatus) {
+  const session = db.prepare("SELECT status FROM planetarium_sessions WHERE id = ?").get(sessionId);
+  if (session.status === 'cancelled') throw new PlanetariumError("E409-SESSION", "Invalid", 409);
+  db.prepare("UPDATE planetarium_sessions SET status = 'screened' WHERE id = ?").run(sessionId);
+}
+function expireClosedSessionBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM planetarium_sessions WHERE status = 'closed' AND scheduled_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE planetarium_sessions SET status = 'ended' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PL-005"]!(src, "planetarium.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("PL-006 PRESENCE — db.transaction() in processSessionRefund (atomic cancelled_fee_records+session_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "planetarium.ts",
+      `function processSessionRefund(db, memberId, sessionId, sessionCost, cancellationRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO cancelled_fee_records (id, member_id, session_id, session_cost, cancellation_rate, cancellation_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(feeRecordId, memberId, sessionId, sessionCost, cancellationRate, cancellationAmount);
+    db.prepare("INSERT INTO session_refunds (id, fee_record_id, member_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, feeRecordId, memberId, cancellationAmount, refundedAt);
+    db.prepare("UPDATE cancelled_fee_records SET status = 'refunded' WHERE id = ?").run(feeRecordId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PL-006"]!(src, "planetarium.ts");
     expect(markers).toHaveLength(0);
   });
 });

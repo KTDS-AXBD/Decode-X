@@ -1,0 +1,63 @@
+---
+# Test scenarios — Planetarium domain PL-001~PL-006
+# 세션 308 F550 — Planetarium 천문관 합성 도메인 (🔭 단일 클러스터 13 도메인 첫 사례 마일스톤 도전, 82번째 도메인 16.4배 확장 도전)
+
+scenarios:
+  - id: PL-001-PASS
+    rule: PL-001
+    description: "세션 한도 내 planetarium 예약 — 성공"
+    input: { active_sessions: 150, max_concurrent_sessions: 300 }
+    expected: PASS
+
+  - id: PL-001-FAIL
+    rule: PL-001
+    description: "planetarium 동시 세션 한도 초과 — E422-PLANETARIUM-SESSION-LIMIT-EXCEEDED"
+    input: { active_sessions: 300, max_concurrent_sessions: 300 }
+    expected: FAIL
+    error: E422-PLANETARIUM-SESSION-LIMIT-EXCEEDED
+
+  - id: PL-002-PASS
+    rule: PL-002
+    description: "돔 좌석 한도 내 좌석 사용 요청 — 성공"
+    input: { seat_used: 2, seat_limit: 8, seats: 1 }
+    expected: PASS
+
+  - id: PL-002-FAIL
+    rule: PL-002
+    description: "돔 좌석 한도 초과 — E422-DOME-SEAT-LIMIT-EXCEEDED"
+    input: { seat_used: 7, seat_limit: 8, seats: 1 }
+    expected: FAIL
+    error: E422-DOME-SEAT-LIMIT-EXCEEDED
+
+  - id: PL-003-PASS
+    rule: PL-003
+    description: "reserved 상태 돔 상영 atomic — 성공"
+    input: { session_status: reserved }
+    expected: PASS
+
+  - id: PL-004-PASS
+    rule: PL-004
+    description: "reserved → screened 전환 허용"
+    input: { previous: reserved, next: screened }
+    expected: PASS
+
+  - id: PL-004-FAIL
+    rule: PL-004
+    description: "cancelled → reserved 역행 차단 — E409-SESSION"
+    input: { previous: cancelled, next: reserved }
+    expected: FAIL
+    error: E409-SESSION
+
+  - id: PL-005-PASS
+    rule: PL-005
+    description: "closed session batch expire — 대상 1건"
+    input: { sessions: [{ status: closed, scheduled_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: PL-006-PASS
+    rule: PL-006
+    description: "cancelled 세션 환불 atomic — 성공"
+    input: { session_status: cancelled, session_cost: 45000, cancellation_rate: 0.2 }
+    expected: PASS
+    expectedCancellationAmount: 9000

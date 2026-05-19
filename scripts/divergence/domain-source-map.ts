@@ -1469,6 +1469,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processOverdueRefund",
     ],
   },
+  {
+    container: "park",
+    rulesPath: `${SPEC_CONTAINER_BASE}/park/rules/park-rules.md`,
+    // 세션 307 후속4 (F546): Park 합성 도메인 — 78번째 도메인 (자연공원 산업, 67번째 신규 산업). Sprint WT autopilot 분리 작업 5회차.
+    // PA-001~PA-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 31회차 (carsharing → ... → library → park) — 🌲 AM+TH+KP+AQ+ZO+MS+MV+LB+PA 오프라인 엔터 9-클러스터 확장 (놀이공원 + 극장 + 콘서트 + 수족관 + 동물원 + 박물관 + 영화관 + 도서관 + 자연공원 통합 추상화 — 단일 클러스터 9 도메인 첫 사례 마일스톤).
+    // 🏆 78번째 도메인 마일스톤 (S262 5 → S374 78, 15.6배 확장). PA 차별성: AM 놀이공원과 분리 (트레일/캠핑/가이드 투어 모델).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/park.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/park/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "reserveVisit",
+      "applyTrailLimit",
+      "processTrailEntry",
+      "transitionVisitStatus",
+      "expireClosedVisitBatch",
+      "processVisitRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

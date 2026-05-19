@@ -677,7 +677,7 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 344 detectors (세션 307 후속5 F547 — festival 79번째 도메인 +6 detectors, 🎪 단일 클러스터 10 도메인 첫 사례 round 마일스톤)", () => {
+  it("exposes 350 detectors (세션 307 후속6 F548 — garden 80번째 도메인 +6 detectors, 🌷 단일 클러스터 11 도메인 첫 사례 마일스톤 + 80번째 도메인 16배 round 마일스톤)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AD-001",
       "AD-002",
@@ -884,6 +884,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "GM-004",
       "GM-005",
       "GM-006",
+      "GR-001",
+      "GR-002",
+      "GR-003",
+      "GR-004",
+      "GR-005",
+      "GR-006",
       "GV-001",
       "GV-002",
       "GV-003",
@@ -1552,6 +1558,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["FE-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["FE-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["FE-006"]).toBeDefined();
+  });
+
+  it("GR-001~GR-006 registered (세션 307 후속6 F548 — garden 80번째 도메인, 69번째 신규 산업, 🌷 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR 오프라인 엔터 11-클러스터 확장 — 단일 클러스터 11 도메인 첫 사례 마일스톤 + 7 Sprint 연속 첫 사례 마일스톤 + 80번째 도메인 16배 round 마일스톤, 81 Sprint 연속 정점 도전, 거울 변환 33회차)", () => {
+    expect(BL_DETECTOR_REGISTRY["GR-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["GR-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["GR-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["GR-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["GR-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["GR-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -8068,6 +8083,103 @@ function expireClosedEntryBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["FE-006"]!(src, "festival.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+describe("garden domain — GR-001~006 via withRuleId (세션 307 후속6 F548, 🌷 단일 클러스터 11 도메인 첫 사례 마일스톤 + 80번째 도메인 16배 round 마일스톤)", () => {
+  it("GR-001 PRESENCE — active_visits >= MAX_CONCURRENT_GARDEN_VISITS threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "garden.ts",
+      `const MAX_CONCURRENT_GARDEN_VISITS = 3000;
+function reserveVisit(db, gardenId, membershipId) {
+  const garden = db.prepare("SELECT active_visits, total_capacity FROM gardens WHERE id = ?").get(gardenId);
+  const limit = garden.total_capacity ?? MAX_CONCURRENT_GARDEN_VISITS;
+  if (garden.active_visits >= limit) {
+    throw new GardenError('E422-GARDEN-VISIT-LIMIT-EXCEEDED', 'Garden is at full visit capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GR-001"]!(src, "garden.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("GR-002 PRESENCE — membership.zone_used + zones >= zoneLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "garden.ts",
+      `function applyZoneLimit(db, memberId, membershipId, zones) {
+  const membership = db.prepare("SELECT zone_used, zone_limit FROM garden_memberships WHERE id = ? LIMIT 1").get(membershipId, memberId);
+  const zoneLimit = membership.zone_limit;
+  if (membership.zone_used + zones >= zoneLimit) {
+    throw new GardenError('E422-ZONE-LIMIT-EXCEEDED', 'Zone entry quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GR-002"]!(src, "garden.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("GR-003 PRESENCE — db.transaction() in processGardenEntry (atomic zone_sessions+garden_visits+visit_payments)", () => {
+    const src = parseTypeScriptSource(
+      "garden.ts",
+      `function processGardenEntry(db, gardenId, visitId, zoneNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO zone_sessions (id, garden_id, visit_id, zone_no, status, started_at) VALUES (?, ?, ?, ?, 'active', ?)").run(zoneId, gardenId, visitId, zoneNo, startedAt);
+    db.prepare("UPDATE garden_visits SET status = 'entered', zone_id = ?, payment_id = ? WHERE id = ?").run(zoneId, visitPaymentId, visitId);
+    db.prepare("INSERT INTO visit_payments (id, visit_id, zone_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(visitPaymentId, visitId, zoneId, amount, startedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GR-003"]!(src, "garden.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("GR-004 PRESENCE — status transition matrix in transitionVisitStatus (reserved→entered→exited→ended/closed/cancelled)", () => {
+    const src = parseTypeScriptSource(
+      "garden.ts",
+      `function transitionVisitStatus(db, visitId, newStatus) {
+  const visit = db.prepare("SELECT status FROM garden_visits WHERE id = ?").get(visitId);
+  if (visit.status === 'cancelled') throw new GardenError("E409-VISIT", "Invalid transition", 409);
+  db.prepare("UPDATE garden_visits SET status = 'entered' WHERE id = ?").run(visitId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GR-004"]!(src, "garden.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("GR-005 PRESENCE — batch expire update in expireClosedVisitBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "garden.ts",
+      `function transitionVisitStatus(db, visitId, newStatus) {
+  const visit = db.prepare("SELECT status FROM garden_visits WHERE id = ?").get(visitId);
+  if (visit.status === 'cancelled') throw new GardenError("E409-VISIT", "Invalid", 409);
+  db.prepare("UPDATE garden_visits SET status = 'entered' WHERE id = ?").run(visitId);
+}
+function expireClosedVisitBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM garden_visits WHERE status = 'closed' AND scheduled_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE garden_visits SET status = 'ended' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GR-005"]!(src, "garden.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("GR-006 PRESENCE — db.transaction() in processVisitRefund (atomic cancelled_fee_records+visit_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "garden.ts",
+      `function processVisitRefund(db, memberId, visitId, visitCost, cancellationRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO cancelled_fee_records (id, member_id, visit_id, visit_cost, cancellation_rate, cancellation_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(feeRecordId, memberId, visitId, visitCost, cancellationRate, cancellationAmount);
+    db.prepare("INSERT INTO visit_refunds (id, fee_record_id, member_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, feeRecordId, memberId, cancellationAmount, refundedAt);
+    db.prepare("UPDATE cancelled_fee_records SET status = 'refunded' WHERE id = ?").run(feeRecordId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["GR-006"]!(src, "garden.ts");
     expect(markers).toHaveLength(0);
   });
 });

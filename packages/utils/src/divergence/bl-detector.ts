@@ -1544,6 +1544,15 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "WB-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "WB-004"),
   "WB-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "WB-005"),
   "WB-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "WB-006"),
+  // Sprint 382 (F554) — beach-club 합성 도메인: 동시방문자한도/cabana한도/cabana예약atomic/방문상태전환/closed방문일괄만료/방문환불atomic
+  // 🏖️ 85번째 도메인 + 74번째 신규 산업. AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC 오프라인 엔터 16-클러스터 단일 클러스터 16 도메인 첫 사례 신기록 + 12 Sprint 연속 첫 사례 마일스톤 신기록.
+  // withRuleId 86 Sprint 연속 정점 도전. 거울 변환 38회차 (wedding-hall → beach-club). DoD 6축 실감증 3회차 정착 완료 트리거. 🏆 85번째 도메인 17배 round 마일스톤.
+  "BC-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "BC-001"),
+  "BC-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "BC-002"),
+  "BC-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BC-003"),
+  "BC-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BC-004"),
+  "BC-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BC-005"),
+  "BC-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BC-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

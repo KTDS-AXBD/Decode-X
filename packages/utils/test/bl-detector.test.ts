@@ -677,7 +677,7 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 374 detectors (세션 309 F553 — wedding-hall 84번째 도메인 +6 detectors, 💒 단일 클러스터 15 도메인 첫 사례 마일스톤 신기록 + 11 Sprint 연속 첫 사례 마일스톤 신기록)", () => {
+  it("exposes 380 detectors (세션 309 F554 — beach-club 85번째 도메인 +6 detectors, 🏖️ 단일 클러스터 16 도메인 첫 사례 마일스톤 신기록 + 12 Sprint 연속 첫 사례 마일스톤 신기록 + 17배 round 마일스톤)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AD-001",
       "AD-002",
@@ -726,6 +726,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "BB-003",
       "BB-004",
       "BB-005",
+      "BC-001",
+      "BC-002",
+      "BC-003",
+      "BC-004",
+      "BC-005",
+      "BC-006",
       "BK-001",
       "BK-002",
       "BK-003",
@@ -1627,6 +1633,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["WB-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["WB-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["WB-006"]).toBeDefined();
+  });
+
+  it("BC-001~BC-006 registered (세션 309 F554 — beach-club 85번째 도메인, 74번째 신규 산업, 🏖️ AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC 오프라인 엔터 16-클러스터 확장 — 단일 클러스터 16 도메인 첫 사례 마일스톤 신기록 + 12 Sprint 연속 첫 사례 마일스톤 신기록, 86 Sprint 연속 정점 도전, 거울 변환 38회차, DoD 6축 실감증 3회차 정착 완료 트리거)", () => {
+    expect(BL_DETECTOR_REGISTRY["BC-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BC-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BC-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BC-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BC-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BC-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -8861,5 +8876,122 @@ function processCeremonyRefund(db, memberId, ceremonyId, ceremonyCost, cancellat
     const markers = BL_DETECTOR_REGISTRY["WB-006"]!(src, "wedding-hall.ts");
     expect(markers).toHaveLength(1);
     expect(markers[0]?.ruleId).toBe("WB-006");
+  });
+});
+
+describe("DOMAIN_MAP beach-club entry — F554 axis-e (DoD 5축 강화, 6축 CI Guard 실감증 3회차 정착 완료, 🏖️ 단일 클러스터 16 도메인 첫 사례 마일스톤 신기록)", () => {
+  it("findDomainMapping('beach-club') returns defined entry (85번째 도메인 DOMAIN_MAP 존재 검증)", async () => {
+    const { findDomainMapping } = await import("../../../scripts/divergence/domain-source-map.js");
+    const mapping = findDomainMapping("beach-club");
+    expect(mapping).toBeDefined();
+    expect(mapping?.container).toBe("beach-club");
+    expect(mapping?.sourceCodeStatus).toBe("present");
+    expect(mapping?.underImplTargets).toContain("reserveDayPass");
+  });
+});
+
+describe("beach-club domain — BC-001~006 via withRuleId (세션 309 F554, 🏖️ 단일 클러스터 16 도메인 첫 사례 마일스톤 신기록 + 12 Sprint 연속 첫 사례 마일스톤 신기록, DoD 6축 실감증 3회차 정착 완료)", () => {
+  it("BC-001 PRESENCE — active_visitors >= MAX_CONCURRENT_VISITORS_PER_BEACH_CLUB threshold (UPPERCASE constant)", () => {
+    const src = `
+function reserveDayPass(db, clubId, membershipId) {
+  const club = db.prepare("SELECT active_visitors, max_concurrent_visitors FROM beach_clubs WHERE id = ?").get(clubId);
+  const limit = club.max_concurrent_visitors ?? MAX_CONCURRENT_VISITORS_PER_BEACH_CLUB;
+  if (club.active_visitors >= limit) {
+    throw new BeachClubError('E422-CLUB-VISITOR-LIMIT-EXCEEDED', \`Beach club is at full visitor capacity\`, 422);
+  }
+  db.prepare("INSERT INTO beach_club_visits (id, club_id, membership_id) VALUES (?, ?, ?)").run(visitId, clubId, membershipId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["BC-001"]!(src, "beach-club.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BC-001");
+  });
+
+  it("BC-002 PRESENCE — membership.cabana_used + cabanas >= cabanaLimit (var-vs-var, limit keyword)", () => {
+    const src = `
+function applyCabanaLimit(db, memberId, membershipId, cabanas) {
+  const membership = db.prepare("SELECT cabana_used, cabana_limit FROM beach_memberships WHERE id = ? AND member_id = ? LIMIT 1").get(membershipId, memberId);
+  const cabanaLimit = membership.cabana_limit;
+  if (membership.cabana_used + cabanas >= cabanaLimit) {
+    throw new BeachClubError('E422-CABANA-LIMIT-EXCEEDED', \`Cabana reservation quota exhausted\`, 422);
+  }
+  db.prepare("UPDATE beach_memberships SET cabana_used = cabana_used + ? WHERE id = ?").run(cabanas, membershipId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["BC-002"]!(src, "beach-club.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BC-002");
+  });
+
+  it("BC-003 PRESENCE — db.transaction() in processCabanaBooking (atomic cabana_schedules+beach_club_visits+visit_payments INSERT/UPDATE)", () => {
+    const src = `
+function processCabanaBooking(db, clubId, visitId, cabanaNumber, startTime, guestCount, cabanaType, amount) {
+  const visit = db.prepare("SELECT status FROM beach_club_visits WHERE id = ? AND status = 'reserved'").get(visitId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO cabana_schedules (id, club_id, visit_id, cabana_number, start_time, guest_count, cabana_type, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'active')").run(cabanaId, clubId, visitId, cabanaNumber, startTime, guestCount, cabanaType);
+    db.prepare("UPDATE beach_club_visits SET status = 'entered', cabana_id = ?, payment_id = ? WHERE id = ?").run(cabanaId, paymentId, visitId);
+    db.prepare("INSERT INTO visit_payments (id, visit_id, cabana_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(paymentId, visitId, cabanaId, amount, startedAt);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["BC-003"]!(src, "beach-club.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BC-003");
+  });
+
+  it("BC-004 PRESENCE — status transition reserved→entered→exited→ended/closed/cancelled in transitionVisitStatus", () => {
+    const src = `
+function transitionVisitStatus(db, visitId, newStatus) {
+  const visit = db.prepare("SELECT status FROM beach_club_visits WHERE id = ?").get(visitId);
+  const previousStatus = visit.status;
+  const allowed =
+    (visit.status === 'reserved' && newStatus === 'entered') ||
+    (visit.status === 'entered' && newStatus === 'exited') ||
+    (visit.status === 'exited' && newStatus === 'ended') ||
+    (visit.status === 'entered' && newStatus === 'closed') ||
+    (visit.status === 'reserved' && newStatus === 'cancelled') ||
+    (visit.status === 'entered' && newStatus === 'cancelled');
+  if (!allowed) {
+    throw new BeachClubError('E409-VISIT', \`Cannot transition visit from \${previousStatus} to \${newStatus}\`, 409);
+  }
+  db.prepare("UPDATE beach_club_visits SET status = ? WHERE id = ?").run(newStatus, visitId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["BC-004"]!(src, "beach-club.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BC-004");
+  });
+
+  it("BC-005 PRESENCE — batch closed→ended expire in expireClosedVisitBatch (StatusTransition batch)", () => {
+    const src = `
+function expireClosedVisitBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM beach_club_visits WHERE status = 'closed' AND visited_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE beach_club_visits SET status = 'ended' WHERE id = ?").run(item.id);
+  }
+  return { expiredCount: candidates.length };
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["BC-005"]!(src, "beach-club.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BC-005");
+  });
+
+  it("BC-006 PRESENCE — db.transaction() in processVisitRefund (atomic cancelled_fee_records+visit_refunds INSERT/UPDATE)", () => {
+    const src = `
+function processVisitRefund(db, memberId, visitId, visitCost, cancellationRate) {
+  const visit = db.prepare("SELECT status FROM beach_club_visits WHERE id = ? AND status = 'cancelled'").get(visitId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO cancelled_fee_records (id, member_id, visit_id, visit_cost, cancellation_rate, cancellation_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(feeRecordId, memberId, visitId, visitCost, cancellationRate, cancellationAmount);
+    db.prepare("INSERT INTO visit_refunds (id, fee_record_id, member_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, feeRecordId, memberId, cancellationAmount, refundedAt);
+    db.prepare("UPDATE cancelled_fee_records SET status = 'refunded' WHERE id = ?").run(feeRecordId);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["BC-006"]!(src, "beach-club.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BC-006");
   });
 });

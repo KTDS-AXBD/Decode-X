@@ -1,0 +1,52 @@
+---
+# Provenance — BEACH-CLUB-001
+# 85번째 도메인 — Beach club 합성 도메인 PoC (74번째 신규 산업, 🏖️ 단일 클러스터 16 도메인 첫 사례 마일스톤 신기록 + 12 Sprint 연속 첫 사례 마일스톤 신기록)
+
+skillId: BEACH-CLUB-001
+extractedAt: "2026-05-20T00:00:00+09:00"
+extractedBy: "Decode-X 세션 309 F554 — withRuleId 재사용 85번째 도메인 (Beach club 비치클럽 산업, 74번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/beach-club/rules/beach-club-rules.md"
+    section: "Beach club 합성 비즈니스 룰 — BC-001~BC-006"
+    businessRules: [BC-001, BC-002, BC-003, BC-004, BC-005, BC-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 비치클럽(Beach club) 산업 일반화 PoC. 동시방문자한도/cabana한도/cabana예약atomic/방문상태전환/closed방문일괄만료/방문환불atomic 추상화. 85번째 도메인 + 74번째 신규 산업. 🏖️ 단일 클러스터 16 도메인 첫 사례 마일스톤 신기록 (AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC 오프라인 엔터 16-클러스터). 🏆 12 Sprint 연속 첫 사례 마일스톤 신기록 (S370 5→S371 6→...→S378 13→S380 14→S381 15→S382 16). 🏆 85번째 도메인 17배 round 마일스톤 (S262 5 → S382 85). 86 Sprint 연속 정점 도전. 거울 변환 38회차 (carsharing → ... → convention → wedding-hall → beach-club). Sprint WT autopilot 분리 작업 12회차 (DoD 6축 실감증 3회차 — domain-sprint-guard.yml 정착 완료 트리거). BC 차별성: 풀 + 사교 + DJ 공연 + 시즌제 + VIP 프라이빗 + 종일권/시즌권 통합 (WB 1회성 예식 단일 + KP 콘서트 좌석 인접하되 B2C 시즌제 + 카바나 임대 + 음료/식음 옵션 차별). 동시 한도 500 (비치클럽별 동시 active visitor, 대규모 야외 공간 기반)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/beach-club.ts"
+    functions: [reserveDayPass, applyCabanaLimit, processCabanaBooking, transitionVisitStatus, expireClosedVisitBatch, processVisitRefund]
+
+detection:
+  - ruleId: BC-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "club.active_visitors >= limit (UPPERCASE fallback MAX_CONCURRENT_VISITORS_PER_BEACH_CLUB, Path A)"
+  - ruleId: BC-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "membership.cabana_used + cabanas >= cabanaLimit (Path B, limit keyword)"
+  - ruleId: BC-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "db.transaction() — cabana_schedules INSERT + beach_club_visits UPDATE + visit_payments INSERT"
+  - ruleId: BC-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "reserved → entered → exited → ended / closed / cancelled"
+  - ruleId: BC-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "batch: closed → ended 갱신 (SF-005/KP-005/.../WB-005 74번째 재사용)"
+  - ruleId: BC-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "db.transaction() — cancelled_fee_records INSERT + visit_refunds INSERT + cancelled_fee_records UPDATE (VIP 환불 정책 포함)"

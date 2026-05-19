@@ -1602,6 +1602,26 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processCeremonyRefund",
     ],
   },
+  {
+    container: "beach-club",
+    rulesPath: `${SPEC_CONTAINER_BASE}/beach-club/rules/beach-club-rules.md`,
+    // 세션 309 (F554): Beach club 합성 도메인 — 85번째 도메인 (비치클럽 산업, 74번째 신규 산업). Sprint WT autopilot 분리 작업 12회차 (DoD 6축 실감증 3회차 정착 완료 트리거).
+    // BC-001~BC-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 38회차 (carsharing → ... → convention → wedding-hall → beach-club) — 🏖️ AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC 오프라인 엔터 16-클러스터 (단일 클러스터 16 도메인 첫 사례 + 12 Sprint 연속 첫 사례 마일스톤 신기록).
+    // 🏆 85번째 도메인 17배 round 마일스톤 (S262 5 → S382 85).
+    // BC 차별성: 풀 + 사교 + DJ 공연 + 시즌제 + VIP 프라이빗 + 종일권/시즌권 통합 (WB 예식장 단일 1회성 + KP 콘서트 좌석 등급 인접하되 B2C 시즌제 + 카바나 임대 + 음료/식음 옵션 차별). 동시 한도 500 (비치클럽별 동시 active visitor 기반).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/beach-club.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/beach-club/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "reserveDayPass",
+      "applyCabanaLimit",
+      "processCabanaBooking",
+      "transitionVisitStatus",
+      "expireClosedVisitBatch",
+      "processVisitRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

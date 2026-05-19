@@ -286,6 +286,25 @@ Phase 1 ✅ → 2 ✅ → 3 ✅ → 4 ✅ → **5 ✅** (MSA 재조정 완료). 
 
 ---
 
+## Autopilot Guards
+
+### DoD 6축 (f) — CI Guard for DOMAIN_MAP entry (Sprint 379 F551, 2026-05-19)
+
+신규 도메인 Sprint(PR title이 `F[0-9]+.*[0-9]+번째 도메인` 또는 `신규 산업` 패턴 매칭)는
+`.github/workflows/domain-sprint-guard.yml`이 `scripts/divergence/domain-source-map.ts` diff를
+PR 단계에서 강제 검증한다. DOMAIN_MAP 신규 entry 0건이면 CI fail — autopilot 우회 불가, Master 부재 시에도 작동.
+
+**도입 배경**: S376 + S378 2회 재발 (autopilot DOMAIN_MAP false claim 패턴). DoD 5축 (e) self-attestation 방식으로는 작업 큐에서 빠진 누락을 탐지 불가 → 외부 검증(external enforcement) 도입.
+
+**DoD 5축 (a~e) vs 6축 (f)**:
+- 5축 (a~e): autopilot이 commit 전 자체 verify (self-attestation)
+- 6축 (f): CI workflow가 PR 단계 fail-on-missing (external enforcement, 결정적 차단)
+
+신규 도메인 Sprint Plan 작성 시 6축 (f) CI Guard가 활성화됨을 인지 필수.
+참조: `reports/sprint-379-dod-6th-axis-ci-guard-2026-05-19.md` (AIF-RPRT-098)
+
+---
+
 ## IMPORTANT: 워크플로우 우선순위 (SDD-primary)
 
 SPEC.md 기반 SDD(Spec-Driven Development)가 이 프로젝트의 **주 워크플로우**이다.

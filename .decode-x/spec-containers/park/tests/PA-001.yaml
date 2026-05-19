@@ -1,0 +1,63 @@
+---
+# Test scenarios — Park domain PA-001~PA-006
+# 세션 307 후속4 F546 — Park 자연공원 합성 도메인 (🌲 단일 클러스터 9 도메인 첫 사례 마일스톤, 78번째 도메인)
+
+scenarios:
+  - id: PA-001-PASS
+    rule: PA-001
+    description: "방문 한도 내 공원 예약 — 성공"
+    input: { active_visits: 100, total_capacity: 300 }
+    expected: PASS
+
+  - id: PA-001-FAIL
+    rule: PA-001
+    description: "공원 동시 방문 한도 초과 — E422-PARK-VISIT-LIMIT-EXCEEDED"
+    input: { active_visits: 300, total_capacity: 300 }
+    expected: FAIL
+    error: E422-PARK-VISIT-LIMIT-EXCEEDED
+
+  - id: PA-002-PASS
+    rule: PA-002
+    description: "일일 trail 한도 내 trail 요청 — 성공"
+    input: { trail_used: 1, trail_limit: 5, trails: 1 }
+    expected: PASS
+
+  - id: PA-002-FAIL
+    rule: PA-002
+    description: "일일 trail 한도 초과 — E422-DAILY-TRAIL-LIMIT-EXCEEDED"
+    input: { trail_used: 4, trail_limit: 5, trails: 1 }
+    expected: FAIL
+    error: E422-DAILY-TRAIL-LIMIT-EXCEEDED
+
+  - id: PA-003-PASS
+    rule: PA-003
+    description: "reserved 상태 트레일 입장 atomic — 성공"
+    input: { visit_status: reserved }
+    expected: PASS
+
+  - id: PA-004-PASS
+    rule: PA-004
+    description: "reserved → entered 전환 허용"
+    input: { previous: reserved, next: entered }
+    expected: PASS
+
+  - id: PA-004-FAIL
+    rule: PA-004
+    description: "cancelled → reserved 역행 차단 — E409-VISIT"
+    input: { previous: cancelled, next: reserved }
+    expected: FAIL
+    error: E409-VISIT
+
+  - id: PA-005-PASS
+    rule: PA-005
+    description: "closed visit batch expire — 대상 1건"
+    input: { visits: [{ status: closed, scheduled_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: PA-006-PASS
+    rule: PA-006
+    description: "cancelled 방문 환불 atomic — 성공"
+    input: { visit_status: cancelled, visit_cost: 15000, cancellation_rate: 0.2 }
+    expected: PASS
+    expectedCancellationAmount: 3000

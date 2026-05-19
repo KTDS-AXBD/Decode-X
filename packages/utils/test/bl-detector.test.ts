@@ -677,7 +677,7 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 332 detectors (세션 307 후속3 F545 — library 77번째 도메인 +6 detectors, 📚 단일 클러스터 8 도메인 첫 사례 마일스톤)", () => {
+  it("exposes 338 detectors (세션 307 후속4 F546 — park 78번째 도메인 +6 detectors, 🌲 단일 클러스터 9 도메인 첫 사례 마일스톤)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AD-001",
       "AD-002",
@@ -987,6 +987,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "P-005",
       "P-006",
       "P-007",
+      "PA-001",
+      "PA-002",
+      "PA-003",
+      "PA-004",
+      "PA-005",
+      "PA-006",
       "PB-001",
       "PB-002",
       "PB-003",
@@ -1513,6 +1519,24 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["MV-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["MV-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["MV-006"]).toBeDefined();
+  });
+
+  it("LB-001~LB-006 registered (세션 307 후속3 F545 — library 77번째 도메인, 66번째 신규 산업, 📚 AM+TH+KP+AQ+ZO+MS+MV+LB 오프라인 엔터 8-클러스터 확장 — 단일 클러스터 8 도메인 첫 사례 마일스톤, 78 Sprint 연속 정점 도전, 거울 변환 30회차 round)", () => {
+    expect(BL_DETECTOR_REGISTRY["LB-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["LB-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["LB-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["LB-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["LB-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["LB-006"]).toBeDefined();
+  });
+
+  it("PA-001~PA-006 registered (세션 307 후속4 F546 — park 78번째 도메인, 67번째 신규 산업, 🌲 AM+TH+KP+AQ+ZO+MS+MV+LB+PA 오프라인 엔터 9-클러스터 확장 — 단일 클러스터 9 도메인 첫 사례 마일스톤, 79 Sprint 연속 정점 도전, 거울 변환 31회차)", () => {
+    expect(BL_DETECTOR_REGISTRY["PA-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PA-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PA-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PA-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PA-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PA-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -7835,6 +7859,103 @@ function expireOverdueLoanBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["LB-006"]!(src, "library.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+describe("park domain — PA-001~006 via withRuleId (세션 307 후속4 F546, 🌲 단일 클러스터 9 도메인 첫 사례 마일스톤)", () => {
+  it("PA-001 PRESENCE — active_visits >= MAX_CONCURRENT_VISITS_PER_PARK threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "park.ts",
+      `const MAX_CONCURRENT_VISITS_PER_PARK = 300;
+function reserveVisit(db, parkId, passId) {
+  const park = db.prepare("SELECT active_visits, total_capacity FROM parks WHERE id = ?").get(parkId);
+  const limit = park.total_capacity ?? MAX_CONCURRENT_VISITS_PER_PARK;
+  if (park.active_visits >= limit) {
+    throw new ParkError('E422-PARK-VISIT-LIMIT-EXCEEDED', 'Park is at full visitor capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PA-001"]!(src, "park.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("PA-002 PRESENCE — pass.trail_used + trails >= trailLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "park.ts",
+      `function applyTrailLimit(db, memberId, passId, trails) {
+  const pass = db.prepare("SELECT trail_used, trail_limit FROM member_passes WHERE id = ? LIMIT 1").get(passId, memberId);
+  const trailLimit = pass.trail_limit;
+  if (pass.trail_used + trails >= trailLimit) {
+    throw new ParkError('E422-DAILY-TRAIL-LIMIT-EXCEEDED', 'Daily trail quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PA-002"]!(src, "park.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("PA-003 PRESENCE — db.transaction() in processTrailEntry (atomic trail_schedules+park_visits+visit_payments)", () => {
+    const src = parseTypeScriptSource(
+      "park.ts",
+      `function processTrailEntry(db, parkId, visitId, trailNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO trail_schedules (id, park_id, visit_id, trail_no, status, started_at) VALUES (?, ?, ?, ?, 'active', ?)").run(trailId, parkId, visitId, trailNo, startedAt);
+    db.prepare("UPDATE park_visits SET status = 'entered', trail_id = ?, payment_id = ? WHERE id = ?").run(trailId, visitPaymentId, visitId);
+    db.prepare("INSERT INTO visit_payments (id, visit_id, trail_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(visitPaymentId, visitId, trailId, amount, startedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PA-003"]!(src, "park.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("PA-004 PRESENCE — status transition matrix in transitionVisitStatus (reserved→entered→exited/ended/closed/cancelled)", () => {
+    const src = parseTypeScriptSource(
+      "park.ts",
+      `function transitionVisitStatus(db, visitId, newStatus) {
+  const visit = db.prepare("SELECT status FROM park_visits WHERE id = ?").get(visitId);
+  if (visit.status === 'cancelled') throw new ParkError("E409-VISIT", "Invalid transition", 409);
+  db.prepare("UPDATE park_visits SET status = 'entered' WHERE id = ?").run(visitId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PA-004"]!(src, "park.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("PA-005 PRESENCE — batch expire update in expireClosedVisitBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "park.ts",
+      `function transitionVisitStatus(db, visitId, newStatus) {
+  const visit = db.prepare("SELECT status FROM park_visits WHERE id = ?").get(visitId);
+  if (visit.status === 'cancelled') throw new ParkError("E409-VISIT", "Invalid", 409);
+  db.prepare("UPDATE park_visits SET status = 'entered' WHERE id = ?").run(visitId);
+}
+function expireClosedVisitBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM park_visits WHERE status = 'closed' AND scheduled_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE park_visits SET status = 'ended' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PA-005"]!(src, "park.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("PA-006 PRESENCE — db.transaction() in processVisitRefund (atomic cancelled_fee_records+visit_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "park.ts",
+      `function processVisitRefund(db, memberId, visitId, visitCost, cancellationRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO cancelled_fee_records (id, member_id, visit_id, visit_cost, cancellation_rate, cancellation_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(feeRecordId, memberId, visitId, visitCost, cancellationRate, cancellationAmount);
+    db.prepare("INSERT INTO visit_refunds (id, fee_record_id, member_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, feeRecordId, memberId, cancellationAmount, refundedAt);
+    db.prepare("UPDATE cancelled_fee_records SET status = 'refunded' WHERE id = ?").run(feeRecordId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["PA-006"]!(src, "park.ts");
     expect(markers).toHaveLength(0);
   });
 });

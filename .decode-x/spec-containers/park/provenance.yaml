@@ -1,0 +1,52 @@
+---
+# Provenance — PARK-001
+# 78번째 도메인 — Park 합성 도메인 PoC (67번째 신규 산업, 🌲 단일 클러스터 9 도메인 첫 사례 마일스톤)
+
+skillId: PARK-001
+extractedAt: "2026-05-19T00:00:00+09:00"
+extractedBy: "Decode-X 세션 307 후속4 F546 — withRuleId 재사용 78번째 도메인 (Park 자연공원 산업, 67번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/park/rules/park-rules.md"
+    section: "Park 합성 비즈니스 룰 — PA-001~PA-006"
+    businessRules: [PA-001, PA-002, PA-003, PA-004, PA-005, PA-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 국립공원/자연공원(Park) 산업 일반화 PoC. 동시방문한도/회원일일trail한도/트레일입장atomic/방문상태전환/closed방문일괄만료/방문환불atomic 추상화. 78번째 도메인 + 67번째 신규 산업. 🌲 단일 클러스터 9 도메인 첫 사례 마일스톤 (AM+TH+KP+AQ+ZO+MS+MV+LB+PA 오프라인 엔터 9-클러스터 확장). 79 Sprint 연속 정점 도전. 거울 변환 31회차 (carsharing → ... → library → park). Sprint WT autopilot 분리 작업 5회차 (S374 5회차 패턴 명확 확립). PA 차별성: AM 놀이공원과 분리 (PA는 국립공원/자연공원 = 트레일/캠핑/가이드 투어 모델, AM은 어트랙션/티켓팅 모델)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/park.ts"
+    functions: [reserveVisit, applyTrailLimit, processTrailEntry, transitionVisitStatus, expireClosedVisitBatch, processVisitRefund]
+
+detection:
+  - ruleId: PA-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "park.active_visits >= limit (UPPERCASE fallback MAX_CONCURRENT_VISITS_PER_PARK, Path A)"
+  - ruleId: PA-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "pass.trail_used + trails >= trailLimit (Path B, limit keyword)"
+  - ruleId: PA-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "db.transaction() — trail_schedules INSERT + park_visits UPDATE + visit_payments INSERT"
+  - ruleId: PA-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "reserved → entered → exited → ended / closed / cancelled"
+  - ruleId: PA-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "batch: closed → ended 갱신 (SF-005/KP-005/.../LB-005 67번째 재사용)"
+  - ruleId: PA-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "db.transaction() — cancelled_fee_records INSERT + visit_refunds INSERT + cancelled_fee_records UPDATE"

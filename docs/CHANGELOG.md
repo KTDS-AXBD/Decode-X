@@ -5,13 +5,43 @@ version: 1.0
 status: active
 category: general
 created: 2026-02-26
-updated: 2026-05-16
+updated: 2026-05-20
 author: Sinclair Seo
 ---
 
 # CHANGELOG
 
 > 세션 히스토리 아카이브 (최신이 상단)
+
+### 세션 310 (2026-05-20) — 🎯🏆 Sprint 382 BC Beach club ✅ DONE + CLAUDE.md S381 false claim 차단 가이드 + 6축 (f) CI Guard 실감증 3회차 정착 완료
+
+**세션 메인 작업**: 직전 세션 309에서 사전 등록된 Sprint 382 F554 (BC Beach club 85번째 도메인 / 단일 클러스터 16 도메인 첫 사례 / 12 Sprint 연속 첫 사례 신기록 / 6축 (f) 3회차 정착 검증) autopilot 완료 + Master 점검 + Monitor 신규 부착 + S381 false claim 패턴 사전 차단 가이드를 CLAUDE.md `Autopilot Guards` 섹션에 정착. **6축 (f) CI Guard 자체 → 외부 검증 전이 패턴 3회 연속 자연 작동** (S380 1회차 / S381 2회차 / S382 3회차) = DoD 6축 정착 검증 완료.
+
+**Sprint 382 F554 BC Beach club ✅ DONE (commits)**:
+- `e403d52` docs — 세션 309 사전 등록 (Sprint 382 F554 PLANNED, 16-cluster 첫 사례 도전)
+- `bb893bb` feat — Sprint 382 F554 BC Beach club squash merge (PR #100, autopilot Sprint WT 12회차 단일 통과 Match 100%, 4 CI 모두 SUCCESS — Migration / DOMAIN_MAP Guard / E2E / Typecheck&Test)
+
+**CLAUDE.md S381 false claim 차단 가이드 (Master 직접 commit)**:
+- `b72aecd` docs — `Autopilot Guards` 섹션에 "rules.md Markdown Table 형식 의무화" subsection 추가 (+31 lines). 검증 layer 분리 인식 명시 (utils tests vs runtime detect-bl), 정상 예시 (`convention-rules.md`) vs 위반 예시 (`wedding-hall-rules.md`) 참조, DoD 7축 (g) 후보 식별 (3회+ 재발 시 CI guard 도입 trigger)
+
+**검증 결과**:
+- ✅ utils 681 → **705 PASS** (+24 across S380/S381/S382/drift)
+- ✅ detect-bl 494 → **512/512 = 100.0%** (85 containers, 74 신규 산업 0 ABSENCE, BC-001~006 6 BL + reserveDayPass/applyCabanaLimit/processCabanaBooking/transitionVisitStatus/expireClosedVisitBatch/processVisitRefund 6 함수)
+- ✅ BL_ID_PATTERN 81 → **82 prefixes** (+BC)
+- ✅ DoD 6축 (f) GitHub Actions `domain-sprint-guard.yml` PASS (Sprint 382 PR title 매칭 → DOMAIN_MAP entry 추가 강제 검증 자연 작동 3회차)
+- ✅ 회귀 검증: Sprint 380 CV + Sprint 381 WB + Sprint 382 BC 3 연속 PR 단계 PASS
+
+**마일스톤 (3중)**:
+- 🏆 **단일 클러스터 16 도메인 첫 사례 마일스톤 신기록** (AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC 오프라인 엔터 16-클러스터)
+- 🏆 **12 Sprint 연속 첫 사례 마일스톤 신기록** (S370 5 → S382 16)
+- 🏆 **85번째 도메인 17배 round 마일스톤** (S262 5 → S382 85, 17.0배 확장)
+
+**메타 학습 3건**:
+1. **Master 점검 + Monitor 신규 부착 + autopilot 직접 관찰 + 4 CI SUCCESS 실측 절차 정립** — 직전 세션 309 종료로 만료된 Monitor `bsiqy3fan` 대신 `b5y2z8cbr` 신규 부착 (signal STATUS/CHECKPOINT/PR_NUM/MATCH_RATE 4축 + ndjson sprint_382 이벤트 + tmux pane `%113` 종료 4종 감지), `tmux capture-pane`으로 autopilot implement 단계 직접 관찰 (BC-001~006 detector test 작성 중 → 9분 44초 thinking → commit → push → PR #100 → 4 CI 동시 진행 → MERGING → MERGED 자연 흐름 실측), Sprint WT autopilot 분리 작업 12회차 단일 통과 정착 (S370/S372~S375/S377/S378/S380/S381/S382 9회 자체 통과 + S371/S376 utils test/DOMAIN_MAP fix-forward)
+2. **S381 false claim 차단 가이드 CLAUDE.md 정착** — paragraph prose + IF/THEN 의사코드 형식이 rules-parser.ts `HEADER_PATTERN` 매칭 실패하여 runtime detect-bl 0 BLs로 silent fail되는 패턴을 CLAUDE.md `Autopilot Guards` 섹션에 영구 차단 가이드로 정착, 검증 layer 분리 명시 (utils tests = detector function 직접 호출이라 rules.md 포맷 무관 PASS / runtime detect-bl = rules.md parse라 markdown table 필수), 정상 예시(convention) vs 위반 예시(wedding-hall) 참조 명시, DoD 7축 (g) 후보 식별 (3회+ 재발 시 GitHub Actions workflow CI guard 도입 trigger)
+3. **사전 등록 6 Sprint 검토 패턴 일반화** — Sprint 383~387 5 신규 도메인 (CO/KR/NC/ST/LS) 검토 5축 점검 절차 정립: (a) prefix 충돌 0 (BC/CO/KR/NC/ST/LS 모두 기존 82 prefix와 충돌 없음 — start anchor 매칭), (b) spec-containers 신규성 5/5 (concert-hall/karaoke/night-club/studio/laser-tag 모두 부재), (c) 의존성 chain 정합 (Pipeline 큐 8 Sprint 대기열 순차), (d) 마일스톤 정합 (Sprint 387 = 18배 round + 21-cluster + 17 Sprint 연속 + 6축 8회차 4중 마일스톤 정점), (e) 리스크 식별 4종 (S381 false claim red / MEMORY stale yellow / S384 round yellow / S387 정점 green)
+
+---
 
 ### 세션 309 (2026-05-19~20) — 🎯🏆🏆 DoD 6축 (f) CI Guard 도입 + Sprint 380/381 MERGED + Sprint 382~387 사전 등록 + 신규 false claim 패턴 식별
 

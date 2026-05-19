@@ -303,6 +303,37 @@ PR 단계에서 강제 검증한다. DOMAIN_MAP 신규 entry 0건이면 CI fail 
 신규 도메인 Sprint Plan 작성 시 6축 (f) CI Guard가 활성화됨을 인지 필수.
 참조: `reports/sprint-379-dod-6th-axis-ci-guard-2026-05-19.md` (AIF-RPRT-098)
 
+### rules.md Markdown Table 형식 의무화 (Sprint 381 F553 신규 false claim 패턴 차단, 2026-05-20)
+
+신규 도메인 합성 시 `.decode-x/spec-containers/<domain>/rules/<domain>-rules.md`는 **반드시 markdown table 형식**으로 작성. paragraph prose + IF/THEN 의사코드 형식은 `rules-parser.ts`의 `HEADER_PATTERN` 매칭 실패 → runtime detect-bl 0 BLs로 silent fail.
+
+**검증 layer 분리 인식 필수**:
+- utils tests (`pnpm -F @ai-foundry/utils test`): detector function 직접 호출 → **rules.md 포맷 무관 PASS**
+- runtime detect-bl (`scripts/divergence/detect-bl.ts`): rules.md parse → markdown table 필수 → 포맷 위반 시 **0 BLs**
+
+utils tests PASS만으로 runtime BL count 보장 불가. **두 layer 모두 검증 필수.**
+
+**필수 포맷** (S381 fix-forward 후 표준):
+```markdown
+## 비즈니스 룰 (XX-001 ~ XX-006)
+
+| ID | condition (When) | criteria (If) | outcome (Then) | exception (Else) |
+|----|-----------------|---------------|----------------|-----------------|
+| XX-001 | 조건 설명 | 임계 조건 | 동작 | 에러 코드 |
+| XX-002 | ... | ... | ... | ... |
+| XX-006 | ... | ... | ... | ... |
+```
+
+**금지 패턴** (S381 wedding-hall에서 발견):
+- ❌ `## XX-001: 제목` heading + paragraph prose
+- ❌ IF/THEN 의사코드 블록만 (table 없이)
+- ❌ bullet list로 condition/outcome 분산 기술
+
+**참조 정상 예시**: `.decode-x/spec-containers/convention/rules/convention-rules.md` (Sprint 380 F552 CV)
+**참조 위반 예시**: `.decode-x/spec-containers/wedding-hall/rules/wedding-hall-rules.md` (Sprint 381 F553 WB, fix-forward 후에도 prose 잔존 — runtime detect-bl 0 BLs 상태 유지)
+
+**DoD 7축 (g) 후보** (3회+ 재발 시 도입): GitHub Actions workflow에서 PR 단계 rules.md 파일별 markdown table 존재 + BL count 일치 검증. 현재는 self-attestation + 본 가이드로 차단.
+
 ---
 
 ## IMPORTANT: 워크플로우 우선순위 (SDD-primary)

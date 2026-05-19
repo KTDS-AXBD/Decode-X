@@ -13,6 +13,63 @@ author: Sinclair Seo
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 309 (2026-05-19~20) — 🎯🏆🏆 DoD 6축 (f) CI Guard 도입 + Sprint 380/381 MERGED + Sprint 382~387 사전 등록 + 신규 false claim 패턴 식별
+
+**세션 메인 작업**: 직전 세션 308에서 식별된 autopilot DOMAIN_MAP false claim 패턴 2회차 재발(S376+S378)에 대한 거버넌스 대응 — **DoD 6축 (f) CI Guard 도입**으로 자체 검증(self-attestation) → 외부 검증(external enforcement) 전이 패턴 정립. S380 1회 입증 + S381 2회차 정착 검증 성공 + Sprint 382~387 6 Sprint 사전 등록 (90번째 도메인 = 18배 round 마일스톤 + 21 도메인 single-cluster 신기록 도전).
+
+**Sprint 379 F551 DoD 6축 (f) CI Guard 도입 ✅ DONE (commits)**:
+- `eaea78d` docs — 세션 309 사전 등록 (Sprint 379 F551 PLANNED)
+- `e8b401b` feat — Sprint 379 F551 DoD 6축 (f) CI Guard squash merge (PR #97, autopilot 10회차 단일 통과 Match 100%)
+- `b679850` docs — Sprint 379 F551 ✅ DONE fix-forward (autopilot session-end docs 누락)
+
+**Sprint 380 F552 CV Convention 83번째 도메인 ✅ DONE (commits)**:
+- `b8cdc97` docs — 세션 309 사전 등록 (Sprint 380 F552 PLANNED, 14-cluster 첫 사례)
+- `f10a633` feat — Sprint 380 F552 CV Convention squash merge (PR #98, autopilot 11회차 단일 통과 Match 97%)
+
+**Sprint 381 F553 WB Wedding hall 84번째 도메인 ✅ DONE (commits)**:
+- `90fa256` docs — 세션 309 사전 등록 (Sprint 381 F553 PLANNED, 15-cluster 첫 사례)
+- `fb8e2f9` feat — Sprint 381 F553 WB Wedding hall squash merge (PR #99, autopilot 12회차 단일 통과 Match 100%)
+- `2676c49` docs — Sprint 381 F553 ✅ DONE fix-forward + 신규 false claim 패턴 식별
+
+**Sprint 382~387 사전 등록 (6 Sprint, commits)**:
+- `e403d52` docs — Sprint 382 F554 BC Beach club 85번째 도메인 (16-cluster + 17배 round)
+- `0ddad2e` docs — Sprint 380 fix-forward + Sprint 383 F555 CO Concert hall 86번째 도메인 (17-cluster)
+- `d26205c` docs — Sprint 384 F556 KR Karaoke 87번째 도메인 (18-cluster + 거울 변환 40회차 round + S283 audit 40회차 round + 6축 (f) 5회차 rules/ 승격 트리거 5중 마일스톤)
+- `11bb44b` docs — Sprint 385 F557 NC Night club 88번째 도메인 (19-cluster + 6축 (f) 6회차 정착 검증)
+- `210100a` docs — Sprint 386 F558 ST Studio 89번째 도메인 (20-cluster round + withRuleId 90 Sprint 정점 round 트리플)
+- `2676c49` docs — Sprint 387 F559 LS Laser tag 90번째 도메인 (21-cluster 신기록 + 18배 round + 6축 (f) 8회차 4중 마일스톤)
+
+**🎯🏆🏆 세션 309 메타 학습**:
+
+1. 🎯 **DoD 6축 (f) CI Guard 도입 — 자체 → 외부 검증 전이 패턴 첫 사례 정립**:
+   - S376 14회차 + S378 15회차 autopilot DOMAIN_MAP false claim 2회 재발 → DoD 5축 자체 검증 한계 정량 입증
+   - S379 GitHub Actions `domain-sprint-guard.yml` 신설 (PR title regex `F\d+.*\d+번째 도메인` + DOMAIN_MAP diff 0건이면 fail)
+   - 회귀 검증 4 시나리오 PASS / 0 FAIL / 1 SKIP (F549 PASS / F550 fix-forward 전 FAIL / docs SKIP / 변형 PASS)
+   - rules/development-workflow.md "Autopilot DOMAIN_MAP False Claim 패턴" 추가 + CLAUDE.md "Autopilot Guards" 신설
+   - S380 1회 자연 작동 입증 + S381 2회차 정착 검증 성공
+   - **메타 패턴**: autopilot Match 100% + 자체 verify PASS 마킹하면서도 실 누락 가능 → 외부 메커니즘만 결정적
+
+2. 🏆 **15 도메인 single-cluster 신기록 + 11 Sprint 연속 첫 사례 신기록 달성** (S380 CV 14 → S381 WB 15)
+
+3. ⚠️ **신규 false claim 패턴 식별 (S381 wedding-hall)** — rules.md format mismatch:
+   - DOMAIN_MAP entry: 84개 ✅ (CI guard PASS, 6축 (f) 정상 작동)
+   - detect-bl: 500 BLs / 84 containers (예상 506, 6 BL 누락)
+   - wedding-hall: 0 BLs detected (rules.md paragraph prose format)
+   - 근본 원인: rules-parser가 markdown table만 인식, paragraph prose 무시
+   - utils tests는 registry 검증만이라 PASS이지만 runtime detect-bl 0 BL → **검증 layer가 다름**
+
+4. 🎯 **S351 5/6회차 누적 재현** — bashrc `sprint()` signal F_ITEMS 빈 상태 + .sprint-context 부재 (Master 표준 보정 ~2분 해소 정착)
+
+5. 🎯 **6 Sprint 사전 등록 + 4 Sprint MERGE + Sprint Pipeline 8 Sprint 대기열 동시 운영** — 1세션 누적 신기록
+
+**차기 후보 (세션 310)**:
+- Sprint 382~387 순차 MERGE 진행 + 6축 (f) 3~8회차 정착 검증
+- S381 wedding-hall fix-forward (rules.md format 변환) 별도 Sprint 388 또는 fix-forward
+- 91번째 산업 사전 등록 (Sprint 388 후보) — BN/IC/SA/DC 등
+- DoD 7축 (g) 후보 — runtime detect-bl BL count 검증 (S381 false claim 차단)
+
+---
+
 ### 세션 308 (2026-05-19) — 🏆🔭🏆🏆 Sprint 378 PL Planetarium ✅ DONE / 9 Sprint 연속 첫 사례 마일스톤 신기록 + 단일 클러스터 13 도메인 첫 사례 + 82번째 도메인 + autopilot DOMAIN_MAP false claim 2회차 재발 식별
 
 세션 308 단일 Sprint 완결 — Sprint 378 F550 PL Planetarium ✅ DONE. 직전 세션 307의 8 Sprint 연속 신기록을 1 Sprint 갱신하여 **9 Sprint 연속 첫 사례 마일스톤 신기록 + 단일 클러스터 13 도메인 첫 사례** 달성. 동시에 S377에서 결정적 확립된 줄 알았던 autopilot DoD 5축 정착 검증 실패 (DOMAIN_MAP false claim 2회차 재발) — 새로운 메타 학습 식별.

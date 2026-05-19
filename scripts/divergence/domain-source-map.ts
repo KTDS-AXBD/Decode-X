@@ -1507,6 +1507,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processEntryRefund",
     ],
   },
+  {
+    container: "garden",
+    rulesPath: `${SPEC_CONTAINER_BASE}/garden/rules/garden-rules.md`,
+    // 세션 307 후속6 (F548): Garden 합성 도메인 — 80번째 도메인 (식물원/수목원 산업, 69번째 신규 산업). Sprint WT autopilot 분리 작업 7회차.
+    // GR-001~GR-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 33회차 (carsharing → ... → festival → garden) — 🌷 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR 오프라인 엔터 11-클러스터 확장 (단일 클러스터 11 도메인 첫 사례 + 80번째 도메인 16배 round 마일스톤).
+    // 🏆 80번째 도메인 round 마일스톤 (S262 5 → S376 80, 16배 확장). GR 차별성: PA(자연공원)와 MS(박물관)의 중간 모델 — 식물 관람 + 온실 전시 + 계절권 멤버십.
+    sourcePath: `${DOMAIN_SOURCE_BASE}/garden.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/garden/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "reserveVisit",
+      "applyZoneLimit",
+      "processGardenEntry",
+      "transitionVisitStatus",
+      "expireClosedVisitBatch",
+      "processVisitRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

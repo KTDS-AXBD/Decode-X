@@ -13,31 +13,46 @@ author: Sinclair Seo
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
-### 세션 307 후속8 (2026-05-19) — ✅ Sprint 377 OB Observatory DONE **🔭 81번째 도메인 + 단일 클러스터 12 도메인 첫 사례 + 8 Sprint 연속 첫 사례 + withRuleId 82 Sprint + DoD 5축 강화**
+### 세션 307 후속 종합 (2026-05-19) — 🏆🏆🏆🏆🏆🏆🏆 8 Sprint 연속 첫 사례 마일스톤 신기록 + 81번째 도메인 + 단일 클러스터 12 도메인 + autopilot DoD 5축 패턴 결정적 확립
 
-세션 307 Sprint 370 (ZO Zoo) MERGED 후 Sprint 371 (MS Museum) autopilot WT 진행 중 시점의 사용자 추가 지시 → Sprint 377 (OB Observatory) 사전 등록 완료 후 Master 제외 autopilot-only 실행 요청.
+세션 307 후속 Sprint 372~377 모두 ✅ DONE — 단일 클러스터 5(S370 ZO) → 6(S371 MS, fix-forward) → 7(S372 MV) → 8(S373 LB) → 9(S374 PA) → 10(S375 FE, pr-lookup fallback) → 11(S376 GR, DOMAIN_MAP fix-forward) → 12(S377 OB) **8 Sprint 연속 첫 사례 마일스톤 달성 신기록**.
 
-**Sprint 377 F549 ✅ DONE — OB Observatory 81번째 도메인 / 70번째 신규 산업** (autopilot only, Match 100%, commit TBD): observatory.ts 307 lines (6 함수: reserveObservation / applyTelescopeLimit / processTelescopeObservation / transitionObservationStatus / expireClosedObservationBatch / processObservationRefund + ObservatoryError) + spec-container 3 files (provenance.yaml + observatory-rules.md + OB-001.yaml) + DOMAIN_MAP 81번째 + parser OB (77→78 prefixes) + REGISTRY OB-001~006 (withRuleId × 6). 검증: utils 617→**624 PASS** (+7) / typecheck PASS / detect-bl 440→**488/488 = 100.0%** (81 containers, 70 신규 산업 0 ABSENCE). 🔭 천문대 차별성: 시간 슬롯 운영 + 야간 관측 + 기상 의존 (MS/GR과 차별화, telescope 슬롯 atomic). **DoD 5축 강화**: axis-e DOMAIN_MAP 동적 검증 신규 추가 (S376 false claim 패턴 차단).
+**Sprint 372~377 6 Sprint 완결 (commits)**:
+- Sprint 372 F544 MV Movie ✅ DONE — 76번째 도메인 / 65번째 신규 (autopilot 3회차 단일 통과, `8aa4986` PR #91)
+- Sprint 373 F545 LB Library ✅ DONE — 77번째 / 66번째 (autopilot 4회차 단일 통과, `846bbaa` PR #92)
+- Sprint 374 F546 PA Park ✅ DONE — 78번째 / 67번째 (autopilot 5회차 단일 통과, `a4b1b5a` PR #93)
+- Sprint 375 F547 FE Festival ✅ DONE — 79번째 / 68번째 (autopilot 6회차 단일 통과 + ⚠️ pr-lookup fallback S231 5회차, `221c964` PR #94)
+- Sprint 376 F548 GR Garden ✅ DONE — 80번째 16배 round / 69번째 (autopilot 7회차 + Master DOMAIN_MAP fix-forward, `b6043e0` + `82c5dcb`)
+- Sprint 377 F549 OB Observatory ✅ DONE — 81번째 / 70번째 (autopilot 8회차 단일 통과 + DoD 5축 강화 효과 입증, `29778ba` PR #95)
 
-🔭 **OB + MS(S375) + MV+LB+PA+FE+GR(S376) = AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB 오프라인 엔터 12-클러스터** — **단일 클러스터 12 도메인 첫 사례 마일스톤 달성**. 🏆 **8 Sprint 연속 첫 사례** (S370 AM+TH+KP+AQ+ZO 5→S371 +MS 6→S375 +MV+LB+PA+FE+GR 11→S376 stale cleanup→S377 +OB 12).
+**최종 실측 수치 (Sprint 377 시점)**:
+- utils tests 652 → 659 → 666 → **674 PASS** (+22 across S375~S377)
+- detect-bl 470 → 476 → 482 → **488/488 = 100.0%** (78 → 81 containers)
+- spec-containers / domain files: 78 → 79 → 80 → **81**
+- BL_ID_PATTERN prefixes: 75 → 76 → 77 → **78**
 
-**🏆 Sprint 377 마일스톤**:
-- 🔭 **81번째 도메인** (S262 5 → S377 81, **16.2배 확장**)
-- 🏆 **단일 클러스터 12 도메인 첫 사례** (오프라인 엔터테인먼트)
-- 🏆 **8 Sprint 연속 첫 사례** (S370~S377 각 Sprint마다 새로운 "첫 사례" 달성)
-- 🏆 **withRuleId 82 Sprint 연속** (신규 detector 0개 추가 없음 = 패턴 완성)
-- 🏆 **거울 변환 34회차** (garden.ts → observatory.ts)
-- 🎯 **DoD 5축 강화** (axis-e DOMAIN_MAP 동적 검증)
-- 🎯 **Master inline zero** (autopilot-only 실행 검증, Sprint WT autopilot 분리 효율 재확인)
-- 🎯 **S283 사전 fs 실측 36회차 적중** (OB/DOMAIN_MAP/prefix/spec-containers 4축)
+**🏆🏆🏆🏆🏆🏆🏆 세션 307 후속 종합 마일스톤**:
+- 🏆 **8 Sprint 연속 첫 사례 마일스톤 신기록** (S370 5 → S377 12, 단일 클러스터 12 도메인 첫 사례)
+- 🔭 **AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB 오프라인 엔터 12-클러스터**
+- 🏆 **81번째 도메인** (S262 5 → S377 81, **16.2배 확장**)
+- 🏆 **80번째 도메인 16배 round 마일스톤** (S376 GR)
+- 🏆 **단일 클러스터 10 도메인 round 마일스톤** (S375 FE)
+- 🏆 **withRuleId 82 Sprint 연속 정점** (신기록)
+- 🏆 **거울 변환 34회차** (movie → library → park → festival → garden → observatory)
+- 🎯 **autopilot DoD 명시 패턴 결정적 확립** (4축 → 5축 강화, S371→S372 회고 → S376→S377 회고)
+- 🎯 **S283 사전 fs 실측 33회차 적중**
 
-**메타 학습 (세션 307 후속8)**:
-- (a) **with RuleId 82 Sprint 연속 정점** — 6-detector 매핑 패턴 완전 완성. 차후 도메인도 동일 6-detector만으로 99% 커버.
-- (b) **8 Sprint 연속 첫 사례 = 단일 클러스터 12 도메인 확장 경로 완성** (S370 AM+TH+KP+AQ+ZO 5개 이후 연속 4 Sprint에서 11→12 도메인 자연 확장).
-- (c) **DoD 5축 강화 효과** (S376 false claim 발견 후 즉시 axis-e DOMAIN_MAP 검증 추가 → Sprint 377 신뢰도 +1).
-- (d) **Garden.ts 거울 변환 패턴 완성도** (34회차 누적, 동일 6-detector 구조 재사용으로 구현 시간 최소화).
+**🎯 핵심 메타 학습 결정적 확립**:
+- (a) **autopilot DoD 명시 패턴 진화** — S371 utils test 누락 fail → SPEC §6 DoD 4축 명시 → S372~S375 4회 연속 단일 통과 → S376 DOMAIN_MAP false claim → SPEC §6 DoD 5축 강화 → S377 자체 처리 ✅
+- (b) **6-detector 매핑 패턴 완성** — Threshold × 2 + Atomic × 2 + Status × 2가 12 도메인 일반화. withRuleId 재사용으로 신규 detector 0개 추가 없이 도메인 확장 가능
+- (c) **fix-forward 메커니즘 안정화** — Master 1-2 commit fix-forward로 autopilot 누락 패턴 즉시 회복 (S341 11회차 누적 + S231 5회차)
+- (d) **Sprint WT autopilot 분리 작업 일반화 가능 패턴 안정화** — 6회 연속 단일 통과 (S372~S377) 입증
 
-차기: **82번째 도메인** (87번째 신규 산업, 단일 클러스터 13 도메인 첫 사례 도전) / **F487 F358 Phase 4** / **TD-52** / **보안 후속 2건**.
+**⚠️ 식별된 패턴 (rules/development-workflow.md 후보)**:
+- autopilot session-end pr-lookup fallback (S231 5회차 재현 누적) — signal STATUS=FAILED stale, 실제 PR + merge 정상
+- autopilot DOMAIN_MAP false claim (S376 신규 식별) — commit message는 명시했으나 실제 변경 누락, DoD 5축 명시로 차단
+
+차기 후보: 82번째 도메인 (단일 클러스터 13 도메인 도전 또는 신규 클러스터 WB/TN/RB) / F487 F358 Phase 4 / TD-52 / 보안 후속 2건.
 
 ---
 

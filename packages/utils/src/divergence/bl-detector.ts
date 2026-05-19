@@ -1465,6 +1465,14 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "MS-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "MS-004"),
   "MS-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "MS-005"),
   "MS-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "MS-006"),
+  // 세션 307 후속2 (F544): Movie 합성 도메인 76번째 (65번째 신규 산업, 영화관). 🎬 AM+TH+KP+AQ+ZO+MS+MV 오프라인 엔터 7-클러스터 확장 (단일 클러스터 7 도메인 첫 사례 마일스톤).
+  // withRuleId 재사용 76번째 도메인. 🏆 76번째 도메인 마일스톤 (S262 5 → S372 76, 15.2배 확장). Sprint WT autopilot 분리 작업 3회차.
+  "MV-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "MV-001"),
+  "MV-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "MV-002"),
+  "MV-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "MV-003"),
+  "MV-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "MV-004"),
+  "MV-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "MV-005"),
+  "MV-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "MV-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

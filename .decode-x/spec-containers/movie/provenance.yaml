@@ -1,0 +1,52 @@
+---
+# Provenance — MOVIE-001
+# 76번째 도메인 — Movie 합성 도메인 PoC (65번째 신규 산업, 🎬 단일 클러스터 7 도메인 첫 사례 마일스톤)
+
+skillId: MOVIE-001
+extractedAt: "2026-05-19T00:00:00+09:00"
+extractedBy: "Decode-X 세션 307 후속2 F544 — withRuleId 재사용 76번째 도메인 (Movie 영화관 산업, 65번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/movie/rules/movie-rules.md"
+    section: "Movie 합성 비즈니스 룰 — MV-001~MV-006"
+    businessRules: [MV-001, MV-002, MV-003, MV-004, MV-005, MV-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 영화관(Movie Theater) 산업 일반화 PoC. 동시상영한도/회원일일티켓한도/좌석예매atomic/상영상태전환/만료closedscreening일괄/티켓환불atomic 추상화. 76번째 도메인 + 65번째 신규 산업. 🎬 단일 클러스터 7 도메인 첫 사례 마일스톤 (AM+TH+KP+AQ+ZO+MS+MV 오프라인 엔터 7-클러스터 확장). 77 Sprint 연속 정점 도전. 거울 변환 29회차 (carsharing → ... → museum → movie). Sprint WT autopilot 분리 작업 3회차 (S370 1회차 ✅ + S371 2회차 fix-forward + S372 3회차 utils test DoD 보강 검증)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/movie.ts"
+    functions: [bookSeat, applyTicketLimit, processSeatEntry, transitionScreeningStatus, expireClosedScreeningBatch, processTicketRefund]
+
+detection:
+  - ruleId: MV-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "theater.active_screenings >= limit (UPPERCASE fallback MAX_CONCURRENT_SCREENINGS_PER_THEATER, Path A)"
+  - ruleId: MV-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "pass.ticket_used + tickets >= ticketLimit (Path B, limit keyword)"
+  - ruleId: MV-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "db.transaction() — theater_visits INSERT + screenings UPDATE + ticket_payments INSERT"
+  - ruleId: MV-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "reserved → watched → ended / closed / cancelled"
+  - ruleId: MV-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "batch: expire 갱신 (SF-005/KP-005/.../MS-005 65번째 재사용)"
+  - ruleId: MV-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "db.transaction() — ticket_refund_records INSERT + ticket_refunds INSERT + ticket_refund_records UPDATE"

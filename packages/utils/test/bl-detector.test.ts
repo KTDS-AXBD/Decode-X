@@ -677,7 +677,7 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 326 detectors (세션 307 후속2 F544 — movie 76번째 도메인 +6 detectors, 🎬 단일 클러스터 7 도메인 첫 사례 마일스톤)", () => {
+  it("exposes 332 detectors (세션 307 후속3 F545 — library 77번째 도메인 +6 detectors, 📚 단일 클러스터 8 도메인 첫 사례 마일스톤)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AD-001",
       "AD-002",
@@ -914,6 +914,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "KP-004",
       "KP-005",
       "KP-006",
+      "LB-001",
+      "LB-002",
+      "LB-003",
+      "LB-004",
+      "LB-005",
+      "LB-006",
       "LG-001",
       "LG-002",
       "LG-003",
@@ -7732,6 +7738,103 @@ function expireClosedScreeningBatch(db, now) {
 }`,
     );
     const markers = BL_DETECTOR_REGISTRY["MV-006"]!(src, "movie.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
+describe("library domain — LB-001~006 via withRuleId (세션 307 후속3 F545, 📚 단일 클러스터 8 도메인 첫 사례 마일스톤)", () => {
+  it("LB-001 PRESENCE — active_loans >= MAX_CONCURRENT_LOANS_PER_LIBRARY threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "library.ts",
+      `const MAX_CONCURRENT_LOANS_PER_LIBRARY = 500;
+function borrowBook(db, libraryId, cardId) {
+  const library = db.prepare("SELECT active_loans, total_loan_capacity FROM libraries WHERE id = ?").get(libraryId);
+  const limit = library.total_loan_capacity ?? MAX_CONCURRENT_LOANS_PER_LIBRARY;
+  if (library.active_loans >= limit) {
+    throw new LibraryError('E422-LIBRARY-LOAN-LIMIT-EXCEEDED', 'Library is at full loan capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["LB-001"]!(src, "library.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("LB-002 PRESENCE — card.loan_used + loans >= loanLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "library.ts",
+      `function applyMemberLimit(db, memberId, cardId, loans) {
+  const card = db.prepare("SELECT loan_used, loan_limit FROM member_cards WHERE id = ? LIMIT 1").get(cardId, memberId);
+  const loanLimit = card.loan_limit;
+  if (card.loan_used + loans >= loanLimit) {
+    throw new LibraryError('E422-DAILY-LOAN-LIMIT-EXCEEDED', 'Daily loan quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["LB-002"]!(src, "library.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("LB-003 PRESENCE — db.transaction() in processBookEntry (atomic library_visits+loans+loan_payments)", () => {
+    const src = parseTypeScriptSource(
+      "library.ts",
+      `function processBookEntry(db, libraryId, loanId, visitNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO library_visits (id, library_id, loan_id, visit_no, status, started_at) VALUES (?, ?, ?, ?, 'active', ?)").run(visitId, libraryId, loanId, visitNo, startedAt);
+    db.prepare("UPDATE loans SET status = 'active', visit_id = ?, payment_id = ? WHERE id = ?").run(visitId, loanPaymentId, loanId);
+    db.prepare("INSERT INTO loan_payments (id, loan_id, visit_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(loanPaymentId, loanId, visitId, amount, startedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["LB-003"]!(src, "library.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("LB-004 PRESENCE — status transition matrix in transitionLoanStatus (reserved→active→returned/overdue/cancelled)", () => {
+    const src = parseTypeScriptSource(
+      "library.ts",
+      `function transitionLoanStatus(db, loanId, newStatus) {
+  const loan = db.prepare("SELECT status FROM loans WHERE id = ?").get(loanId);
+  if (loan.status === 'cancelled') throw new LibraryError("E409-LOAN", "Invalid transition", 409);
+  db.prepare("UPDATE loans SET status = 'active' WHERE id = ?").run(loanId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["LB-004"]!(src, "library.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("LB-005 PRESENCE — batch expire update in expireOverdueLoanBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "library.ts",
+      `function transitionLoanStatus(db, loanId, newStatus) {
+  const loan = db.prepare("SELECT status FROM loans WHERE id = ?").get(loanId);
+  if (loan.status === 'cancelled') throw new LibraryError("E409-LOAN", "Invalid", 409);
+  db.prepare("UPDATE loans SET status = 'active' WHERE id = ?").run(loanId);
+}
+function expireOverdueLoanBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM library_visits WHERE status = 'overdue' AND started_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE library_visits SET status = 'expired' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["LB-005"]!(src, "library.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("LB-006 PRESENCE — db.transaction() in processOverdueRefund (atomic overdue_fee_records+overdue_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "library.ts",
+      `function processOverdueRefund(db, memberId, visitId, loanCost, overdueRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO overdue_fee_records (id, member_id, visit_id, loan_cost, overdue_rate, overdue_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(feeRecordId, memberId, visitId, loanCost, overdueRate, overdueAmount);
+    db.prepare("INSERT INTO overdue_refunds (id, fee_record_id, member_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, feeRecordId, memberId, overdueAmount, refundedAt);
+    db.prepare("UPDATE overdue_fee_records SET status = 'refunded' WHERE id = ?").run(feeRecordId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["LB-006"]!(src, "library.ts");
     expect(markers).toHaveLength(0);
   });
 });

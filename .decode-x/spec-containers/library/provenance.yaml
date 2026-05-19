@@ -1,0 +1,52 @@
+---
+# Provenance — LIBRARY-001
+# 77번째 도메인 — Library 합성 도메인 PoC (66번째 신규 산업, 📚 단일 클러스터 8 도메인 첫 사례 마일스톤)
+
+skillId: LIBRARY-001
+extractedAt: "2026-05-19T00:00:00+09:00"
+extractedBy: "Decode-X 세션 307 후속3 F545 — withRuleId 재사용 77번째 도메인 (Library 도서관 산업, 66번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/library/rules/library-rules.md"
+    section: "Library 합성 비즈니스 룰 — LB-001~LB-006"
+    businessRules: [LB-001, LB-002, LB-003, LB-004, LB-005, LB-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 도서관(Library) 산업 일반화 PoC. 동시대출한도/회원일일대출한도/도서대출atomic/대출상태전환/연체loan일괄만료/연체료환불atomic 추상화. 77번째 도메인 + 66번째 신규 산업. 📚 단일 클러스터 8 도메인 첫 사례 마일스톤 (AM+TH+KP+AQ+ZO+MS+MV+LB 오프라인 엔터 8-클러스터 확장). 78 Sprint 연속 정점 도전. 거울 변환 30회차 round 마일스톤 (carsharing → ... → movie → library). Sprint WT autopilot 분리 작업 4회차 (S370 1회차 ✅ + S371 2회차 fix-forward + S372 3회차 utils test DoD 보강 + S373 4회차 재현)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/library.ts"
+    functions: [borrowBook, applyMemberLimit, processBookEntry, transitionLoanStatus, expireOverdueLoanBatch, processOverdueRefund]
+
+detection:
+  - ruleId: LB-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "library.active_loans >= limit (UPPERCASE fallback MAX_CONCURRENT_LOANS_PER_LIBRARY, Path A)"
+  - ruleId: LB-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "card.loan_used + loans >= loanLimit (Path B, limit keyword)"
+  - ruleId: LB-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "db.transaction() — library_visits INSERT + loans UPDATE + loan_payments INSERT"
+  - ruleId: LB-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "reserved → active → returned / overdue / cancelled"
+  - ruleId: LB-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "batch: expire 갱신 (SF-005/KP-005/.../MV-005 66번째 재사용)"
+  - ruleId: LB-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "db.transaction() — overdue_fee_records INSERT + overdue_refunds INSERT + overdue_fee_records UPDATE"

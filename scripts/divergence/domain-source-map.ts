@@ -1583,6 +1583,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processSessionRefund",
     ],
   },
+  {
+    container: "wedding-hall",
+    rulesPath: `${SPEC_CONTAINER_BASE}/wedding-hall/rules/wedding-hall-rules.md`,
+    // 세션 309 (F553): Wedding hall 합성 도메인 — 84번째 도메인 (예식장 산업, 73번째 신규 산업). Sprint WT autopilot 분리 작업 11회차 (DoD 6축 실감증 2회차).
+    // WB-001~WB-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 37회차 (carsharing → ... → convention → wedding-hall) — 💒 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB 오프라인 엔터 15-클러스터 (단일 클러스터 15 도메인 첫 사례 + 11 Sprint 연속 첫 사례 마일스톤 신기록).
+    // WB 차별성: B2C 단일 1회성 예식 + 시간대 슬롯 + 강한 계약금/위약금 (CV 컨벤션 다중 트랙 B2B와 대비). 동시 한도 3 (예식장 홀 수 기반).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/wedding-hall.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/wedding-hall/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "reserveCeremony",
+      "applyHallLimit",
+      "processCeremonyBooking",
+      "transitionCeremonyStatus",
+      "expireClosedCeremonyBatch",
+      "processCeremonyRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

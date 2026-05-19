@@ -1,0 +1,63 @@
+---
+# Test scenarios — Wedding hall domain WB-001~WB-006
+# 세션 309 F553 — Wedding hall 예식장 합성 도메인 (💒 단일 클러스터 15 도메인 첫 사례 마일스톤 신기록, 84번째 도메인 16.8배 확장 도전)
+
+scenarios:
+  - id: WB-001-PASS
+    rule: WB-001
+    description: "동시 예식 한도 내 ceremony 예약 — 성공"
+    input: { active_ceremonies: 1, max_concurrent_ceremonies: 3 }
+    expected: PASS
+
+  - id: WB-001-FAIL
+    rule: WB-001
+    description: "예식장 동시 ceremony 한도 초과 — E422-HALL-CEREMONY-LIMIT-EXCEEDED"
+    input: { active_ceremonies: 3, max_concurrent_ceremonies: 3 }
+    expected: FAIL
+    error: E422-HALL-CEREMONY-LIMIT-EXCEEDED
+
+  - id: WB-002-PASS
+    rule: WB-002
+    description: "hall 한도 내 예약 요청 — 성공"
+    input: { hall_used: 0, hall_limit: 1, halls: 0 }
+    expected: PASS
+
+  - id: WB-002-FAIL
+    rule: WB-002
+    description: "hall 한도 초과 — E422-HALL-LIMIT-EXCEEDED"
+    input: { hall_used: 1, hall_limit: 1, halls: 0 }
+    expected: FAIL
+    error: E422-HALL-LIMIT-EXCEEDED
+
+  - id: WB-003-PASS
+    rule: WB-003
+    description: "reserved 상태 예식 예약 atomic — 성공"
+    input: { ceremony_status: reserved }
+    expected: PASS
+
+  - id: WB-004-PASS
+    rule: WB-004
+    description: "reserved → ongoing 전환 허용"
+    input: { previous: reserved, next: ongoing }
+    expected: PASS
+
+  - id: WB-004-FAIL
+    rule: WB-004
+    description: "cancelled → reserved 역행 차단 — E409-CEREMONY"
+    input: { previous: cancelled, next: reserved }
+    expected: FAIL
+    error: E409-CEREMONY
+
+  - id: WB-005-PASS
+    rule: WB-005
+    description: "closed ceremony batch expire — 대상 1건"
+    input: { ceremonies: [{ status: closed, scheduled_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: WB-006-PASS
+    rule: WB-006
+    description: "cancelled 예식 환불 atomic — 위약금 계산 성공"
+    input: { ceremony_status: cancelled, ceremony_cost: 3000000, cancellation_rate: 0.5 }
+    expected: PASS
+    expectedCancellationAmount: 1500000

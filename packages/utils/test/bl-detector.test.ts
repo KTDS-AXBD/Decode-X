@@ -677,7 +677,7 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 368 detectors (세션 309 F552 — convention 83번째 도메인 +6 detectors, ✏️ 단일 클러스터 14 도메인 첫 사례 마일스톤 신기록 도전 + 10 Sprint 연속 첫 사례 마일스톤 신기록 도전)", () => {
+  it("exposes 374 detectors (세션 309 F553 — wedding-hall 84번째 도메인 +6 detectors, 💒 단일 클러스터 15 도메인 첫 사례 마일스톤 신기록 + 11 Sprint 연속 첫 사례 마일스톤 신기록)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AD-001",
       "AD-002",
@@ -1167,6 +1167,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "VT-004",
       "VT-005",
       "VT-006",
+      "WB-001",
+      "WB-002",
+      "WB-003",
+      "WB-004",
+      "WB-005",
+      "WB-006",
       "WL-001",
       "WL-002",
       "WL-003",
@@ -1612,6 +1618,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["CV-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["CV-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["CV-006"]).toBeDefined();
+  });
+
+  it("WB-001~WB-006 registered (세션 309 F553 — wedding-hall 84번째 도메인, 73번째 신규 산업, 💒 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB 오프라인 엔터 15-클러스터 확장 — 단일 클러스터 15 도메인 첫 사례 마일스톤 신기록 + 11 Sprint 연속 첫 사례 마일스톤 신기록, 85 Sprint 연속 정점 도전, 거울 변환 37회차, DoD 6축 실감증 2회차)", () => {
+    expect(BL_DETECTOR_REGISTRY["WB-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["WB-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["WB-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["WB-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["WB-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["WB-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -8730,5 +8745,121 @@ function processSessionRefund(db, memberId, sessionId, sessionCost, cancellation
     const markers = BL_DETECTOR_REGISTRY["CV-006"]!(src, "convention.ts");
     expect(markers).toHaveLength(1);
     expect(markers[0]?.ruleId).toBe("CV-006");
+  });
+});
+
+describe("DOMAIN_MAP wedding-hall entry — F553 axis-e (DoD 5축 강화, 6축 CI Guard 실감증 2회차, 💒 단일 클러스터 15 도메인 첫 사례 마일스톤 신기록)", () => {
+  it("findDomainMapping('wedding-hall') returns defined entry (84번째 도메인 DOMAIN_MAP 존재 검증)", async () => {
+    const { findDomainMapping } = await import("../../../scripts/divergence/domain-source-map.js");
+    const mapping = findDomainMapping("wedding-hall");
+    expect(mapping).toBeDefined();
+    expect(mapping?.container).toBe("wedding-hall");
+    expect(mapping?.sourceCodeStatus).toBe("present");
+    expect(mapping?.underImplTargets).toContain("reserveCeremony");
+  });
+});
+
+describe("wedding-hall domain — WB-001~006 via withRuleId (세션 309 F553, 💒 단일 클러스터 15 도메인 첫 사례 마일스톤 신기록 + 11 Sprint 연속 첫 사례 마일스톤 신기록, DoD 6축 실감증 2회차)", () => {
+  it("WB-001 PRESENCE — active_ceremonies >= MAX_CONCURRENT_CEREMONIES_PER_HALL threshold (UPPERCASE constant)", () => {
+    const src = `
+function reserveCeremony(db, hallId, membershipId) {
+  const hall = db.prepare("SELECT active_ceremonies, max_concurrent_ceremonies FROM wedding_halls WHERE id = ?").get(hallId);
+  const limit = hall.max_concurrent_ceremonies ?? MAX_CONCURRENT_CEREMONIES_PER_HALL;
+  if (hall.active_ceremonies >= limit) {
+    throw new WeddingHallError('E422-HALL-CEREMONY-LIMIT-EXCEEDED', \`Hall is at full ceremony capacity\`, 422);
+  }
+  db.prepare("INSERT INTO wedding_ceremonies (id, hall_id, membership_id) VALUES (?, ?, ?)").run(ceremonyId, hallId, membershipId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["WB-001"]!(src, "wedding-hall.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("WB-001");
+  });
+
+  it("WB-002 PRESENCE — membership.hall_used + halls >= hallLimit (var-vs-var, limit keyword)", () => {
+    const src = `
+function applyHallLimit(db, memberId, membershipId, halls) {
+  const membership = db.prepare("SELECT hall_used, hall_limit FROM hall_memberships WHERE id = ? AND member_id = ? LIMIT 1").get(membershipId, memberId);
+  const hallLimit = membership.hall_limit;
+  if (membership.hall_used + halls >= hallLimit) {
+    throw new WeddingHallError('E422-HALL-LIMIT-EXCEEDED', \`Hall reservation quota exhausted\`, 422);
+  }
+  db.prepare("UPDATE hall_memberships SET hall_used = hall_used + ? WHERE id = ?").run(halls, membershipId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["WB-002"]!(src, "wedding-hall.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("WB-002");
+  });
+
+  it("WB-003 PRESENCE — db.transaction() in processCeremonyBooking (atomic hall_schedules+wedding_ceremonies+ceremony_payments INSERT/UPDATE)", () => {
+    const src = `
+function processCeremonyBooking(db, hallId, ceremonyId, slotTime, guestCount, ceremonyType, amount) {
+  const ceremony = db.prepare("SELECT status FROM wedding_ceremonies WHERE id = ? AND status = 'reserved'").get(ceremonyId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO hall_schedules (id, hall_id, ceremony_id, slot_time, guest_count, ceremony_type, status) VALUES (?, ?, ?, ?, ?, ?, 'active')").run(scheduleId, hallId, ceremonyId, slotTime, guestCount, ceremonyType);
+    db.prepare("UPDATE wedding_ceremonies SET status = 'ongoing', schedule_id = ?, payment_id = ? WHERE id = ?").run(scheduleId, paymentId, ceremonyId);
+    db.prepare("INSERT INTO ceremony_payments (id, ceremony_id, schedule_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(paymentId, ceremonyId, scheduleId, amount, startedAt);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["WB-003"]!(src, "wedding-hall.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("WB-003");
+  });
+
+  it("WB-004 PRESENCE — status transition reserved→ongoing→ended/closed/cancelled in transitionCeremonyStatus", () => {
+    const src = `
+function transitionCeremonyStatus(db, ceremonyId, newStatus) {
+  const ceremony = db.prepare("SELECT status FROM wedding_ceremonies WHERE id = ?").get(ceremonyId);
+  const previousStatus = ceremony.status;
+  const allowed =
+    (ceremony.status === 'reserved' && newStatus === 'ongoing') ||
+    (ceremony.status === 'ongoing' && newStatus === 'ended') ||
+    (ceremony.status === 'ongoing' && newStatus === 'closed') ||
+    (ceremony.status === 'reserved' && newStatus === 'cancelled') ||
+    (ceremony.status === 'ongoing' && newStatus === 'cancelled');
+  if (!allowed) {
+    throw new WeddingHallError('E409-CEREMONY', \`Cannot transition ceremony from \${previousStatus} to \${newStatus}\`, 409);
+  }
+  db.prepare("UPDATE wedding_ceremonies SET status = ? WHERE id = ?").run(newStatus, ceremonyId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["WB-004"]!(src, "wedding-hall.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("WB-004");
+  });
+
+  it("WB-005 PRESENCE — batch closed→ended expire in expireClosedCeremonyBatch (StatusTransition batch)", () => {
+    const src = `
+function expireClosedCeremonyBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM wedding_ceremonies WHERE status = 'closed' AND scheduled_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE wedding_ceremonies SET status = 'ended' WHERE id = ?").run(item.id);
+  }
+  return { expiredCount: candidates.length };
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["WB-005"]!(src, "wedding-hall.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("WB-005");
+  });
+
+  it("WB-006 PRESENCE — db.transaction() in processCeremonyRefund (atomic cancelled_fee_records+ceremony_refunds INSERT/UPDATE)", () => {
+    const src = `
+function processCeremonyRefund(db, memberId, ceremonyId, ceremonyCost, cancellationRate) {
+  const ceremony = db.prepare("SELECT status FROM wedding_ceremonies WHERE id = ? AND status = 'cancelled'").get(ceremonyId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO cancelled_fee_records (id, member_id, ceremony_id, ceremony_cost, cancellation_rate, cancellation_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(feeRecordId, memberId, ceremonyId, ceremonyCost, cancellationRate, cancellationAmount);
+    db.prepare("INSERT INTO ceremony_refunds (id, fee_record_id, member_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, feeRecordId, memberId, cancellationAmount, refundedAt);
+    db.prepare("UPDATE cancelled_fee_records SET status = 'refunded' WHERE id = ?").run(feeRecordId);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["WB-006"]!(src, "wedding-hall.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("WB-006");
   });
 });

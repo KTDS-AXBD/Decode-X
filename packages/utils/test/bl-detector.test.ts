@@ -677,7 +677,7 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 350 detectors (세션 307 후속6 F548 — garden 80번째 도메인 +6 detectors, 🌷 단일 클러스터 11 도메인 첫 사례 마일스톤 + 80번째 도메인 16배 round 마일스톤)", () => {
+  it("exposes 356 detectors (세션 307 후속7 F549 — observatory 81번째 도메인 +6 detectors, 🔭 단일 클러스터 12 도메인 첫 사례 마일스톤 + 8 Sprint 연속 첫 사례 마일스톤)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AD-001",
       "AD-002",
@@ -992,6 +992,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "NW-004",
       "NW-005",
       "NW-006",
+      "OB-001",
+      "OB-002",
+      "OB-003",
+      "OB-004",
+      "OB-005",
+      "OB-006",
       "P-001",
       "P-002",
       "P-003",
@@ -1567,6 +1573,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["GR-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["GR-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["GR-006"]).toBeDefined();
+  });
+
+  it("OB-001~OB-006 registered (세션 307 후속7 F549 — observatory 81번째 도메인, 70번째 신규 산업, 🔭 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB 오프라인 엔터 12-클러스터 확장 — 단일 클러스터 12 도메인 첫 사례 마일스톤 + 8 Sprint 연속 첫 사례 마일스톤, 82 Sprint 연속 정점 도전, 거울 변환 34회차, DoD 5축 강화)", () => {
+    expect(BL_DETECTOR_REGISTRY["OB-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["OB-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["OB-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["OB-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["OB-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["OB-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -8184,6 +8199,103 @@ function expireClosedVisitBatch(db, now) {
   });
 });
 
+describe("observatory domain — OB-001~006 via withRuleId (세션 307 후속7 F549, 🔭 단일 클러스터 12 도메인 첫 사례 마일스톤 + 8 Sprint 연속 첫 사례 마일스톤, DoD 5축 강화)", () => {
+  it("OB-001 PRESENCE — active_observations >= MAX_CONCURRENT_OBSERVATIONS_PER_OBSERVATORY threshold (UPPERCASE constant)", () => {
+    const src = parseTypeScriptSource(
+      "observatory.ts",
+      `const MAX_CONCURRENT_OBSERVATIONS_PER_OBSERVATORY = 200;
+function reserveObservation(db, observatoryId, membershipId) {
+  const observatory = db.prepare("SELECT active_observations, max_concurrent_observations FROM observatories WHERE id = ?").get(observatoryId);
+  const limit = observatory.max_concurrent_observations ?? MAX_CONCURRENT_OBSERVATIONS_PER_OBSERVATORY;
+  if (observatory.active_observations >= limit) {
+    throw new ObservatoryError('E422-OBSERVATORY-OBSERVATION-LIMIT-EXCEEDED', 'Observatory is at full observation capacity', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["OB-001"]!(src, "observatory.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("OB-002 PRESENCE — membership.telescope_used + telescopes >= telescopeLimit (var-vs-var, limit keyword)", () => {
+    const src = parseTypeScriptSource(
+      "observatory.ts",
+      `function applyTelescopeLimit(db, memberId, membershipId, telescopes) {
+  const membership = db.prepare("SELECT telescope_used, telescope_limit FROM observatory_memberships WHERE id = ? LIMIT 1").get(membershipId, memberId);
+  const telescopeLimit = membership.telescope_limit;
+  if (membership.telescope_used + telescopes >= telescopeLimit) {
+    throw new ObservatoryError('E422-TELESCOPE-LIMIT-EXCEEDED', 'Telescope usage quota exhausted', 422);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["OB-002"]!(src, "observatory.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("OB-003 PRESENCE — db.transaction() in processTelescopeObservation (atomic telescope_schedules+observatory_observations+observation_payments)", () => {
+    const src = parseTypeScriptSource(
+      "observatory.ts",
+      `function processTelescopeObservation(db, observatoryId, observationId, telescopeNo, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO telescope_schedules (id, observatory_id, observation_id, telescope_no, status, started_at) VALUES (?, ?, ?, ?, 'active', ?)").run(telescopeId, observatoryId, observationId, telescopeNo, startedAt);
+    db.prepare("UPDATE observatory_observations SET status = 'observed', telescope_id = ?, payment_id = ? WHERE id = ?").run(telescopeId, observationPaymentId, observationId);
+    db.prepare("INSERT INTO observation_payments (id, observation_id, telescope_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(observationPaymentId, observationId, telescopeId, amount, startedAt);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["OB-003"]!(src, "observatory.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("OB-004 PRESENCE — status transition matrix in transitionObservationStatus (reserved→observed→ended/closed/cancelled)", () => {
+    const src = parseTypeScriptSource(
+      "observatory.ts",
+      `function transitionObservationStatus(db, observationId, newStatus) {
+  const observation = db.prepare("SELECT status FROM observatory_observations WHERE id = ?").get(observationId);
+  if (observation.status === 'cancelled') throw new ObservatoryError("E409-OBSERVATION", "Invalid transition", 409);
+  db.prepare("UPDATE observatory_observations SET status = 'observed' WHERE id = ?").run(observationId);
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["OB-004"]!(src, "observatory.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("OB-005 PRESENCE — batch expire update in expireClosedObservationBatch (file context)", () => {
+    const src = parseTypeScriptSource(
+      "observatory.ts",
+      `function transitionObservationStatus(db, observationId, newStatus) {
+  const observation = db.prepare("SELECT status FROM observatory_observations WHERE id = ?").get(observationId);
+  if (observation.status === 'cancelled') throw new ObservatoryError("E409-OBSERVATION", "Invalid", 409);
+  db.prepare("UPDATE observatory_observations SET status = 'observed' WHERE id = ?").run(observationId);
+}
+function expireClosedObservationBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM observatory_observations WHERE status = 'closed' AND scheduled_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE observatory_observations SET status = 'ended' WHERE id = ?").run(item.id);
+  }
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["OB-005"]!(src, "observatory.ts");
+    expect(markers).toHaveLength(0);
+  });
+
+  it("OB-006 PRESENCE — db.transaction() in processObservationRefund (atomic cancelled_fee_records+observation_refunds INSERT/UPDATE)", () => {
+    const src = parseTypeScriptSource(
+      "observatory.ts",
+      `function processObservationRefund(db, memberId, observationId, observationCost, cancellationRate) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO cancelled_fee_records (id, member_id, observation_id, observation_cost, cancellation_rate, cancellation_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(feeRecordId, memberId, observationId, observationCost, cancellationRate, cancellationAmount);
+    db.prepare("INSERT INTO observation_refunds (id, fee_record_id, member_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, feeRecordId, memberId, cancellationAmount, refundedAt);
+    db.prepare("UPDATE cancelled_fee_records SET status = 'refunded' WHERE id = ?").run(feeRecordId);
+  });
+  tx();
+}`,
+    );
+    const markers = BL_DETECTOR_REGISTRY["OB-006"]!(src, "observatory.ts");
+    expect(markers).toHaveLength(0);
+  });
+});
+
 describe("BL-020~025/030 — lpon-refund gap fill (Sprint 315 F481)", () => {
   // refund.ts processRefundRequest + approveRefund 패턴 — status transition + atomic tx + threshold.
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
@@ -8364,5 +8476,16 @@ describe("BL-013/016/017/018/019 — lpon-payment 5 ABSENCE markers (Sprint 317 
     const fn = BL_DETECTOR_REGISTRY["BL-016"];
     expect(fn).toBeDefined();
     expect(fn!(sf, "payment.ts")).toEqual([]);
+  });
+});
+
+describe("DOMAIN_MAP observatory entry — F549 axis-e (DoD 5축 강화, S376 false claim 차단)", () => {
+  it("findDomainMapping('observatory') returns defined entry (81번째 도메인 DOMAIN_MAP 존재 검증)", async () => {
+    const { findDomainMapping } = await import("../../../scripts/divergence/domain-source-map.js");
+    const mapping = findDomainMapping("observatory");
+    expect(mapping).toBeDefined();
+    expect(mapping?.container).toBe("observatory");
+    expect(mapping?.sourceCodeStatus).toBe("present");
+    expect(mapping?.underImplTargets).toContain("reserveObservation");
   });
 });

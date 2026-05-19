@@ -1526,6 +1526,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processVisitRefund",
     ],
   },
+  {
+    container: "observatory",
+    rulesPath: `${SPEC_CONTAINER_BASE}/observatory/rules/observatory-rules.md`,
+    // 세션 307 후속7 (F549): Observatory 합성 도메인 — 81번째 도메인 (천문대 산업, 70번째 신규 산업). Sprint WT autopilot 분리 작업 8회차 (DoD 5축 강화).
+    // OB-001~OB-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 34회차 (carsharing → ... → garden → observatory) — 🔭 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB 오프라인 엔터 12-클러스터 확장 (단일 클러스터 12 도메인 첫 사례 + 8 Sprint 연속 첫 사례 마일스톤).
+    // OB 차별성: telescope 시간 슬롯 + 야간 관측 + 기상 의존 모델 — 동시 한도 200 (telescope 수 기반, GR 3000보다 훨씬 작음).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/observatory.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/observatory/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "reserveObservation",
+      "applyTelescopeLimit",
+      "processTelescopeObservation",
+      "transitionObservationStatus",
+      "expireClosedObservationBatch",
+      "processObservationRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

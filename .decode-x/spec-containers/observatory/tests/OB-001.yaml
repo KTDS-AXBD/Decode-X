@@ -1,0 +1,63 @@
+---
+# Test scenarios — Observatory domain OB-001~OB-006
+# 세션 307 후속7 F549 — Observatory 천문대 합성 도메인 (🔭 단일 클러스터 12 도메인 첫 사례 마일스톤, 81번째 도메인 16.2배 확장)
+
+scenarios:
+  - id: OB-001-PASS
+    rule: OB-001
+    description: "관측 한도 내 observatory 예약 — 성공"
+    input: { active_observations: 100, max_concurrent_observations: 200 }
+    expected: PASS
+
+  - id: OB-001-FAIL
+    rule: OB-001
+    description: "observatory 동시 관측 한도 초과 — E422-OBSERVATORY-OBSERVATION-LIMIT-EXCEEDED"
+    input: { active_observations: 200, max_concurrent_observations: 200 }
+    expected: FAIL
+    error: E422-OBSERVATORY-OBSERVATION-LIMIT-EXCEEDED
+
+  - id: OB-002-PASS
+    rule: OB-002
+    description: "telescope 한도 내 telescope 사용 요청 — 성공"
+    input: { telescope_used: 2, telescope_limit: 8, telescopes: 1 }
+    expected: PASS
+
+  - id: OB-002-FAIL
+    rule: OB-002
+    description: "telescope 한도 초과 — E422-TELESCOPE-LIMIT-EXCEEDED"
+    input: { telescope_used: 7, telescope_limit: 8, telescopes: 1 }
+    expected: FAIL
+    error: E422-TELESCOPE-LIMIT-EXCEEDED
+
+  - id: OB-003-PASS
+    rule: OB-003
+    description: "reserved 상태 telescope 관측 atomic — 성공"
+    input: { observation_status: reserved }
+    expected: PASS
+
+  - id: OB-004-PASS
+    rule: OB-004
+    description: "reserved → observed 전환 허용"
+    input: { previous: reserved, next: observed }
+    expected: PASS
+
+  - id: OB-004-FAIL
+    rule: OB-004
+    description: "cancelled → reserved 역행 차단 — E409-OBSERVATION"
+    input: { previous: cancelled, next: reserved }
+    expected: FAIL
+    error: E409-OBSERVATION
+
+  - id: OB-005-PASS
+    rule: OB-005
+    description: "closed observation batch expire — 대상 1건"
+    input: { observations: [{ status: closed, scheduled_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: OB-006-PASS
+    rule: OB-006
+    description: "cancelled 관측 환불 atomic — 성공"
+    input: { observation_status: cancelled, observation_cost: 50000, cancellation_rate: 0.2 }
+    expected: PASS
+    expectedCancellationAmount: 10000

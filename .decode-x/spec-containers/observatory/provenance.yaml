@@ -1,0 +1,52 @@
+---
+# Provenance — OBSERVATORY-001
+# 81번째 도메인 — Observatory 합성 도메인 PoC (70번째 신규 산업, 🔭 단일 클러스터 12 도메인 첫 사례 마일스톤 + 8 Sprint 연속 첫 사례 마일스톤)
+
+skillId: OBSERVATORY-001
+extractedAt: "2026-05-19T00:00:00+09:00"
+extractedBy: "Decode-X 세션 307 후속7 F549 — withRuleId 재사용 81번째 도메인 (Observatory 천문대 산업, 70번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/observatory/rules/observatory-rules.md"
+    section: "Observatory 합성 비즈니스 룰 — OB-001~OB-006"
+    businessRules: [OB-001, OB-002, OB-003, OB-004, OB-005, OB-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 천문대(Observatory) 산업 일반화 PoC. 동시관측한도/telescope한도/telescope관측atomic/관측상태전환/closed관측일괄만료/관측환불atomic 추상화. 81번째 도메인 + 70번째 신규 산업. 🔭 단일 클러스터 12 도메인 첫 사례 마일스톤 (AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB 오프라인 엔터 12-클러스터 확장). 🔭 8 Sprint 연속 첫 사례 마일스톤 (S370 5→S371 6→S372 7→S373 8→S374 9→S375 10→S376 11→S377 12). 🏆 81번째 도메인 16.2배 확장 (S262 5 → S377 81). 82 Sprint 연속 정점 도전. 거울 변환 34회차 (carsharing → ... → garden → observatory). Sprint WT autopilot 분리 작업 8회차 (DoD 5축 강화). OB 차별성: telescope 시간 슬롯 + 야간 관측 + 기상 의존 모델 (MS/GR과 분리). 동시 한도 200 (telescope 수 기반)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/observatory.ts"
+    functions: [reserveObservation, applyTelescopeLimit, processTelescopeObservation, transitionObservationStatus, expireClosedObservationBatch, processObservationRefund]
+
+detection:
+  - ruleId: OB-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "observatory.active_observations >= limit (UPPERCASE fallback MAX_CONCURRENT_OBSERVATIONS_PER_OBSERVATORY, Path A)"
+  - ruleId: OB-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "membership.telescope_used + telescopes >= telescopeLimit (Path B, limit keyword)"
+  - ruleId: OB-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "db.transaction() — telescope_schedules INSERT + observatory_observations UPDATE + observation_payments INSERT"
+  - ruleId: OB-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "reserved → observed → ended / closed / cancelled"
+  - ruleId: OB-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "batch: closed → ended 갱신 (SF-005/KP-005/.../GR-005 70번째 재사용)"
+  - ruleId: OB-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "db.transaction() — cancelled_fee_records INSERT + observation_refunds INSERT + cancelled_fee_records UPDATE"

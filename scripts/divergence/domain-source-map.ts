@@ -1450,6 +1450,25 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processTicketRefund",
     ],
   },
+  {
+    container: "library",
+    rulesPath: `${SPEC_CONTAINER_BASE}/library/rules/library-rules.md`,
+    // 세션 307 후속3 (F545): Library 합성 도메인 — 77번째 도메인 (도서관 산업, 66번째 신규 산업). Sprint WT autopilot 분리 작업 4회차.
+    // LB-001~LB-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 30회차 round 마일스톤 (carsharing → ... → movie → library) — 📚 AM+TH+KP+AQ+ZO+MS+MV+LB 오프라인 엔터 8-클러스터 확장 (놀이공원 + 극장 + 콘서트 + 수족관 + 동물원 + 박물관 + 영화관 + 도서관 통합 추상화 — 단일 클러스터 8 도메인 첫 사례 마일스톤).
+    // 🏆 77번째 도메인 마일스톤 (S262 5 → S373 77, 15.4배 확장).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/library.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/library/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "borrowBook",
+      "applyMemberLimit",
+      "processBookEntry",
+      "transitionLoanStatus",
+      "expireOverdueLoanBatch",
+      "processOverdueRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

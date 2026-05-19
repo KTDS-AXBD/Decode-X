@@ -1,0 +1,63 @@
+---
+# Test scenarios — Library domain LB-001~LB-006
+# 세션 307 후속3 F545 — Library 도서관 합성 도메인 (📚 단일 클러스터 8 도메인 첫 사례 마일스톤, 77번째 도메인)
+
+scenarios:
+  - id: LB-001-PASS
+    rule: LB-001
+    description: "대출 한도 내 도서 예약 — 성공"
+    input: { active_loans: 100, total_loan_capacity: 500 }
+    expected: PASS
+
+  - id: LB-001-FAIL
+    rule: LB-001
+    description: "도서관 동시 대출 한도 초과 — E422-LIBRARY-LOAN-LIMIT-EXCEEDED"
+    input: { active_loans: 500, total_loan_capacity: 500 }
+    expected: FAIL
+    error: E422-LIBRARY-LOAN-LIMIT-EXCEEDED
+
+  - id: LB-002-PASS
+    rule: LB-002
+    description: "일일 대출 한도 내 대출 — 성공"
+    input: { loan_used: 1, loan_limit: 5, loans: 1 }
+    expected: PASS
+
+  - id: LB-002-FAIL
+    rule: LB-002
+    description: "일일 대출 한도 초과 — E422-DAILY-LOAN-LIMIT-EXCEEDED"
+    input: { loan_used: 4, loan_limit: 5, loans: 1 }
+    expected: FAIL
+    error: E422-DAILY-LOAN-LIMIT-EXCEEDED
+
+  - id: LB-003-PASS
+    rule: LB-003
+    description: "reserved 상태 도서 대출 atomic — 성공"
+    input: { loan_status: reserved }
+    expected: PASS
+
+  - id: LB-004-PASS
+    rule: LB-004
+    description: "reserved → active 전환 허용"
+    input: { previous: reserved, next: active }
+    expected: PASS
+
+  - id: LB-004-FAIL
+    rule: LB-004
+    description: "cancelled → reserved 역행 차단 — E409-LOAN"
+    input: { previous: cancelled, next: reserved }
+    expected: FAIL
+    error: E409-LOAN
+
+  - id: LB-005-PASS
+    rule: LB-005
+    description: "overdue loan batch expire — 대상 1건"
+    input: { visits: [{ status: overdue, started_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: LB-006-PASS
+    rule: LB-006
+    description: "overdue 연체료 환불 atomic — 성공"
+    input: { visit_status: overdue, loan_cost: 10000, overdue_rate: 0.3 }
+    expected: PASS
+    expectedOverdueAmount: 3000

@@ -1,0 +1,52 @@
+---
+# Provenance — GARDEN-001
+# 80번째 도메인 — Garden 합성 도메인 PoC (69번째 신규 산업, 🌷 단일 클러스터 11 도메인 첫 사례 마일스톤 + 7 Sprint 연속 첫 사례 마일스톤 + 80번째 도메인 16배 round 마일스톤)
+
+skillId: GARDEN-001
+extractedAt: "2026-05-19T00:00:00+09:00"
+extractedBy: "Decode-X 세션 307 후속6 F548 — withRuleId 재사용 80번째 도메인 (Garden 식물원/수목원 산업, 69번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/garden/rules/garden-rules.md"
+    section: "Garden 합성 비즈니스 룰 — GR-001~GR-006"
+    businessRules: [GR-001, GR-002, GR-003, GR-004, GR-005, GR-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 식물원/수목원(Garden) 산업 일반화 PoC. 동시방문한도/zone입장한도/zone입장atomic/방문상태전환/closed방문일괄만료/방문환불atomic 추상화. 80번째 도메인 + 69번째 신규 산업. 🌷 단일 클러스터 11 도메인 첫 사례 마일스톤 (AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR 오프라인 엔터 11-클러스터 확장). 🌷 7 Sprint 연속 첫 사례 마일스톤 (S370 5→S371 6→S372 7→S373 8→S374 9→S375 10→S376 11). 🏆 80번째 도메인 16배 round 마일스톤 (S262 5 → S376 80). 81 Sprint 연속 정점 도전. 거울 변환 33회차 (carsharing → ... → festival → garden). Sprint WT autopilot 분리 작업 7회차. GR 차별성: PA/MS와 분리 (GR은 식물원 = zone 분리 구역 입장 + 계절권 + 온실/특별전시 zone 모델, PA는 자연공원 = 트레일/캠핑, MS는 박물관 = 전시물 관람)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/garden.ts"
+    functions: [reserveVisit, applyZoneLimit, processGardenEntry, transitionVisitStatus, expireClosedVisitBatch, processVisitRefund]
+
+detection:
+  - ruleId: GR-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "garden.active_visits >= limit (UPPERCASE fallback MAX_CONCURRENT_GARDEN_VISITS, Path A)"
+  - ruleId: GR-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "membership.zone_used + zones >= zoneLimit (Path B, limit keyword)"
+  - ruleId: GR-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "db.transaction() — zone_sessions INSERT + garden_visits UPDATE + visit_payments INSERT"
+  - ruleId: GR-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "reserved → entered → exited → ended / closed / cancelled"
+  - ruleId: GR-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "batch: closed → ended 갱신 (SF-005/KP-005/.../FE-005 69번째 재사용)"
+  - ruleId: GR-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-19T00:00:00+09:00"
+    notes: "db.transaction() — cancelled_fee_records INSERT + visit_refunds INSERT + cancelled_fee_records UPDATE"

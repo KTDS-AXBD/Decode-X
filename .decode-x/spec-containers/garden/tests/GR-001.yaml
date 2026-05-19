@@ -1,0 +1,63 @@
+---
+# Test scenarios — Garden domain GR-001~GR-006
+# 세션 307 후속6 F548 — Garden 식물원/수목원 합성 도메인 (🌷 단일 클러스터 11 도메인 첫 사례 마일스톤, 80번째 도메인 16배 round)
+
+scenarios:
+  - id: GR-001-PASS
+    rule: GR-001
+    description: "방문 한도 내 garden 예약 — 성공"
+    input: { active_visits: 1000, total_capacity: 3000 }
+    expected: PASS
+
+  - id: GR-001-FAIL
+    rule: GR-001
+    description: "garden 동시 방문 한도 초과 — E422-GARDEN-VISIT-LIMIT-EXCEEDED"
+    input: { active_visits: 3000, total_capacity: 3000 }
+    expected: FAIL
+    error: E422-GARDEN-VISIT-LIMIT-EXCEEDED
+
+  - id: GR-002-PASS
+    rule: GR-002
+    description: "zone 한도 내 zone 입장 요청 — 성공"
+    input: { zone_used: 2, zone_limit: 8, zones: 1 }
+    expected: PASS
+
+  - id: GR-002-FAIL
+    rule: GR-002
+    description: "zone 한도 초과 — E422-ZONE-LIMIT-EXCEEDED"
+    input: { zone_used: 7, zone_limit: 8, zones: 1 }
+    expected: FAIL
+    error: E422-ZONE-LIMIT-EXCEEDED
+
+  - id: GR-003-PASS
+    rule: GR-003
+    description: "reserved 상태 zone 입장 atomic — 성공"
+    input: { visit_status: reserved }
+    expected: PASS
+
+  - id: GR-004-PASS
+    rule: GR-004
+    description: "reserved → entered 전환 허용"
+    input: { previous: reserved, next: entered }
+    expected: PASS
+
+  - id: GR-004-FAIL
+    rule: GR-004
+    description: "cancelled → reserved 역행 차단 — E409-VISIT"
+    input: { previous: cancelled, next: reserved }
+    expected: FAIL
+    error: E409-VISIT
+
+  - id: GR-005-PASS
+    rule: GR-005
+    description: "closed visit batch expire — 대상 1건"
+    input: { visits: [{ status: closed, scheduled_at: "2025-01-01T00:00:00Z" }] }
+    expected: PASS
+    expectedCount: 1
+
+  - id: GR-006-PASS
+    rule: GR-006
+    description: "cancelled 방문 환불 atomic — 성공"
+    input: { visit_status: cancelled, visit_cost: 60000, cancellation_rate: 0.2 }
+    expected: PASS
+    expectedCancellationAmount: 12000

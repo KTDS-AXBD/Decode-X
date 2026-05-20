@@ -1,0 +1,52 @@
+---
+# Provenance — LASERTAG-001
+# 90번째 도메인 — Laser tag 합성 도메인 PoC (79번째 신규 산업, 🔫 단일 클러스터 21 도메인 첫 사례 마일스톤 신기록 + 17 Sprint 연속 첫 사례 마일스톤 신기록 + 🏆🏆🏆 90번째 도메인 = 18배 round 마일스톤)
+
+skillId: LASERTAG-001
+extractedAt: "2026-05-20T00:00:00+09:00"
+extractedBy: "Decode-X 세션 387 F559 — withRuleId 재사용 90번째 도메인 (Laser tag 레이저태그 산업, 79번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/lasertag/rules/lasertag-rules.md"
+    section: "Laser tag 합성 비즈니스 룰 — LS-001~LS-006"
+    businessRules: [LS-001, LS-002, LS-003, LS-004, LS-005, LS-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 레이저태그(Laser tag) 산업 일반화 PoC. 동시세션한도/장비한도/세션예약atomic/세션상태전환/closed세션일괄만료/세션환불atomic 추상화. 90번째 도메인 + 79번째 신규 산업. 🔫 단일 클러스터 21 도메인 첫 사례 마일스톤 신기록 (AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS 오프라인 엔터 21-클러스터). 🏆 17 Sprint 연속 첫 사례 마일스톤 신기록 (S370 5→S371 6→...→S386 20→S387 21). 🏆🏆🏆 90번째 도메인 18배 round 마일스톤 (S262 5 → S387 90). 🏆 withRuleId 91 Sprint 정점 도전 (S264~S387 91 Sprint 누적 정점). 거울 변환 43회차 (carsharing → ... → studio → lasertag). Sprint WT autopilot 분리 작업 17회차 (DoD 6축 실감증 8회차 정착 확인). LS 차별성: ST(스튜디오 전문 제작용) + NC(나이트클럽 야간 입장권) 인접하되 게임형 엔터 + 시간제 + 그룹 예약 + 점수 시스템 + 장비 임대 + 레벨별 맵 + 멤버십 모델 (B2C 게임 30-60분 + 점수 경쟁 + 멀티 아레나 차별). 동시 한도 10 (아레나별 동시 active session, 소형 레이저태그 아레나 기반)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/lasertag.ts"
+    functions: [reserveSession, applyEquipmentLimit, processSessionBooking, transitionSessionStatus, expireClosedSessionBatch, processSessionRefund]
+
+detection:
+  - ruleId: LS-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "arena.active_sessions >= limit (UPPERCASE fallback MAX_CONCURRENT_SESSIONS_PER_ARENA, Path A)"
+  - ruleId: LS-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "membership.daily_used + equipment >= equipmentLimit (Path B, limit keyword)"
+  - ruleId: LS-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "db.transaction() — equipment_schedules INSERT + lasertag_sessions UPDATE + session_payments INSERT"
+  - ruleId: LS-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "reserved → ongoing → ended / closed / cancelled"
+  - ruleId: LS-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "batch: closed → ended 갱신 (SF-005/KP-005/.../BC-005/CO-005/KR-005/NC-005/ST-005 79번째 재사용)"
+  - ruleId: LS-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "db.transaction() — cancelled_fee_records INSERT + session_refunds INSERT + cancelled_fee_records UPDATE (그룹 환불 정책 포함)"

@@ -1,0 +1,33 @@
+# ST-001 ThresholdCheck 검증 시나리오
+# Studio 스튜디오별 동시 slot 한도 — F558 Sprint 386
+
+ruleId: ST-001
+detector: ThresholdCheck
+function: reserveSlot
+
+scenarios:
+  - id: ST-001-PASS
+    description: 동시 slot 수가 한도 미만일 때 슬롯 예약 성공
+    given:
+      studios:
+        active_slots: 19
+        max_concurrent_slots: 20
+    when:
+      call: reserveSlot
+    then:
+      result: success
+      ruleId: ST-001
+      status: PRESENCE
+
+  - id: ST-001-FAIL
+    description: 동시 slot 수가 한도에 달했을 때 슬롯 예약 차단
+    given:
+      studios:
+        active_slots: 20
+        max_concurrent_slots: 20
+    when:
+      call: reserveSlot
+    then:
+      throws: StudioError
+      code: E422-STUDIO-SLOT-LIMIT-EXCEEDED
+      status: 422

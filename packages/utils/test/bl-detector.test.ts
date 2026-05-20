@@ -677,7 +677,7 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 386 detectors (세션 311 F555 — concert-hall 86번째 도메인 +6 detectors, 🎻 단일 클러스터 17 도메인 첫 사례 마일스톤 신기록 + 13 Sprint 연속 첫 사례 마일스톤 신기록)", () => {
+  it("exposes 392 detectors (세션 384 F556 — karaoke 87번째 도메인 +6 detectors, 🎤 단일 클러스터 18 도메인 첫 사례 마일스톤 신기록 + 14 Sprint 연속 첫 사례 마일스톤 신기록)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AD-001",
       "AD-002",
@@ -944,6 +944,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "KP-004",
       "KP-005",
       "KP-006",
+      "KR-001",
+      "KR-002",
+      "KR-003",
+      "KR-004",
+      "KR-005",
+      "KR-006",
       "LB-001",
       "LB-002",
       "LB-003",
@@ -1657,6 +1663,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["CO-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["CO-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["CO-006"]).toBeDefined();
+  });
+
+  it("KR-001~KR-006 registered (세션 384 F556 — karaoke 87번째 도메인, 76번째 신규 산업, 🎤 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR 오프라인 엔터 18-클러스터 확장 — 단일 클러스터 18 도메인 첫 사례 마일스톤 신기록 + 14 Sprint 연속 첫 사례 마일스톤 신기록, 88 Sprint 연속 정점 도전, 거울 변환 40회차 round 마일스톤, DoD 6축 실감증 5회차 rules/ 영구 승격 트리거)", () => {
+    expect(BL_DETECTOR_REGISTRY["KR-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["KR-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["KR-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["KR-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["KR-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["KR-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -9124,5 +9139,119 @@ function processTicketRefund(db, memberId, ticketId, ticketCost, cancellationRat
     const markers = BL_DETECTOR_REGISTRY["CO-006"]!(src, "concert-hall.ts");
     expect(markers).toHaveLength(1);
     expect(markers[0]?.ruleId).toBe("CO-006");
+  });
+});
+
+describe("DOMAIN_MAP karaoke entry — F556 axis-e (DoD 5축 강화, 6축 CI Guard 실감증 5회차 rules/ 영구 승격 트리거, 🎤 단일 클러스터 18 도메인 첫 사례 마일스톤 신기록)", () => {
+  it("findDomainMapping('karaoke') returns defined entry (87번째 도메인 DOMAIN_MAP 존재 검증)", async () => {
+    const { findDomainMapping } = await import("../../../scripts/divergence/domain-source-map.js");
+    const mapping = findDomainMapping("karaoke");
+    expect(mapping).toBeDefined();
+    expect(mapping?.container).toBe("karaoke");
+  });
+});
+
+describe("karaoke domain — KR-001~006 via withRuleId (세션 384 F556, 🎤 단일 클러스터 18 도메인 첫 사례 마일스톤 신기록 + 14 Sprint 연속 첫 사례 마일스톤 신기록, DoD 6축 실감증 5회차 rules/ 영구 승격 트리거)", () => {
+  it("KR-001 PRESENCE — active_rooms >= MAX_CONCURRENT_ROOMS_PER_KARAOKE threshold (UPPERCASE constant)", () => {
+    const src = `
+function reserveRoom(db, karaokeId, membershipId) {
+  const karaoke = db.prepare("SELECT active_rooms, max_concurrent_rooms FROM karaokes WHERE id = ?").get(karaokeId);
+  const limit = karaoke.max_concurrent_rooms ?? MAX_CONCURRENT_ROOMS_PER_KARAOKE;
+  if (karaoke.active_rooms >= limit) {
+    throw new KaraokeError('E422-KARAOKE-ROOM-LIMIT-EXCEEDED', \`Karaoke is at full room capacity\`, 422);
+  }
+  db.prepare("INSERT INTO karaoke_sessions (id, karaoke_id, membership_id) VALUES (?, ?, ?)").run(sessionId, karaokeId, membershipId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["KR-001"]!(src, "karaoke.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("KR-001");
+  });
+
+  it("KR-002 PRESENCE — membership.daily_used + rooms >= membershipLimit (var-vs-var, limit keyword)", () => {
+    const src = `
+function applyMembershipLimit(db, memberId, membershipId, rooms) {
+  const membership = db.prepare("SELECT daily_used, membership_limit FROM memberships WHERE id = ? AND member_id = ? LIMIT 1").get(membershipId, memberId);
+  const membershipLimit = membership.membership_limit;
+  if (membership.daily_used + rooms >= membershipLimit) {
+    throw new KaraokeError('E422-MEMBERSHIP-LIMIT-EXCEEDED', \`Membership daily quota exhausted\`, 422);
+  }
+  db.prepare("UPDATE memberships SET daily_used = daily_used + ? WHERE id = ?").run(rooms, membershipId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["KR-002"]!(src, "karaoke.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("KR-002");
+  });
+
+  it("KR-003 PRESENCE — db.transaction() in processRoomBooking (atomic room_schedules+karaoke_sessions+session_payments INSERT/UPDATE)", () => {
+    const src = `
+function processRoomBooking(db, karaokeId, sessionId, roomNumber, startTime, endTime, groupSize, amount) {
+  const session = db.prepare("SELECT status FROM karaoke_sessions WHERE id = ? AND status = 'reserved'").get(sessionId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO room_schedules (id, karaoke_id, session_id, room_number, start_time, end_time, group_size, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'confirmed')").run(scheduleId, karaokeId, sessionId, roomNumber, startTime, endTime, groupSize);
+    db.prepare("UPDATE karaoke_sessions SET status = 'ongoing', schedule_id = ?, payment_id = ? WHERE id = ?").run(scheduleId, paymentId, sessionId);
+    db.prepare("INSERT INTO session_payments (id, session_id, schedule_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(paymentId, sessionId, scheduleId, amount, bookedAt);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["KR-003"]!(src, "karaoke.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("KR-003");
+  });
+
+  it("KR-004 PRESENCE — status transition reserved→ongoing→ended/closed/cancelled in transitionSessionStatus", () => {
+    const src = `
+function transitionSessionStatus(db, sessionId, newStatus) {
+  const session = db.prepare("SELECT status FROM karaoke_sessions WHERE id = ?").get(sessionId);
+  const previousStatus = session.status;
+  const allowed =
+    (session.status === 'reserved' && newStatus === 'ongoing') ||
+    (session.status === 'ongoing' && newStatus === 'ended') ||
+    (session.status === 'ongoing' && newStatus === 'closed') ||
+    (session.status === 'reserved' && newStatus === 'cancelled') ||
+    (session.status === 'ongoing' && newStatus === 'cancelled');
+  if (!allowed) {
+    throw new KaraokeError('E409-SESSION', \`Cannot transition session from \${previousStatus} to \${newStatus}\`, 409);
+  }
+  db.prepare("UPDATE karaoke_sessions SET status = ? WHERE id = ?").run(newStatus, sessionId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["KR-004"]!(src, "karaoke.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("KR-004");
+  });
+
+  it("KR-005 PRESENCE — batch closed→ended expire in expireClosedSessionBatch (StatusTransition batch)", () => {
+    const src = `
+function expireClosedSessionBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM karaoke_sessions WHERE status = 'closed' AND reserved_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE karaoke_sessions SET status = 'ended' WHERE id = ?").run(item.id);
+  }
+  return { expiredCount: candidates.length };
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["KR-005"]!(src, "karaoke.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("KR-005");
+  });
+
+  it("KR-006 PRESENCE — db.transaction() in processSessionRefund (atomic cancelled_fee_records+session_refunds INSERT/UPDATE)", () => {
+    const src = `
+function processSessionRefund(db, memberId, sessionId, sessionCost, cancellationRate) {
+  const session = db.prepare("SELECT status FROM karaoke_sessions WHERE id = ? AND status = 'cancelled'").get(sessionId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO cancelled_fee_records (id, member_id, session_id, session_cost, cancellation_rate, cancellation_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(feeRecordId, memberId, sessionId, sessionCost, cancellationRate, cancellationAmount);
+    db.prepare("INSERT INTO session_refunds (id, fee_record_id, member_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, feeRecordId, memberId, cancellationAmount, refundedAt);
+    db.prepare("UPDATE cancelled_fee_records SET status = 'refunded' WHERE id = ?").run(feeRecordId);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["KR-006"]!(src, "karaoke.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("KR-006");
   });
 });

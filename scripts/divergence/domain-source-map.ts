@@ -1642,6 +1642,26 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processTicketRefund",
     ],
   },
+  {
+    container: "karaoke",
+    rulesPath: `${SPEC_CONTAINER_BASE}/karaoke/rules/karaoke-rules.md`,
+    // 세션 384 (F556): Karaoke 합성 도메인 — 87번째 도메인 (노래방 산업, 76번째 신규 산업). Sprint WT autopilot 분리 작업 14회차 (DoD 6축 실감증 5회차 rules/ 영구 승격 트리거).
+    // KR-001~KR-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 40회차 (carsharing → ... → beach-club → concert-hall → karaoke) — 🎤 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR 오프라인 엔터 18-클러스터 (단일 클러스터 18 도메인 첫 사례 + 14 Sprint 연속 첫 사례 마일스톤 신기록).
+    // 🏆 87번째 도메인 17.4배 확장 (S262 5 → S384 87). 🏆 거울 변환 40회차 round 마일스톤. 🏆 S283 audit 40회차 round 마일스톤.
+    // KR 차별성: CO(클래식 콘서트홀 시즌권 + 정기 공연) + KP(K-pop 단일 콘서트 1회성) 인접하되 프라이빗 룸 + 시간제 + drinks/menu + 그룹 예약 + 점주별 운영 모델. 동시 한도 20 (노래방별 동시 active room, 일반 노래방 기반).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/karaoke.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/karaoke/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "reserveRoom",
+      "applyMembershipLimit",
+      "processRoomBooking",
+      "transitionSessionStatus",
+      "expireClosedSessionBatch",
+      "processSessionRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

@@ -1,0 +1,33 @@
+# KR-001 ThresholdCheck 검증 시나리오
+# Karaoke 노래방별 동시 room 한도 — F556 Sprint 384
+
+ruleId: KR-001
+detector: ThresholdCheck
+function: reserveRoom
+
+scenarios:
+  - id: KR-001-PASS
+    description: 동시 room 수가 한도 미만일 때 예약 성공
+    given:
+      karaokes:
+        active_rooms: 19
+        max_concurrent_rooms: 20
+    when:
+      call: reserveRoom
+    then:
+      result: success
+      ruleId: KR-001
+      status: PRESENCE
+
+  - id: KR-001-FAIL
+    description: 동시 room 수가 한도에 달했을 때 예약 차단
+    given:
+      karaokes:
+        active_rooms: 20
+        max_concurrent_rooms: 20
+    when:
+      call: reserveRoom
+    then:
+      throws: KaraokeError
+      code: E422-KARAOKE-ROOM-LIMIT-EXCEEDED
+      status: 422

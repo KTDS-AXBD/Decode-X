@@ -1682,6 +1682,26 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processVisitRefund",
     ],
   },
+  {
+    container: "studio",
+    rulesPath: `${SPEC_CONTAINER_BASE}/studio/rules/studio-rules.md`,
+    // 세션 386 (F558): Studio 합성 도메인 — 89번째 도메인 (다용도 스튜디오 산업, 78번째 신규 산업). Sprint WT autopilot 분리 작업 16회차 (DoD 6축 실감증 7회차 정착 완성 검증).
+    // ST-001~ST-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 42회차 (carsharing → ... → concert-hall → karaoke → night-club → studio) — 🎬 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST 오프라인 엔터 20-클러스터 (단일 클러스터 20 도메인 round 마일스톤 신기록 + 16 Sprint 연속 첫 사례 마일스톤 신기록).
+    // 🏆 89번째 도메인 17.8배 확장 (S262 5 → S386 89). 🏆 withRuleId 90 Sprint 정점 round 마일스톤. 🏆 거울 변환 42회차. 🏆 S283 audit 43회차 도전.
+    // ST 차별성: KR(노래방 프라이빗 룸 1-3시간) + NC(나이트클럽 야간 입장권) 인접하되 녹음+사진+댄스+동영상 워 임대+장비 임대+시간제+패키지 수세 모델. 동시 한도 20 (스튜디오별 동시 active slot, 소형 전문 스튜디오 기반).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/studio.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/studio/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "reserveSlot",
+      "applyEquipmentLimit",
+      "processSlotBooking",
+      "transitionSlotStatus",
+      "expireClosedSlotBatch",
+      "processSlotRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

@@ -1,0 +1,52 @@
+---
+# Provenance — STUDIO-001
+# 89번째 도메인 — Studio 합성 도메인 PoC (78번째 신규 산업, 🎬 단일 클러스터 20 도메인 round 마일스톤 신기록 + 16 Sprint 연속 첫 사례 마일스톤 신기록)
+
+skillId: STUDIO-001
+extractedAt: "2026-05-20T00:00:00+09:00"
+extractedBy: "Decode-X 세션 386 F558 — withRuleId 재사용 89번째 도메인 (Studio 다용도 스튜디오 산업, 78번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/studio/rules/studio-rules.md"
+    section: "Studio 합성 비즈니스 룰 — ST-001~ST-006"
+    businessRules: [ST-001, ST-002, ST-003, ST-004, ST-005, ST-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 스튜디오(Studio) 산업 일반화 PoC. 동시슬롯한도/장비한도/슬롯예약atomic/슬롯상태전환/closed슬롯일괄만료/슬롯환불atomic 추상화. 89번째 도메인 + 78번째 신규 산업. 🎬 단일 클러스터 20 도메인 round 마일스톤 신기록 (AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST 오프라인 엔터 20-클러스터). 🏆 16 Sprint 연속 첫 사례 마일스톤 신기록 (S370 5→S371 6→...→S385 19→S386 20). 🏆 89번째 도메인 17.8배 확장 (S262 5 → S386 89). 🏆 withRuleId 90 Sprint 정점 round 마일스톤 (S264~S386 90 Sprint 누적 정점). 90 Sprint 연속 정점 도전. 거울 변환 42회차 (carsharing → ... → concert-hall → karaoke → night-club → studio). Sprint WT autopilot 분리 작업 16회차 (DoD 6축 실감증 7회차 정착 완성 검증). ST 차별성: KR(노래방 프라이빗 룸 1-3시간) + NC(나이트클럽 야간 입장권) 인접하되 녹음+사진+댄스+동영상 워 임대+장비 임대+시간제+패키지 수세 (B2B/B2C 전문 제작용 공간). 동시 한도 20 (스튜디오별 동시 active slot, 소형 전문 스튜디오 기반)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/studio.ts"
+    functions: [reserveSlot, applyEquipmentLimit, processSlotBooking, transitionSlotStatus, expireClosedSlotBatch, processSlotRefund]
+
+detection:
+  - ruleId: ST-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "studio.active_slots >= limit (UPPERCASE fallback MAX_CONCURRENT_SLOTS_PER_STUDIO, Path A)"
+  - ruleId: ST-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "membership.daily_used + equipment >= equipmentLimit (Path B, limit keyword)"
+  - ruleId: ST-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "db.transaction() — equipment_schedules INSERT + studio_slots UPDATE + slot_payments INSERT"
+  - ruleId: ST-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "reserved → ongoing → ended / closed / cancelled"
+  - ruleId: ST-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "batch: closed → ended 갱신 (SF-005/KP-005/.../BC-005/CO-005/KR-005/NC-005 78번째 재사용)"
+  - ruleId: ST-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "db.transaction() — cancelled_fee_records INSERT + slot_refunds INSERT + cancelled_fee_records UPDATE (패키지 환불 정책 포함)"

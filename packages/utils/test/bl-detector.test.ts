@@ -677,7 +677,7 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 398 detectors (세션 385 F557 — night-club 88번째 도메인 +6 detectors, 🌃 단일 클러스터 19 도메인 첫 사례 마일스톤 신기록 + 15 Sprint 연속 첫 사례 마일스톤 신기록)", () => {
+  it("exposes 404 detectors (세션 386 F558 — studio 89번째 도메인 +6 detectors, 🎬 단일 클러스터 20 도메인 round 마일스톤 신기록 + 16 Sprint 연속 첫 사례 마일스톤 신기록)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AD-001",
       "AD-002",
@@ -1137,6 +1137,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "SP-004",
       "SP-005",
       "SP-006",
+      "ST-001",
+      "ST-002",
+      "ST-003",
+      "ST-004",
+      "ST-005",
+      "ST-006",
       "TC-001",
       "TC-002",
       "TC-003",
@@ -1687,6 +1693,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["NC-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["NC-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["NC-006"]).toBeDefined();
+  });
+
+  it("ST-001~ST-006 registered (세션 386 F558 — studio 89번째 도메인, 78번째 신규 산업, 🎬 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST 오프라인 엔터 20-클러스터 확장 — 단일 클러스터 20 도메인 round 마일스톤 신기록 + 16 Sprint 연속 첫 사례 마일스톤 신기록, withRuleId 90 Sprint 정점 round 마일스톤, 거울 변환 42회차, DoD 6축 실감증 7회차 정착 완성 검증)", () => {
+    expect(BL_DETECTOR_REGISTRY["ST-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["ST-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["ST-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["ST-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["ST-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["ST-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -9383,5 +9398,119 @@ function processVisitRefund(db, memberId, visitId, visitCost, cancellationRate) 
     const markers = BL_DETECTOR_REGISTRY["NC-006"]!(src, "night-club.ts");
     expect(markers).toHaveLength(1);
     expect(markers[0]?.ruleId).toBe("NC-006");
+  });
+});
+
+describe("DOMAIN_MAP studio entry — F558 axis-e (DoD 5축 강화, 6축 CI Guard 실감증 7회차 정착 완성 검증, 🎬 단일 클러스터 20 도메인 round 마일스톤 신기록)", () => {
+  it("findDomainMapping('studio') returns defined entry (89번째 도메인 DOMAIN_MAP 존재 검증)", async () => {
+    const { findDomainMapping } = await import("../../../scripts/divergence/domain-source-map.js");
+    const mapping = findDomainMapping("studio");
+    expect(mapping).toBeDefined();
+    expect(mapping?.container).toBe("studio");
+  });
+});
+
+describe("studio domain — ST-001~006 via withRuleId (세션 386 F558, 🎬 단일 클러스터 20 도메인 round 마일스톤 신기록 + 16 Sprint 연속 첫 사례 마일스톤 신기록, DoD 6축 실감증 7회차 정착 완성 검증)", () => {
+  it("ST-001 PRESENCE — active_slots >= MAX_CONCURRENT_SLOTS_PER_STUDIO threshold (UPPERCASE constant)", () => {
+    const src = `
+function reserveSlot(db, studioId, membershipId) {
+  const studio = db.prepare("SELECT active_slots, max_concurrent_slots FROM studios WHERE id = ?").get(studioId);
+  const limit = studio.max_concurrent_slots ?? MAX_CONCURRENT_SLOTS_PER_STUDIO;
+  if (studio.active_slots >= limit) {
+    throw new StudioError('E422-STUDIO-SLOT-LIMIT-EXCEEDED', \`Studio is at full slot capacity\`, 422);
+  }
+  db.prepare("INSERT INTO studio_slots (id, studio_id, membership_id) VALUES (?, ?, ?)").run(slotId, studioId, membershipId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["ST-001"]!(src, "studio.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("ST-001");
+  });
+
+  it("ST-002 PRESENCE — membership.daily_used + equipment >= equipmentLimit (var-vs-var, limit keyword)", () => {
+    const src = `
+function applyEquipmentLimit(db, memberId, membershipId, equipment) {
+  const membership = db.prepare("SELECT daily_used, equipment_limit FROM memberships WHERE id = ? AND member_id = ? LIMIT 1").get(membershipId, memberId);
+  const equipmentLimit = membership.equipment_limit;
+  if (membership.daily_used + equipment >= equipmentLimit) {
+    throw new StudioError('E422-EQUIPMENT-LIMIT-EXCEEDED', \`Membership equipment quota exhausted\`, 422);
+  }
+  db.prepare("UPDATE memberships SET daily_used = daily_used + ? WHERE id = ?").run(equipment, membershipId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["ST-002"]!(src, "studio.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("ST-002");
+  });
+
+  it("ST-003 PRESENCE — db.transaction() in processSlotBooking (atomic equipment_schedules+studio_slots+slot_payments INSERT/UPDATE)", () => {
+    const src = `
+function processSlotBooking(db, studioId, slotId, equipmentType, startTime, endTime, packageType, amount) {
+  const slot = db.prepare("SELECT status FROM studio_slots WHERE id = ? AND status = 'reserved'").get(slotId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO equipment_schedules (id, studio_id, slot_id, equipment_type, start_time, end_time, package_type, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'confirmed')").run(scheduleId, studioId, slotId, equipmentType, startTime, endTime, packageType);
+    db.prepare("UPDATE studio_slots SET status = 'ongoing', schedule_id = ?, payment_id = ? WHERE id = ?").run(scheduleId, paymentId, slotId);
+    db.prepare("INSERT INTO slot_payments (id, slot_id, schedule_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(paymentId, slotId, scheduleId, amount, bookedAt);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["ST-003"]!(src, "studio.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("ST-003");
+  });
+
+  it("ST-004 PRESENCE — status transition reserved→ongoing→ended/closed/cancelled in transitionSlotStatus", () => {
+    const src = `
+function transitionSlotStatus(db, slotId, newStatus) {
+  const slot = db.prepare("SELECT status FROM studio_slots WHERE id = ?").get(slotId);
+  const previousStatus = slot.status;
+  const allowed =
+    (slot.status === 'reserved' && newStatus === 'ongoing') ||
+    (slot.status === 'ongoing' && newStatus === 'ended') ||
+    (slot.status === 'ongoing' && newStatus === 'closed') ||
+    (slot.status === 'reserved' && newStatus === 'cancelled') ||
+    (slot.status === 'ongoing' && newStatus === 'cancelled');
+  if (!allowed) {
+    throw new StudioError('E409-SLOT', \`Cannot transition slot from \${previousStatus} to \${newStatus}\`, 409);
+  }
+  db.prepare("UPDATE studio_slots SET status = ? WHERE id = ?").run(newStatus, slotId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["ST-004"]!(src, "studio.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("ST-004");
+  });
+
+  it("ST-005 PRESENCE — batch closed→ended expire in expireClosedSlotBatch (StatusTransition batch)", () => {
+    const src = `
+function expireClosedSlotBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM studio_slots WHERE status = 'closed' AND reserved_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE studio_slots SET status = 'ended' WHERE id = ?").run(item.id);
+  }
+  return { expiredCount: candidates.length };
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["ST-005"]!(src, "studio.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("ST-005");
+  });
+
+  it("ST-006 PRESENCE — db.transaction() in processSlotRefund (atomic cancelled_fee_records+slot_refunds INSERT/UPDATE)", () => {
+    const src = `
+function processSlotRefund(db, memberId, slotId, slotCost, cancellationRate) {
+  const slot = db.prepare("SELECT status FROM studio_slots WHERE id = ? AND status = 'cancelled'").get(slotId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO cancelled_fee_records (id, member_id, slot_id, slot_cost, cancellation_rate, cancellation_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(feeRecordId, memberId, slotId, slotCost, cancellationRate, cancellationAmount);
+    db.prepare("INSERT INTO slot_refunds (id, fee_record_id, member_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, feeRecordId, memberId, cancellationAmount, refundedAt);
+    db.prepare("UPDATE cancelled_fee_records SET status = 'refunded' WHERE id = ?").run(feeRecordId);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["ST-006"]!(src, "studio.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("ST-006");
   });
 });

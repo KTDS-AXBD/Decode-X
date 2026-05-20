@@ -1562,6 +1562,15 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "CO-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "CO-004"),
   "CO-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "CO-005"),
   "CO-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "CO-006"),
+  // Sprint 384 (F556) — karaoke 합성 도메인: 동시룸한도/멤버십한도/룸예약atomic/세션상태전환/closed세션일괄만료/세션환불atomic
+  // 🎤 87번째 도메인 + 76번째 신규 산업. AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR 오프라인 엔터 18-클러스터 단일 클러스터 18 도메인 첫 사례 신기록 + 14 Sprint 연속 첫 사례 마일스톤 신기록.
+  // withRuleId 88 Sprint 연속 정점 도전. 거울 변환 40회차 round 마일스톤 (concert-hall → karaoke). DoD 6축 실감증 5회차 rules/ 영구 승격 트리거. 🏆 87번째 도메인 17.4배 확장.
+  "KR-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "KR-001"),
+  "KR-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "KR-002"),
+  "KR-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "KR-003"),
+  "KR-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "KR-004"),
+  "KR-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "KR-005"),
+  "KR-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "KR-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

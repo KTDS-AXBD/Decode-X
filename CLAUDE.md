@@ -329,8 +329,8 @@ utils tests PASS만으로 runtime BL count 보장 불가. **두 layer 모두 검
 - ❌ IF/THEN 의사코드 블록만 (table 없이)
 - ❌ bullet list로 condition/outcome 분산 기술
 
-**참조 정상 예시**: `.decode-x/spec-containers/convention/rules/convention-rules.md` (Sprint 380 F552 CV)
-**참조 위반 예시**: `.decode-x/spec-containers/wedding-hall/rules/wedding-hall-rules.md` (Sprint 381 F553 WB, fix-forward 후에도 prose 잔존 — runtime detect-bl 0 BLs 상태 유지)
+**참조 정상 예시**: `.decode-x/spec-containers/convention/rules/convention-rules.md` (Sprint 380 F552 CV), `.decode-x/spec-containers/wedding-hall/rules/wedding-hall-rules.md` (Sprint 382 PR #100 `bb893bb` bonus commit으로 prose→table fix-forward 완결, runtime detect-bl 6 BLs 회복)
+**역사적 위반 사례**: Sprint 381 PR #99 `fb8e2f9` 초기 wedding-hall-rules.md는 paragraph prose 형식이었으나 detect-bl 0 BLs로 즉시 감지 → Sprint 382 bonus commit으로 fix-forward. 동일 패턴 재발 시 즉시 fix-forward 표준 절차.
 
 **DoD 7축 (g) 후보** (3회+ 재발 시 도입): GitHub Actions workflow에서 PR 단계 rules.md 파일별 markdown table 존재 + BL count 일치 검증. 현재는 self-attestation + 본 가이드로 차단.
 

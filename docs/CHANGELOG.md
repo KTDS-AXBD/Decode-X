@@ -13,6 +13,69 @@ author: Sinclair Seo
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 312 (2026-05-20) — 🏆🏆🏆🏆 1세션 5 Sprint MERGED 신기록 + S312 자동 정리 정책 도입 + dogfood 3회 SUCCESS + 90번째 도메인 18배 round + 17 Sprint 연속 신기록 + 6축 (f) 8회 연속 정착
+
+**세션 메인 작업**: Sprint 383~387 5 Sprint 연속 MERGED (1세션 5 Sprint 신기록) + S312 MERGED Sprint WT 자동 정리 2-Layer 정책 도입 + dogfood 3회 연속 SUCCESS (S385/S386/S387) + 사이드 거버넌스 작업 (CLAUDE.md stale 정정 + rules/ sub-section 신설 + TD-52 결정). 🏆🏆🏆 **90번째 도메인 18배 round 마일스톤** + 🔫 **21-cluster 첫 사례 신기록** + 🏆 **17 Sprint 연속 첫 사례 신기록** (S370~S387) 동시 달성.
+
+**Sprint MERGED commits (5 Sprint 연속)**:
+- `790e7fc` feat — Sprint 383 F555 CO Concert hall (PR #101, 17-cluster, 86번째)
+- `64b0fde` feat — Sprint 384 F556 KR Karaoke (PR #102, 18-cluster, 87번째)
+- `cc7476e` feat — Sprint 385 F557 NC Night club (PR #103, 19-cluster, 88번째)
+- `dad64c7` feat — Sprint 386 F558 ST Studio (PR #104, 20-cluster, 89번째)
+- `7f0b13b` feat — Sprint 387 F559 LS Laser tag (PR #105, 21-cluster, 🏆🏆🏆 90번째 18배 round)
+
+**S312 자동 정리 정책 도입 (3 repo commits)**:
+- Foundry-X `a1e77853` — task-daemon.sh `phase_sprint_signals` 10단계 cleanup (L1: STATUS=MERGED + MERGED_AT 60s grace → signal/flag/log/tmux session 자동 정리)
+- ax-marketplace `4168394` — session-start Phase 5e fallback (L2: L1 누락 시 차기 session-start에서 정리)
+- ax-config `20d5655` — rules/development-workflow.md 정책 정착 + S351 signal F_ITEMS empty 4회차 갱신
+
+**사이드 작업 (S311 연장, Master 직접 commit)**:
+- `d6a3f3f` docs — CLAUDE.md `Autopilot Guards` wedding-hall stale 참조 정정 (Sprint 382 bonus fix-forward 확증) + 역사적 위반 사례 sub-section 추가
+- `ebc1364` docs — CHANGELOG 세션 311 entry 추가 (autopilot session-end CHANGELOG 누락 fixup)
+
+**검증 결과 (Sprint 383~387 누적)**:
+- ✅ utils 713 → **745 PASS** (+32 across S384~S387, 평균 +8/sprint)
+- ✅ detect-bl 518 → **542/542 = 100.0%** (86 → 90 containers, 75 → 79 신규 산업 0 ABSENCE)
+- ✅ BL_ID_PATTERN 83 → **87 prefixes** (+CO/KR/NC/ST/LS)
+- ✅ 4 CI all SUCCESS × 5 Sprint = **6축 (f) CI Guard 4~8회차 누적 8회 연속 자연 작동** (S380~S387)
+- ✅ Sprint WT autopilot 분리 작업 **13~17회차 5회 연속 단일 통과** (Match 100%)
+
+**S312 dogfood 3회 연속 SUCCESS (정착 검증 완결)**:
+| Sprint | MERGED → Cleanup | 결과 |
+|--------|-----------------|------|
+| 385 | 63s | ✅ SUCCESS |
+| 386 | 81s | ✅ SUCCESS |
+| 387 | 76s | ✅ SUCCESS |
+| **평균** | **~73s** | **2-Layer 정책 정착 완결** |
+
+**마일스톤 (세션 312)**:
+- 🏆🏆🏆 **1세션 5 Sprint MERGED 연속 신기록** (Sprint 383~387)
+- 🏆🏆🏆 **90번째 도메인 18배 round 마일스톤** (S262 5 → S387 90)
+- 🔫 **단일 클러스터 21 도메인 첫 사례 마일스톤 신기록** (AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS 오프라인 엔터)
+- 🏆 **17 Sprint 연속 첫 사례 마일스톤 신기록** (S370 5 → S387 21)
+- 🏆 **withRuleId 91 Sprint 연속 정점** (신기록)
+- 🏆 **거울 변환 43회차** (Sprint WT autopilot 17회 연속 단일 통과 누적)
+- 🎯 **6축 (f) CI Guard 8회 연속 자연 작동** (rules/ 영구 승격 표준 결정 시점 도달)
+- 🎯 **S312 자동 정리 정책 도입 + dogfood 3회 SUCCESS** (정착 완결)
+
+**별 이슈 패턴**:
+- S351 deferred 4~7회차 재현 (S312 ~ S317 Sprint 시동마다 signal F_ITEMS empty + .sprint-context 부재). 표준 보정 ~5분/Sprint. rules/development-workflow.md L1 영구 차단 효과는 누적 검증 5회+ (S307~S312/S313/S315/S317), bashrc Fix D 진단 차기 세션 우선순위 상향
+- Sprint 384/386 working tree 잔재 패턴 (Sprint WT autopilot 작업 결과가 main repo working tree에도 동일 잔재로 표시) 2회 재발 → stash + pull + drop 표준 회복 절차 정착. 차기 1회 더 재발 시 (3회+) rules/ sub-pattern 등재 후보
+- autopilot session-end commit message false claim 패턴 (`47bd1d4` message="CHANGELOG 추가"이지만 SPEC.md만 변경). 차기 fixup 표준 절차 정착
+
+**메타 학습 4건**:
+- (a) **자동화 정책의 코드 변경 → process 재기동 2-step 표준화 필요** (S312 dogfood 1차 fail 원인 = 옛 PID 메모리 로드. file 변경 후 daemon restart 필수 인식 → 차기 정책 변경 시 표준 절차)
+- (b) **dogfood 3회 연속 SUCCESS = 정착 검증** (1회는 happy path, 2회는 stability, 3회는 정책 정착 — S312 L1 첫 적용 시 적용 가능 패턴)
+- (c) **autopilot commit message false claim 패턴 식별** (commit description vs 실 변경 불일치 발견 시 즉시 Master fixup 표준 절차)
+- (d) **1세션 5 Sprint MERGED 신기록** (Sprint WT autopilot 분리 작업 + 6축 (f) CI Guard + S312 L1 자동 정리 통합 효과 — 사용자 개입 최소화)
+
+**차기 후보 (세션 313+)**:
+- Sprint 388 (91번째 신규 산업, 22-cluster 18 Sprint 연속 도전, 6축 (f) 9회차)
+- F487 F358 Phase 4 Tree-sitter Java PoC (~6h)
+- bashrc `sprint()` Fix D 우선순위 상향 (signal F_ITEMS empty 별 이슈 7회+ 누적 정밀 진단)
+
+---
+
 ### 세션 311 (2026-05-20) — 🎯🏆🏆🏆 Sprint 383 CO Concert hall ✅ DONE PR #101 MERGED + 17-cluster 첫 사례 + 13 Sprint 연속 신기록 + 6축 (f) CI Guard 4회차 정착 (rules/ 영구 승격 trigger 도달)
 
 **세션 메인 작업**: 세션 310에서 사전 등록된 Sprint 383 F555 (CO Concert hall 86번째 도메인 / 75번째 신규 산업 / 단일 클러스터 17 도메인 첫 사례 / 13 Sprint 연속 첫 사례 신기록 / 6축 (f) CI Guard 실감증 4회차) Sprint WT autopilot 13회차 분리 작업으로 단일 통과 완료. 4 CI 모두 SUCCESS (Migration / DOMAIN_MAP Guard / E2E / Typecheck&Test) — 6축 (f) CI Guard 4회 연속 자연 작동 입증 → **rules/ 영구 승격 trigger 도달**. 사이드로 S381 wedding-hall stale 가이드 정정 + rules/development-workflow.md signal F_ITEMS empty 신규 sub-section 등재 + TD-52 Defer P3 유지 결정.

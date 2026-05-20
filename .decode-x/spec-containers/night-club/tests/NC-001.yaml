@@ -1,0 +1,33 @@
+# NC-001 ThresholdCheck 검증 시나리오
+# Night Club 나이트클럽별 동시 guest 한도 — F557 Sprint 385
+
+ruleId: NC-001
+detector: ThresholdCheck
+function: reserveEntry
+
+scenarios:
+  - id: NC-001-PASS
+    description: 동시 guest 수가 한도 미만일 때 입장 예약 성공
+    given:
+      night_clubs:
+        active_guests: 499
+        max_concurrent_guests: 500
+    when:
+      call: reserveEntry
+    then:
+      result: success
+      ruleId: NC-001
+      status: PRESENCE
+
+  - id: NC-001-FAIL
+    description: 동시 guest 수가 한도에 달했을 때 입장 예약 차단
+    given:
+      night_clubs:
+        active_guests: 500
+        max_concurrent_guests: 500
+    when:
+      call: reserveEntry
+    then:
+      throws: NightClubError
+      code: E422-CLUB-GUEST-LIMIT-EXCEEDED
+      status: 422

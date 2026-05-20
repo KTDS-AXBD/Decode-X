@@ -1662,6 +1662,26 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processSessionRefund",
     ],
   },
+  {
+    container: "night-club",
+    rulesPath: `${SPEC_CONTAINER_BASE}/night-club/rules/night-club-rules.md`,
+    // 세션 385 (F557): Night Club 합성 도메인 — 88번째 도메인 (나이트클럽 산업, 77번째 신규 산업). Sprint WT autopilot 분리 작업 15회차 (DoD 6축 실감증 6회차 rules/ 영구 승격 정착 검증).
+    // NC-001~NC-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 41회차 (carsharing → ... → concert-hall → karaoke → night-club) — 🌃 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC 오프라인 엔터 19-클러스터 (단일 클러스터 19 도메인 첫 사례 + 15 Sprint 연속 첫 사례 마일스톤 신기록).
+    // 🏆 88번째 도메인 17.6배 확장 (S262 5 → S385 88). 🏆 거울 변환 41회차. 🏆 S283 audit 42회차 도전.
+    // NC 차별성: KR(노래방 프라이빗 룸 1-3시간) + BC(비치클럽 시즌제 + VIP 프라이빗) 인접하되 공용 도구(common floor) + DJ 바 + 드레스코드 + 종일권 없는 입장권제 + VIP 테이블 옵션 모델. 동시 한도 500 (나이트클럽별 동시 active guest, 대형 클럽 기반).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/night-club.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/night-club/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "reserveEntry",
+      "applyVipTableLimit",
+      "processVipBooking",
+      "transitionVisitStatus",
+      "expireClosedVisitBatch",
+      "processVisitRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

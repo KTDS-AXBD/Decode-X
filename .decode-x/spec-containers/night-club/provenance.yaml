@@ -1,0 +1,52 @@
+---
+# Provenance — NIGHTCLUB-001
+# 88번째 도메인 — Night Club 합성 도메인 PoC (77번째 신규 산업, 🌃 단일 클러스터 19 도메인 첫 사례 마일스톤 신기록 + 15 Sprint 연속 첫 사례 마일스톤 신기록)
+
+skillId: NIGHTCLUB-001
+extractedAt: "2026-05-20T00:00:00+09:00"
+extractedBy: "Decode-X 세션 385 F557 — withRuleId 재사용 88번째 도메인 (Night Club 나이트클럽 산업, 77번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/night-club/rules/night-club-rules.md"
+    section: "Night Club 합성 비즈니스 룰 — NC-001~NC-006"
+    businessRules: [NC-001, NC-002, NC-003, NC-004, NC-005, NC-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 나이트클럽(Night Club) 산업 일반화 PoC. 동시게스트한도/VIP테이블한도/VIP예약atomic/방문상태전환/closed방문일괄만료/방문환불atomic 추상화. 88번째 도메인 + 77번째 신규 산업. 🌃 단일 클러스터 19 도메인 첫 사례 마일스톤 신기록 (AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC 오프라인 엔터 19-클러스터). 🏆 15 Sprint 연속 첫 사례 마일스톤 신기록 (S370 5→S371 6→...→S384 18→S385 19). 🏆 88번째 도메인 17.6배 확장 (S262 5 → S385 88). 89 Sprint 연속 정점 도전. 거울 변환 41회차 (carsharing → ... → concert-hall → karaoke → night-club). Sprint WT autopilot 분리 작업 15회차 (DoD 6축 실감증 6회차 rules/ 영구 승격 정착 검증). NC 차별성: KR(노래방 프라이빗 룸 1-3시간) + BC(비치클럽 시즌제 + VIP 프라이빗) 인접하되 공용 도구(common floor) + DJ 바 + 드레스코드 + 종일권 없는 입장권제 + VIP 테이블 옵션 차별. 동시 한도 500 (나이트클럽별 동시 active guest, 대형 클럽 기반)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/night-club.ts"
+    functions: [reserveEntry, applyVipTableLimit, processVipBooking, transitionVisitStatus, expireClosedVisitBatch, processVisitRefund]
+
+detection:
+  - ruleId: NC-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "club.active_guests >= limit (UPPERCASE fallback MAX_CONCURRENT_GUESTS_PER_CLUB, Path A)"
+  - ruleId: NC-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "membership.daily_used + tables >= vipTableLimit (Path B, limit keyword)"
+  - ruleId: NC-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "db.transaction() — vip_table_schedules INSERT + night_club_visits UPDATE + visit_payments INSERT"
+  - ruleId: NC-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "reserved → entered → exited → ended / closed / cancelled"
+  - ruleId: NC-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "batch: closed → ended 갱신 (SF-005/KP-005/.../BC-005/CO-005/KR-005 77번째 재사용)"
+  - ruleId: NC-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-20T00:00:00+09:00"
+    notes: "db.transaction() — cancelled_fee_records INSERT + visit_refunds INSERT + cancelled_fee_records UPDATE (입장료 환불 정책 포함)"

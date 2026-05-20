@@ -677,7 +677,7 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 392 detectors (세션 384 F556 — karaoke 87번째 도메인 +6 detectors, 🎤 단일 클러스터 18 도메인 첫 사례 마일스톤 신기록 + 14 Sprint 연속 첫 사례 마일스톤 신기록)", () => {
+  it("exposes 398 detectors (세션 385 F557 — night-club 88번째 도메인 +6 detectors, 🌃 단일 클러스터 19 도메인 첫 사례 마일스톤 신기록 + 15 Sprint 연속 첫 사례 마일스톤 신기록)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AD-001",
       "AD-002",
@@ -1010,6 +1010,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "MV-004",
       "MV-005",
       "MV-006",
+      "NC-001",
+      "NC-002",
+      "NC-003",
+      "NC-004",
+      "NC-005",
+      "NC-006",
       "NW-001",
       "NW-002",
       "NW-003",
@@ -1672,6 +1678,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["KR-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["KR-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["KR-006"]).toBeDefined();
+  });
+
+  it("NC-001~NC-006 registered (세션 385 F557 — night-club 88번째 도메인, 77번째 신규 산업, 🌃 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC 오프라인 엔터 19-클러스터 확장 — 단일 클러스터 19 도메인 첫 사례 마일스톤 신기록 + 15 Sprint 연속 첫 사례 마일스톤 신기록, 89 Sprint 연속 정점 도전, 거울 변환 41회차, DoD 6축 실감증 6회차 rules/ 영구 승격 정착 검증)", () => {
+    expect(BL_DETECTOR_REGISTRY["NC-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["NC-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["NC-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["NC-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["NC-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["NC-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -9253,5 +9268,120 @@ function processSessionRefund(db, memberId, sessionId, sessionCost, cancellation
     const markers = BL_DETECTOR_REGISTRY["KR-006"]!(src, "karaoke.ts");
     expect(markers).toHaveLength(1);
     expect(markers[0]?.ruleId).toBe("KR-006");
+  });
+});
+
+describe("DOMAIN_MAP night-club entry — F557 axis-e (DoD 5축 강화, 6축 CI Guard 실감증 6회차 rules/ 영구 승격 정착 검증, 🌃 단일 클러스터 19 도메인 첫 사례 마일스톤 신기록)", () => {
+  it("findDomainMapping('night-club') returns defined entry (88번째 도메인 DOMAIN_MAP 존재 검증)", async () => {
+    const { findDomainMapping } = await import("../../../scripts/divergence/domain-source-map.js");
+    const mapping = findDomainMapping("night-club");
+    expect(mapping).toBeDefined();
+    expect(mapping?.container).toBe("night-club");
+  });
+});
+
+describe("night-club domain — NC-001~006 via withRuleId (세션 385 F557, 🌃 단일 클러스터 19 도메인 첫 사례 마일스톤 신기록 + 15 Sprint 연속 첫 사례 마일스톤 신기록, DoD 6축 실감증 6회차 rules/ 영구 승격 정착 검증)", () => {
+  it("NC-001 PRESENCE — active_guests >= MAX_CONCURRENT_GUESTS_PER_CLUB threshold (UPPERCASE constant)", () => {
+    const src = `
+function reserveEntry(db, clubId, membershipId) {
+  const club = db.prepare("SELECT active_guests, max_concurrent_guests FROM night_clubs WHERE id = ?").get(clubId);
+  const limit = club.max_concurrent_guests ?? MAX_CONCURRENT_GUESTS_PER_CLUB;
+  if (club.active_guests >= limit) {
+    throw new NightClubError('E422-CLUB-GUEST-LIMIT-EXCEEDED', \`Club is at full guest capacity\`, 422);
+  }
+  db.prepare("INSERT INTO night_club_visits (id, club_id, membership_id) VALUES (?, ?, ?)").run(visitId, clubId, membershipId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["NC-001"]!(src, "night-club.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("NC-001");
+  });
+
+  it("NC-002 PRESENCE — membership.daily_used + tables >= vipTableLimit (var-vs-var, limit keyword)", () => {
+    const src = `
+function applyVipTableLimit(db, memberId, membershipId, tables) {
+  const membership = db.prepare("SELECT daily_used, vip_table_limit FROM memberships WHERE id = ? AND member_id = ? LIMIT 1").get(membershipId, memberId);
+  const vipTableLimit = membership.vip_table_limit;
+  if (membership.daily_used + tables >= vipTableLimit) {
+    throw new NightClubError('E422-VIP-TABLE-LIMIT-EXCEEDED', \`Membership VIP table quota exhausted\`, 422);
+  }
+  db.prepare("UPDATE memberships SET daily_used = daily_used + ? WHERE id = ?").run(tables, membershipId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["NC-002"]!(src, "night-club.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("NC-002");
+  });
+
+  it("NC-003 PRESENCE — db.transaction() in processVipBooking (atomic vip_table_schedules+night_club_visits+visit_payments INSERT/UPDATE)", () => {
+    const src = `
+function processVipBooking(db, clubId, visitId, tableNumber, startTime, endTime, guestCount, amount) {
+  const visit = db.prepare("SELECT status FROM night_club_visits WHERE id = ? AND status = 'reserved'").get(visitId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO vip_table_schedules (id, club_id, visit_id, table_number, start_time, end_time, guest_count, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'confirmed')").run(scheduleId, clubId, visitId, tableNumber, startTime, endTime, guestCount);
+    db.prepare("UPDATE night_club_visits SET status = 'entered', schedule_id = ?, payment_id = ? WHERE id = ?").run(scheduleId, paymentId, visitId);
+    db.prepare("INSERT INTO visit_payments (id, visit_id, schedule_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(paymentId, visitId, scheduleId, amount, bookedAt);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["NC-003"]!(src, "night-club.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("NC-003");
+  });
+
+  it("NC-004 PRESENCE — status transition reserved→entered→exited→ended/closed/cancelled in transitionVisitStatus", () => {
+    const src = `
+function transitionVisitStatus(db, visitId, newStatus) {
+  const visit = db.prepare("SELECT status FROM night_club_visits WHERE id = ?").get(visitId);
+  const previousStatus = visit.status;
+  const allowed =
+    (visit.status === 'reserved' && newStatus === 'entered') ||
+    (visit.status === 'entered' && newStatus === 'exited') ||
+    (visit.status === 'exited' && newStatus === 'ended') ||
+    (visit.status === 'entered' && newStatus === 'closed') ||
+    (visit.status === 'reserved' && newStatus === 'cancelled') ||
+    (visit.status === 'entered' && newStatus === 'cancelled');
+  if (!allowed) {
+    throw new NightClubError('E409-VISIT', \`Cannot transition visit from \${previousStatus} to \${newStatus}\`, 409);
+  }
+  db.prepare("UPDATE night_club_visits SET status = ? WHERE id = ?").run(newStatus, visitId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["NC-004"]!(src, "night-club.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("NC-004");
+  });
+
+  it("NC-005 PRESENCE — batch closed→ended expire in expireClosedVisitBatch (StatusTransition batch)", () => {
+    const src = `
+function expireClosedVisitBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM night_club_visits WHERE status = 'closed' AND reserved_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE night_club_visits SET status = 'ended' WHERE id = ?").run(item.id);
+  }
+  return { expiredCount: candidates.length };
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["NC-005"]!(src, "night-club.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("NC-005");
+  });
+
+  it("NC-006 PRESENCE — db.transaction() in processVisitRefund (atomic cancelled_fee_records+visit_refunds INSERT/UPDATE)", () => {
+    const src = `
+function processVisitRefund(db, memberId, visitId, visitCost, cancellationRate) {
+  const visit = db.prepare("SELECT status FROM night_club_visits WHERE id = ? AND status = 'cancelled'").get(visitId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO cancelled_fee_records (id, member_id, visit_id, visit_cost, cancellation_rate, cancellation_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(feeRecordId, memberId, visitId, visitCost, cancellationRate, cancellationAmount);
+    db.prepare("INSERT INTO visit_refunds (id, fee_record_id, member_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, feeRecordId, memberId, cancellationAmount, refundedAt);
+    db.prepare("UPDATE cancelled_fee_records SET status = 'refunded' WHERE id = ?").run(feeRecordId);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["NC-006"]!(src, "night-club.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("NC-006");
   });
 });

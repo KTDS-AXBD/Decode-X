@@ -13,6 +13,53 @@ author: Sinclair Seo
 
 > 세션 히스토리 아카이브 (최신이 상단)
 
+### 세션 311 (2026-05-20) — 🎯🏆🏆🏆 Sprint 383 CO Concert hall ✅ DONE PR #101 MERGED + 17-cluster 첫 사례 + 13 Sprint 연속 신기록 + 6축 (f) CI Guard 4회차 정착 (rules/ 영구 승격 trigger 도달)
+
+**세션 메인 작업**: 세션 310에서 사전 등록된 Sprint 383 F555 (CO Concert hall 86번째 도메인 / 75번째 신규 산업 / 단일 클러스터 17 도메인 첫 사례 / 13 Sprint 연속 첫 사례 신기록 / 6축 (f) CI Guard 실감증 4회차) Sprint WT autopilot 13회차 분리 작업으로 단일 통과 완료. 4 CI 모두 SUCCESS (Migration / DOMAIN_MAP Guard / E2E / Typecheck&Test) — 6축 (f) CI Guard 4회 연속 자연 작동 입증 → **rules/ 영구 승격 trigger 도달**. 사이드로 S381 wedding-hall stale 가이드 정정 + rules/development-workflow.md signal F_ITEMS empty 신규 sub-section 등재 + TD-52 Defer P3 유지 결정.
+
+**Sprint 383 F555 CO Concert hall ✅ DONE (commits)**:
+- `790e7fc` feat — Sprint 383 F555 CO Concert hall squash merge (PR #101, autopilot Sprint WT 13회차 단일 통과 Match 100%, 4 CI 모두 SUCCESS)
+- `05a208d` docs — autopilot session-end SPEC.md §5/§6 갱신 (Last Updated + 마지막 실측 + Sprint 383 ✅ DONE + Sprint 384 의존성 갱신)
+
+**사이드 작업 (Master 직접 commit)**:
+- `d6a3f3f` docs — CLAUDE.md `Autopilot Guards` "참조 위반 예시" stale 정정 (Sprint 382 bonus `bb893bb`에서 wedding-hall prose→table fix-forward 완결, 실측 6 BLs 회복 확증) + "역사적 위반 사례" sub-section 추가 (Sprint 381→Sprint 382 fix-forward 표준 패턴 기록)
+- `~/.claude/rules/development-workflow.md` 보강 (Master local, ax-config repo) — "Sprint stale .sprint-context / signal F_ITEMS 패턴" 섹션 L1 영구 차단 효과 누적 검증 추가 (S307/S310/S311 3회 누적) + 신규 sub-section "signal F_ITEMS empty (S351 deferred, 3회 재현)" 신설. lifecycle 조건 A+B 충족 → 표준 보정 절차 정착
+
+**검증 결과 (Sprint 383)**:
+- ✅ utils 705 → **713 PASS** (+8 across CO-001~006 6 tests + extra)
+- ✅ detect-bl 512 → **518/518 = 100.0%** (86 containers, 75 신규 산업 0 ABSENCE, concert-hall 6 BL + reserveTicket/applySeasonLimit/processTicketBooking/transitionTicketStatus/expireClosedTicketBatch/processTicketRefund 6 함수)
+- ✅ BL_ID_PATTERN 82 → **83 prefixes** (+CO)
+- ✅ DoD 6축 (f) GitHub Actions `domain-sprint-guard.yml` PASS 자연 작동 4회차 (S380 1회 + S381 2회차 + S382 3회차 + S383 4회차 누적 정착)
+- ✅ Sprint WT autopilot 분리 작업 13회차 단일 통과 (Master inline 0 회피, ~15~30분 효율)
+- ✅ S283 사전 fs 실측 audit 39회차 + 거울 변환 39회차 + withRuleId 87 Sprint 연속 정점 (신기록)
+
+**마일스톤 (세션 311)**:
+- 🎻 **단일 클러스터 17 도메인 첫 사례 마일스톤 신기록** (AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO 오프라인 엔터)
+- 🏆 **13 Sprint 연속 첫 사례 마일스톤 신기록** (S370 5 → S383 17 — 직전 12 Sprint 갱신)
+- 🏆 **86번째 도메인** (S262 5 → S383 86, **17.2배 확장**)
+- 🏆 **withRuleId 87 Sprint 연속 정점** (신기록)
+- 🏆 **거울 변환 39회차** (Sprint WT autopilot 13회차 단일 통과 누적)
+- 🎯 **6축 (f) CI Guard 자연 작동 4회차 정착** (rules/ 영구 승격 trigger 도달 — S380~S383 누적)
+- 🎯 **Sprint WT autopilot 분리 작업 효율 누적** (Master inline 대비 ~2배 효율, 13회 연속 단일 통과 안정성)
+
+**별 이슈 (S351 deferred 재현 3회차)**:
+- `bash -i -c "sprint 383"` 시 signal `F_ITEMS=` 빈 값 + `.sprint-context` 부재 (S307/S310/S311 누적 3회)
+- Master 표준 보정 ~5분 적용 (sed signal + cat heredoc .sprint-context)
+- rules/development-workflow.md sub-section 신설 (S351 deferred 별 이슈 정착)
+
+**메타 학습 4건**:
+- (a) **6축 (f) CI Guard rules/ 영구 승격 trigger 도달** — S380~S383 4회 연속 자연 작동 → DoD 6축 정착 검증 완료 + rules/ 승격 표준 결정 후보
+- (b) **CLAUDE.md stale 가이드 자동 식별 후 정정 패턴** — Sprint 382 bonus commit에서 실제 fix-forward 적용됐으나 CLAUDE.md "참조 위반 예시" 본문 갱신 누락 → 본 세션 실측으로 즉시 식별 + 정정 (autopilot bonus commit description 일치 검증 가치 입증)
+- (c) **S351 fix L1 (`.sprint-context` git rm --cached) 효과 누적 검증** — 3회 연속 `.sprint-context` 부재 ✅ 확증 = root cause 영구 차단 완결. 단 signal F_ITEMS 별 이슈는 별도 sub-pattern으로 분리 정착
+- (d) **rules/ + feedback memory 동시 활용 거버넌스** — S304 Worker Secret Store (8회 누적 정착 유지) + S351 + signal F_ITEMS empty (sub-pattern 신설) → "fix 정착 + 이력 보존 + 별 이슈 분리" 3-layer 거버넌스 패턴 확립
+
+**차기 후보 (세션 312+)**:
+- 🎯 **Sprint 384 F556 KR Karaoke** 87번째 도메인 / 76번째 신규 산업 🎤 18-cluster 첫 사례 + 14 Sprint 연속 신기록 + 6축 (f) 5회차 → **rules/ 영구 승격 트리거** 시동 대기 (Sprint Pipeline 큐 4 Sprint NC/ST/LS)
+- F487 F358 Phase 4 Tree-sitter Java PoC (~6h)
+- 88번째 산업 (Sprint 385) NC Night club / 89번째 (Sprint 386) ST Studio / 90번째 (Sprint 387) LS Laser tag — 1주일 내 18~21-cluster 도전 가능
+
+---
+
 ### 세션 310 (2026-05-20) — 🎯🏆 Sprint 382 BC Beach club ✅ DONE + CLAUDE.md S381 false claim 차단 가이드 + 6축 (f) CI Guard 실감증 3회차 정착 완료
 
 **세션 메인 작업**: 직전 세션 309에서 사전 등록된 Sprint 382 F554 (BC Beach club 85번째 도메인 / 단일 클러스터 16 도메인 첫 사례 / 12 Sprint 연속 첫 사례 신기록 / 6축 (f) 3회차 정착 검증) autopilot 완료 + Master 점검 + Monitor 신규 부착 + S381 false claim 패턴 사전 차단 가이드를 CLAUDE.md `Autopilot Guards` 섹션에 정착. **6축 (f) CI Guard 자체 → 외부 검증 전이 패턴 3회 연속 자연 작동** (S380 1회차 / S381 2회차 / S382 3회차) = DoD 6축 정착 검증 완료.

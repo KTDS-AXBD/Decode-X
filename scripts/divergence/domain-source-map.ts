@@ -1702,6 +1702,26 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processSlotRefund",
     ],
   },
+  {
+    container: "lasertag",
+    rulesPath: `${SPEC_CONTAINER_BASE}/lasertag/rules/lasertag-rules.md`,
+    // 세션 387 (F559): Laser tag 합성 도메인 — 90번째 도메인 (레이저태그 산업, 79번째 신규 산업). Sprint WT autopilot 분리 작업 17회차 (DoD 6축 실감증 8회차 정착 확인).
+    // LS-001~LS-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 43회차 (carsharing → ... → night-club → studio → lasertag) — 🔫 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS 오프라인 엔터 21-클러스터 (단일 클러스터 21 도메인 첫 사례 마일스톤 신기록 + 17 Sprint 연속 첫 사례 마일스톤 신기록).
+    // 🏆🏆🏆 90번째 도메인 18배 round 마일스톤 (S262 5 → S387 90). 🏆 withRuleId 91 Sprint 정점 도전. 🏆 거울 변환 43회차. 🏆 S283 audit 44회차 도전.
+    // LS 차별성: ST(스튜디오 전문 제작용) + NC(나이트클럽 야간 입장권) 인접하되 게임형 엔터 + 시간제 + 그룹 예약 + 점수 시스템 + 장비 임대 + 레벨별 맵 + 멤버십 모델. 동시 한도 10 (아레나별 동시 active session, 소형 레이저태그 아레나 기반).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/lasertag.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/lasertag/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "reserveSession",
+      "applyEquipmentLimit",
+      "processSessionBooking",
+      "transitionSessionStatus",
+      "expireClosedSessionBatch",
+      "processSessionRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

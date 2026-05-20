@@ -1,0 +1,33 @@
+# LS-001 ThresholdCheck 검증 시나리오
+# Laser tag 아레나별 동시 session 한도 — F559 Sprint 387
+
+ruleId: LS-001
+detector: ThresholdCheck
+function: reserveSession
+
+scenarios:
+  - id: LS-001-PASS
+    description: 동시 session 수가 한도 미만일 때 세션 예약 성공
+    given:
+      arenas:
+        active_sessions: 9
+        max_concurrent_sessions: 10
+    when:
+      call: reserveSession
+    then:
+      result: success
+      ruleId: LS-001
+      status: PRESENCE
+
+  - id: LS-001-FAIL
+    description: 동시 session 수가 한도에 달했을 때 세션 예약 차단
+    given:
+      arenas:
+        active_sessions: 10
+        max_concurrent_sessions: 10
+    when:
+      call: reserveSession
+    then:
+      throws: LaserTagError
+      code: E422-ARENA-SESSION-LIMIT-EXCEEDED
+      status: 422

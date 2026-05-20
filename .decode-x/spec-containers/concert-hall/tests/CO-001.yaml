@@ -1,0 +1,34 @@
+---
+# CO-001 ThresholdCheck 검증 시나리오
+# Concert hall 공연당 동시 티켓 한도 — F555 Sprint 383
+
+ruleId: CO-001
+detector: ThresholdCheck
+function: reserveTicket
+
+scenarios:
+  - id: CO-001-PASS
+    description: 동시 티켓 수가 한도 미만일 때 예약 성공
+    given:
+      concert_halls:
+        active_tickets: 1499
+        max_concurrent_tickets: 1500
+    when:
+      call: reserveTicket
+    then:
+      result: success
+      ruleId: CO-001
+      status: PRESENCE
+
+  - id: CO-001-FAIL
+    description: 동시 티켓 수가 한도에 달했을 때 예약 차단
+    given:
+      concert_halls:
+        active_tickets: 1500
+        max_concurrent_tickets: 1500
+    when:
+      call: reserveTicket
+    then:
+      throws: ConcertHallError
+      code: E422-HALL-TICKET-LIMIT-EXCEEDED
+      status: 422

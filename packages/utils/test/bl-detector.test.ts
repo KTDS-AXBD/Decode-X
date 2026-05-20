@@ -677,7 +677,7 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 380 detectors (세션 309 F554 — beach-club 85번째 도메인 +6 detectors, 🏖️ 단일 클러스터 16 도메인 첫 사례 마일스톤 신기록 + 12 Sprint 연속 첫 사례 마일스톤 신기록 + 17배 round 마일스톤)", () => {
+  it("exposes 386 detectors (세션 311 F555 — concert-hall 86번째 도메인 +6 detectors, 🎻 단일 클러스터 17 도메인 첫 사례 마일스톤 신기록 + 13 Sprint 연속 첫 사례 마일스톤 신기록)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AD-001",
       "AD-002",
@@ -812,6 +812,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "CN-004",
       "CN-005",
       "CN-006",
+      "CO-001",
+      "CO-002",
+      "CO-003",
+      "CO-004",
+      "CO-005",
+      "CO-006",
       "CS-001",
       "CS-002",
       "CS-003",
@@ -1642,6 +1648,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["BC-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["BC-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["BC-006"]).toBeDefined();
+  });
+
+  it("CO-001~CO-006 registered (세션 311 F555 — concert-hall 86번째 도메인, 75번째 신규 산업, 🎻 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO 오프라인 엔터 17-클러스터 확장 — 단일 클러스터 17 도메인 첫 사례 마일스톤 신기록 + 13 Sprint 연속 첫 사례 마일스톤 신기록, 87 Sprint 연속 정점 도전, 거울 변환 39회차, DoD 6축 실감증 4회차 표준 확정)", () => {
+    expect(BL_DETECTOR_REGISTRY["CO-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["CO-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["CO-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["CO-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["CO-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["CO-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -8993,5 +9008,121 @@ function processVisitRefund(db, memberId, visitId, visitCost, cancellationRate) 
     const markers = BL_DETECTOR_REGISTRY["BC-006"]!(src, "beach-club.ts");
     expect(markers).toHaveLength(1);
     expect(markers[0]?.ruleId).toBe("BC-006");
+  });
+});
+
+describe("DOMAIN_MAP concert-hall entry — F555 axis-e (DoD 5축 강화, 6축 CI Guard 실감증 4회차 표준 확정, 🎻 단일 클러스터 17 도메인 첫 사례 마일스톤 신기록)", () => {
+  it("findDomainMapping('concert-hall') returns defined entry (86번째 도메인 DOMAIN_MAP 존재 검증)", async () => {
+    const { findDomainMapping } = await import("../../../scripts/divergence/domain-source-map.js");
+    const mapping = findDomainMapping("concert-hall");
+    expect(mapping).toBeDefined();
+    expect(mapping?.container).toBe("concert-hall");
+    expect(mapping?.sourceCodeStatus).toBe("present");
+    expect(mapping?.underImplTargets).toContain("reserveTicket");
+  });
+});
+
+describe("concert-hall domain — CO-001~006 via withRuleId (세션 311 F555, 🎻 단일 클러스터 17 도메인 첫 사례 마일스톤 신기록 + 13 Sprint 연속 첫 사례 마일스톤 신기록, DoD 6축 실감증 4회차 표준 확정)", () => {
+  it("CO-001 PRESENCE — active_tickets >= MAX_CONCURRENT_TICKETS_PER_CONCERT threshold (UPPERCASE constant)", () => {
+    const src = `
+function reserveTicket(db, hallId, passId) {
+  const hall = db.prepare("SELECT active_tickets, max_concurrent_tickets FROM concert_halls WHERE id = ?").get(hallId);
+  const limit = hall.max_concurrent_tickets ?? MAX_CONCURRENT_TICKETS_PER_CONCERT;
+  if (hall.active_tickets >= limit) {
+    throw new ConcertHallError('E422-HALL-TICKET-LIMIT-EXCEEDED', \`Concert hall is at full ticket capacity\`, 422);
+  }
+  db.prepare("INSERT INTO concert_tickets (id, hall_id, pass_id) VALUES (?, ?, ?)").run(ticketId, hallId, passId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["CO-001"]!(src, "concert-hall.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("CO-001");
+  });
+
+  it("CO-002 PRESENCE — pass.season_used + tickets >= seasonLimit (var-vs-var, limit keyword)", () => {
+    const src = `
+function applySeasonLimit(db, memberId, passId, tickets) {
+  const pass = db.prepare("SELECT season_used, season_limit FROM season_passes WHERE id = ? AND member_id = ? LIMIT 1").get(passId, memberId);
+  const seasonLimit = pass.season_limit;
+  if (pass.season_used + tickets >= seasonLimit) {
+    throw new ConcertHallError('E422-SEASON-LIMIT-EXCEEDED', \`Season pass quota exhausted\`, 422);
+  }
+  db.prepare("UPDATE season_passes SET season_used = season_used + ? WHERE id = ?").run(tickets, passId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["CO-002"]!(src, "concert-hall.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("CO-002");
+  });
+
+  it("CO-003 PRESENCE — db.transaction() in processTicketBooking (atomic season_schedules+concert_tickets+ticket_payments INSERT/UPDATE)", () => {
+    const src = `
+function processTicketBooking(db, hallId, ticketId, performanceDate, seatSection, conductor, programSeries, amount) {
+  const ticket = db.prepare("SELECT status FROM concert_tickets WHERE id = ? AND status = 'reserved'").get(ticketId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO season_schedules (id, hall_id, ticket_id, performance_date, seat_section, conductor, program_series, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'confirmed')").run(scheduleId, hallId, ticketId, performanceDate, seatSection, conductor, programSeries);
+    db.prepare("UPDATE concert_tickets SET status = 'attended', schedule_id = ?, payment_id = ? WHERE id = ?").run(scheduleId, paymentId, ticketId);
+    db.prepare("INSERT INTO ticket_payments (id, ticket_id, schedule_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(paymentId, ticketId, scheduleId, amount, bookedAt);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["CO-003"]!(src, "concert-hall.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("CO-003");
+  });
+
+  it("CO-004 PRESENCE — status transition reserved→attended→ended/closed/cancelled in transitionTicketStatus", () => {
+    const src = `
+function transitionTicketStatus(db, ticketId, newStatus) {
+  const ticket = db.prepare("SELECT status FROM concert_tickets WHERE id = ?").get(ticketId);
+  const previousStatus = ticket.status;
+  const allowed =
+    (ticket.status === 'reserved' && newStatus === 'attended') ||
+    (ticket.status === 'attended' && newStatus === 'ended') ||
+    (ticket.status === 'attended' && newStatus === 'closed') ||
+    (ticket.status === 'reserved' && newStatus === 'cancelled') ||
+    (ticket.status === 'attended' && newStatus === 'cancelled');
+  if (!allowed) {
+    throw new ConcertHallError('E409-TICKET', \`Cannot transition ticket from \${previousStatus} to \${newStatus}\`, 409);
+  }
+  db.prepare("UPDATE concert_tickets SET status = ? WHERE id = ?").run(newStatus, ticketId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["CO-004"]!(src, "concert-hall.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("CO-004");
+  });
+
+  it("CO-005 PRESENCE — batch closed→ended expire in expireClosedTicketBatch (StatusTransition batch)", () => {
+    const src = `
+function expireClosedTicketBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM concert_tickets WHERE status = 'closed' AND reserved_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE concert_tickets SET status = 'ended' WHERE id = ?").run(item.id);
+  }
+  return { expiredCount: candidates.length };
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["CO-005"]!(src, "concert-hall.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("CO-005");
+  });
+
+  it("CO-006 PRESENCE — db.transaction() in processTicketRefund (atomic cancelled_fee_records+ticket_refunds INSERT/UPDATE)", () => {
+    const src = `
+function processTicketRefund(db, memberId, ticketId, ticketCost, cancellationRate) {
+  const ticket = db.prepare("SELECT status FROM concert_tickets WHERE id = ? AND status = 'cancelled'").get(ticketId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO cancelled_fee_records (id, member_id, ticket_id, ticket_cost, cancellation_rate, cancellation_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(feeRecordId, memberId, ticketId, ticketCost, cancellationRate, cancellationAmount);
+    db.prepare("INSERT INTO ticket_refunds (id, fee_record_id, member_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, feeRecordId, memberId, cancellationAmount, refundedAt);
+    db.prepare("UPDATE cancelled_fee_records SET status = 'refunded' WHERE id = ?").run(feeRecordId);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["CO-006"]!(src, "concert-hall.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("CO-006");
   });
 });

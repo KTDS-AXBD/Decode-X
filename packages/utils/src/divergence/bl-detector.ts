@@ -1553,6 +1553,15 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "BC-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BC-004"),
   "BC-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BC-005"),
   "BC-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BC-006"),
+  // Sprint 383 (F555) — concert-hall 합성 도메인: 동시티켓한도/시즌권한도/티켓예매atomic/티켓상태전환/closed티켓일괄만료/티켓환불atomic
+  // 🎻 86번째 도메인 + 75번째 신규 산업. AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO 오프라인 엔터 17-클러스터 단일 클러스터 17 도메인 첫 사례 신기록 + 13 Sprint 연속 첫 사례 마일스톤 신기록.
+  // withRuleId 87 Sprint 연속 정점 도전. 거울 변환 39회차 (beach-club → concert-hall). DoD 6축 실감증 4회차 표준 확정. 🏆 86번째 도메인 17.2배 확장.
+  "CO-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "CO-001"),
+  "CO-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "CO-002"),
+  "CO-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "CO-003"),
+  "CO-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "CO-004"),
+  "CO-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "CO-005"),
+  "CO-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "CO-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

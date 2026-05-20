@@ -1622,6 +1622,26 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processVisitRefund",
     ],
   },
+  {
+    container: "concert-hall",
+    rulesPath: `${SPEC_CONTAINER_BASE}/concert-hall/rules/concert-hall-rules.md`,
+    // 세션 311 (F555): Concert hall 합성 도메인 — 86번째 도메인 (클래식 콘서트홀 산업, 75번째 신규 산업). Sprint WT autopilot 분리 작업 13회차 (DoD 6축 실감증 4회차 표준 확정).
+    // CO-001~CO-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 39회차 (carsharing → ... → wedding-hall → beach-club → concert-hall) — 🎻 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO 오프라인 엔터 17-클러스터 (단일 클러스터 17 도메인 첫 사례 + 13 Sprint 연속 첫 사례 마일스톤 신기록).
+    // 🏆 86번째 도메인 17.2배 확장 (S262 5 → S383 86).
+    // CO 차별성: KP(K-pop 1회성 콘서트) 인접하되 시즌 구독 + 정기 프로그램 + 좌석 등급(VIP/A/B/C) + 음악감독별 시리즈 모델. 동시 한도 1500 (대형 클래식 콘서트홀 기반).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/concert-hall.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/concert-hall/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "reserveTicket",
+      "applySeasonLimit",
+      "processTicketBooking",
+      "transitionTicketStatus",
+      "expireClosedTicketBatch",
+      "processTicketRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

@@ -1722,6 +1722,26 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processSessionRefund",
     ],
   },
+  {
+    container: "casino",
+    rulesPath: `${SPEC_CONTAINER_BASE}/casino/rules/casino-rules.md`,
+    // 세션 388 (F560): Casino 합성 도메인 — 91번째 도메인 (카지노 산업, 80번째 신규 산업). Sprint WT autopilot 분리 작업 18회차 (DoD 6축 실감증 9회차 정착 확인).
+    // CA-001~CA-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 44회차 (carsharing → ... → lasertag → casino) — 🎰 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA 오프라인 엔터 22-클러스터 (단일 클러스터 22 도메인 첫 사례 마일스톤 신기록 + 18 Sprint 연속 첫 사례 마일스톤 신기록).
+    // 🏆🏆 80 신규 산업 round 마일스톤 (CC~CA 80 신규 산업 0 ABSENCE 연속 정점). 🏆 withRuleId 92 Sprint 정점 도전. 🏆 거울 변환 44회차. 🏆 S283 audit 44회차.
+    // CA 차별성: GA(일반 도박 betting platform) + NC(나이트클럽 야간 입장 + VIP 테이블) 인접하되 물리 floor 운영 + 칩 ledger + table dealer 스케줄 + credit line/cage + jackpot/페이아웃 + responsible gaming 한도. 동시 한도 20 (floor별 동시 active session, 대형 카지노 floor 기반).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/casino.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/casino/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "registerSession",
+      "applyBettingLimit",
+      "processTableBooking",
+      "transitionSessionStatus",
+      "expireClosedSessionBatch",
+      "processCashout",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

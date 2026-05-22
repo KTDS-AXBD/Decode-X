@@ -5,13 +5,67 @@ version: 1.0
 status: active
 category: general
 created: 2026-02-26
-updated: 2026-05-20
+updated: 2026-05-21
 author: Sinclair Seo
 ---
 
 # CHANGELOG
 
 > 세션 히스토리 아카이브 (최신이 상단)
+
+### 세션 313 (2026-05-21) — 🏆🏆🏆🏆 Sprint 388 F560 CA Casino 4중 마일스톤 동시 달성 + 22-cluster + 18 Sprint 연속 신기록 + 80 신규 산업 round + 6축 (f) 9회차 자연 작동 rules/ 영구 등재 + S312 L1 dogfood 4회차 SUCCESS
+
+**세션 메인 작업**: Sprint 388 F560 CA Casino ✅ MERGED (PR #106 `652770e` Match 100% 4 CI SUCCESS Sprint WT autopilot 18회차 단일 통과 ~15분) + 6축 (f) CI Guard 9회 연속 자연 작동 임계 달성 → `~/.claude/rules/development-workflow.md` 정식 등재 (S312 결정 발효) + S312 L1 자동 정리 dogfood 4회차 SUCCESS (정확 60s elapsed). 🏆🏆 **80 신규 산업 round 마일스톤** + 🎰 **22-cluster 첫 사례 신기록** + 🏆 **18 Sprint 연속 첫 사례 신기록** (S370~S388) + 🏆 **withRuleId 92 Sprint 정점** 4중 마일스톤 동시 달성.
+
+**Sprint 388 MERGED commit**:
+- `652770e` feat — Sprint 388 F560 CA Casino (PR #106, 22-cluster, 91번째 도메인, 80 신규 산업 round)
+
+**Sprint 388 4중 마일스톤 동시 달성**:
+1. 🏆🏆 **80 신규 산업 round 마일스톤** — CC~CA 80 신규 산업 0 ABSENCE 연속 정점
+2. 🏆 **단일 클러스터 22 도메인 첫 사례 신기록** — AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA 오프라인 엔터 22-클러스터
+3. 🏆 **18 Sprint 연속 첫 사례 신기록** — S370~S388 (5-cluster → 22-cluster)
+4. 🏆 **withRuleId 92 Sprint 정점**
+
+**6축 (f) CI Guard 9회차 정식 rules/ 등재 (S312 결정 발효)**:
+- ax-config `~/.claude/rules/development-workflow.md` `## DoD 6축 (f) CI Guard 자연 작동 정착 패턴` 신규 섹션 추가
+- 9회 누적 자연 작동 (S380 CV → S381 WB → S382 BC → S383 CO → S384 KR → S385 NC → S386 ST → S387 LS → S388 CA)
+- 표준 절차 4-step + lifecycle 판정 3축 + 차기 BD 프로젝트 재사용 가능성 + anti-pattern 명시
+- S376/S378 false claim 패턴 → S379 외부 검증 layer 도입 → 9회 자연 작동 정착 완전 입증
+
+**S312 L1 자동 정리 dogfood 4회차 SUCCESS (정책 정착 완결)**:
+| Sprint | MERGED → Cleanup | 결과 |
+|--------|-----------------|------|
+| 385 | 63s | ✅ SUCCESS |
+| 386 | 81s | ✅ SUCCESS |
+| 387 | 76s | ✅ SUCCESS |
+| **388** | **60s (정확)** | **✅ SUCCESS — 4회 연속 정착 완결** |
+| **평균** | **~70s** | **task-daemon POLL=15s tick 정확성 입증** |
+
+**검증 결과 (Sprint 388)**:
+- ✅ utils 745 → **753 PASS** (+8 vs Plan +7 초과 +1)
+- ✅ detect-bl 542 → **548/548 = 100.0%** (91 containers, **80 신규 산업** 0 ABSENCE)
+- ✅ BL_ID_PATTERN 87 → **88 prefixes** (+CA)
+- ✅ 4 CI all SUCCESS (Migration + Domain Sprint Guard 9회차 + E2E + Typecheck)
+- ✅ runtime detect-bl casino: 6 BLs, 6 detectors, 0 ABSENCE (S381 false claim 차단)
+
+**S351 signal F_ITEMS empty deferred 별 이슈 — 8회차 누적**:
+- 4회차→8회차 (S307×2 + S310 + S311 + S312 + S313) — Fix D(bashrc sprint 함수 awk 정밀 진단) 우선순위 한 단계 더 상승
+- 표준 보정 ~5분/Sprint (sed F_ITEMS=F560 + .sprint-context heredoc 7-field) 유지
+
+**메타 학습 (세션 313)**:
+- (a) **3 시스템 패턴 동시 정착** — 4중 마일스톤 + S312 dogfood 4회차 + 6축 (f) 9회차 rules/ 등재 = 단일 sprint 정점 효율
+- (b) **6축 (f) 임계 발효 시점 정확 도달** — S312에서 명시한 "9회 자연 작동 임계" → S388이 정확히 9회차 = 결정 발효 자동 진행
+- (c) **task-daemon POLL=15s tick 정확성 입증** — S388 정확 60s elapsed cleanup = MERGED_AT 60s grace + 다음 tick 즉시 적중
+- (d) **autopilot ~15분 정점 효율 18회차** — Sprint WT autopilot 분리 작업 18회 연속 단일 통과 누적
+
+**차기 후보**:
+- 92번째 신규 산업 (BW Bowling / AC Arcade / DS Department store / 신규 클러스터 후보) — 23-cluster 19 Sprint 연속 도전
+- F487 F358 Phase 4 (1~2h Plan + 4-6h 실행)
+- TD-52 SourceProjectSummary backfill
+- bashrc Fix D (S351 signal F_ITEMS empty 8회+ 누적 정밀 진단)
+- 보안 후속 2건
+
+---
 
 ### 세션 312 (2026-05-20) — 🏆🏆🏆🏆 1세션 5 Sprint MERGED 신기록 + S312 자동 정리 정책 도입 + dogfood 3회 SUCCESS + 90번째 도메인 18배 round + 17 Sprint 연속 신기록 + 6축 (f) 8회 연속 정착
 

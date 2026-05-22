@@ -677,7 +677,7 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 410 detectors (세션 387 F559 — lasertag 90번째 도메인 +6 detectors, 🔫 단일 클러스터 21 도메인 첫 사례 마일스톤 신기록 + 17 Sprint 연속 첫 사례 마일스톤 신기록 + 🏆🏆🏆 90번째 도메인 = 18배 round 마일스톤)", () => {
+  it("exposes 416 detectors (세션 388 F560 — casino 91번째 도메인 +6 detectors, 🎰 단일 클러스터 22 도메인 첫 사례 마일스톤 신기록 + 18 Sprint 연속 첫 사례 마일스톤 신기록 + 🏆🏆 80 신규 산업 round 마일스톤)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AD-001",
       "AD-002",
@@ -794,6 +794,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "BT-004",
       "BT-005",
       "BT-006",
+      "CA-001",
+      "CA-002",
+      "CA-003",
+      "CA-004",
+      "CA-005",
+      "CA-006",
       "CC-001",
       "CC-002",
       "CC-003",
@@ -1717,6 +1723,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["LS-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["LS-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["LS-006"]).toBeDefined();
+  });
+
+  it("CA-001~CA-006 registered (세션 388 F560 — casino 91번째 도메인, 80번째 신규 산업, 🎰 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA 오프라인 엔터 22-클러스터 확장 — 단일 클러스터 22 도메인 첫 사례 마일스톤 신기록 + 18 Sprint 연속 첫 사례 마일스톤 신기록, 🏆🏆 80 신규 산업 round 마일스톤, withRuleId 92 Sprint 정점 도전, 거울 변환 44회차, DoD 6축 실감증 9회차 정착 확인)", () => {
+    expect(BL_DETECTOR_REGISTRY["CA-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["CA-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["CA-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["CA-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["CA-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["CA-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -9539,6 +9554,15 @@ describe("DOMAIN_MAP lasertag entry — F559 axis-e (DoD 5축 강화, 6축 CI Gu
   });
 });
 
+describe("DOMAIN_MAP casino entry — F560 axis-e (DoD 5축 강화, 6축 CI Guard 실감증 9회차 정착 확인, 🎰 단일 클러스터 22 도메인 첫 사례 마일스톤 신기록 + 🏆🏆 80 신규 산업 round 마일스톤)", () => {
+  it("findDomainMapping('casino') returns defined entry (91번째 도메인 DOMAIN_MAP 존재 검증)", async () => {
+    const { findDomainMapping } = await import("../../../scripts/divergence/domain-source-map.js");
+    const mapping = findDomainMapping("casino");
+    expect(mapping).toBeDefined();
+    expect(mapping?.container).toBe("casino");
+  });
+});
+
 describe("lasertag domain — LS-001~006 via withRuleId (세션 387 F559, 🔫 단일 클러스터 21 도메인 첫 사례 마일스톤 신기록 + 17 Sprint 연속 첫 사례 마일스톤 신기록, DoD 6축 실감증 8회차 정착 확인)", () => {
   it("LS-001 PRESENCE — active_sessions >= MAX_CONCURRENT_SESSIONS_PER_ARENA threshold (UPPERCASE constant)", () => {
     const src = `
@@ -9641,5 +9665,113 @@ function processSessionRefund(db, memberId, sessionId, sessionCost, cancellation
     const markers = BL_DETECTOR_REGISTRY["LS-006"]!(src, "lasertag.ts");
     expect(markers).toHaveLength(1);
     expect(markers[0]?.ruleId).toBe("LS-006");
+  });
+});
+
+describe("casino domain — CA-001~006 via withRuleId (세션 388 F560, 🎰 단일 클러스터 22 도메인 첫 사례 마일스톤 신기록 + 18 Sprint 연속 첫 사례 마일스톤 신기록, DoD 6축 실감증 9회차 정착 확인)", () => {
+  it("CA-001 PRESENCE — active_sessions >= MAX_CONCURRENT_SESSIONS_PER_FLOOR threshold (UPPERCASE constant)", () => {
+    const src = `
+function registerSession(db, floorId, membershipId) {
+  const floor = db.prepare("SELECT active_sessions, max_concurrent_sessions FROM gaming_floors WHERE id = ?").get(floorId);
+  const limit = floor.max_concurrent_sessions ?? MAX_CONCURRENT_SESSIONS_PER_FLOOR;
+  if (floor.active_sessions >= limit) {
+    throw new CasinoError('E422-FLOOR-SESSION-LIMIT-EXCEEDED', \`Floor is at full session capacity\`, 422);
+  }
+  db.prepare("INSERT INTO casino_sessions (id, floor_id, membership_id) VALUES (?, ?, ?)").run(sessionId, floorId, membershipId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["CA-001"]!(src, "casino.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("CA-001");
+  });
+
+  it("CA-002 PRESENCE — membership.daily_used + betAmount >= bettingLimit (var-vs-var, limit keyword)", () => {
+    const src = `
+function applyBettingLimit(db, memberId, membershipId, betAmount) {
+  const membership = db.prepare("SELECT daily_used, betting_limit, credit_line FROM memberships WHERE id = ? AND member_id = ? LIMIT 1").get(membershipId, memberId);
+  const bettingLimit = membership.betting_limit;
+  if (membership.daily_used + betAmount >= bettingLimit) {
+    throw new CasinoError('E422-BETTING-LIMIT-EXCEEDED', \`Membership betting quota exhausted\`, 422);
+  }
+  db.prepare("UPDATE memberships SET daily_used = daily_used + ? WHERE id = ?").run(betAmount, membershipId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["CA-002"]!(src, "casino.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("CA-002");
+  });
+
+  it("CA-003 PRESENCE — db.transaction() in processTableBooking (atomic table_schedules+casino_sessions+session_payments+chip_ledger INSERT/UPDATE)", () => {
+    const src = `
+function processTableBooking(db, floorId, sessionId, gameType, tableNumber, dealerId, startTime, endTime, amount) {
+  const session = db.prepare("SELECT status FROM casino_sessions WHERE id = ? AND status = 'registered'").get(sessionId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO table_schedules (id, floor_id, session_id, game_type, table_number, dealer_id, start_time, end_time, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'confirmed')").run(scheduleId, floorId, sessionId, gameType, tableNumber, dealerId, startTime, endTime);
+    db.prepare("UPDATE casino_sessions SET status = 'seated', schedule_id = ?, payment_id = ? WHERE id = ?").run(scheduleId, paymentId, sessionId);
+    db.prepare("INSERT INTO session_payments (id, session_id, schedule_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(paymentId, sessionId, scheduleId, amount, bookedAt);
+    db.prepare("INSERT INTO chip_ledger (id, session_id, member_id, chip_amount, transaction_type, created_at) VALUES (?, ?, ?, ?, 'buy-in', ?)").run(ledgerId, sessionId, memberId, amount, bookedAt);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["CA-003"]!(src, "casino.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("CA-003");
+  });
+
+  it("CA-004 PRESENCE — status transition registered→seated→playing→cashout/closed/barred in transitionSessionStatus", () => {
+    const src = `
+function transitionSessionStatus(db, sessionId, newStatus) {
+  const session = db.prepare("SELECT status FROM casino_sessions WHERE id = ?").get(sessionId);
+  const previousStatus = session.status;
+  const allowed =
+    (session.status === 'registered' && newStatus === 'seated') ||
+    (session.status === 'seated' && newStatus === 'playing') ||
+    (session.status === 'playing' && newStatus === 'cashout') ||
+    (session.status === 'playing' && newStatus === 'closed') ||
+    (session.status === 'registered' && newStatus === 'barred') ||
+    (session.status === 'seated' && newStatus === 'barred') ||
+    (session.status === 'playing' && newStatus === 'barred');
+  if (!allowed) {
+    throw new CasinoError('E409-SESSION', \`Cannot transition session from \${previousStatus} to \${newStatus}\`, 409);
+  }
+  db.prepare("UPDATE casino_sessions SET status = ? WHERE id = ?").run(newStatus, sessionId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["CA-004"]!(src, "casino.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("CA-004");
+  });
+
+  it("CA-005 PRESENCE — batch closed→cashout expire in expireClosedSessionBatch (StatusTransition batch)", () => {
+    const src = `
+function expireClosedSessionBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM casino_sessions WHERE status = 'closed' AND registered_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE casino_sessions SET status = 'cashout' WHERE id = ?").run(item.id);
+  }
+  return { expiredCount: candidates.length };
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["CA-005"]!(src, "casino.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("CA-005");
+  });
+
+  it("CA-006 PRESENCE — db.transaction() in processCashout (atomic cashout_records+session_refunds INSERT/UPDATE)", () => {
+    const src = `
+function processCashout(db, memberId, sessionId, chipAmount, jackpotAmount, cashoutRate) {
+  const session = db.prepare("SELECT status FROM casino_sessions WHERE id = ? AND status = 'cashout'").get(sessionId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO cashout_records (id, member_id, session_id, chip_amount, cash_amount, jackpot_amount, cashout_rate, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'calculated')").run(cashoutRecordId, memberId, sessionId, chipAmount, cashAmount, jackpotAmount, cashoutRate);
+    db.prepare("INSERT INTO session_refunds (id, cashout_record_id, member_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, cashoutRecordId, memberId, cashAmount, cashedOutAt);
+    db.prepare("UPDATE cashout_records SET status = 'paid' WHERE id = ?").run(cashoutRecordId);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["CA-006"]!(src, "casino.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("CA-006");
   });
 });

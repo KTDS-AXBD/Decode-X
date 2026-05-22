@@ -1,0 +1,52 @@
+---
+# Provenance — CASINO-001
+# 91번째 도메인 — Casino 합성 도메인 PoC (80번째 신규 산업, 🎰 단일 클러스터 22 도메인 첫 사례 마일스톤 신기록 + 18 Sprint 연속 첫 사례 마일스톤 신기록 + 🏆🏆 80 신규 산업 round 마일스톤)
+
+skillId: CASINO-001
+extractedAt: "2026-05-22T00:00:00+09:00"
+extractedBy: "Decode-X 세션 388 F560 — withRuleId 재사용 91번째 도메인 (Casino 카지노 산업, 80번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/casino/rules/casino-rules.md"
+    section: "Casino 합성 비즈니스 룰 — CA-001~CA-006"
+    businessRules: [CA-001, CA-002, CA-003, CA-004, CA-005, CA-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 카지노(Casino) 산업 일반화 PoC. 동시세션한도/베팅한도/테이블예약atomic/세션상태전환/closed세션일괄만료/캐시아웃atomic 추상화. 91번째 도메인 + 80번째 신규 산업. 🎰 단일 클러스터 22 도메인 첫 사례 마일스톤 신기록 (AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA 오프라인 엔터 22-클러스터). 🏆 18 Sprint 연속 첫 사례 마일스톤 신기록 (S370 5→S371 6→...→S387 21→S388 22). 🏆🏆 80 신규 산업 round 마일스톤 (CC~CA 80 신규 산업 0 ABSENCE 연속 정점). 🏆 withRuleId 92 Sprint 정점 도전 (S264~S388 92 Sprint 누적 정점). 거울 변환 44회차 (carsharing → ... → lasertag → casino). Sprint WT autopilot 분리 작업 18회차 (DoD 6축 실감증 9회차 정착 확인). CA 차별성: GA(일반 도박 betting platform) + NC(나이트클럽 야간 입장 + VIP 테이블) 인접하되 물리 floor 운영 + 칩 ledger + table dealer 스케줄 + credit line/cage + jackpot/페이아웃 + responsible gaming 한도 모델 (B2C 단일 방문 ~수시간 + 게임 종류별 stake + 칩 환금 정산 차별). 동시 한도 20 (floor별 동시 active session, 대형 카지노 floor 기준)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/casino.ts"
+    functions: [registerSession, applyBettingLimit, processTableBooking, transitionSessionStatus, expireClosedSessionBatch, processCashout]
+
+detection:
+  - ruleId: CA-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-22T00:00:00+09:00"
+    notes: "floor.active_sessions >= limit (UPPERCASE fallback MAX_CONCURRENT_SESSIONS_PER_FLOOR, Path A)"
+  - ruleId: CA-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-22T00:00:00+09:00"
+    notes: "membership.daily_used + betAmount >= bettingLimit (Path B, limit keyword)"
+  - ruleId: CA-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-22T00:00:00+09:00"
+    notes: "db.transaction() — table_schedules INSERT + casino_sessions UPDATE + session_payments INSERT + chip_ledger INSERT"
+  - ruleId: CA-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-22T00:00:00+09:00"
+    notes: "registered → seated → playing → cashout / closed / barred"
+  - ruleId: CA-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-22T00:00:00+09:00"
+    notes: "batch: closed → cashout 갱신 (SF-005/KP-005/.../LS-005 80번째 재사용)"
+  - ruleId: CA-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-22T00:00:00+09:00"
+    notes: "db.transaction() — cashout_records INSERT + session_refunds INSERT + cashout_records UPDATE (칩 현금 교환 + jackpot 페이아웃 정책)"

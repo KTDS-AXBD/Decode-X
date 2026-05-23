@@ -1,0 +1,53 @@
+---
+# Provenance — ESCAPE-ROOM-001
+# 95번째 도메인 — Escape Room 합성 도메인 PoC (84번째 신규 산업, 🔓 단일 클러스터 26 도메인 첫 사례 마일스톤 신기록 + 22 Sprint 연속 첫 사례 마일스톤 신기록)
+# Rule prefix: ES (EScape room)
+
+skillId: ESCAPE-ROOM-001
+extractedAt: "2026-05-23T00:00:00+09:00"
+extractedBy: "Decode-X 세션 392 F564 — withRuleId 재사용 95번째 도메인 (Escape Room 방탈출 카페 산업, 84번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/escape-room/rules/escape-room-rules.md"
+    section: "Escape Room 합성 비즈니스 룰 — ES-001~ES-006"
+    businessRules: [ES-001, ES-002, ES-003, ES-004, ES-005, ES-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 방탈출 카페(Escape Room) 산업 일반화 PoC. 동시room한도/attempt한도/room예약atomic/session상태전환/ended세션일괄만료/session환불atomic 추상화. 95번째 도메인 + 84번째 신규 산업. 🔓 단일 클러스터 26 도메인 첫 사례 마일스톤 신기록 (AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA+BW+AC+BL+ES 오프라인 엔터 26-클러스터). 🏆 22 Sprint 연속 첫 사례 마일스톤 신기록 (S370 5→S371 6→...→S391 25→S392 26). 🏆 withRuleId 96 Sprint 정점 도전 (S264~S392 96 Sprint 누적 정점). 거울 변환 48회차 (carsharing → ... → billiards → escape-room). Sprint WT autopilot 분리 작업 22회차 (DoD 6축 실감증 13회차). ES 차별성: BL(당구 table-based 시간제) + KP(콘서트 그룹 좌석) 인접하되 room-based 예약 + 시간제 45-60분 + 난이도별 테마 + 그룹 활동 3-6명 + 탈출 성공 보너스 + 힌트 시스템 + 게임 마스터(GM) 운영 모델 (B2C 단체 가족/친구 단일 세션 + 테마별 가격 차등 + escape rate KPI 차별). 동시 한도 8 (facility별 동시 active room, 중형 방탈출 카페 8 room 기준)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/escape-room.ts"
+    functions: [reserveRoom, applyAttemptLimit, processRoomBooking, transitionSessionStatus, expireEndedSessionBatch, processSessionRefund]
+
+detection:
+  - ruleId: ES-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-23T00:00:00+09:00"
+    notes: "escape_facilities.active_rooms >= limit (UPPERCASE fallback MAX_CONCURRENT_ROOMS_PER_FACILITY, Path A)"
+  - ruleId: ES-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-23T00:00:00+09:00"
+    notes: "membership.daily_attempts + attempts >= attemptLimit (Path B, limit keyword)"
+  - ruleId: ES-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-23T00:00:00+09:00"
+    notes: "db.transaction() — room_schedules INSERT + escape_sessions UPDATE + session_payments INSERT + hint_usage INSERT"
+  - ruleId: ES-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-23T00:00:00+09:00"
+    notes: "reserved → starting → playing → ended (escaped/failed) / abandoned / cancelled"
+  - ruleId: ES-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-23T00:00:00+09:00"
+    notes: "batch: ended → cancelled 갱신 (SF-005/KP-005/.../BI-005 84번째 재사용)"
+  - ruleId: ES-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-23T00:00:00+09:00"
+    notes: "db.transaction() — cancelled_session_records INSERT + session_refunds INSERT + cancelled_session_records UPDATE (그룹 환불 + escape bonus 지급 정책)"

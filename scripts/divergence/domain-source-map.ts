@@ -1803,6 +1803,27 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processSessionRefund",
     ],
   },
+  {
+    container: "escape-room",
+    rulesPath: `${SPEC_CONTAINER_BASE}/escape-room/rules/escape-room-rules.md`,
+    // 세션 392 (F564): Escape Room 합성 도메인 — 95번째 도메인 (방탈출 카페 산업, 84번째 신규 산업). Sprint WT autopilot 분리 작업 22회차 (DoD 6축 실감증 13회차).
+    // ES-001~ES-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // Rule prefix: ES (EScape room).
+    // 거울 변환 48회차 (carsharing → ... → billiards → escape-room) — 🔓 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA+BW+AC+BL+ES 오프라인 엔터 26-클러스터 (단일 클러스터 26 도메인 첫 사례 마일스톤 신기록 + 22 Sprint 연속 첫 사례 마일스톤 신기록).
+    // 🏆 84 신규 산업 0 ABSENCE 연속 도전 (CC~ES). 🏆 withRuleId 96 Sprint 정점 도전. 🏆 거울 변환 48회차. 🏆 S283 audit 48회차.
+    // ES 차별성: BL(당구 table-based 시간제) + KP(콘서트 그룹 좌석) 인접하되 room-based 예약 + 시간제 45-60분 + 난이도별 테마 + 그룹 활동 3-6명 + 탈출 성공 보너스 + 힌트 시스템 + 게임 마스터(GM) 운영 모델. 동시 한도 8 (facility별 동시 active room, 중형 방탈출 카페 8 room 기준).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/escape-room.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/escape-room/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "reserveRoom",
+      "applyAttemptLimit",
+      "processRoomBooking",
+      "transitionSessionStatus",
+      "expireEndedSessionBatch",
+      "processSessionRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

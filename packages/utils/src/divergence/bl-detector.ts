@@ -1641,6 +1641,17 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "BI-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BI-004"),
   "BI-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BI-005"),
   "BI-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BI-006"),
+  // Sprint 392 (F564) — escape-room 95번째 도메인 (방탈출 카페 산업, 84번째 신규)
+  // ES-001~006: ThresholdCheck × 2 + AtomicTransaction × 2 + StatusTransition × 2 (withRuleId 재사용)
+  // detect-bl coverage: 566/566 → 572/572 = 100.0% (95 containers, 84 신규 산업 0 ABSENCE)
+  // 🔓 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA+BW+AC+BL+ES 오프라인 엔터 26-클러스터
+  // Rule prefix: ES (EScape room).
+  "ES-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "ES-001"),
+  "ES-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "ES-002"),
+  "ES-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "ES-003"),
+  "ES-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "ES-004"),
+  "ES-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "ES-005"),
+  "ES-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "ES-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

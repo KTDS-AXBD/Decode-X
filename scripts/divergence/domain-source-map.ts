@@ -1742,6 +1742,26 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processCashout",
     ],
   },
+  {
+    container: "bowling",
+    rulesPath: `${SPEC_CONTAINER_BASE}/bowling/rules/bowling-rules.md`,
+    // 세션 389 (F561): Bowling 합성 도메인 — 92번째 도메인 (볼링 산업, 81번째 신규 산업). Sprint WT autopilot 분리 작업 19회차 (DoD 6축 실감증 10회차 — rules/ 영구 등재 후 첫 자연 작동).
+    // BW-001~BW-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 45회차 (carsharing → ... → casino → bowling) — 🎳 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA+BW 오프라인 엔터 23-클러스터 (단일 클러스터 23 도메인 첫 사례 마일스톤 신기록 도전 + 19 Sprint 연속 첫 사례 마일스톤 신기록 도전).
+    // 🏆 81 신규 산업 0 ABSENCE 연속 도전 (CC~BW). 🏆 withRuleId 93 Sprint 정점 도전. 🏆 거울 변환 45회차. 🏆 S283 audit 45회차.
+    // BW 차별성: ST(스튜디오 전문 제작 시간제) + LS(레이저태그 게임형 점수 시스템) 인접하되 lane 단위 시간제 + frame/game 단위 점수 + 신발·공 임대 + 리그/토너먼트 + 단체 그룹 예약 + 멤버십 등급제. 동시 한도 24 (center별 동시 active lane, 중형 볼링 센터 24 lane 기준).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/bowling.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/bowling/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "reserveLane",
+      "applyGameLimit",
+      "processLaneBooking",
+      "transitionSessionStatus",
+      "expireClosedSessionBatch",
+      "processSessionRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

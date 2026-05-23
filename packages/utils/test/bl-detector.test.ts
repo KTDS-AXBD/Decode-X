@@ -677,7 +677,7 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 416 detectors (세션 388 F560 — casino 91번째 도메인 +6 detectors, 🎰 단일 클러스터 22 도메인 첫 사례 마일스톤 신기록 + 18 Sprint 연속 첫 사례 마일스톤 신기록 + 🏆🏆 80 신규 산업 round 마일스톤)", () => {
+  it("exposes 422 detectors (세션 389 F561 — bowling 92번째 도메인 +6 detectors, 🎳 단일 클러스터 23 도메인 첫 사례 마일스톤 신기록 도전 + 19 Sprint 연속 첫 사례 마일스톤 신기록 도전)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AD-001",
       "AD-002",
@@ -794,6 +794,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "BT-004",
       "BT-005",
       "BT-006",
+      "BW-001",
+      "BW-002",
+      "BW-003",
+      "BW-004",
+      "BW-005",
+      "BW-006",
       "CA-001",
       "CA-002",
       "CA-003",
@@ -1732,6 +1738,15 @@ describe("BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["CA-004"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["CA-005"]).toBeDefined();
     expect(BL_DETECTOR_REGISTRY["CA-006"]).toBeDefined();
+  });
+
+  it("BW-001~BW-006 registered (세션 389 F561 — bowling 92번째 도메인, 81번째 신규 산업, 🎳 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA+BW 오프라인 엔터 23-클러스터 확장 — 단일 클러스터 23 도메인 첫 사례 마일스톤 신기록 도전 + 19 Sprint 연속 첫 사례 마일스톤 신기록 도전, withRuleId 93 Sprint 정점 도전, 거울 변환 45회차, DoD 6축 실감증 10회차)", () => {
+    expect(BL_DETECTOR_REGISTRY["BW-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BW-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BW-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BW-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BW-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BW-006"]).toBeDefined();
   });
 
   it("BT-001~BT-006 registered (Sprint 313 F479 — beauty 43번째 도메인, WL+SP+FT+BT 서비스 4-클러스터)", () => {
@@ -9773,5 +9788,120 @@ function processCashout(db, memberId, sessionId, chipAmount, jackpotAmount, cash
     const markers = BL_DETECTOR_REGISTRY["CA-006"]!(src, "casino.ts");
     expect(markers).toHaveLength(1);
     expect(markers[0]?.ruleId).toBe("CA-006");
+  });
+});
+
+describe("DOMAIN_MAP bowling entry — F561 axis-e (DoD 5축 강화, 6축 CI Guard 실감증 10회차 — rules/ 영구 등재 후 첫 자연 작동, 🎳 단일 클러스터 23 도메인 첫 사례 마일스톤 신기록 도전 + 19 Sprint 연속 첫 사례 마일스톤 신기록 도전)", () => {
+  it("findDomainMapping('bowling') returns defined entry (92번째 도메인 DOMAIN_MAP 존재 검증)", async () => {
+    const { findDomainMapping } = await import("../../../scripts/divergence/domain-source-map.js");
+    const mapping = findDomainMapping("bowling");
+    expect(mapping).toBeDefined();
+    expect(mapping?.container).toBe("bowling");
+  });
+});
+
+describe("bowling domain — BW-001~006 via withRuleId (세션 389 F561, 🎳 단일 클러스터 23 도메인 첫 사례 마일스톤 신기록 도전 + 19 Sprint 연속 첫 사례 마일스톤 신기록 도전, DoD 6축 실감증 10회차 — rules/ 영구 등재 후 첫 자연 작동)", () => {
+  it("BW-001 PRESENCE — active_lanes >= MAX_CONCURRENT_LANES_PER_CENTER threshold (UPPERCASE constant)", () => {
+    const src = `
+function reserveLane(db, centerId, membershipId) {
+  const center = db.prepare("SELECT active_lanes, max_concurrent_lanes FROM bowling_centers WHERE id = ?").get(centerId);
+  const limit = center.max_concurrent_lanes ?? MAX_CONCURRENT_LANES_PER_CENTER;
+  if (center.active_lanes >= limit) {
+    throw new BowlingError('E422-CENTER-LANE-LIMIT-EXCEEDED', \`Center is at full lane capacity\`, 422);
+  }
+  db.prepare("INSERT INTO bowling_sessions (id, center_id, membership_id) VALUES (?, ?, ?)").run(sessionId, centerId, membershipId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["BW-001"]!(src, "bowling.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BW-001");
+  });
+
+  it("BW-002 PRESENCE — membership.daily_used + gameCount >= gameLimit (var-vs-var, limit keyword)", () => {
+    const src = `
+function applyGameLimit(db, memberId, membershipId, gameCount) {
+  const membership = db.prepare("SELECT daily_used, game_limit FROM memberships WHERE id = ? AND member_id = ? LIMIT 1").get(membershipId, memberId);
+  const gameLimit = membership.game_limit;
+  if (membership.daily_used + gameCount >= gameLimit) {
+    throw new BowlingError('E422-GAME-LIMIT-EXCEEDED', \`Membership game quota exhausted\`, 422);
+  }
+  db.prepare("UPDATE memberships SET daily_used = daily_used + ? WHERE id = ?").run(gameCount, membershipId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["BW-002"]!(src, "bowling.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BW-002");
+  });
+
+  it("BW-003 PRESENCE — db.transaction() in processLaneBooking (atomic lane_schedules+bowling_sessions+session_payments+frame_scores INSERT/UPDATE)", () => {
+    const src = `
+function processLaneBooking(db, centerId, sessionId, laneNumber, gameCount, shoeSize, startTime, endTime, amount) {
+  const session = db.prepare("SELECT status FROM bowling_sessions WHERE id = ? AND status = 'reserved'").get(sessionId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO lane_schedules (id, center_id, session_id, lane_number, game_count, shoe_size, start_time, end_time, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'confirmed')").run(scheduleId, centerId, sessionId, laneNumber, gameCount, shoeSize, startTime, endTime);
+    db.prepare("UPDATE bowling_sessions SET status = 'started', schedule_id = ?, payment_id = ? WHERE id = ?").run(scheduleId, paymentId, sessionId);
+    db.prepare("INSERT INTO session_payments (id, session_id, schedule_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(paymentId, sessionId, scheduleId, amount, bookedAt);
+    db.prepare("INSERT INTO frame_scores (id, session_id, lane_number, frame_number, score, created_at) VALUES (?, ?, ?, 0, 0, ?)").run(scoreId, sessionId, laneNumber, bookedAt);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["BW-003"]!(src, "bowling.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BW-003");
+  });
+
+  it("BW-004 PRESENCE — status transition reserved→started→completed/closed/cancelled in transitionSessionStatus", () => {
+    const src = `
+function transitionSessionStatus(db, sessionId, newStatus) {
+  const session = db.prepare("SELECT status FROM bowling_sessions WHERE id = ?").get(sessionId);
+  const previousStatus = session.status;
+  const allowed =
+    (session.status === 'reserved' && newStatus === 'started') ||
+    (session.status === 'started' && newStatus === 'completed') ||
+    (session.status === 'started' && newStatus === 'closed') ||
+    (session.status === 'reserved' && newStatus === 'cancelled') ||
+    (session.status === 'started' && newStatus === 'cancelled');
+  if (!allowed) {
+    throw new BowlingError('E409-SESSION', \`Cannot transition session from \${previousStatus} to \${newStatus}\`, 409);
+  }
+  db.prepare("UPDATE bowling_sessions SET status = ? WHERE id = ?").run(newStatus, sessionId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["BW-004"]!(src, "bowling.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BW-004");
+  });
+
+  it("BW-005 PRESENCE — batch closed→completed expire in expireClosedSessionBatch (StatusTransition batch)", () => {
+    const src = `
+function expireClosedSessionBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM bowling_sessions WHERE status = 'closed' AND reserved_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE bowling_sessions SET status = 'completed' WHERE id = ?").run(item.id);
+  }
+  return { expiredCount: candidates.length };
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["BW-005"]!(src, "bowling.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BW-005");
+  });
+
+  it("BW-006 PRESENCE — db.transaction() in processSessionRefund (atomic cancelled_fee_records+session_refunds INSERT/UPDATE)", () => {
+    const src = `
+function processSessionRefund(db, memberId, sessionId, sessionCost, cancellationRate) {
+  const session = db.prepare("SELECT status FROM bowling_sessions WHERE id = ? AND status = 'cancelled'").get(sessionId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO cancelled_fee_records (id, member_id, session_id, session_cost, cancellation_rate, cancellation_amount, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(feeRecordId, memberId, sessionId, sessionCost, cancellationRate, cancellationAmount);
+    db.prepare("INSERT INTO session_refunds (id, fee_record_id, member_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, feeRecordId, memberId, cancellationAmount, refundedAt);
+    db.prepare("UPDATE cancelled_fee_records SET status = 'refunded' WHERE id = ?").run(feeRecordId);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["BW-006"]!(src, "bowling.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BW-006");
   });
 });

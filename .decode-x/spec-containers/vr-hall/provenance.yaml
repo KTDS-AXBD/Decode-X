@@ -1,0 +1,53 @@
+---
+# Provenance — VRHALL-001
+# 98번째 도메인 — VR Experience hall 합성 도메인 PoC (87번째 신규 산업, 🥽 단일 클러스터 29 도메인 첫 사례 마일스톤 신기록 도전 + 25 Sprint 연속 첫 사례 마일스톤 신기록 도전)
+# Rule prefix: VR (VR experience hall)
+
+skillId: VRHALL-001
+extractedAt: "2026-05-23T00:00:00+09:00"
+extractedBy: "Decode-X 세션 395 F567 — withRuleId 재사용 98번째 도메인 (VR Experience hall VR 체험관 산업, 87번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/vr-hall/rules/vr-hall-rules.md"
+    section: "VR Experience hall 합성 비즈니스 룰 — VR-001~VR-006"
+    businessRules: [VR-001, VR-002, VR-003, VR-004, VR-005, VR-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — VR 체험관(VR Experience hall) 산업 일반화 PoC. pod동시한도/session한도/pod예약atomic/session상태전환/ended일괄만료/session환불atomic 추상화. 98번째 도메인 + 87번째 신규 산업. 🥽 단일 클러스터 29 도메인 첫 사례 마일스톤 신기록 도전 (AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA+BW+AC+BL+ES+PO+DJ+VR 오프라인 엔터 29-클러스터). 🏆 25 Sprint 연속 첫 사례 마일스톤 신기록 도전 (S370 5→S371 6→...→S394 28→S395 29). 🏆 withRuleId 99 Sprint 정점 도전 (S264~S395 99 Sprint 누적 정점 도전). 거울 변환 51회차 도전 (carsharing → ... → dj-academy → vr-hall). Sprint WT autopilot 분리 작업 25회차 (DoD 6축 실감증 16회차 도전). VR 차별성: AC(Arcade token+machine fault) + ES(Escape room 그룹+GM 운영) + KP(콘서트 좌석) 인접하되 VR pod-based 시간제 30-60분 + 헤드셋 위생 점검 + content library 라이센스 + 그룹 동시 multiplayer + motion sickness 환불 정책 + content rating 시스템 (B2C 단체 가족/친구 30분~수시간 + content 별 가격 차등 + 헤드셋 위생 절차 차별). 동시 한도 16 (hall별 동시 active pod, VR 체험관 16 pod 기준)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/vr-hall.ts"
+    functions: [reservePod, applySessionLimit, processPodBooking, transitionSessionStatus, expireEndedSessionBatch, processSessionRefund]
+
+detection:
+  - ruleId: VR-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-23T00:00:00+09:00"
+    notes: "vr_halls.active_pods >= limit (UPPERCASE fallback MAX_CONCURRENT_PODS_PER_HALL, Path A)"
+  - ruleId: VR-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-23T00:00:00+09:00"
+    notes: "membership.daily_sessions + sessions >= sessionLimit (Path B, limit keyword)"
+  - ruleId: VR-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-23T00:00:00+09:00"
+    notes: "db.transaction() — pod_schedules INSERT + vr_sessions UPDATE + session_payments INSERT + headset_assignment INSERT"
+  - ruleId: VR-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-23T00:00:00+09:00"
+    notes: "reserved → started → playing → ended / discomfort_exit / cancelled"
+  - ruleId: VR-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-23T00:00:00+09:00"
+    notes: "batch: playing → ended 갱신 (SF-005/KP-005/.../DJ-005 87번째 재사용)"
+  - ruleId: VR-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-23T00:00:00+09:00"
+    notes: "db.transaction() — cancelled_session_records INSERT + session_refunds INSERT + cancelled_session_records UPDATE (motion sickness 30s 이내 환불 + content 미공급 환불 정책)"

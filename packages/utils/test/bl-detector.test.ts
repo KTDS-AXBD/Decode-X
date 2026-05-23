@@ -677,7 +677,7 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 452 detectors (세션 394 F566 — dj-academy 97번째 도메인 +6 detectors, 🎧 단일 클러스터 28 도메인 첫 사례 마일스톤 신기록 + 24 Sprint 연속 첫 사례 마일스톤 신기록)", () => {
+  it("exposes 458 detectors (세션 395 F567 — vr-hall 98번째 도메인 +6 detectors, 🥽 단일 클러스터 29 도메인 첫 사례 마일스톤 신기록 도전 + 25 Sprint 연속 첫 사례 마일스톤 신기록 도전)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AC-001",
       "AC-002",
@@ -1239,6 +1239,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "VD-004",
       "VD-005",
       "VD-006",
+      "VR-001",
+      "VR-002",
+      "VR-003",
+      "VR-004",
+      "VR-005",
+      "VR-006",
       "VT-001",
       "VT-002",
       "VT-003",
@@ -10568,5 +10574,125 @@ function processLessonRefund(db, memberId, lessonId, lessonCost, cancellationRat
     const markers = BL_DETECTOR_REGISTRY["DJ-006"]!(src, "dj-academy.ts");
     expect(markers).toHaveLength(1);
     expect(markers[0]?.ruleId).toBe("DJ-006");
+  });
+});
+
+describe("VR-001~VR-006 registered (세션 395 F567 — vr-hall 98번째 도메인, 87번째 신규 산업, 🥽 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA+BW+AC+BL+ES+PO+DJ+VR 오프라인 엔터 29-클러스터 도전 — 단일 클러스터 29 도메인 첫 사례 마일스톤 신기록 도전 + 25 Sprint 연속 첫 사례 마일스톤 신기록 도전, withRuleId 99 Sprint 정점 도전, 거울 변환 51회차 도전, DoD 6축 실감증 16회차 도전)", () => {
+  it("VR-001~VR-006 in BL_DETECTOR_REGISTRY", () => {
+    expect(BL_DETECTOR_REGISTRY["VR-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["VR-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["VR-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["VR-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["VR-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["VR-006"]).toBeDefined();
+  });
+});
+
+describe("DOMAIN_MAP vr-hall entry — F567 axis-e (DoD 5축 강화, 6축 CI Guard 실감증 16회차 도전 — rules/ 등재 후 7회차 자연 작동 도전, 🥽 단일 클러스터 29 도메인 첫 사례 마일스톤 신기록 도전 + 25 Sprint 연속 첫 사례 마일스톤 신기록 도전)", () => {
+  it("findDomainMapping('vr-hall') returns defined entry (98번째 도메인 DOMAIN_MAP 존재 검증)", async () => {
+    const { findDomainMapping } = await import("../../../scripts/divergence/domain-source-map.js");
+    const mapping = findDomainMapping("vr-hall");
+    expect(mapping).toBeDefined();
+    expect(mapping?.container).toBe("vr-hall");
+  });
+});
+
+describe("vr-hall domain — VR-001~006 via withRuleId (세션 395 F567, 🥽 단일 클러스터 29 도메인 첫 사례 마일스톤 신기록 도전 + 25 Sprint 연속 첫 사례 마일스톤 신기록 도전, DoD 6축 실감증 16회차 도전)", () => {
+  it("VR-001 PRESENCE — active_pods >= MAX_CONCURRENT_PODS_PER_HALL threshold (UPPERCASE constant)", () => {
+    const src = `
+const MAX_CONCURRENT_PODS_PER_HALL = 16;
+function reservePod(db, hallId, membershipId) {
+  const hall = db.prepare('SELECT active_pods, max_concurrent_pods FROM vr_halls WHERE id = ?').get(hallId);
+  const limit = hall.max_concurrent_pods ?? MAX_CONCURRENT_PODS_PER_HALL;
+  if (hall.active_pods >= limit) throw new VrHallError('E422-POD-LIMIT-EXCEEDED', 'Hall is at full pod capacity', 422);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["VR-001"]!(src, "vr-hall.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("VR-001");
+  });
+
+  it("VR-002 PRESENCE — membership.daily_sessions + sessions >= sessionLimit (var-vs-var, limit keyword)", () => {
+    const src = `
+function applySessionLimit(db, memberId, membershipId, sessions) {
+  const membership = db.prepare('SELECT daily_sessions, session_limit FROM vr_memberships WHERE id = ? AND member_id = ? LIMIT 1').get(membershipId, memberId);
+  const sessionLimit = membership.session_limit;
+  if (membership.daily_sessions + sessions >= sessionLimit) throw new VrHallError('E422-SESSION-LIMIT-EXCEEDED', 'Membership daily session quota exhausted', 422);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["VR-002"]!(src, "vr-hall.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("VR-002");
+  });
+
+  it("VR-003 PRESENCE — db.transaction() in processPodBooking (atomic pod_schedules+vr_sessions+session_payments+headset_assignment INSERT/UPDATE)", () => {
+    const src = `
+function processPodBooking(db, hallId, sessionId, contentId, headsetId, startTime, endTime, headsetType, amount) {
+  const session = db.prepare("SELECT status FROM vr_sessions WHERE id = ? AND status = 'reserved'").get(sessionId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO pod_schedules (id, hall_id, session_id, content_id, start_time, end_time, status) VALUES (?, ?, ?, ?, ?, ?, 'confirmed')").run(scheduleId, hallId, sessionId, contentId, startTime, endTime);
+    db.prepare("UPDATE vr_sessions SET status = 'started', pod_id = ?, schedule_id = ?, payment_id = ?, headset_id = ? WHERE id = ?").run(contentId, scheduleId, paymentId, headsetAssignId, sessionId);
+    db.prepare("INSERT INTO session_payments (id, session_id, schedule_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(paymentId, sessionId, scheduleId, amount, bookedAt);
+    db.prepare("INSERT INTO headset_assignment (id, hall_id, session_id, headset_id, headset_type, hygiene_status, assigned_at) VALUES (?, ?, ?, ?, ?, 'checked', ?)").run(headsetAssignId, hallId, sessionId, headsetId, headsetType, bookedAt);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["VR-003"]!(src, "vr-hall.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("VR-003");
+  });
+
+  it("VR-004 PRESENCE — status transition reserved→started→playing→ended/discomfort_exit/cancelled in transitionSessionStatus", () => {
+    const src = `
+function transitionSessionStatus(db, sessionId, newStatus) {
+  const session = db.prepare('SELECT status FROM vr_sessions WHERE id = ?').get(sessionId);
+  const previousStatus = session.status;
+  const allowed =
+    (session.status === 'reserved' && newStatus === 'started') ||
+    (session.status === 'started' && newStatus === 'playing') ||
+    (session.status === 'playing' && newStatus === 'ended') ||
+    (session.status === 'playing' && newStatus === 'discomfort_exit') ||
+    (session.status === 'reserved' && newStatus === 'cancelled') ||
+    (session.status === 'started' && newStatus === 'cancelled') ||
+    (session.status === 'playing' && newStatus === 'cancelled');
+  if (!allowed) throw new VrHallError('E409-SESSION', 'Cannot transition VR session', 409);
+  db.prepare('UPDATE vr_sessions SET status = ? WHERE id = ?').run(newStatus, sessionId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["VR-004"]!(src, "vr-hall.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("VR-004");
+  });
+
+  it("VR-005 PRESENCE — batch playing→ended expire in expireEndedSessionBatch (StatusTransition batch)", () => {
+    const src = `
+function expireEndedSessionBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM vr_sessions WHERE status = 'playing' AND reserved_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE vr_sessions SET status = 'ended' WHERE id = ?").run(item.id);
+  }
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["VR-005"]!(src, "vr-hall.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("VR-005");
+  });
+
+  it("VR-006 PRESENCE — db.transaction() in processSessionRefund (atomic cancelled_session_records+session_refunds INSERT/UPDATE, motion sickness 30s 이내 환불 + content 미공급 환불 정책)", () => {
+    const src = `
+function processSessionRefund(db, memberId, sessionId, sessionCost, refundReason, motionSicknessFee) {
+  const session = db.prepare("SELECT status FROM vr_sessions WHERE id = ? AND status = 'cancelled'").get(sessionId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO cancelled_session_records (id, member_id, session_id, session_cost, refund_reason, motion_sickness_fee, refund_amount, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'calculated')").run(feeRecordId, memberId, sessionId, sessionCost, refundReason, motionSicknessFee, refundAmount);
+    db.prepare("INSERT INTO session_refunds (id, fee_record_id, member_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, feeRecordId, memberId, refundAmount, refundedAt);
+    db.prepare("UPDATE cancelled_session_records SET status = 'refunded' WHERE id = ?").run(feeRecordId);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["VR-006"]!(src, "vr-hall.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("VR-006");
   });
 });

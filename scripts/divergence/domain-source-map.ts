@@ -1866,6 +1866,27 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processLessonRefund",
     ],
   },
+  {
+    container: "vr-hall",
+    rulesPath: `${SPEC_CONTAINER_BASE}/vr-hall/rules/vr-hall-rules.md`,
+    // 세션 395 (F567): VR Experience hall 합성 도메인 — 98번째 도메인 (VR 체험관 산업, 87번째 신규 산업). Sprint WT autopilot 분리 작업 25회차 (DoD 6축 실감증 16회차 도전).
+    // VR-001~VR-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // Rule prefix: VR (VR experience hall).
+    // 거울 변환 51회차 도전 (carsharing → ... → dj-academy → vr-hall) — 🥽 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA+BW+AC+BL+ES+PO+DJ+VR 오프라인 엔터 29-클러스터 (단일 클러스터 29 도메인 첫 사례 마일스톤 신기록 도전 + 25 Sprint 연속 첫 사례 마일스톤 신기록 도전).
+    // 🏆 87 신규 산업 0 ABSENCE 연속 도전 (CC~VR). 🏆 withRuleId 99 Sprint 정점 도전. 🏆 거울 변환 51회차 도전. 🏆 S283 audit 51회차 도전.
+    // VR 차별성: AC(Arcade token+machine fault) + ES(Escape room 그룹+GM 운영) + KP(콘서트 좌석) 인접하되 VR pod-based 시간제 30-60분 + 헤드셋 위생 점검 + content library 라이센스 + motion sickness 환불 정책. 동시 한도 16 (hall별 동시 active pod, VR 체험관 16 pod 기준).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/vr-hall.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/vr-hall/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "reservePod",
+      "applySessionLimit",
+      "processPodBooking",
+      "transitionSessionStatus",
+      "expireEndedSessionBatch",
+      "processSessionRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

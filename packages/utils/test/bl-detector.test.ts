@@ -677,7 +677,7 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 428 detectors (세션 390 F562 — arcade 93번째 도메인 +6 detectors, 🕹️ 단일 클러스터 24 도메인 첫 사례 마일스톤 신기록 + 20 Sprint 연속 첫 사례 마일스톤 신기록)", () => {
+  it("exposes 434 detectors (세션 391 F563 — billiards 94번째 도메인 +6 detectors, 🎱 단일 클러스터 25 도메인 첫 사례 마일스톤 신기록 + 21 Sprint 연속 첫 사례 마일스톤 신기록)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AC-001",
       "AC-002",
@@ -738,6 +738,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "BC-004",
       "BC-005",
       "BC-006",
+      "BI-001",
+      "BI-002",
+      "BI-003",
+      "BI-004",
+      "BI-005",
+      "BI-006",
       "BK-001",
       "BK-002",
       "BK-003",
@@ -9912,6 +9918,17 @@ function processSessionRefund(db, memberId, sessionId, sessionCost, cancellation
   });
 });
 
+describe("BI-001~BI-006 registered (세션 391 F563 — billiards 94번째 도메인, 83번째 신규 산업, 🎱 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA+BW+AC+BL 오프라인 엔터 25-클러스터 — 단일 클러스터 25 도메인 첫 사례 마일스톤 신기록 + 21 Sprint 연속 첫 사례 마일스톤 신기록, withRuleId 95 Sprint 정점 도전, 거울 변환 47회차, DoD 6축 실감증 12회차)", () => {
+  it("BI-001~BI-006 in BL_DETECTOR_REGISTRY", () => {
+    expect(BL_DETECTOR_REGISTRY["BI-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BI-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BI-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BI-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BI-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["BI-006"]).toBeDefined();
+  });
+});
+
 describe("AC-001~AC-006 registered (세션 390 F562 — arcade 93번째 도메인, 82번째 신규 산업, 🕹️ AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA+BW+AC 오프라인 엔터 24-클러스터 확장 — 단일 클러스터 24 도메인 첫 사례 마일스톤 신기록 + 20 Sprint 연속 첫 사례 마일스톤 신기록, withRuleId 94 Sprint 정점 도전, 거울 변환 46회차, DoD 6축 실감증 11회차)", () => {
   it("AC-001~AC-006 in BL_DETECTOR_REGISTRY", () => {
     expect(BL_DETECTOR_REGISTRY["AC-001"]).toBeDefined();
@@ -10036,5 +10053,120 @@ function processTokenRefund(db, memberId, sessionId, tokenBalance, prizeTickets)
     const markers = BL_DETECTOR_REGISTRY["AC-006"]!(src, "arcade.ts");
     expect(markers).toHaveLength(1);
     expect(markers[0]?.ruleId).toBe("AC-006");
+  });
+});
+
+describe("DOMAIN_MAP billiards entry — F563 axis-e (DoD 5축 강화, 6축 CI Guard 실감증 12회차 — rules/ 등재 후 3회차 자연 작동, 🎱 단일 클러스터 25 도메인 첫 사례 마일스톤 신기록 + 21 Sprint 연속 첫 사례 마일스톤 신기록)", () => {
+  it("findDomainMapping('billiards') returns defined entry (94번째 도메인 DOMAIN_MAP 존재 검증)", async () => {
+    const { findDomainMapping } = await import("../../../scripts/divergence/domain-source-map.js");
+    const mapping = findDomainMapping("billiards");
+    expect(mapping).toBeDefined();
+    expect(mapping?.container).toBe("billiards");
+  });
+});
+
+describe("billiards domain — BI-001~006 via withRuleId (세션 391 F563, 🎱 단일 클러스터 25 도메인 첫 사례 마일스톤 신기록 + 21 Sprint 연속 첫 사례 마일스톤 신기록, DoD 6축 실감증 12회차 — rules/ 등재 후 3회차 자연 작동)", () => {
+  it("BI-001 PRESENCE — active_tables >= MAX_CONCURRENT_TABLES_PER_HALL threshold (UPPERCASE constant)", () => {
+    const src = `
+function reserveTable(db, hallId, membershipId) {
+  const hall = db.prepare("SELECT active_tables, max_concurrent_tables FROM billiard_halls WHERE id = ?").get(hallId);
+  const limit = hall.max_concurrent_tables ?? MAX_CONCURRENT_TABLES_PER_HALL;
+  if (hall.active_tables >= limit) {
+    throw new BilliardsError('E422-TABLE-LIMIT-EXCEEDED', \`Billiards hall is at full table capacity\`, 422);
+  }
+  db.prepare("INSERT INTO billiards_sessions (id, hall_id, membership_id) VALUES (?, ?, ?)").run(sessionId, hallId, membershipId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["BI-001"]!(src, "billiards.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BI-001");
+  });
+
+  it("BI-002 PRESENCE — membership.daily_used + hours >= hourLimit (var-vs-var, limit keyword)", () => {
+    const src = `
+function applyHourLimit(db, memberId, membershipId, hours) {
+  const membership = db.prepare("SELECT daily_used, hour_limit FROM memberships WHERE id = ? AND member_id = ? LIMIT 1").get(membershipId, memberId);
+  const hourLimit = membership.hour_limit;
+  if (membership.daily_used + hours >= hourLimit) {
+    throw new BilliardsError('E422-HOUR-LIMIT-EXCEEDED', \`Membership daily hour quota exhausted\`, 422);
+  }
+  db.prepare("UPDATE memberships SET daily_used = daily_used + ? WHERE id = ?").run(hours, membershipId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["BI-002"]!(src, "billiards.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BI-002");
+  });
+
+  it("BI-003 PRESENCE — db.transaction() in processTableBooking (atomic table_schedules+billiards_sessions+session_payments+cue_inventory INSERT/UPDATE)", () => {
+    const src = `
+function processTableBooking(db, hallId, sessionId, tableNumber, partySize, startTime, endTime, cueCount, amount) {
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO table_schedules (id, hall_id, table_number, session_id, start_time, end_time) VALUES (?, ?, ?, ?, ?, ?)").run(scheduleId, hallId, tableNumber, sessionId, startTime, endTime);
+    db.prepare("UPDATE billiards_sessions SET status = 'started', party_size = ?, payment_id = ? WHERE id = ?").run(partySize, paymentId, sessionId);
+    db.prepare("INSERT INTO session_payments (id, session_id, amount, status, paid_at) VALUES (?, ?, ?, 'paid', ?)").run(paymentId, sessionId, amount, startTime);
+    db.prepare("INSERT INTO cue_inventory (id, session_id, cue_count, status) VALUES (?, ?, ?, 'lent')").run(cueId, sessionId, cueCount);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["BI-003"]!(src, "billiards.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BI-003");
+  });
+
+  it("BI-004 PRESENCE — status transition reserved→started→playing→ended/abandoned/cancelled in transitionSessionStatus", () => {
+    const src = `
+function transitionSessionStatus(db, sessionId, newStatus) {
+  const session = db.prepare("SELECT status FROM billiards_sessions WHERE id = ?").get(sessionId);
+  const previousStatus = session.status;
+  const allowed =
+    (session.status === 'reserved' && newStatus === 'started') ||
+    (session.status === 'started' && newStatus === 'playing') ||
+    (session.status === 'playing' && newStatus === 'ended') ||
+    (session.status === 'playing' && newStatus === 'abandoned') ||
+    (session.status === 'reserved' && newStatus === 'cancelled') ||
+    (session.status === 'started' && newStatus === 'cancelled');
+  if (!allowed) {
+    throw new BilliardsError('E409-SESSION', \`Cannot transition billiards session from \${previousStatus} to \${newStatus}\`, 409);
+  }
+  db.prepare("UPDATE billiards_sessions SET status = ? WHERE id = ?").run(newStatus, sessionId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["BI-004"]!(src, "billiards.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BI-004");
+  });
+
+  it("BI-005 PRESENCE — batch ended→cancelled expire in expireEndedSessionBatch (StatusTransition batch)", () => {
+    const src = `
+function expireEndedSessionBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM billiards_sessions WHERE status = 'ended' AND started_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE billiards_sessions SET status = 'cancelled' WHERE id = ?").run(item.id);
+  }
+  return { expiredCount: candidates.length };
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["BI-005"]!(src, "billiards.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BI-005");
+  });
+
+  it("BI-006 PRESENCE — db.transaction() in processSessionRefund (atomic cancelled_session_records+session_refunds INSERT/UPDATE, cue 파손 변상 정책)", () => {
+    const src = `
+function processSessionRefund(db, memberId, sessionId, sessionCost, cancellationRate, cueDamageCount, cueDamageFeePerCue) {
+  const session = db.prepare("SELECT status FROM billiards_sessions WHERE id = ? AND status = 'cancelled'").get(sessionId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO cancelled_session_records (id, member_id, session_id, session_cost, cancellation_rate, cue_damage_count, cue_damage_fee, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'calculated')").run(feeRecordId, memberId, sessionId, sessionCost, cancellationRate, cueDamageCount, cueDamageFee);
+    db.prepare("INSERT INTO session_refunds (id, fee_record_id, member_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, feeRecordId, memberId, refundAmount, refundedAt);
+    db.prepare("UPDATE cancelled_session_records SET status = 'refunded' WHERE id = ?").run(feeRecordId);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["BI-006"]!(src, "billiards.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("BI-006");
   });
 });

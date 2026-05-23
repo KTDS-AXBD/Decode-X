@@ -677,8 +677,14 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 422 detectors (세션 389 F561 — bowling 92번째 도메인 +6 detectors, 🎳 단일 클러스터 23 도메인 첫 사례 마일스톤 신기록 도전 + 19 Sprint 연속 첫 사례 마일스톤 신기록 도전)", () => {
+  it("exposes 428 detectors (세션 390 F562 — arcade 93번째 도메인 +6 detectors, 🕹️ 단일 클러스터 24 도메인 첫 사례 마일스톤 신기록 + 20 Sprint 연속 첫 사례 마일스톤 신기록)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
+      "AC-001",
+      "AC-002",
+      "AC-003",
+      "AC-004",
+      "AC-005",
+      "AC-006",
       "AD-001",
       "AD-002",
       "AD-003",
@@ -9903,5 +9909,132 @@ function processSessionRefund(db, memberId, sessionId, sessionCost, cancellation
     const markers = BL_DETECTOR_REGISTRY["BW-006"]!(src, "bowling.ts");
     expect(markers).toHaveLength(1);
     expect(markers[0]?.ruleId).toBe("BW-006");
+  });
+});
+
+describe("AC-001~AC-006 registered (세션 390 F562 — arcade 93번째 도메인, 82번째 신규 산업, 🕹️ AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA+BW+AC 오프라인 엔터 24-클러스터 확장 — 단일 클러스터 24 도메인 첫 사례 마일스톤 신기록 + 20 Sprint 연속 첫 사례 마일스톤 신기록, withRuleId 94 Sprint 정점 도전, 거울 변환 46회차, DoD 6축 실감증 11회차)", () => {
+  it("AC-001~AC-006 in BL_DETECTOR_REGISTRY", () => {
+    expect(BL_DETECTOR_REGISTRY["AC-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AC-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AC-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AC-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AC-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["AC-006"]).toBeDefined();
+  });
+});
+
+describe("DOMAIN_MAP arcade entry — F562 axis-e (DoD 5축 강화, 6축 CI Guard 실감증 11회차 — rules/ 등재 후 2회차 자연 작동, 🕹️ 단일 클러스터 24 도메인 첫 사례 마일스톤 신기록 + 20 Sprint 연속 첫 사례 마일스톤 신기록)", () => {
+  it("findDomainMapping('arcade') returns defined entry (93번째 도메인 DOMAIN_MAP 존재 검증)", async () => {
+    const { findDomainMapping } = await import("../../../scripts/divergence/domain-source-map.js");
+    const mapping = findDomainMapping("arcade");
+    expect(mapping).toBeDefined();
+    expect(mapping?.container).toBe("arcade");
+  });
+});
+
+describe("arcade domain — AC-001~006 via withRuleId (세션 390 F562, 🕹️ 단일 클러스터 24 도메인 첫 사례 마일스톤 신기록 + 20 Sprint 연속 첫 사례 마일스톤 신기록, DoD 6축 실감증 11회차 — rules/ 등재 후 2회차 자연 작동)", () => {
+  it("AC-001 PRESENCE — active_machines >= MAX_CONCURRENT_MACHINES_PER_ARCADE threshold (UPPERCASE constant)", () => {
+    const src = `
+function enterMachine(db, arcadeId, membershipId) {
+  const arcade = db.prepare("SELECT active_machines, max_concurrent_machines FROM arcades WHERE id = ?").get(arcadeId);
+  const limit = arcade.max_concurrent_machines ?? MAX_CONCURRENT_MACHINES_PER_ARCADE;
+  if (arcade.active_machines >= limit) {
+    throw new ArcadeError('E422-MACHINE-LIMIT-EXCEEDED', \`Arcade is at full machine capacity\`, 422);
+  }
+  db.prepare("INSERT INTO arcade_sessions (id, arcade_id, membership_id) VALUES (?, ?, ?)").run(sessionId, arcadeId, membershipId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["AC-001"]!(src, "arcade.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("AC-001");
+  });
+
+  it("AC-002 PRESENCE — membership.daily_used + tokenCost >= tokenLimit (var-vs-var, limit keyword)", () => {
+    const src = `
+function applyTokenLimit(db, memberId, membershipId, tokenCost) {
+  const membership = db.prepare("SELECT daily_used, token_limit FROM memberships WHERE id = ? AND member_id = ? LIMIT 1").get(membershipId, memberId);
+  const tokenLimit = membership.token_limit;
+  if (membership.daily_used + tokenCost >= tokenLimit) {
+    throw new ArcadeError('E422-TOKEN-LIMIT-EXCEEDED', \`Membership token quota exhausted\`, 422);
+  }
+  db.prepare("UPDATE memberships SET daily_used = daily_used + ? WHERE id = ?").run(tokenCost, membershipId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["AC-002"]!(src, "arcade.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("AC-002");
+  });
+
+  it("AC-003 PRESENCE — db.transaction() in processTokenCharge (atomic token_ledger+arcade_sessions+session_payments INSERT/UPDATE)", () => {
+    const src = `
+function processTokenCharge(db, arcadeId, sessionId, machineId, tokenCost, amount) {
+  const session = db.prepare("SELECT status FROM arcade_sessions WHERE id = ? AND status = 'idle'").get(sessionId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO token_ledger (id, member_id, session_id, machine_id, tokens_used, tokens_remaining, recorded_at) VALUES (?, ?, ?, ?, ?, 0, ?)").run(ledgerId, memberId, sessionId, machineId, tokenCost, chargedAt);
+    db.prepare("UPDATE arcade_sessions SET status = 'active', machine_id = ?, payment_id = ? WHERE id = ?").run(machineId, paymentId, sessionId);
+    db.prepare("INSERT INTO session_payments (id, session_id, machine_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(paymentId, sessionId, machineId, amount, chargedAt);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["AC-003"]!(src, "arcade.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("AC-003");
+  });
+
+  it("AC-004 PRESENCE — status transition idle→active→paused→ended/fault/cancelled in transitionMachineStatus", () => {
+    const src = `
+function transitionMachineStatus(db, sessionId, newStatus) {
+  const session = db.prepare("SELECT status FROM arcade_sessions WHERE id = ?").get(sessionId);
+  const previousStatus = session.status;
+  const allowed =
+    (session.status === 'idle' && newStatus === 'active') ||
+    (session.status === 'active' && newStatus === 'paused') ||
+    (session.status === 'paused' && newStatus === 'active') ||
+    (session.status === 'active' && newStatus === 'ended') ||
+    (session.status === 'active' && newStatus === 'fault') ||
+    (session.status === 'idle' && newStatus === 'cancelled') ||
+    (session.status === 'active' && newStatus === 'cancelled');
+  if (!allowed) {
+    throw new ArcadeError('E409-SESSION', \`Cannot transition machine session from \${previousStatus} to \${newStatus}\`, 409);
+  }
+  db.prepare("UPDATE arcade_sessions SET status = ? WHERE id = ?").run(newStatus, sessionId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["AC-004"]!(src, "arcade.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("AC-004");
+  });
+
+  it("AC-005 PRESENCE — batch ended→cancelled expire in expireEndedSessionBatch (StatusTransition batch)", () => {
+    const src = `
+function expireEndedSessionBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM arcade_sessions WHERE status = 'ended' AND started_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE arcade_sessions SET status = 'cancelled' WHERE id = ?").run(item.id);
+  }
+  return { expiredCount: candidates.length };
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["AC-005"]!(src, "arcade.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("AC-005");
+  });
+
+  it("AC-006 PRESENCE — db.transaction() in processTokenRefund (atomic cancelled_token_records+token_refunds INSERT/UPDATE)", () => {
+    const src = `
+function processTokenRefund(db, memberId, sessionId, tokenBalance, prizeTickets) {
+  const session = db.prepare("SELECT status FROM arcade_sessions WHERE id = ? AND status = 'cancelled'").get(sessionId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO cancelled_token_records (id, member_id, session_id, token_balance, prize_tickets, refund_tokens, status) VALUES (?, ?, ?, ?, ?, ?, 'calculated')").run(feeRecordId, memberId, sessionId, tokenBalance, prizeTickets, refundTokens);
+    db.prepare("INSERT INTO token_refunds (id, fee_record_id, member_id, tokens, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, feeRecordId, memberId, refundTokens, refundedAt);
+    db.prepare("UPDATE cancelled_token_records SET status = 'refunded' WHERE id = ?").run(feeRecordId);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["AC-006"]!(src, "arcade.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("AC-006");
   });
 });

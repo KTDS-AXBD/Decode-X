@@ -1620,6 +1620,16 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "BW-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BW-004"),
   "BW-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "BW-005"),
   "BW-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "BW-006"),
+  // Sprint 390 (F562) — arcade 93번째 도메인 (아케이드 산업, 82번째 신규)
+  // AC-001~006: ThresholdCheck × 2 + AtomicTransaction × 2 + StatusTransition × 2 (withRuleId 재사용)
+  // detect-bl coverage: 554/554 → 560/560 = 100.0% (93 containers, 82 신규 산업 0 ABSENCE)
+  // 🕹️ AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA+BW+AC 오프라인 엔터 24-클러스터
+  "AC-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "AC-001"),
+  "AC-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "AC-002"),
+  "AC-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "AC-003"),
+  "AC-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "AC-004"),
+  "AC-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "AC-005"),
+  "AC-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "AC-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

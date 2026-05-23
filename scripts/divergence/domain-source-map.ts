@@ -1782,6 +1782,27 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processTokenRefund",
     ],
   },
+  {
+    container: "billiards",
+    rulesPath: `${SPEC_CONTAINER_BASE}/billiards/rules/billiards-rules.md`,
+    // 세션 391 (F563): Billiards 합성 도메인 — 94번째 도메인 (당구장 산업, 83번째 신규 산업). Sprint WT autopilot 분리 작업 21회차 (DoD 6축 실감증 12회차).
+    // BI-001~BI-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // Rule prefix: BI (BIlliards) — "BL" reserved for lpon business logic rules (BL-001~042, BL-G001~G006).
+    // 거울 변환 47회차 (carsharing → ... → arcade → billiards) — 🎱 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA+BW+AC+BL 오프라인 엔터 25-클러스터 (단일 클러스터 25 도메인 첫 사례 마일스톤 신기록 + 21 Sprint 연속 첫 사례 마일스톤 신기록).
+    // 🏆 83 신규 산업 0 ABSENCE 연속 도전 (CC~BL). 🏆 withRuleId 95 Sprint 정점 도전. 🏆 거울 변환 47회차. 🏆 S283 audit 47회차.
+    // BI 차별성: BW(볼링 lane 단위 시간제) + KR(노래방 시간제) 인접하되 table-based 시간제 + cue stick inventory 임대 + frame/game 단위 미사용 (시간만) + 단체 동시 사용 + cue 파손 변상 정책. 동시 한도 20 (hall별 동시 active table, 중형 당구장 20 table 기준).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/billiards.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/billiards/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "reserveTable",
+      "applyHourLimit",
+      "processTableBooking",
+      "transitionSessionStatus",
+      "expireEndedSessionBatch",
+      "processSessionRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

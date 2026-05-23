@@ -677,7 +677,7 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 434 detectors (세션 391 F563 — billiards 94번째 도메인 +6 detectors, 🎱 단일 클러스터 25 도메인 첫 사례 마일스톤 신기록 + 21 Sprint 연속 첫 사례 마일스톤 신기록)", () => {
+  it("exposes 440 detectors (세션 392 F564 — escape-room 95번째 도메인 +6 detectors, 🔓 단일 클러스터 26 도메인 첫 사례 마일스톤 신기록 + 22 Sprint 연속 첫 사례 마일스톤 신기록)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AC-001",
       "AC-002",
@@ -884,6 +884,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "ER-004",
       "ER-005",
       "ER-006",
+      "ES-001",
+      "ES-002",
+      "ES-003",
+      "ES-004",
+      "ES-005",
+      "ES-006",
       "EX-001",
       "EX-002",
       "EX-003",
@@ -10168,5 +10174,133 @@ function processSessionRefund(db, memberId, sessionId, sessionCost, cancellation
     const markers = BL_DETECTOR_REGISTRY["BI-006"]!(src, "billiards.ts");
     expect(markers).toHaveLength(1);
     expect(markers[0]?.ruleId).toBe("BI-006");
+  });
+});
+
+describe("ES-001~ES-006 registered (세션 392 F564 — escape-room 95번째 도메인, 84번째 신규 산업, 🔓 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA+BW+AC+BL+ES 오프라인 엔터 26-클러스터 — 단일 클러스터 26 도메인 첫 사례 마일스톤 신기록 + 22 Sprint 연속 첫 사례 마일스톤 신기록, withRuleId 96 Sprint 정점 도전, 거울 변환 48회차, DoD 6축 실감증 13회차)", () => {
+  it("ES-001~ES-006 in BL_DETECTOR_REGISTRY", () => {
+    expect(BL_DETECTOR_REGISTRY["ES-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["ES-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["ES-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["ES-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["ES-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["ES-006"]).toBeDefined();
+  });
+});
+
+describe("DOMAIN_MAP escape-room entry — F564 axis-e (DoD 5축 강화, 6축 CI Guard 실감증 13회차 — rules/ 등재 후 4회차 자연 작동, 🔓 단일 클러스터 26 도메인 첫 사례 마일스톤 신기록 + 22 Sprint 연속 첫 사례 마일스톤 신기록)", () => {
+  it("findDomainMapping('escape-room') returns defined entry (95번째 도메인 DOMAIN_MAP 존재 검증)", async () => {
+    const { findDomainMapping } = await import("../../../scripts/divergence/domain-source-map.js");
+    const mapping = findDomainMapping("escape-room");
+    expect(mapping).toBeDefined();
+    expect(mapping?.container).toBe("escape-room");
+  });
+});
+
+describe("escape-room domain — ES-001~006 via withRuleId (세션 392 F564, 🔓 단일 클러스터 26 도메인 첫 사례 마일스톤 신기록 + 22 Sprint 연속 첫 사례 마일스톤 신기록, DoD 6축 실감증 13회차 — rules/ 등재 후 4회차 자연 작동)", () => {
+  it("ES-001 PRESENCE — active_rooms >= MAX_CONCURRENT_ROOMS_PER_FACILITY threshold (UPPERCASE constant)", () => {
+    const src = `
+function reserveRoom(db, facilityId, membershipId) {
+  const facility = db.prepare("SELECT active_rooms, max_concurrent_rooms FROM escape_facilities WHERE id = ?").get(facilityId);
+  const limit = facility.max_concurrent_rooms ?? MAX_CONCURRENT_ROOMS_PER_FACILITY;
+  if (facility.active_rooms >= limit) {
+    throw new EscapeRoomError('E422-ROOM-LIMIT-EXCEEDED', \`Facility is at full room capacity\`, 422);
+  }
+  db.prepare("INSERT INTO escape_sessions (id, facility_id, membership_id) VALUES (?, ?, ?)").run(sessionId, facilityId, membershipId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["ES-001"]!(src, "escape-room.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("ES-001");
+  });
+
+  it("ES-002 PRESENCE — membership.daily_attempts + attempts >= attemptLimit (var-vs-var, limit keyword)", () => {
+    const src = `
+function applyAttemptLimit(db, memberId, membershipId, attempts) {
+  const membership = db.prepare("SELECT daily_attempts, attempt_limit FROM memberships WHERE id = ? AND member_id = ? LIMIT 1").get(membershipId, memberId);
+  const attemptLimit = membership.attempt_limit;
+  if (membership.daily_attempts + attempts >= attemptLimit) {
+    throw new EscapeRoomError('E422-ATTEMPT-LIMIT-EXCEEDED', \`Membership daily attempt quota exhausted\`, 422);
+  }
+  db.prepare("UPDATE memberships SET daily_attempts = daily_attempts + ? WHERE id = ?").run(attempts, membershipId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["ES-002"]!(src, "escape-room.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("ES-002");
+  });
+
+  it("ES-003 PRESENCE — db.transaction() in processRoomBooking (atomic room_schedules+escape_sessions+session_payments+hint_usage INSERT/UPDATE)", () => {
+    const src = `
+function processRoomBooking(db, facilityId, sessionId, roomTheme, groupSize, startTime, endTime, hintsAllowed, amount) {
+  const session = db.prepare("SELECT status FROM escape_sessions WHERE id = ? AND status = 'reserved'").get(sessionId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO room_schedules (id, facility_id, session_id, room_theme, group_size, start_time, end_time, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'confirmed')").run(scheduleId, facilityId, sessionId, roomTheme, groupSize, startTime, endTime);
+    db.prepare("UPDATE escape_sessions SET status = 'starting', room_id = ?, schedule_id = ?, payment_id = ? WHERE id = ?").run(roomTheme, scheduleId, paymentId, sessionId);
+    db.prepare("INSERT INTO session_payments (id, session_id, schedule_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(paymentId, sessionId, scheduleId, amount, bookedAt);
+    db.prepare("INSERT INTO hint_usage (id, facility_id, session_id, hints_allowed, hints_used, recorded_at) VALUES (?, ?, ?, ?, 0, ?)").run(hintId, facilityId, sessionId, hintsAllowed, bookedAt);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["ES-003"]!(src, "escape-room.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("ES-003");
+  });
+
+  it("ES-004 PRESENCE — status transition reserved→starting→playing→ended/abandoned/cancelled in transitionSessionStatus", () => {
+    const src = `
+function transitionSessionStatus(db, sessionId, newStatus, escapeResult) {
+  const session = db.prepare("SELECT status FROM escape_sessions WHERE id = ?").get(sessionId);
+  const previousStatus = session.status;
+  const allowed =
+    (session.status === 'reserved' && newStatus === 'starting') ||
+    (session.status === 'starting' && newStatus === 'playing') ||
+    (session.status === 'playing' && newStatus === 'ended') ||
+    (session.status === 'playing' && newStatus === 'abandoned') ||
+    (session.status === 'reserved' && newStatus === 'cancelled') ||
+    (session.status === 'starting' && newStatus === 'cancelled') ||
+    (session.status === 'playing' && newStatus === 'cancelled');
+  if (!allowed) {
+    throw new EscapeRoomError('E409-SESSION', \`Cannot transition session from \${previousStatus} to \${newStatus}\`, 409);
+  }
+  db.prepare("UPDATE escape_sessions SET status = ?, escape_result = ? WHERE id = ?").run(newStatus, escapeResult, sessionId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["ES-004"]!(src, "escape-room.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("ES-004");
+  });
+
+  it("ES-005 PRESENCE — batch ended→cancelled expire in expireEndedSessionBatch (StatusTransition batch)", () => {
+    const src = `
+function expireEndedSessionBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM escape_sessions WHERE status = 'ended' AND reserved_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE escape_sessions SET status = 'cancelled' WHERE id = ?").run(item.id);
+  }
+  return { expiredCount: candidates.length };
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["ES-005"]!(src, "escape-room.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("ES-005");
+  });
+
+  it("ES-006 PRESENCE — db.transaction() in processSessionRefund (atomic cancelled_session_records+session_refunds INSERT/UPDATE, 그룹 환불 + escape bonus 지급 정책)", () => {
+    const src = `
+function processSessionRefund(db, memberId, sessionId, sessionCost, cancellationRate, escapeBonusAmount) {
+  const session = db.prepare("SELECT status FROM escape_sessions WHERE id = ? AND status = 'cancelled'").get(sessionId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO cancelled_session_records (id, member_id, session_id, session_cost, escape_bonus_amount, cancellation_rate, cancellation_amount, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'calculated')").run(feeRecordId, memberId, sessionId, sessionCost, escapeBonusAmount, cancellationRate, cancellationAmount);
+    db.prepare("INSERT INTO session_refunds (id, fee_record_id, member_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, feeRecordId, memberId, refundAmount, refundedAt);
+    db.prepare("UPDATE cancelled_session_records SET status = 'refunded' WHERE id = ?").run(feeRecordId);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["ES-006"]!(src, "escape-room.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("ES-006");
   });
 });

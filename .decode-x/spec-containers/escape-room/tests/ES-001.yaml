@@ -1,0 +1,33 @@
+# ES-001 ThresholdCheck 검증 시나리오
+# Escape Room facility별 동시 room 한도 — F564 Sprint 392
+
+ruleId: ES-001
+detector: ThresholdCheck
+function: reserveRoom
+
+scenarios:
+  - id: ES-001-PASS
+    description: 동시 room 수가 한도 미만일 때 room 예약 성공
+    given:
+      escape_facilities:
+        active_rooms: 7
+        max_concurrent_rooms: 8
+    when:
+      call: reserveRoom
+    then:
+      result: success
+      ruleId: ES-001
+      status: PRESENCE
+
+  - id: ES-001-FAIL
+    description: 동시 room 수가 한도에 달했을 때 room 예약 차단
+    given:
+      escape_facilities:
+        active_rooms: 8
+        max_concurrent_rooms: 8
+    when:
+      call: reserveRoom
+    then:
+      throws: EscapeRoomError
+      code: E422-ROOM-LIMIT-EXCEEDED
+      status: 422

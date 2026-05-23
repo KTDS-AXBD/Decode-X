@@ -1762,6 +1762,26 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processSessionRefund",
     ],
   },
+  {
+    container: "arcade",
+    rulesPath: `${SPEC_CONTAINER_BASE}/arcade/rules/arcade-rules.md`,
+    // 세션 390 (F562): Arcade 합성 도메인 — 93번째 도메인 (아케이드 산업, 82번째 신규 산업). Sprint WT autopilot 분리 작업 20회차 (DoD 6축 실감증 11회차 — rules/ 등재 후 2회차 자연 작동).
+    // AC-001~AC-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // 거울 변환 46회차 (carsharing → ... → bowling → arcade) — 🕹️ AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA+BW+AC 오프라인 엔터 24-클러스터 (단일 클러스터 24 도메인 첫 사례 마일스톤 신기록 + 20 Sprint 연속 첫 사례 마일스톤 신기록).
+    // 🏆 82 신규 산업 0 ABSENCE 연속 도전 (CC~AC). 🏆 withRuleId 94 Sprint 정점 도전. 🏆🏆 20 round 마일스톤. 🏆 거울 변환 46회차. 🏆 S283 audit 46회차.
+    // AC 차별성: BW(볼링 lane 단위 시간제) + GA(도박 betting platform) 인접하되 token 기반 prepaid + machine 다양성 (rhythm/racing/redemption) + machine fault event + prize ticket system + redemption shop + family-friendly arcade variety. 동시 한도 30 (arcade별 동시 active machine, 중형 아케이드 30 machine 기준).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/arcade.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/arcade/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "enterMachine",
+      "applyTokenLimit",
+      "processTokenCharge",
+      "transitionMachineStatus",
+      "expireEndedSessionBatch",
+      "processTokenRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

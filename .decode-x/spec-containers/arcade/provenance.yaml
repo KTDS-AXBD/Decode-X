@@ -1,0 +1,52 @@
+---
+# Provenance — ARCADE-001
+# 93번째 도메인 — Arcade 합성 도메인 PoC (82번째 신규 산업, 🕹️ 단일 클러스터 24 도메인 첫 사례 마일스톤 신기록 + 20 Sprint 연속 첫 사례 마일스톤 신기록)
+
+skillId: ARCADE-001
+extractedAt: "2026-05-23T00:00:00+09:00"
+extractedBy: "Decode-X 세션 390 F562 — withRuleId 재사용 93번째 도메인 (Arcade 아케이드 산업, 82번째 신규)"
+
+sources:
+  - type: synthetic
+    path: ".decode-x/spec-containers/arcade/rules/arcade-rules.md"
+    section: "Arcade 합성 비즈니스 룰 — AC-001~AC-006"
+    businessRules: [AC-001, AC-002, AC-003, AC-004, AC-005, AC-006]
+    confidence: 0.95
+    sourceMarker: SYNTHETIC
+    note: "합성 도메인 — 아케이드(Arcade) 산업 일반화 PoC. 동시machine한도/token한도/token충전atomic/machine상태전환/ended세션일괄만료/token환불atomic 추상화. 93번째 도메인 + 82번째 신규 산업. 🕹️ 단일 클러스터 24 도메인 첫 사례 마일스톤 신기록 (AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA+BW+AC 오프라인 엔터 24-클러스터). 🏆 20 Sprint 연속 첫 사례 마일스톤 신기록 (S370 5→S371 6→...→S389 23→S390 24). 🏆 withRuleId 94 Sprint 정점 도전 (S264~S390 94 Sprint 누적 정점). 🏆🏆 20 round 마일스톤 (S370 5 → ... → S390 24). 거울 변환 46회차 (carsharing → ... → bowling → arcade). Sprint WT autopilot 분리 작업 20회차 (DoD 6축 실감증 11회차 — rules/ 등재 후 2회차 자연 작동). AC 차별성: BW(볼링 lane 단위 시간제) + GA(도박 betting platform) 인접하되 token 기반 prepaid + machine 다양성 (rhythm/racing/redemption) + machine fault event + prize ticket system + redemption shop + family-friendly arcade variety 모델 (B2C 가족/청소년 30분~수시간 + token 단위 사용 + 상품 교환 + machine 장애 양보 정책 차별). 동시 한도 30 (arcade별 동시 active machine, 중형 아케이드 30 machine 기준)."
+
+  - type: source-code
+    path: "반제품-스펙/pilot-lpon-cancel/working-version/src/domain/arcade.ts"
+    functions: [enterMachine, applyTokenLimit, processTokenCharge, transitionMachineStatus, expireEndedSessionBatch, processTokenRefund]
+
+detection:
+  - ruleId: AC-001
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-23T00:00:00+09:00"
+    notes: "arcade.active_machines >= limit (UPPERCASE fallback MAX_CONCURRENT_MACHINES_PER_ARCADE, Path A)"
+  - ruleId: AC-002
+    status: PRESENCE
+    resolvedBy: ThresholdCheck
+    resolvedAt: "2026-05-23T00:00:00+09:00"
+    notes: "membership.daily_used + tokenCost >= tokenLimit (Path B, limit keyword)"
+  - ruleId: AC-003
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-23T00:00:00+09:00"
+    notes: "db.transaction() — token_ledger INSERT + arcade_sessions UPDATE + session_payments INSERT"
+  - ruleId: AC-004
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-23T00:00:00+09:00"
+    notes: "idle → active → paused → ended / fault / cancelled"
+  - ruleId: AC-005
+    status: PRESENCE
+    resolvedBy: StatusTransition
+    resolvedAt: "2026-05-23T00:00:00+09:00"
+    notes: "batch: ended → cancelled 갱신 (SF-005/KP-005/.../BW-005 82번째 재사용)"
+  - ruleId: AC-006
+    status: PRESENCE
+    resolvedBy: AtomicTransaction
+    resolvedAt: "2026-05-23T00:00:00+09:00"
+    notes: "db.transaction() — cancelled_token_records INSERT + token_refunds INSERT + cancelled_token_records UPDATE (prize ticket redemption 정책)"

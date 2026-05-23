@@ -1824,6 +1824,27 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processSessionRefund",
     ],
   },
+  {
+    container: "pottery",
+    rulesPath: `${SPEC_CONTAINER_BASE}/pottery/rules/pottery-rules.md`,
+    // 세션 393 (F565): Pottery Studio 합성 도메인 — 96번째 도메인 (도예 공방 산업, 85번째 신규 산업). Sprint WT autopilot 분리 작업 23회차 (DoD 6축 실감증 14회차).
+    // PO-001~PO-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // Rule prefix: PO (POttery studio).
+    // 거울 변환 49회차 (carsharing → ... → escape-room → pottery) — 🏺 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA+BW+AC+BL+ES+PO 오프라인 엔터 27-클러스터 (단일 클러스터 27 도메인 첫 사례 마일스톤 신기록 + 23 Sprint 연속 첫 사례 마일스톤 신기록).
+    // 🏆 85 신규 산업 0 ABSENCE 연속 도전 (CC~PO). 🏆 withRuleId 97 Sprint 정점 도전. 🏆 거울 변환 49회차. 🏆 S283 audit 49회차.
+    // PO 차별성: ES(방탈출 그룹 활동) + KP(콘서트 좌석) + GR(자연공원 정적) 인접하되 워크샵형 도예 클래스 + 강사 운영 + 재료 키트 사전 결제 + 가마 구운 후 출품 소유권. 동시 한도 12 (studio별 동시 active wheel, 중형 도예 공방 12 wheel 기준).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/pottery.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/pottery/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "reserveWheel",
+      "applyClassLimit",
+      "processClassBooking",
+      "transitionSessionStatus",
+      "expireKilnPendingBatch",
+      "processSessionRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

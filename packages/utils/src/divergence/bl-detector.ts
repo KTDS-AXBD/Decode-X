@@ -1652,6 +1652,17 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "ES-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "ES-004"),
   "ES-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "ES-005"),
   "ES-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "ES-006"),
+  // Sprint 393 (F565) — pottery 96번째 도메인 (도예 공방 산업, 85번째 신규)
+  // PO-001~006: ThresholdCheck × 2 + AtomicTransaction × 2 + StatusTransition × 2 (withRuleId 재사용)
+  // detect-bl coverage: 572/572 → 578/578 = 100.0% (96 containers, 85 신규 산업 0 ABSENCE)
+  // 🏺 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA+BW+AC+BL+ES+PO 오프라인 엔터 27-클러스터
+  // Rule prefix: PO (POttery studio).
+  "PO-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "PO-001"),
+  "PO-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "PO-002"),
+  "PO-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "PO-003"),
+  "PO-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PO-004"),
+  "PO-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PO-005"),
+  "PO-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "PO-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

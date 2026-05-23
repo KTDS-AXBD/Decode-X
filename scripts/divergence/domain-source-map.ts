@@ -1845,6 +1845,27 @@ export const DOMAIN_MAP: DomainMapping[] = [
       "processSessionRefund",
     ],
   },
+  {
+    container: "dj-academy",
+    rulesPath: `${SPEC_CONTAINER_BASE}/dj-academy/rules/dj-academy-rules.md`,
+    // 세션 394 (F566): DJ Academy 합성 도메인 — 97번째 도메인 (DJ 학원 산업, 86번째 신규 산업). Sprint WT autopilot 분리 작업 24회차 (DoD 6축 실감증 15회차).
+    // DJ-001~DJ-006 (Threshold × 2 + Atomic × 2 + Status × 2 균형 분포).
+    // Rule prefix: DJ (DJ academy).
+    // 거울 변환 50회차 round 마일스톤 (carsharing → ... → pottery → dj-academy) — 🎧 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA+BW+AC+BL+ES+PO+DJ 오프라인 엔터 28-클러스터 (단일 클러스터 28 도메인 첫 사례 마일스톤 신기록 + 24 Sprint 연속 첫 사례 마일스톤 신기록).
+    // 🏆 86 신규 산업 0 ABSENCE 연속 도전 (CC~DJ). 🏆 withRuleId 98 Sprint 정점 도전. 🏆 거울 변환 50회차 round 마일스톤. 🏆 S283 audit 50회차 round 마일스톤.
+    // DJ 차별성: KP(콘서트 좌석) + KR(노래방 시간제) + PO(도예 워크샵 강사) 인접하되 학원 모델 + 월간 멤버십 + 장비 임대 + 강사 1:1/그룹 lesson + 자가 연습 booking. 동시 한도 8 (academy별 동시 active deck, DJ 학원 8 deck 기준).
+    sourcePath: `${DOMAIN_SOURCE_BASE}/dj-academy.ts`,
+    provenancePath: `${SPEC_CONTAINER_BASE}/dj-academy/provenance.yaml`,
+    sourceCodeStatus: "present",
+    underImplTargets: [
+      "reserveLesson",
+      "applyLessonLimit",
+      "processLessonBooking",
+      "transitionLessonStatus",
+      "autocompleteInProgressBatch",
+      "processLessonRefund",
+    ],
+  },
 ];
 
 export function findDomainMapping(container: string): DomainMapping | undefined {

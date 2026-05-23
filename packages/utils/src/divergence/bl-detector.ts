@@ -1663,6 +1663,16 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "PO-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PO-004"),
   "PO-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PO-005"),
   "PO-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "PO-006"),
+  // DJ-001~006: ThresholdCheck × 2 + AtomicTransaction × 2 + StatusTransition × 2 (withRuleId 재사용)
+  // detect-bl coverage: 578/578 → 584/584 = 100.0% (97 containers, 86 신규 산업 0 ABSENCE)
+  // 🎧 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA+BW+AC+BL+ES+PO+DJ 오프라인 엔터 28-클러스터
+  // Rule prefix: DJ (DJ academy).
+  "DJ-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "DJ-001"),
+  "DJ-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "DJ-002"),
+  "DJ-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "DJ-003"),
+  "DJ-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "DJ-004"),
+  "DJ-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "DJ-005"),
+  "DJ-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "DJ-006"),
   // Sprint 315 (F481) — lpon-refund gap fill: 환불 도메인 BL-020/021/023/025 PRESENCE + BL-030 ABSENCE 마커
   // BL-020 (rfndPsbltyYn='Y' status transition) / BL-021 (입금 처리 atomic tx) /
   // BL-023 (입금 실패 catch → status='FAILED' 에러 반환) / BL-025 (60% 이상 사용 threshold) /

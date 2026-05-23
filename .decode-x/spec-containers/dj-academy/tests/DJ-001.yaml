@@ -1,0 +1,33 @@
+# DJ-001 ThresholdCheck 검증 시나리오
+# DJ Academy별 동시 deck 한도 — F566 Sprint 394
+
+ruleId: DJ-001
+detector: ThresholdCheck
+function: reserveLesson
+
+scenarios:
+  - id: DJ-001-PASS
+    description: 동시 deck 수가 한도 미만일 때 lesson 예약 성공
+    given:
+      dj_academies:
+        active_decks: 7
+        max_concurrent_decks: 8
+    when:
+      call: reserveLesson
+    then:
+      result: success
+      ruleId: DJ-001
+      status: PRESENCE
+
+  - id: DJ-001-FAIL
+    description: 동시 deck 수가 한도에 달했을 때 lesson 예약 차단
+    given:
+      dj_academies:
+        active_decks: 8
+        max_concurrent_decks: 8
+    when:
+      call: reserveLesson
+    then:
+      throws: DjAcademyError
+      code: E422-DECK-LIMIT-EXCEEDED
+      status: 422

@@ -677,7 +677,7 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 446 detectors (세션 393 F565 — pottery 96번째 도메인 +6 detectors, 🏺 단일 클러스터 27 도메인 첫 사례 마일스톤 신기록 + 23 Sprint 연속 첫 사례 마일스톤 신기록)", () => {
+  it("exposes 452 detectors (세션 394 F566 — dj-academy 97번째 도메인 +6 detectors, 🎧 단일 클러스터 28 도메인 첫 사례 마일스톤 신기록 + 24 Sprint 연속 첫 사례 마일스톤 신기록)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AC-001",
       "AC-002",
@@ -860,6 +860,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "DF-004",
       "DF-005",
       "DF-006",
+      "DJ-001",
+      "DJ-002",
+      "DJ-003",
+      "DJ-004",
+      "DJ-005",
+      "DJ-006",
       "DV-001",
       "DV-002",
       "DV-003",
@@ -10436,5 +10442,131 @@ function processSessionRefund(db, memberId, sessionId, sessionCost, cancellation
     const markers = BL_DETECTOR_REGISTRY["PO-006"]!(src, "pottery.ts");
     expect(markers).toHaveLength(1);
     expect(markers[0]?.ruleId).toBe("PO-006");
+  });
+});
+
+describe("DJ-001~DJ-006 registered (세션 394 F566 — dj-academy 97번째 도메인, 86번째 신규 산업, 🎧 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA+BW+AC+BL+ES+PO+DJ 오프라인 엔터 28-클러스터 — 단일 클러스터 28 도메인 첫 사례 마일스톤 신기록 + 24 Sprint 연속 첫 사례 마일스톤 신기록, withRuleId 98 Sprint 정점 도전, 거울 변환 50회차 round 마일스톤, DoD 6축 실감증 15회차)", () => {
+  it("DJ-001~DJ-006 in BL_DETECTOR_REGISTRY", () => {
+    expect(BL_DETECTOR_REGISTRY["DJ-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["DJ-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["DJ-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["DJ-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["DJ-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["DJ-006"]).toBeDefined();
+  });
+});
+
+describe("DOMAIN_MAP dj-academy entry — F566 axis-e (DoD 5축 강화, 6축 CI Guard 실감증 15회차 — rules/ 등재 후 6회차 자연 작동, 🎧 단일 클러스터 28 도메인 첫 사례 마일스톤 신기록 + 24 Sprint 연속 첫 사례 마일스톤 신기록)", () => {
+  it("findDomainMapping('dj-academy') returns defined entry (97번째 도메인 DOMAIN_MAP 존재 검증)", async () => {
+    const { findDomainMapping } = await import("../../../scripts/divergence/domain-source-map.js");
+    const mapping = findDomainMapping("dj-academy");
+    expect(mapping).toBeDefined();
+    expect(mapping?.container).toBe("dj-academy");
+  });
+});
+
+describe("dj-academy domain — DJ-001~006 via withRuleId (세션 394 F566, 🎧 단일 클러스터 28 도메인 첫 사례 마일스톤 신기록 + 24 Sprint 연속 첫 사례 마일스톤 신기록, DoD 6축 실감증 15회차 — rules/ 등재 후 6회차 자연 작동)", () => {
+  it("DJ-001 PRESENCE — active_decks >= MAX_CONCURRENT_DECKS_PER_ACADEMY threshold (UPPERCASE constant)", () => {
+    const src = `
+function reserveLesson(db, academyId, membershipId) {
+  const academy = db.prepare("SELECT active_decks, max_concurrent_decks FROM dj_academies WHERE id = ?").get(academyId);
+  const limit = academy.max_concurrent_decks ?? MAX_CONCURRENT_DECKS_PER_ACADEMY;
+  if (academy.active_decks >= limit) {
+    throw new DjAcademyError('E422-DECK-LIMIT-EXCEEDED', \`Academy is at full deck capacity\`, 422);
+  }
+  db.prepare("INSERT INTO dj_lessons (id, academy_id, membership_id) VALUES (?, ?, ?)").run(lessonId, academyId, membershipId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["DJ-001"]!(src, "dj-academy.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("DJ-001");
+  });
+
+  it("DJ-002 PRESENCE — membership.monthly_lessons + lessons >= lessonLimit (var-vs-var, limit keyword)", () => {
+    const src = `
+function applyLessonLimit(db, memberId, membershipId, lessons) {
+  const membership = db.prepare("SELECT monthly_lessons, lesson_limit FROM memberships WHERE id = ? AND member_id = ? LIMIT 1").get(membershipId, memberId);
+  const lessonLimit = membership.lesson_limit;
+  if (membership.monthly_lessons + lessons >= lessonLimit) {
+    throw new DjAcademyError('E422-LESSON-LIMIT-EXCEEDED', \`Membership monthly lesson quota exhausted\`, 422);
+  }
+  db.prepare("UPDATE memberships SET monthly_lessons = monthly_lessons + ? WHERE id = ?").run(lessons, membershipId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["DJ-002"]!(src, "dj-academy.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("DJ-002");
+  });
+
+  it("DJ-003 PRESENCE — db.transaction() in processLessonBooking (atomic deck_schedules+dj_lessons+lesson_payments+equipment_rental INSERT/UPDATE)", () => {
+    const src = `
+function processLessonBooking(db, academyId, lessonId, equipmentType, instructorId, startTime, endTime, rentalFee, amount) {
+  const lesson = db.prepare("SELECT status FROM dj_lessons WHERE id = ? AND status = 'scheduled'").get(lessonId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO deck_schedules (id, academy_id, lesson_id, instructor_id, equipment_type, start_time, end_time, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'confirmed')").run(scheduleId, academyId, lessonId, instructorId, equipmentType, startTime, endTime);
+    db.prepare("UPDATE dj_lessons SET status = 'in_progress', deck_id = ?, schedule_id = ?, payment_id = ?, equipment_rental_id = ? WHERE id = ?").run(equipmentType, scheduleId, paymentId, rentalId, lessonId);
+    db.prepare("INSERT INTO lesson_payments (id, lesson_id, schedule_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(paymentId, lessonId, scheduleId, amount, bookedAt);
+    db.prepare("INSERT INTO equipment_rental (id, academy_id, lesson_id, equipment_type, rental_fee, status, reserved_at) VALUES (?, ?, ?, ?, ?, 'in_use', ?)").run(rentalId, academyId, lessonId, equipmentType, rentalFee, bookedAt);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["DJ-003"]!(src, "dj-academy.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("DJ-003");
+  });
+
+  it("DJ-004 PRESENCE — status transition scheduled→in_progress→completed/no_show/cancelled in transitionLessonStatus", () => {
+    const src = `
+function transitionLessonStatus(db, lessonId, newStatus) {
+  const lesson = db.prepare("SELECT status FROM dj_lessons WHERE id = ?").get(lessonId);
+  const previousStatus = lesson.status;
+  const allowed =
+    (lesson.status === 'scheduled' && newStatus === 'in_progress') ||
+    (lesson.status === 'in_progress' && newStatus === 'completed') ||
+    (lesson.status === 'in_progress' && newStatus === 'no_show') ||
+    (lesson.status === 'scheduled' && newStatus === 'cancelled') ||
+    (lesson.status === 'in_progress' && newStatus === 'cancelled');
+  if (!allowed) {
+    throw new DjAcademyError('E409-LESSON', \`Cannot transition DJ lesson from \${previousStatus} to \${newStatus}\`, 409);
+  }
+  db.prepare("UPDATE dj_lessons SET status = ? WHERE id = ?").run(newStatus, lessonId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["DJ-004"]!(src, "dj-academy.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("DJ-004");
+  });
+
+  it("DJ-005 PRESENCE — batch in_progress→completed expire in autocompleteInProgressBatch (StatusTransition batch)", () => {
+    const src = `
+function autocompleteInProgressBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM dj_lessons WHERE status = 'in_progress' AND scheduled_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE dj_lessons SET status = 'completed' WHERE id = ?").run(item.id);
+  }
+  return { completedCount: candidates.length };
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["DJ-005"]!(src, "dj-academy.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("DJ-005");
+  });
+
+  it("DJ-006 PRESENCE — db.transaction() in processLessonRefund (atomic cancelled_lesson_records+lesson_refunds INSERT/UPDATE, 월간 구독 환불 + 장비 파손 변상 정책)", () => {
+    const src = `
+function processLessonRefund(db, memberId, lessonId, lessonCost, cancellationRate, equipmentDamageCharge) {
+  const lesson = db.prepare("SELECT status FROM dj_lessons WHERE id = ? AND status = 'cancelled'").get(lessonId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO cancelled_lesson_records (id, member_id, lesson_id, lesson_cost, equipment_damage_charge, cancellation_rate, cancellation_amount, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'calculated')").run(feeRecordId, memberId, lessonId, lessonCost, equipmentDamageCharge, cancellationRate, cancellationAmount);
+    db.prepare("INSERT INTO lesson_refunds (id, fee_record_id, member_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, feeRecordId, memberId, refundAmount, refundedAt);
+    db.prepare("UPDATE cancelled_lesson_records SET status = 'refunded' WHERE id = ?").run(feeRecordId);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["DJ-006"]!(src, "dj-academy.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("DJ-006");
   });
 });

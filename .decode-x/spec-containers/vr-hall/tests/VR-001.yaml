@@ -1,0 +1,33 @@
+# VR-001 ThresholdCheck 검증 시나리오
+# VR hall별 동시 pod 한도 — F567 Sprint 395
+
+ruleId: VR-001
+detector: ThresholdCheck
+function: reservePod
+
+scenarios:
+  - id: VR-001-PASS
+    description: 동시 pod 수가 한도 미만일 때 session 예약 성공
+    given:
+      vr_halls:
+        active_pods: 15
+        max_concurrent_pods: 16
+    when:
+      call: reservePod
+    then:
+      result: success
+      ruleId: VR-001
+      status: PRESENCE
+
+  - id: VR-001-FAIL
+    description: 동시 pod 수가 한도에 달했을 때 session 예약 차단
+    given:
+      vr_halls:
+        active_pods: 16
+        max_concurrent_pods: 16
+    when:
+      call: reservePod
+    then:
+      throws: VrHallError
+      code: E422-POD-LIMIT-EXCEEDED
+      status: 422

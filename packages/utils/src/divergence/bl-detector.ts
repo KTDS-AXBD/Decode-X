@@ -1663,6 +1663,16 @@ export const BL_DETECTOR_REGISTRY: Record<string, DetectorFn> = {
   "PO-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PO-004"),
   "PO-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "PO-005"),
   "PO-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "PO-006"),
+  // VR-001~006: ThresholdCheck × 2 + AtomicTransaction × 2 + StatusTransition × 2 (withRuleId 재사용)
+  // detect-bl coverage: 584/584 → 590/590 = 100.0% (98 containers, 87 신규 산업 0 ABSENCE 도전)
+  // 🥽 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA+BW+AC+BL+ES+PO+DJ+VR 오프라인 엔터 29-클러스터 도전
+  // Rule prefix: VR (VR experience hall). F567 (세션 395): 98번째 도메인, 87번째 신규 산업.
+  "VR-001": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "VR-001"),
+  "VR-002": (sf, fn) => withRuleId(detectThresholdCheck(sf, fn), "VR-002"),
+  "VR-003": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "VR-003"),
+  "VR-004": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "VR-004"),
+  "VR-005": (sf, fn) => withRuleId(detectStatusTransition(sf, fn), "VR-005"),
+  "VR-006": (sf, fn) => withRuleId(detectAtomicTransaction(sf, fn), "VR-006"),
   // DJ-001~006: ThresholdCheck × 2 + AtomicTransaction × 2 + StatusTransition × 2 (withRuleId 재사용)
   // detect-bl coverage: 578/578 → 584/584 = 100.0% (97 containers, 86 신규 산업 0 ABSENCE)
   // 🎧 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA+BW+AC+BL+ES+PO+DJ 오프라인 엔터 28-클러스터

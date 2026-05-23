@@ -677,7 +677,7 @@ describe("BL-001~004 — lpon-charge gap fill (Sprint 314 F480)", () => {
 });
 
 describe("BL_DETECTOR_REGISTRY", () => {
-  it("exposes 440 detectors (세션 392 F564 — escape-room 95번째 도메인 +6 detectors, 🔓 단일 클러스터 26 도메인 첫 사례 마일스톤 신기록 + 22 Sprint 연속 첫 사례 마일스톤 신기록)", () => {
+  it("exposes 446 detectors (세션 393 F565 — pottery 96번째 도메인 +6 detectors, 🏺 단일 클러스터 27 도메인 첫 사례 마일스톤 신기록 + 23 Sprint 연속 첫 사례 마일스톤 신기록)", () => {
     expect(Object.keys(BL_DETECTOR_REGISTRY).sort()).toEqual([
       "AC-001",
       "AC-002",
@@ -1107,6 +1107,12 @@ describe("BL_DETECTOR_REGISTRY", () => {
       "PL-004",
       "PL-005",
       "PL-006",
+      "PO-001",
+      "PO-002",
+      "PO-003",
+      "PO-004",
+      "PO-005",
+      "PO-006",
       "PR-001",
       "PR-002",
       "PR-003",
@@ -10302,5 +10308,133 @@ function processSessionRefund(db, memberId, sessionId, sessionCost, cancellation
     const markers = BL_DETECTOR_REGISTRY["ES-006"]!(src, "escape-room.ts");
     expect(markers).toHaveLength(1);
     expect(markers[0]?.ruleId).toBe("ES-006");
+  });
+});
+
+describe("PO-001~PO-006 registered (세션 393 F565 — pottery 96번째 도메인, 85번째 신규 산업, 🏺 AM+TH+KP+AQ+ZO+MS+MV+LB+PA+FE+GR+OB+PL+CV+WB+BC+CO+KR+NC+ST+LS+CA+BW+AC+BL+ES+PO 오프라인 엔터 27-클러스터 — 단일 클러스터 27 도메인 첫 사례 마일스톤 신기록 + 23 Sprint 연속 첫 사례 마일스톤 신기록, withRuleId 97 Sprint 정점 도전, 거울 변환 49회차, DoD 6축 실감증 14회차)", () => {
+  it("PO-001~PO-006 in BL_DETECTOR_REGISTRY", () => {
+    expect(BL_DETECTOR_REGISTRY["PO-001"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PO-002"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PO-003"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PO-004"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PO-005"]).toBeDefined();
+    expect(BL_DETECTOR_REGISTRY["PO-006"]).toBeDefined();
+  });
+});
+
+describe("DOMAIN_MAP pottery entry — F565 axis-e (DoD 5축 강화, 6축 CI Guard 실감증 14회차 — rules/ 등재 후 5회차 자연 작동, 🏺 단일 클러스터 27 도메인 첫 사례 마일스톤 신기록 + 23 Sprint 연속 첫 사례 마일스톤 신기록)", () => {
+  it("findDomainMapping('pottery') returns defined entry (96번째 도메인 DOMAIN_MAP 존재 검증)", async () => {
+    const { findDomainMapping } = await import("../../../scripts/divergence/domain-source-map.js");
+    const mapping = findDomainMapping("pottery");
+    expect(mapping).toBeDefined();
+    expect(mapping?.container).toBe("pottery");
+  });
+});
+
+describe("pottery domain — PO-001~006 via withRuleId (세션 393 F565, 🏺 단일 클러스터 27 도메인 첫 사례 마일스톤 신기록 + 23 Sprint 연속 첫 사례 마일스톤 신기록, DoD 6축 실감증 14회차 — rules/ 등재 후 5회차 자연 작동)", () => {
+  it("PO-001 PRESENCE — active_wheels >= MAX_CONCURRENT_WHEELS_PER_STUDIO threshold (UPPERCASE constant)", () => {
+    const src = `
+function reserveWheel(db, studioId, membershipId) {
+  const studio = db.prepare("SELECT active_wheels, max_concurrent_wheels FROM pottery_studios WHERE id = ?").get(studioId);
+  const limit = studio.max_concurrent_wheels ?? MAX_CONCURRENT_WHEELS_PER_STUDIO;
+  if (studio.active_wheels >= limit) {
+    throw new PotteryError('E422-WHEEL-LIMIT-EXCEEDED', \`Studio is at full wheel capacity\`, 422);
+  }
+  db.prepare("INSERT INTO pottery_sessions (id, studio_id, membership_id) VALUES (?, ?, ?)").run(sessionId, studioId, membershipId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["PO-001"]!(src, "pottery.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("PO-001");
+  });
+
+  it("PO-002 PRESENCE — membership.daily_classes + classes >= classLimit (var-vs-var, limit keyword)", () => {
+    const src = `
+function applyClassLimit(db, memberId, membershipId, classes) {
+  const membership = db.prepare("SELECT daily_classes, class_limit FROM memberships WHERE id = ? AND member_id = ? LIMIT 1").get(membershipId, memberId);
+  const classLimit = membership.class_limit;
+  if (membership.daily_classes + classes >= classLimit) {
+    throw new PotteryError('E422-CLASS-LIMIT-EXCEEDED', \`Membership daily class quota exhausted\`, 422);
+  }
+  db.prepare("UPDATE memberships SET daily_classes = daily_classes + ? WHERE id = ?").run(classes, membershipId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["PO-002"]!(src, "pottery.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("PO-002");
+  });
+
+  it("PO-003 PRESENCE — db.transaction() in processClassBooking (atomic wheel_schedules+pottery_sessions+session_payments+material_kits INSERT/UPDATE)", () => {
+    const src = `
+function processClassBooking(db, studioId, sessionId, clayType, instructorId, startTime, endTime, kitFee, amount) {
+  const session = db.prepare("SELECT status FROM pottery_sessions WHERE id = ? AND status = 'reserved'").get(sessionId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO wheel_schedules (id, studio_id, session_id, instructor_id, clay_type, start_time, end_time, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'confirmed')").run(scheduleId, studioId, sessionId, instructorId, clayType, startTime, endTime);
+    db.prepare("UPDATE pottery_sessions SET status = 'started', wheel_id = ?, schedule_id = ?, payment_id = ?, material_kit_id = ? WHERE id = ?").run(clayType, scheduleId, paymentId, kitId, sessionId);
+    db.prepare("INSERT INTO session_payments (id, session_id, schedule_id, amount, status, paid_at) VALUES (?, ?, ?, ?, 'paid', ?)").run(paymentId, sessionId, scheduleId, amount, bookedAt);
+    db.prepare("INSERT INTO material_kits (id, studio_id, session_id, clay_type, kit_fee, status, prepared_at) VALUES (?, ?, ?, ?, ?, 'prepared', ?)").run(kitId, studioId, sessionId, clayType, kitFee, bookedAt);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["PO-003"]!(src, "pottery.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("PO-003");
+  });
+
+  it("PO-004 PRESENCE — status transition reserved→started→completed→kiln_pending→finished/cancelled in transitionSessionStatus", () => {
+    const src = `
+function transitionSessionStatus(db, sessionId, newStatus) {
+  const session = db.prepare("SELECT status FROM pottery_sessions WHERE id = ?").get(sessionId);
+  const previousStatus = session.status;
+  const allowed =
+    (session.status === 'reserved' && newStatus === 'started') ||
+    (session.status === 'started' && newStatus === 'completed') ||
+    (session.status === 'completed' && newStatus === 'kiln_pending') ||
+    (session.status === 'kiln_pending' && newStatus === 'finished') ||
+    (session.status === 'reserved' && newStatus === 'cancelled') ||
+    (session.status === 'started' && newStatus === 'cancelled') ||
+    (session.status === 'completed' && newStatus === 'cancelled');
+  if (!allowed) {
+    throw new PotteryError('E409-SESSION', \`Cannot transition pottery session from \${previousStatus} to \${newStatus}\`, 409);
+  }
+  db.prepare("UPDATE pottery_sessions SET status = ? WHERE id = ?").run(newStatus, sessionId);
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["PO-004"]!(src, "pottery.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("PO-004");
+  });
+
+  it("PO-005 PRESENCE — batch kiln_pending→finished expire in expireKilnPendingBatch (StatusTransition batch)", () => {
+    const src = `
+function expireKilnPendingBatch(db, now) {
+  const candidates = db.prepare("SELECT id FROM pottery_sessions WHERE status = 'kiln_pending' AND reserved_at <= ?").all(now);
+  for (const item of candidates) {
+    db.prepare("UPDATE pottery_sessions SET status = 'finished' WHERE id = ?").run(item.id);
+  }
+  return { finishedCount: candidates.length };
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["PO-005"]!(src, "pottery.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("PO-005");
+  });
+
+  it("PO-006 PRESENCE — db.transaction() in processSessionRefund (atomic cancelled_session_records+session_refunds INSERT/UPDATE, 재료비 비환불 + 가마 단계 도달 시 환불 차등 정책)", () => {
+    const src = `
+function processSessionRefund(db, memberId, sessionId, sessionCost, cancellationRate, materialFeeNonRefundable) {
+  const session = db.prepare("SELECT status FROM pottery_sessions WHERE id = ? AND status = 'cancelled'").get(sessionId);
+  const tx = db.transaction(() => {
+    db.prepare("INSERT INTO cancelled_session_records (id, member_id, session_id, session_cost, material_fee_non_refundable, cancellation_rate, cancellation_amount, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'calculated')").run(feeRecordId, memberId, sessionId, sessionCost, materialFeeNonRefundable, cancellationRate, cancellationAmount);
+    db.prepare("INSERT INTO session_refunds (id, fee_record_id, member_id, amount, status, refunded_at) VALUES (?, ?, ?, ?, 'refunded', ?)").run(refundId, feeRecordId, memberId, refundAmount, refundedAt);
+    db.prepare("UPDATE cancelled_session_records SET status = 'refunded' WHERE id = ?").run(feeRecordId);
+  });
+  tx();
+}
+    `;
+    const markers = BL_DETECTOR_REGISTRY["PO-006"]!(src, "pottery.ts");
+    expect(markers).toHaveLength(1);
+    expect(markers[0]?.ruleId).toBe("PO-006");
   });
 });

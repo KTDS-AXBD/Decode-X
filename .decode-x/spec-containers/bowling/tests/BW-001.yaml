@@ -1,0 +1,33 @@
+# BW-001 ThresholdCheck 검증 시나리오
+# Bowling center별 동시 lane 한도 — F561 Sprint 389
+
+ruleId: BW-001
+detector: ThresholdCheck
+function: reserveLane
+
+scenarios:
+  - id: BW-001-PASS
+    description: 동시 lane 수가 한도 미만일 때 lane 예약 성공
+    given:
+      bowling_centers:
+        active_lanes: 23
+        max_concurrent_lanes: 24
+    when:
+      call: reserveLane
+    then:
+      result: success
+      ruleId: BW-001
+      status: PRESENCE
+
+  - id: BW-001-FAIL
+    description: 동시 lane 수가 한도에 달했을 때 lane 예약 차단
+    given:
+      bowling_centers:
+        active_lanes: 24
+        max_concurrent_lanes: 24
+    when:
+      call: reserveLane
+    then:
+      throws: BowlingError
+      code: E422-CENTER-LANE-LIMIT-EXCEEDED
+      status: 422
